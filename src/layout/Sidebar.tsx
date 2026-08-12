@@ -1,30 +1,10 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, BarChart2, Calendar, Map, List, Repeat, Star, FileText, BarChart, Video } from 'lucide-react';
 import { useMode } from '../contexts/ModeContext';
+import { globalItems, dsaItems, dsItems } from '../navigation/nav';
 
 export const Sidebar = () => {
   const location = useLocation();
   const { activeMode, setMode } = useMode();
-
-  const globalItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/calendar', label: 'Calendar', icon: Calendar },
-    { path: '/search', label: 'Search', icon: Search },
-    { path: '/progress', label: 'Progress', icon: BarChart2 }
-  ];
-  
-  const dsaItems = [
-    { path: '/dsa/roadmap', label: 'Roadmap', icon: Map },
-    { path: '/dsa/problems', label: 'Problems', icon: List },
-    { path: '/dsa/revision', label: 'Revision', icon: Repeat },
-    { path: '/dsa/favorites', label: 'Favorites', icon: Star },
-    { path: '/dsa/notes', label: 'Notes', icon: FileText },
-    { path: '/dsa/statistics', label: 'Statistics', icon: BarChart }
-  ];
-
-  const dsItems = [
-    { path: '/data-science/lectures', label: 'Lectures', icon: Video }
-  ];
 
   const currentNavItems = activeMode === 'dsa' ? dsaItems : dsItems;
 

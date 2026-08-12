@@ -4,6 +4,7 @@ import { Search, Play, Clock, BarChart2, ListVideo, TerminalSquare, RotateCcw } 
 import { getSolvedIds, getRecentProblems, getNextDSAProblem, resetProgress } from '../services/storage';
 import problemsData from '../data/problems.json';
 import { useMode } from '../contexts/ModeContext';
+import { DsaRightSidebar, DataScienceRightSidebar } from '../layout/RightSidebar';
 
 const DataScienceDashboard = () => {
   const progress = getProgress();
@@ -258,5 +259,13 @@ const DsaDashboard = () => {
 
 export const Home = () => {
   const { activeMode } = useMode();
-  return activeMode === 'dsa' ? <DsaDashboard /> : <DataScienceDashboard />;
+  return (
+    <div className="flex flex-col">
+      {activeMode === 'dsa' ? <DsaDashboard /> : <DataScienceDashboard />}
+      <div className="xl:hidden flex flex-col gap-6 mt-8">
+        <h2 className="text-sm font-bold text-theme-muted mb-[-8px] pl-2">Your Activity</h2>
+        {activeMode === 'dsa' ? <DsaRightSidebar /> : <DataScienceRightSidebar />}
+      </div>
+    </div>
+  );
 };

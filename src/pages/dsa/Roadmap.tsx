@@ -62,103 +62,107 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
       </div>
 
       {isExpanded && (
-        <div className="border-t border-black/5 bg-white">
-          {/* Table Header */}
-          <div className="flex items-center px-5 py-2.5 text-[11px] font-bold text-theme-muted uppercase tracking-wider bg-gray-50/50 border-b border-black/5">
-            <div className="w-12 text-center shrink-0">St</div>
-            <div className="flex-1 min-w-0 px-2">Problem</div>
-            <div className="w-10 flex justify-center shrink-0" title="TUF Article">TUF</div>
-            <div className="w-10 flex justify-center shrink-0" title="YouTube">YT</div>
-            <div className="w-10 flex justify-center shrink-0" title="LeetCode">LC</div>
-            <div className="w-10 flex justify-center shrink-0" title="GeeksforGeeks">GFG</div>
-            <div className="w-10 flex justify-center shrink-0" title="CodeStudio">CS</div>
-            <div className="w-16 flex justify-center shrink-0">Rev</div>
-          </div>
-
-          {/* Table Rows */}
-          <div className="flex flex-col">
-            {subProblems.map((problem) => (
-              <div 
-                key={problem.id}
-                className="group flex items-center px-5 py-3 hover:bg-gray-50/50 transition-colors border-b border-black/5 last:border-0"
-              >
-                <div className="w-12 flex justify-center shrink-0">
-                  <button onClick={(e) => handleToggleSolved(e, problem.id, problem.is_solved)} className="focus:outline-none">
-                    {problem.is_solved ? (
-                      <CheckSolidIcon className="w-5 h-5 text-brand-primary" />
-                    ) : (
-                      <div className="w-4 h-4 rounded-[4px] border-2 border-gray-300 group-hover:border-brand-primary transition-colors bg-white" />
-                    )}
-                  </button>
-                </div>
-                
-                <div 
-                  className="flex-1 min-w-0 px-2 cursor-pointer flex items-center gap-3"
-                  onClick={() => navigate(`/?problemId=${problem.id}`)}
-                >
-                  <span className="text-[14px] font-semibold text-theme-text group-hover:text-brand-primary transition-colors truncate">
-                    {problem.name}
-                  </span>
-                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    problem.difficulty === 'Easy' ? 'bg-pastel-mint text-brand-primary-dark' :
-                    problem.difficulty === 'Medium' ? 'bg-pastel-yellow text-yellow-800' :
-                    'bg-pastel-peach text-orange-800'
-                  }`}>
-                    {problem.difficulty}
-                  </span>
-                </div>
-
-                <div className="w-10 flex justify-center shrink-0">
-                  {problem.platforms.editorial ? (
-                    <a href={problem.platforms.editorial} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                      <TUFIcon className="w-4 h-4 text-theme-text" />
-                    </a>
-                  ) : <span className="text-gray-300">-</span>}
-                </div>
-
-                <div className="w-10 flex justify-center shrink-0">
-                  {problem.platforms.youtube ? (
-                    <a href={problem.platforms.youtube} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                      <YouTubeIcon className="w-4 h-4 text-red-500" />
-                    </a>
-                  ) : <span className="text-gray-300">-</span>}
-                </div>
-
-                <div className="w-10 flex justify-center shrink-0">
-                  {problem.platforms.leetcode ? (
-                    <a href={problem.platforms.leetcode} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                      <LeetCodeIcon className="w-4 h-4 text-orange-500" />
-                    </a>
-                  ) : <span className="text-gray-300">-</span>}
-                </div>
-
-                <div className="w-10 flex justify-center shrink-0">
-                  {problem.platforms.gfg ? (
-                    <a href={problem.platforms.gfg} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                      <GFGIcon className="w-4 h-4 text-green-600" />
-                    </a>
-                  ) : <span className="text-gray-300">-</span>}
-                </div>
-
-                <div className="w-10 flex justify-center shrink-0">
-                  {problem.platforms.codestudio ? (
-                    <a href={problem.platforms.codestudio} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                      <CodeStudioIcon className="w-4 h-4 text-orange-400" />
-                    </a>
-                  ) : <span className="text-gray-300">-</span>}
-                </div>
-
-                <div className="w-16 flex justify-center shrink-0">
-                  <button onClick={(e) => handleToggleRevision(e, problem.id, problem.revision_level || 0)} className="focus:outline-none">
-                    {(problem.revision_level || 0) > 0 ? (
-                      <ClockSolidIcon className="w-5 h-5 text-orange-400" />
-                    ) : (
-                      <ClockOutlineIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-400 transition-colors" />
-                    )}
-                  </button>
-                </div>
+        <div className="border-t border-black/5 bg-white overflow-hidden">
+          <div className="overflow-x-auto">
+            <div className="min-w-[600px]">
+              {/* Table Header */}
+              <div className="flex items-center px-5 py-2.5 text-[11px] font-bold text-theme-muted uppercase tracking-wider bg-gray-50/50 border-b border-black/5">
+                <div className="w-12 text-center shrink-0">St</div>
+                <div className="flex-1 min-w-0 px-2">Problem</div>
+                <div className="w-10 flex justify-center shrink-0" title="TUF Article">TUF</div>
+                <div className="w-10 flex justify-center shrink-0" title="YouTube">YT</div>
+                <div className="w-10 flex justify-center shrink-0" title="LeetCode">LC</div>
+                <div className="w-10 flex justify-center shrink-0" title="GeeksforGeeks">GFG</div>
+                <div className="w-10 flex justify-center shrink-0" title="CodeStudio">CS</div>
+                <div className="w-16 flex justify-center shrink-0">Rev</div>
               </div>
-            ))}
+
+              {/* Table Rows */}
+              <div className="flex flex-col">
+                {subProblems.map((problem) => (
+                  <div 
+                    key={problem.id}
+                    className="group flex items-center px-5 py-3 hover:bg-gray-50/50 transition-colors border-b border-black/5 last:border-0"
+                  >
+                    <div className="w-12 flex justify-center shrink-0">
+                      <button onClick={(e) => handleToggleSolved(e, problem.id, problem.is_solved)} className="focus:outline-none">
+                        {problem.is_solved ? (
+                          <CheckSolidIcon className="w-5 h-5 text-brand-primary" />
+                        ) : (
+                          <div className="w-4 h-4 rounded-[4px] border-2 border-gray-300 group-hover:border-brand-primary transition-colors bg-white" />
+                        )}
+                      </button>
+                    </div>
+                    
+                    <div 
+                      className="flex-1 min-w-0 px-2 cursor-pointer flex items-center gap-3"
+                      onClick={() => navigate(`/?problemId=${problem.id}`)}
+                    >
+                      <span className="text-[14px] font-semibold text-theme-text group-hover:text-brand-primary transition-colors truncate">
+                        {problem.name}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        problem.difficulty === 'Easy' ? 'bg-pastel-mint text-brand-primary-dark' :
+                        problem.difficulty === 'Medium' ? 'bg-pastel-yellow text-yellow-800' :
+                        'bg-pastel-peach text-orange-800'
+                      }`}>
+                        {problem.difficulty}
+                      </span>
+                    </div>
+
+                    <div className="w-10 flex justify-center shrink-0">
+                      {problem.platforms.editorial ? (
+                        <a href={problem.platforms.editorial} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <TUFIcon className="w-4 h-4 text-theme-text" />
+                        </a>
+                      ) : <span className="text-gray-300">-</span>}
+                    </div>
+
+                    <div className="w-10 flex justify-center shrink-0">
+                      {problem.platforms.youtube ? (
+                        <a href={problem.platforms.youtube} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <YouTubeIcon className="w-4 h-4 text-red-500" />
+                        </a>
+                      ) : <span className="text-gray-300">-</span>}
+                    </div>
+
+                    <div className="w-10 flex justify-center shrink-0">
+                      {problem.platforms.leetcode ? (
+                        <a href={problem.platforms.leetcode} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <LeetCodeIcon className="w-4 h-4 text-orange-500" />
+                        </a>
+                      ) : <span className="text-gray-300">-</span>}
+                    </div>
+
+                    <div className="w-10 flex justify-center shrink-0">
+                      {problem.platforms.gfg ? (
+                        <a href={problem.platforms.gfg} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <GFGIcon className="w-4 h-4 text-green-600" />
+                        </a>
+                      ) : <span className="text-gray-300">-</span>}
+                    </div>
+
+                    <div className="w-10 flex justify-center shrink-0">
+                      {problem.platforms.codestudio ? (
+                        <a href={problem.platforms.codestudio} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                          <CodeStudioIcon className="w-4 h-4 text-orange-400" />
+                        </a>
+                      ) : <span className="text-gray-300">-</span>}
+                    </div>
+
+                    <div className="w-16 flex justify-center shrink-0">
+                      <button onClick={(e) => handleToggleRevision(e, problem.id, problem.revision_level || 0)} className="focus:outline-none">
+                        {(problem.revision_level || 0) > 0 ? (
+                          <ClockSolidIcon className="w-5 h-5 text-orange-400" />
+                        ) : (
+                          <ClockOutlineIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-400 transition-colors" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       )}

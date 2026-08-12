@@ -2,12 +2,17 @@ import type { ReactNode } from 'react';
 import { Sidebar } from './Sidebar';
 import { RightSidebar } from './RightSidebar';
 import { Link, useSearchParams } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { X, Menu } from 'lucide-react';
 import ProblemDetail from '../pages/dsa/ProblemDetail';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { MobileNav } from './MobileNav';
+import { useMode } from '../contexts/ModeContext';
+
 export const Layout = ({ children }: { children: ReactNode }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const problemId = searchParams.get("problemId");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { activeMode, setMode } = useMode();
 
   const closePeekPanel = () => {
     searchParams.delete("problemId");
@@ -27,20 +32,46 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row w-full font-sans max-w-[1920px] mx-auto p-0 lg:p-4 gap-4">
       {/* Mobile Header */}
-      <header className="lg:hidden flex items-center justify-between p-5 bg-theme-sidebar shadow-softer z-20 sticky top-0 rounded-b-3xl">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-[12px] flex items-center justify-center overflow-hidden shadow-sm border border-white/50">
-            <img src="/assets/algoryn-icon.png" alt="Algoryn Logo" className="w-full h-full object-cover" />
-          </div>
-          <span className="font-bold text-theme-text text-xl">Algoryn</span>
-        </Link>
+      <header className="lg:hidden flex flex-col gap-3 p-4 bg-theme-sidebar shadow-softer z-20 sticky top-0 rounded-b-3xl">
+        <div className="flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-[12px] flex items-center justify-center overflow-hidden shadow-sm border border-white/50 bg-black">
+              <img src="/assets/algoryn-icon.png" alt="Algoryn Logo" className="w-full h-full object-cover" />
+            </div>
+            <span className="font-bold text-theme-text text-xl">Algoryn</span>
+          </Link>
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-[12px] bg-theme-card hover:bg-white text-theme-text transition-colors shadow-sm"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+        
+        {/* Mobile Mode Switcher */}
+        <div className="bg-theme-card border border-white rounded-[20px] p-1 shadow-sm flex items-center w-full">
+          <button
+            onClick={() => setMode('dsa')}
+            className={`flex-1 text-center py-2.5 rounded-[16px] text-[13px] font-bold transition-all ${activeMode === 'dsa' ? 'bg-pastel-lavender text-theme-text shadow-sm' : 'text-theme-muted hover:text-theme-text'}`}
+          >
+            DSA
+          </button>
+          <button
+            onClick={() => setMode('data-science')}
+            className={`flex-1 text-center py-2.5 rounded-[16px] text-[13px] font-bold transition-all ${activeMode === 'data-science' ? 'bg-pastel-mint text-theme-text shadow-sm' : 'text-theme-muted hover:text-theme-text'}`}
+          >
+            Data Science
+          </button>
+        </div>
       </header>
+
+      <MobileNav isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Left Sidebar */}
       <Sidebar />
       
       {/* Main Content Area */}
-      <main className="flex-1 w-full h-[calc(100vh-76px)] lg:h-[calc(100vh-32px)] overflow-y-auto overflow-x-hidden rounded-[32px] pt-6 px-5 sm:px-8 lg:px-6 custom-scrollbar">
+      <main className="flex-1 w-full h-[calc(100vh-130px)] lg:h-[calc(100vh-32px)] overflow-y-auto overflow-x-hidden rounded-[32px] pt-6 px-4 sm:px-6 lg:px-6 custom-scrollbar">
         <div className="max-w-5xl mx-auto pb-16">
           {children}
         </div>

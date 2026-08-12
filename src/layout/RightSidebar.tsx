@@ -46,7 +46,7 @@ const CompactCalendar = () => {
   );
 };
 
-const DataScienceRightSidebar = () => {
+export const DataScienceRightSidebar = () => {
   const progress = getProgress();
   const stats = getCourseStats(progress);
   const recentDS = getRecentActivity();
@@ -125,7 +125,7 @@ const DataScienceRightSidebar = () => {
   );
 };
 
-const DsaRightSidebar = () => {
+export const DsaRightSidebar = () => {
   const solvedIds = getSolvedIds();
   const allProblems = problemsData as any[];
   const totalDSA = allProblems.length;
