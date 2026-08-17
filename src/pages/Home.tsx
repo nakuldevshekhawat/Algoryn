@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { courseData, getProgress, getCourseStats, isLectureComplete, getRecentActivity, resetDataScienceProgress } from '../data/dsStore';
+import { courseData, getProgress, getCourseStats, getRecentActivity, resetDataScienceProgress, getNextDataSciencePart } from '../data/dsStore';
 import { Search, Play, Clock, BarChart2, ListVideo, TerminalSquare, RotateCcw } from 'lucide-react';
 import { getSolvedIds, getRecentProblems, getNextDSAProblem, resetProgress } from '../services/storage';
 import problemsData from '../data/problems.json';
@@ -15,15 +15,7 @@ const DataScienceDashboard = () => {
     ? 0 
     : Math.round((stats.completedParts / stats.totalParts) * 100);
 
-  let continueTarget = null;
-  const nextLec = courseData.lectures.find(l => !isLectureComplete(l.id, progress));
-  if (nextLec) {
-    const partsDone = progress[nextLec.id] || [];
-    const nextIncomplete = nextLec.videos.find(v => !partsDone.includes(v.part));
-    if (nextIncomplete) {
-      continueTarget = { lectureId: nextLec.id, part: nextIncomplete.part, timestamp: 0 };
-    }
-  }
+  const continueTarget = getNextDataSciencePart(progress);
 
   const continueLecture = continueTarget ? courseData.lectures.find(l => l.id === continueTarget.lectureId) : null;
 

@@ -160,3 +160,53 @@ export const getLecturesByStatus = (progress: ProgressState) => {
 
   return { completed, inProgress, notStarted };
 };
+
+export const getNextDataSciencePart = (progress: ProgressState): { lectureId: number, part: number } | null => {
+  let lastCompletedLectureIndex = -1;
+  let lastCompletedPartIndex = -1;
+
+  for (let i = 0; i < courseData.lectures.length; i++) {
+    const lecture = courseData.lectures[i];
+    const partsDone = progress[lecture.id] || [];
+    
+    for (let j = 0; j < lecture.videos.length; j++) {
+      if (partsDone.includes(lecture.videos[j].part)) {
+        lastCompletedLectureIndex = i;
+        lastCompletedPartIndex = j;
+      }
+    }
+  }
+
+  if (lastCompletedLectureIndex === -1) {
+    for (let i = 0; i < courseData.lectures.length; i++) {
+      if (courseData.lectures[i].videos.length > 0) {
+        return {
+          lectureId: courseData.lectures[i].id,
+          part: courseData.lectures[i].videos[0].part
+        };
+      }
+    }
+    return null;
+  }
+
+  const lastLecture = courseData.lectures[lastCompletedLectureIndex];
+  
+  if (lastCompletedPartIndex < lastLecture.videos.length - 1) {
+    return {
+      lectureId: lastLecture.id,
+      part: lastLecture.videos[lastCompletedPartIndex + 1].part
+    };
+  }
+
+  for (let i = lastCompletedLectureIndex + 1; i < courseData.lectures.length; i++) {
+    const nextLecture = courseData.lectures[i];
+    if (nextLecture.videos.length > 0) {
+      return {
+        lectureId: nextLecture.id,
+        part: nextLecture.videos[0].part
+      };
+    }
+  }
+
+  return null;
+};

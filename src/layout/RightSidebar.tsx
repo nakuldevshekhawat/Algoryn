@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useMode } from '../contexts/ModeContext';
 import { useCalendarStats } from '../hooks/useCalendarStats';
-import { getProgress, getCourseStats, getRecentActivity, courseData, isLectureComplete } from '../data/dsStore';
+import { getProgress, getCourseStats, courseData, getNextDataSciencePart } from '../data/dsStore';
 import { getSolvedIds, getNextDSAProblem } from '../services/storage';
 import problemsData from '../data/problems.json';
 import { Flame, TerminalSquare, Play, Target } from 'lucide-react';
@@ -49,42 +49,10 @@ const CompactCalendar = () => {
 export const DataScienceRightSidebar = () => {
   const progress = getProgress();
   const stats = getCourseStats(progress);
-  const recentDS = getRecentActivity();
+
   const overallPercentage = stats.totalParts === 0 ? 0 : Math.round((stats.completedParts / stats.totalParts) * 100);
 
-  let continueTarget = null;
-  if (recentDS.length > 0) {
-    for (const activity of recentDS) {
-      const partsDone = progress[activity.lectureId] || [];
-      if (!partsDone.includes(activity.part)) {
-        continueTarget = activity;
-        break;
-      }
-    }
-    if (!continueTarget) {
-      for (const activity of recentDS) {
-        const partsDone = progress[activity.lectureId] || [];
-        const lecture = courseData.lectures.find(l => l.id === activity.lectureId);
-        if (lecture && partsDone.length < lecture.videos.length) {
-          const nextIncomplete = lecture.videos.find(v => !partsDone.includes(v.part));
-          if (nextIncomplete) {
-            continueTarget = { lectureId: lecture.id, part: nextIncomplete.part, timestamp: 0 };
-            break;
-          }
-        }
-      }
-    }
-  }
-  if (!continueTarget) {
-    const nextLec = courseData.lectures.find(l => !isLectureComplete(l.id, progress));
-    if (nextLec) {
-      const partsDone = progress[nextLec.id] || [];
-      const nextIncomplete = nextLec.videos.find(v => !partsDone.includes(v.part));
-      if (nextIncomplete) {
-        continueTarget = { lectureId: nextLec.id, part: nextIncomplete.part, timestamp: 0 };
-      }
-    }
-  }
+  const continueTarget = getNextDataSciencePart(progress);
 
   const continueLecture = continueTarget ? courseData.lectures.find(l => l.id === continueTarget.lectureId) : null;
 
