@@ -22,6 +22,7 @@ export interface RecentActivity {
 }
 
 import courseDataJson from './videos.json';
+import { logActiveDate } from '../services/storage';
 
 export const courseData = courseDataJson as CourseData;
 
@@ -105,6 +106,7 @@ export const logActivity = (lectureId: number, part: number) => {
   }
   
   localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activities));
+  logActiveDate();
 };
 
 // --- STATS ---

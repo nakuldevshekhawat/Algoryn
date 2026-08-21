@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { getRecentActivity as getDSActivity } from '../data/dsStore';
-import { getRecentProblems } from '../services/storage';
+import { getRecentProblems, getActiveDates } from '../services/storage';
 
 export function getLocalDateKey(dateInput: Date | string | number): string {
   const d = new Date(dateInput);
@@ -13,9 +13,10 @@ export function getLocalDateKey(dateInput: Date | string | number): string {
 export function useCalendarStats() {
   const dsActivity = getDSActivity();
   const dsaActivity = getRecentProblems();
+  const storedActiveDates = getActiveDates();
 
   const allActivityDates = useMemo(() => {
-    const dates = new Set<string>();
+    const dates = new Set<string>(storedActiveDates);
     
     dsActivity.forEach(a => {
       dates.add(getLocalDateKey(a.timestamp));
@@ -26,7 +27,7 @@ export function useCalendarStats() {
     });
 
     return Array.from(dates).sort();
-  }, [dsActivity, dsaActivity]);
+  }, [dsActivity, dsaActivity, storedActiveDates]);
 
   const streak = useMemo(() => {
     if (allActivityDates.length === 0) return 0;

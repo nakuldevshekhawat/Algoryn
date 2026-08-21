@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import ReactMarkdown from 'react-markdown';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -44,8 +45,10 @@ function PlatformLink({ platform, url }: { platform: Platform; url: string }) {
   );
 }
 
-export default function ProblemDetail({ id }: { id?: string }) {
+export default function ProblemDetail({ id: propId }: { id?: string }) {
   const queryClient = useQueryClient();
+  const { id: routeId } = useParams<{ id: string }>();
+  const id = propId || routeId;
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [noteContent, setNoteContent] = useState("");
 

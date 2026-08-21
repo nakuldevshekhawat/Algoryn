@@ -15,6 +15,7 @@ const STORAGE_KEYS = {
   REVISION3: "dsa_revision3",
   NOTES: "dsa_notes",
   RECENT: "dsa_recent_activity",
+  ACTIVITY_DATES: "all_activity_dates",
 } as const;
 
 // ── Helpers ──────────────────────────────────────────────────────────
@@ -174,6 +175,35 @@ export function resetProgress(): void {
 
 // ── Recent Activity ──────────────────────────────────────────────────
 
+export function logActiveDate(timestamp: number = Date.now()) {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.ACTIVITY_DATES);
+    const dates: string[] = raw ? JSON.parse(raw) : [];
+    
+    const d = new Date(timestamp);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
+    if (!dates.includes(dateStr)) {
+      dates.push(dateStr);
+      localStorage.setItem(STORAGE_KEYS.ACTIVITY_DATES, JSON.stringify(dates));
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export function getActiveDates(): string[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.ACTIVITY_DATES);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function getRecentProblems(): any[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.RECENT);
@@ -199,6 +229,7 @@ export function logRecentProblem(problemId: string): void {
     list.pop();
   }
   localStorage.setItem(STORAGE_KEYS.RECENT, JSON.stringify(list));
+  logActiveDate();
 }
 
 export function clearRecentProblems(): void {

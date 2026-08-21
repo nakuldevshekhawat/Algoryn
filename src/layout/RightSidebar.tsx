@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useMode } from '../contexts/ModeContext';
-import { useCalendarStats } from '../hooks/useCalendarStats';
+import { useCalendarStats, getLocalDateKey } from '../hooks/useCalendarStats';
 import { getProgress, getCourseStats, courseData, getNextDataSciencePart } from '../data/dsStore';
 import { getSolvedIds, getNextDSAProblem } from '../services/storage';
 import problemsData from '../data/problems.json';
@@ -16,7 +16,7 @@ const CompactCalendar = () => {
     for (let i = 27; i >= 0; i--) { // Last 4 weeks
       const d = new Date();
       d.setDate(today.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = getLocalDateKey(d);
       const active = allActivityDates.includes(dateStr);
       days.push({ date: dateStr, active });
     }
