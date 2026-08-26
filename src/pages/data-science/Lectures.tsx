@@ -1,21 +1,31 @@
-import { useState, useMemo } from 'react';
-import { courseData, getProgress } from '../../data/dsStore';
+import { useState, useMemo, useEffect } from 'react';
+import { courseData, getProgress, isLectureComplete } from '../../data/dsStore';
 import { LectureCard } from '../../components/LectureCard';
 import { Search } from 'lucide-react';
 
 export const Lectures = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const progress = getProgress();
+  const [progress, setProgress] = useState(getProgress());
+
+  useEffect(() => {
+    const handleUpdate = () => setProgress(getProgress());
+    window.addEventListener('ds-update', handleUpdate);
+    return () => window.removeEventListener('ds-update', handleUpdate);
+  }, []);
+
   const lectures = courseData.lectures;
 
   const filteredLectures = useMemo(() => {
-    if (!searchQuery.trim()) return lectures;
+    // Hide fully completed lectures
+    const incompleteLectures = lectures.filter((l: any) => !isLectureComplete(l.id, progress));
+    
+    if (!searchQuery.trim()) return incompleteLectures;
     const query = searchQuery.toLowerCase();
-    return courseData.lectures.filter((l: any) => 
+    return incompleteLectures.filter((l: any) => 
       l.title.toLowerCase().includes(query) || 
       l.id.toString().includes(query)
     );
-  }, [lectures, searchQuery]);
+  }, [lectures, searchQuery, progress]);
 
   return (
     <div className="w-full pb-16">
@@ -36,7 +46,7 @@ export const Lectures = () => {
             placeholder="Search lectures..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-5 pr-12 py-3.5 bg-white border border-border-subtle rounded-full text-text-main font-semibold shadow-softer focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-colors"
+            className="w-full pl-5 pr-12 py-3.5 bg-theme-card border border-border-subtle rounded-full text-text-main font-semibold shadow-softer focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-colors"
           />
         </div>
       </header>
@@ -51,7 +61,7 @@ export const Lectures = () => {
             />
           ))
         ) : (
-          <div className="text-center py-16 text-text-muted font-medium bg-white rounded-[24px] border border-border-subtle shadow-softer">
+          <div className="text-center py-16 text-text-muted font-medium bg-theme-card rounded-[24px] border border-border-subtle shadow-softer">
             No lectures found matching "{searchQuery}"
           </div>
         )}

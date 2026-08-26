@@ -22,7 +22,6 @@ export interface RecentActivity {
 }
 
 import courseDataJson from './videos.json';
-import { logActiveDate } from '../services/storage';
 
 export const courseData = courseDataJson as CourseData;
 
@@ -44,6 +43,7 @@ export const getProgress = (): ProgressState => {
 
 export const saveProgress = (progress: ProgressState) => {
   localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+  window.dispatchEvent(new Event("ds-update"));
 };
 
 export const togglePartCompletion = (lectureId: number, part: number): ProgressState => {
@@ -66,6 +66,8 @@ export const togglePartCompletion = (lectureId: number, part: number): ProgressS
 export const resetDataScienceProgress = () => {
   localStorage.setItem(PROGRESS_KEY, JSON.stringify({}));
   localStorage.setItem(ACTIVITY_KEY, JSON.stringify([]));
+  localStorage.setItem('ds_activity_dates', JSON.stringify([]));
+  window.dispatchEvent(new Event("ds-update"));
 };
 
 export const isLectureComplete = (lectureId: number, progress: ProgressState): boolean => {
@@ -81,7 +83,13 @@ export const isLectureComplete = (lectureId: number, progress: ProgressState): b
 export const getRecentActivity = (): RecentActivity[] => {
   try {
     const data = localStorage.getItem(ACTIVITY_KEY);
-    return data ? JSON.parse(data) : [];
+    const activities: RecentActivity[] = data ? JSON.parse(data) : [];
+    const progress = getProgress();
+    // Filter out parts that are already completed
+    return activities.filter(a => {
+      const partsDone = progress[a.lectureId] || [];
+      return !partsDone.includes(a.part);
+    });
   } catch {
     return [];
   }
@@ -106,7 +114,34 @@ export const logActivity = (lectureId: number, part: number) => {
   }
   
   localStorage.setItem(ACTIVITY_KEY, JSON.stringify(activities));
-  logActiveDate();
+  
+  // Log Data Science active date
+  try {
+    const raw = localStorage.getItem('ds_activity_dates');
+    const dates: string[] = raw ? JSON.parse(raw) : [];
+    
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
+    if (!dates.includes(dateStr)) {
+      dates.push(dateStr);
+      localStorage.setItem('ds_activity_dates', JSON.stringify(dates));
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const getDSActiveDates = (): string[] => {
+  try {
+    const raw = localStorage.getItem('ds_activity_dates');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
 };
 
 // --- STATS ---
@@ -164,51 +199,21 @@ export const getLecturesByStatus = (progress: ProgressState) => {
 };
 
 export const getNextDataSciencePart = (progress: ProgressState): { lectureId: number, part: number } | null => {
-  let lastCompletedLectureIndex = -1;
-  let lastCompletedPartIndex = -1;
-
   for (let i = 0; i < courseData.lectures.length; i++) {
     const lecture = courseData.lectures[i];
     const partsDone = progress[lecture.id] || [];
     
+    // Find first incomplete video part in this lecture
     for (let j = 0; j < lecture.videos.length; j++) {
-      if (partsDone.includes(lecture.videos[j].part)) {
-        lastCompletedLectureIndex = i;
-        lastCompletedPartIndex = j;
-      }
-    }
-  }
-
-  if (lastCompletedLectureIndex === -1) {
-    for (let i = 0; i < courseData.lectures.length; i++) {
-      if (courseData.lectures[i].videos.length > 0) {
+      if (!partsDone.includes(lecture.videos[j].part)) {
         return {
-          lectureId: courseData.lectures[i].id,
-          part: courseData.lectures[i].videos[0].part
+          lectureId: lecture.id,
+          part: lecture.videos[j].part
         };
       }
     }
-    return null;
   }
 
-  const lastLecture = courseData.lectures[lastCompletedLectureIndex];
-  
-  if (lastCompletedPartIndex < lastLecture.videos.length - 1) {
-    return {
-      lectureId: lastLecture.id,
-      part: lastLecture.videos[lastCompletedPartIndex + 1].part
-    };
-  }
-
-  for (let i = lastCompletedLectureIndex + 1; i < courseData.lectures.length; i++) {
-    const nextLecture = courseData.lectures[i];
-    if (nextLecture.videos.length > 0) {
-      return {
-        lectureId: nextLecture.id,
-        part: nextLecture.videos[0].part
-      };
-    }
-  }
-
+  // If all lectures and all parts are completed
   return null;
 };

@@ -36,8 +36,8 @@ function PlatformLink({ platform, url }: { platform: Platform; url: string }) {
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[14px] font-bold
-        bg-white text-theme-text border border-black/5 shadow-sm
-        hover:bg-gray-50 transition-colors duration-150"
+        bg-theme-card text-theme-text border border-theme-border-strong shadow-sm
+        hover:bg-theme-surface-hover transition-colors duration-150"
     >
       {iconMap[platform] || iconMap.default}
       {PLATFORM_LABELS[platform]}
@@ -167,7 +167,7 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
         {problem.tags.length > 0 && (
           <div className="flex items-center gap-2 flex-wrap mb-8">
             {problem.tags.map((tag) => (
-              <span key={tag} className="px-3 py-1.5 text-[12px] font-bold text-theme-muted bg-gray-100 rounded-full">
+              <span key={tag} className="px-3 py-1.5 text-[12px] font-bold text-theme-muted bg-theme-surface-muted rounded-full">
                 {tag}
               </span>
             ))}
@@ -183,7 +183,7 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
               className={`p-3 rounded-[16px] shadow-sm transition-all border flex items-center justify-center ${
                 problem.is_solved 
                   ? "bg-brand-primary-light/30 border-brand-primary/30 text-brand-primary" 
-                  : "bg-white border-black/5 text-theme-muted hover:text-theme-text hover:bg-gray-50"
+                  : "bg-theme-card border-theme-border-strong text-theme-muted hover:text-theme-text hover:bg-theme-surface-hover"
               }`}
             >
               {problem.is_solved ? <CheckSolidIcon className="w-6 h-6" /> : <CheckCircleIcon className="w-6 h-6" />}
@@ -197,7 +197,7 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
               className={`p-3 rounded-[16px] shadow-sm transition-all border flex items-center justify-center ${
                 problem.is_favorite
                   ? "bg-orange-50 border-orange-200 text-orange-500"
-                  : "bg-white border-black/5 text-theme-muted hover:text-theme-text hover:bg-gray-50"
+                  : "bg-theme-card border-theme-border-strong text-theme-muted hover:text-theme-text hover:bg-theme-surface-hover"
               }`}
             >
               {problem.is_favorite ? <StarSolidIcon className="w-6 h-6" /> : <StarIcon className="w-6 h-6" />}
@@ -206,7 +206,7 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
         </div>
       </header>
       
-      <hr className="border-black/5 mb-10" />
+      <hr className="border-theme-border-strong mb-10" />
 
       {/* Resource Links Section */}
       {platforms.length > 0 && (
@@ -221,10 +221,10 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
       )}
 
       {/* Notes Section */}
-      <section className="bg-white border border-black/5 rounded-[20px] p-6 sm:p-8 shadow-softer">
+      <section className="bg-theme-card border border-theme-border-strong rounded-[20px] p-6 sm:p-8 shadow-softer">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-3 text-theme-text">
-            <div className="w-10 h-10 rounded-[12px] bg-gray-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-[12px] bg-theme-surface-muted flex items-center justify-center">
               <DocumentTextIcon className="w-5 h-5 text-theme-muted" />
             </div>
             <h2 className="text-xl font-bold">Implementation Notes</h2>
@@ -235,7 +235,7 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
                 setNoteContent(problem.note || "");
                 setIsEditingNote(true);
               }}
-              className="text-[14px] font-bold bg-gray-50 border border-black/5 px-5 py-2.5 rounded-[12px] shadow-sm text-theme-text hover:bg-gray-100 transition-colors"
+              className="text-[14px] font-bold bg-theme-surface-muted border border-theme-border-strong px-5 py-2.5 rounded-[12px] shadow-sm text-theme-text hover:bg-theme-surface-hover transition-colors"
             >
               {problem.note ? "Edit Note" : "+ Add Note"}
             </button>
@@ -248,15 +248,15 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
               value={noteContent}
               onChange={(e) => setNoteContent(e.target.value)}
               placeholder="Document your intuition, approach, or time complexity here..."
-              className="w-full h-64 px-5 py-4 text-[15px] font-medium bg-gray-50 border border-black/5 shadow-inner rounded-[16px]
-                text-theme-text placeholder:text-gray-400 resize-y focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
+              className="w-full h-64 px-5 py-4 text-[15px] font-medium bg-theme-surface-muted border border-theme-border-strong shadow-inner rounded-[16px]
+                text-theme-text placeholder:text-theme-text-dim resize-y focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary"
               autoFocus
             />
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setIsEditingNote(false)}
                 disabled={noteMutation.isPending}
-                className="px-6 py-2.5 text-[14px] font-bold text-theme-muted bg-white border border-black/5 shadow-sm rounded-[12px] hover:text-theme-text hover:bg-gray-50 transition-colors"
+                className="px-6 py-2.5 text-[14px] font-bold text-theme-muted bg-theme-card border border-theme-border-strong shadow-sm rounded-[12px] hover:text-theme-text hover:bg-theme-surface-hover transition-colors"
               >
                 Cancel
               </button>
@@ -270,15 +270,15 @@ export default function ProblemDetail({ id: propId }: { id?: string }) {
             </div>
           </div>
         ) : problem.note ? (
-          <div className="p-6 bg-gray-50 border border-black/5 rounded-[16px]">
+          <div className="p-6 bg-theme-surface-muted border border-theme-border-strong rounded-[16px]">
             <article className="prose prose-sm max-w-none text-theme-text
-              prose-p:leading-relaxed prose-pre:bg-white prose-pre:border prose-pre:border-black/5 prose-a:text-brand-primary">
+              prose-p:leading-relaxed prose-pre:bg-theme-card prose-pre:border prose-pre:border-theme-border-strong prose-a:text-brand-primary">
               <ReactMarkdown>{problem.note}</ReactMarkdown>
             </article>
           </div>
         ) : (
-          <div className="py-12 border-2 border-gray-200 border-dashed rounded-[16px] text-center bg-gray-50/50">
-            <p className="text-[15px] font-medium text-gray-400">
+          <div className="py-12 border-2 border-theme-border-strong border-dashed rounded-[16px] text-center bg-theme-surface-muted/50">
+            <p className="text-[15px] font-medium text-theme-text-dim">
               No notes saved for this problem.
             </p>
           </div>

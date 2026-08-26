@@ -1,6 +1,6 @@
 
 export const LeetCodeIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
-  <div className={`bg-white rounded-full p-[2px] flex items-center justify-center shrink-0 ${className}`}>
+  <div className={`bg-theme-card rounded-full p-[2px] flex items-center justify-center shrink-0 ${className}`}>
     <img src="/icons/leetcode.png" alt="LeetCode" title="LeetCode" className="w-full h-full object-contain" />
   </div>
 );

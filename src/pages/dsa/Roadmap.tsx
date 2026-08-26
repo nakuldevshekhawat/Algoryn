@@ -46,27 +46,27 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
   const subSolved = subProblems.filter(p => p.is_solved).length;
 
   return (
-    <div className="border border-black/5 rounded-[16px] overflow-hidden bg-white shadow-sm mb-4 last:mb-0">
+    <div className="border border-theme-border-strong rounded-[16px] overflow-hidden bg-theme-card shadow-sm mb-4 last:mb-0">
       {/* Subtopic Header */}
       <div 
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between px-5 py-3.5 cursor-pointer hover:bg-gray-50 transition-colors bg-white"
+        className="flex items-center justify-between px-5 py-3.5 cursor-pointer hover:bg-theme-surface-hover transition-colors bg-theme-card"
       >
         <div className="flex items-center gap-3">
           <ChevronRightIcon className={`w-4 h-4 text-theme-muted transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`} />
           <h3 className="text-[14px] font-bold text-theme-text">{subtopic}</h3>
         </div>
-        <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${subSolved === subTotal && subTotal > 0 ? 'bg-pastel-mint text-brand-primary-dark' : 'bg-gray-100 text-gray-500'}`}>
+        <span className={`text-[12px] font-bold px-3 py-1 rounded-full ${subSolved === subTotal && subTotal > 0 ? 'bg-pastel-mint text-brand-primary-dark' : 'bg-theme-surface-muted text-theme-text-dim'}`}>
           {subSolved} / {subTotal}
         </span>
       </div>
 
       {isExpanded && (
-        <div className="border-t border-black/5 bg-white overflow-hidden">
+        <div className="border-t border-theme-border-strong bg-theme-card overflow-hidden">
           <div className="overflow-x-auto">
             <div className="min-w-[600px]">
               {/* Table Header */}
-              <div className="flex items-center px-5 py-2.5 text-[11px] font-bold text-theme-muted uppercase tracking-wider bg-gray-50/50 border-b border-black/5">
+              <div className="flex items-center px-5 py-2.5 text-[11px] font-bold text-theme-muted uppercase tracking-wider bg-theme-surface-muted/50 border-b border-theme-border-strong">
                 <div className="w-12 text-center shrink-0">St</div>
                 <div className="flex-1 min-w-0 px-2">Problem</div>
                 <div className="w-10 flex justify-center shrink-0" title="TUF Article">TUF</div>
@@ -82,14 +82,14 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
                 {subProblems.map((problem) => (
                   <div 
                     key={problem.id}
-                    className="group flex items-center px-5 py-3 hover:bg-gray-50/50 transition-colors border-b border-black/5 last:border-0"
+                    className="group flex items-center px-5 py-3 hover:bg-theme-surface-hover/50 transition-colors border-b border-theme-border-strong last:border-0"
                   >
                     <div className="w-12 flex justify-center shrink-0">
                       <button onClick={(e) => handleToggleSolved(e, problem.id, problem.is_solved)} className="focus:outline-none">
                         {problem.is_solved ? (
                           <CheckSolidIcon className="w-5 h-5 text-brand-primary" />
                         ) : (
-                          <div className="w-4 h-4 rounded-[4px] border-2 border-gray-300 group-hover:border-brand-primary transition-colors bg-white" />
+                          <div className="w-4 h-4 rounded-[4px] border-2 border-theme-border-strong group-hover:border-brand-primary transition-colors bg-theme-card" />
                         )}
                       </button>
                     </div>
@@ -115,7 +115,7 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
                         <a href={problem.platforms.editorial} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
                           <TUFIcon className="w-4 h-4 text-theme-text" />
                         </a>
-                      ) : <span className="text-gray-300">-</span>}
+                      ) : <span className="text-theme-text-dim">-</span>}
                     </div>
 
                     <div className="w-10 flex justify-center shrink-0">
@@ -123,7 +123,7 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
                         <a href={problem.platforms.youtube} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
                           <YouTubeIcon className="w-4 h-4 text-red-500" />
                         </a>
-                      ) : <span className="text-gray-300">-</span>}
+                      ) : <span className="text-theme-text-dim">-</span>}
                     </div>
 
                     <div className="w-10 flex justify-center shrink-0">
@@ -131,7 +131,7 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
                         <a href={problem.platforms.leetcode} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
                           <LeetCodeIcon className="w-4 h-4 text-orange-500" />
                         </a>
-                      ) : <span className="text-gray-300">-</span>}
+                      ) : <span className="text-theme-text-dim">-</span>}
                     </div>
 
                     <div className="w-10 flex justify-center shrink-0">
@@ -139,7 +139,7 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
                         <a href={problem.platforms.gfg} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
                           <GFGIcon className="w-4 h-4 text-green-600" />
                         </a>
-                      ) : <span className="text-gray-300">-</span>}
+                      ) : <span className="text-theme-text-dim">-</span>}
                     </div>
 
                     <div className="w-10 flex justify-center shrink-0">
@@ -147,7 +147,7 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
                         <a href={problem.platforms.codestudio} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity" onClick={(e) => e.stopPropagation()}>
                           <CodeStudioIcon className="w-4 h-4 text-orange-400" />
                         </a>
-                      ) : <span className="text-gray-300">-</span>}
+                      ) : <span className="text-theme-text-dim">-</span>}
                     </div>
 
                     <div className="w-16 flex justify-center shrink-0">
@@ -155,7 +155,7 @@ function SubtopicBlock({ subtopic, subProblems, searchQuery }: { subtopic: strin
                         {(problem.revision_level || 0) > 0 ? (
                           <ClockSolidIcon className="w-5 h-5 text-orange-400" />
                         ) : (
-                          <ClockOutlineIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-400 transition-colors" />
+                          <ClockOutlineIcon className="w-5 h-5 text-theme-text-dim group-hover:text-theme-text-dim transition-colors" />
                         )}
                       </button>
                     </div>
@@ -212,19 +212,19 @@ function TopicBlock({ topic, displayName, searchQuery, difficultyFilter, revisio
         className="flex items-center justify-between px-6 py-4 cursor-pointer bg-pastel-lavender/30 rounded-[20px] hover:bg-pastel-lavender/50 transition-colors mb-3"
       >
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-[14px] bg-white border border-black/5 flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 rounded-[14px] bg-theme-card border border-theme-border-strong flex items-center justify-center shadow-sm">
             <ChevronRightIcon className={`w-5 h-5 text-theme-text transition-transform duration-200 ${isExpanded ? "rotate-90" : ""}`} />
           </div>
           <h2 className="text-[16px] font-bold text-theme-text tracking-wide">{displayName || topic}</h2>
         </div>
         <div className="flex items-center gap-5">
-          <div className="w-32 h-2.5 bg-white rounded-full overflow-hidden shadow-inner hidden sm:block">
+          <div className="w-32 h-2.5 bg-theme-card rounded-full overflow-hidden shadow-inner hidden sm:block">
             <div 
               className="h-full bg-brand-primary transition-all duration-500 rounded-full" 
               style={{ width: `${progressPercent}%` }}
             />
           </div>
-          <span className="text-[14px] text-theme-text font-bold bg-white border border-black/5 px-4 py-1.5 rounded-full shadow-sm">{solved} / {total}</span>
+          <span className="text-[14px] text-theme-text font-bold bg-theme-card border border-theme-border-strong px-4 py-1.5 rounded-full shadow-sm">{solved} / {total}</span>
         </div>
       </div>
 
@@ -323,7 +323,7 @@ export default function Roadmap() {
 
         {/* Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-2 p-1 bg-white border border-black/5 rounded-full shadow-sm">
+          <div className="flex items-center gap-2 p-1 bg-theme-card border border-theme-border-strong rounded-full shadow-sm">
             <button 
               onClick={() => setActiveTab('all')}
               className={`px-5 py-2 text-[14px] font-bold rounded-full shadow-sm transition-colors ${
@@ -352,14 +352,14 @@ export default function Roadmap() {
                 placeholder="Search roadmap..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-5 pr-12 py-2.5 bg-white border border-black/5 rounded-full text-theme-text font-semibold shadow-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-colors"
+                className="w-full pl-5 pr-12 py-2.5 bg-theme-card border border-theme-border-strong rounded-full text-theme-text font-semibold shadow-sm focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-colors"
               />
             </div>
 
             <select 
               value={difficultyFilter}
               onChange={(e) => setDifficultyFilter(e.target.value)}
-              className="bg-white border border-black/5 shadow-sm font-semibold text-theme-text text-[14px] px-5 py-2.5 rounded-full focus:outline-none focus:border-brand-primary cursor-pointer appearance-none pr-10"
+              className="bg-theme-card border border-theme-border-strong shadow-sm font-semibold text-theme-text text-[14px] px-5 py-2.5 rounded-full focus:outline-none focus:border-brand-primary cursor-pointer appearance-none pr-10"
               style={{
                 backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%237A7571' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
                 backgroundPosition: "right 12px center",
@@ -378,9 +378,9 @@ export default function Roadmap() {
         {/* Topics List */}
         <div className="space-y-2">
           {activeTab === 'revision' && displayedTopics.length === 0 ? (
-            <div className="py-20 text-center bg-white border border-black/5 rounded-[24px] shadow-softer">
+            <div className="py-20 text-center bg-theme-card border border-theme-border-strong rounded-[24px] shadow-softer">
               <div className="w-16 h-16 bg-pastel-lavender/30 rounded-[16px] flex items-center justify-center mx-auto mb-4">
-                <CheckSolidIcon className="w-8 h-8 text-pastel-lavender-dark" />
+                <CheckSolidIcon className="w-8 h-8 text-accent-lavender" />
               </div>
               <h2 className="text-[18px] font-bold text-theme-text">No problems are due for revision.</h2>
               <p className="text-[14px] font-medium text-theme-muted mt-2 max-w-sm mx-auto">

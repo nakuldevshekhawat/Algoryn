@@ -13,7 +13,7 @@ export const Badge = ({ children, variant = 'gray', className = '' }: BadgeProps
     peach: "bg-pastel-peach text-theme-text",
     pink: "bg-pastel-pink text-theme-text",
     yellow: "bg-pastel-yellow text-theme-text",
-    gray: "bg-black/5 text-theme-muted"
+    gray: "bg-theme-surface-hover text-theme-muted"
   };
 
   return (

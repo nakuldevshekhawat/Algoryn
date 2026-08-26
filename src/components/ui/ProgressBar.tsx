@@ -10,7 +10,7 @@ export const ProgressBar = ({
   progress, 
   total, 
   className = '', 
-  colorClass = 'bg-pastel-mint-dark',
+  colorClass = 'bg-accent-mint',
   showText = true 
 }: ProgressBarProps) => {
   const percentage = total === 0 ? 0 : Math.round((progress / total) * 100);

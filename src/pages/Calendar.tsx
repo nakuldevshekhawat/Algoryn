@@ -1,67 +1,95 @@
 import { useMemo, useState } from 'react';
-import { getRecentActivity as getDSActivity } from '../data/dsStore';
-import { getRecentProblems } from '../services/storage';
-import { useCalendarStats, getLocalDateKey } from '../hooks/useCalendarStats';
-import { Flame, Trophy, Activity, TerminalSquare, Clock } from 'lucide-react';
+import { useCalendarStats, getLocalDateKey, getDayEmoji } from '../hooks/useCalendarStats';
+import { TerminalSquare, Clock, Video, ChevronLeft, ChevronRight } from 'lucide-react';
 import problemsData from '../data/problems.json';
+import { useMode } from '../contexts/ModeContext';
 
 export const Calendar = () => {
-  const { allActivityDates, streak, longestStreak } = useCalendarStats();
+  const { activeMode } = useMode();
+  const { allActivityDates, streak, longestStreak, ixActivityMap, dsActivity, dsaActivity } = useCalendarStats();
   
-  const dsActivity = getDSActivity();
-  const dsaActivity = getRecentProblems();
-
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
-  // Generate Jan 1 to TODAY
-  const heatmapDays = useMemo(() => {
+  // Initialize to Jan 1 of current year
+  const [currentViewDate, setCurrentViewDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), 0, 1);
+  });
+
+  const todayKey = getLocalDateKey(new Date());
+  const currentRealMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+  const handlePrevMonth = () => {
+    setCurrentViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentViewDate(prev => {
+      const next = new Date(prev.getFullYear(), prev.getMonth() + 1, 1);
+      if (next.getTime() > currentRealMonth.getTime()) return prev;
+      return next;
+    });
+  };
+
+  const isNextDisabled = currentViewDate.getTime() >= currentRealMonth.getTime();
+
+  const calendarDays = useMemo(() => {
+    const year = currentViewDate.getFullYear();
+    const month = currentViewDate.getMonth();
+    
+    const firstDayOfMonth = new Date(year, month, 1);
+    const lastDayOfMonth = new Date(year, month + 1, 0);
+    
+    let firstDayWeekday = firstDayOfMonth.getDay() - 1;
+    if (firstDayWeekday === -1) firstDayWeekday = 6; // Mon=0..Sun=6
+    
     const days = [];
-    const year = new Date().getFullYear();
-    const startDate = new Date(year, 0, 1);
-    const endDate = new Date(); // TODAY
-
-    let currentColumn = 0; // Starts from 0
-    let isFirstDay = true;
-
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const row = (d.getDay() + 6) % 7; // Mon=0, Tue=1 ... Sun=6
-      
-      // Increment column on Mondays (but not on the very first loop iteration)
-      if (row === 0 && !isFirstDay) {
-         currentColumn++;
-      }
-      isFirstDay = false;
-
-      const dateStr = getLocalDateKey(d);
-      const month = d.toLocaleString('default', { month: 'short' });
-
+    const prevMonthLastDay = new Date(year, month, 0).getDate();
+    
+    // Prev month padding
+    for (let i = firstDayWeekday - 1; i >= 0; i--) {
+      const d = new Date(year, month - 1, prevMonthLastDay - i);
       days.push({
-        date: dateStr,
-        active: allActivityDates.includes(dateStr),
-        month: month,
-        row: row,
-        column: currentColumn,
-        isFirstOfMonth: d.getDate() === 1
+        dateObj: d,
+        dateKey: getLocalDateKey(d),
+        isCurrentMonth: false,
+        isFuture: getLocalDateKey(d) > todayKey,
+        isToday: getLocalDateKey(d) === todayKey,
+        dayNumber: d.getDate()
       });
     }
-    return days;
-  }, [allActivityDates]);
-
-  const monthLabels = useMemo(() => {
-    const labels = [];
-    for (const day of heatmapDays) {
-      if (day.isFirstOfMonth) {
-        labels.push({ month: day.month, column: day.column });
+    
+    // Current month
+    for (let i = 1; i <= lastDayOfMonth.getDate(); i++) {
+      const d = new Date(year, month, i);
+      days.push({
+        dateObj: d,
+        dateKey: getLocalDateKey(d),
+        isCurrentMonth: true,
+        isFuture: getLocalDateKey(d) > todayKey,
+        isToday: getLocalDateKey(d) === todayKey,
+        dayNumber: d.getDate()
+      });
+    }
+    
+    // Next month padding
+    const remainingCells = 7 - (days.length % 7);
+    if (remainingCells < 7) {
+      for (let i = 1; i <= remainingCells; i++) {
+        const d = new Date(year, month + 1, i);
+        days.push({
+          dateObj: d,
+          dateKey: getLocalDateKey(d),
+          isCurrentMonth: false,
+          isFuture: getLocalDateKey(d) > todayKey,
+          isToday: getLocalDateKey(d) === todayKey,
+          dayNumber: d.getDate()
+        });
       }
     }
-    return labels;
-  }, [heatmapDays]);
-
-  const totalColumns = useMemo(() => {
-    if (heatmapDays.length === 0) return 1;
-    return heatmapDays[heatmapDays.length - 1].column + 1;
-  }, [heatmapDays]);
-
+    
+    return days;
+  }, [currentViewDate, todayKey]);
 
   // Aggregate selected date activity
   const selectedDateActivity = useMemo(() => {
@@ -71,106 +99,147 @@ export const Calendar = () => {
       return getLocalDateKey(a.timestamp) === selectedDate;
     });
 
-    const dsaActs = dsaActivity.filter(a => {
+    const dsaActs = activeMode === 'dsa' || activeMode === 'data-science' ? dsaActivity.filter(a => {
       return getLocalDateKey(a.timestamp) === selectedDate;
-    });
+    }) : [];
 
-    return { dsActs, dsaActs };
-  }, [selectedDate, dsActivity, dsaActivity]);
+    const ixCount = activeMode === 'interviewX' ? (ixActivityMap[selectedDate] || 0) : 0;
+
+    return { dsActs, dsaActs, ixCount };
+  }, [selectedDate, dsActivity, dsaActivity, ixActivityMap, activeMode]);
+
+  const monthYearLabel = currentViewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
   return (
-    <div className="w-full pb-16 animate-fade-in">
+    <div className="w-full pb-16 animate-fade-in max-w-[1000px] mx-auto">
       <header className="mb-10 pt-4 pl-2">
-        <h1 className="text-3xl font-bold text-theme-text mb-2">Activity Calendar</h1>
-        <p className="text-theme-muted text-lg font-medium">Track your learning consistency across all subjects.</p>
+        <h1 className="text-3xl font-bold text-theme-text mb-2">Learning Calendar</h1>
+        <p className="text-theme-muted text-lg font-medium">Track your consistency.</p>
       </header>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className="bg-theme-card rounded-[24px] p-6 border border-white/50 shadow-softer flex items-center gap-5">
-          <div className="w-14 h-14 rounded-[16px] bg-orange-100 flex items-center justify-center flex-shrink-0">
-            <Flame className="w-7 h-7 text-orange-500" />
-          </div>
-          <div>
-            <h3 className="text-[13px] font-bold text-theme-muted uppercase tracking-wider mb-1">Current Streak</h3>
-            <div className="text-3xl font-black text-theme-text">{streak} <span className="text-lg text-theme-muted font-bold">days</span></div>
-          </div>
-        </div>
-
-        <div className="bg-theme-card rounded-[24px] p-6 border border-white/50 shadow-softer flex items-center gap-5">
-          <div className="w-14 h-14 rounded-[16px] bg-pastel-mint flex items-center justify-center flex-shrink-0">
-            <Trophy className="w-7 h-7 text-theme-text" />
-          </div>
-          <div>
-            <h3 className="text-[13px] font-bold text-theme-muted uppercase tracking-wider mb-1">Longest Streak</h3>
-            <div className="text-3xl font-black text-theme-text">{longestStreak} <span className="text-lg text-theme-muted font-bold">days</span></div>
-          </div>
-        </div>
-
-        <div className="bg-theme-card rounded-[24px] p-6 border border-white/50 shadow-softer flex items-center gap-5">
-          <div className="w-14 h-14 rounded-[16px] bg-pastel-lavender flex items-center justify-center flex-shrink-0">
-            <Activity className="w-7 h-7 text-theme-text" />
-          </div>
-          <div>
-            <h3 className="text-[13px] font-bold text-theme-muted uppercase tracking-wider mb-1">Active Days</h3>
-            <div className="text-3xl font-black text-theme-text">{allActivityDates.length} <span className="text-lg text-theme-muted font-bold">days</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-theme-card rounded-[28px] p-8 border border-white/50 shadow-softer mb-10 w-full overflow-hidden">
-        <h2 className="text-xl font-bold text-theme-text mb-8">Learning Heatmap</h2>
+      {/* Main Calendar Card */}
+      <div className="bg-theme-card rounded-[28px] p-4 sm:p-8 border border-theme-border shadow-softer mb-6 w-full overflow-hidden">
         
-        <div 
-          className="grid w-full"
-          style={{
-             gridTemplateColumns: `36px repeat(${totalColumns}, minmax(0, 16px))`,
-             gap: 'clamp(2px, 0.5vw, 4px)'
-          }}
-        >
-          {/* Month Labels */}
-          {monthLabels.map((lbl, i) => (
-            <div 
-              key={i} 
-              style={{ gridRow: 1, gridColumn: lbl.column + 2, position: 'relative' }}
-              className="h-[20px]"
-            >
-              <span className="absolute bottom-1 left-0 text-[12px] font-bold text-theme-muted whitespace-nowrap">
-                {lbl.month}
-              </span>
-            </div>
-          ))}
+        {/* Month Navigation */}
+        <div className="flex items-center justify-between mb-8">
+          <button 
+            onClick={handlePrevMonth}
+            className="w-10 h-10 rounded-full bg-theme-card shadow-sm flex items-center justify-center text-theme-text hover:bg-theme-surface-hover transition-colors"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
           
-          {/* Day Labels */}
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, idx) => (
-            <div 
-              key={day}
-              className="text-[11px] font-bold text-theme-muted flex items-center justify-end pr-2 w-full h-full leading-none"
-              style={{ gridRow: idx + 2, gridColumn: 1 }}
-            >
-              {day}
-            </div>
-          ))}
+          <h2 className="text-xl sm:text-2xl font-bold text-theme-text min-w-[150px] text-center">
+            {monthYearLabel}
+          </h2>
+          
+          <button 
+            onClick={handleNextMonth}
+            disabled={isNextDisabled}
+            className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+              isNextDisabled 
+                ? 'bg-transparent text-theme-muted/30 cursor-not-allowed' 
+                : 'bg-theme-card shadow-sm text-theme-text hover:bg-theme-surface-hover'
+            }`}
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
 
-          {/* Heatmap Cells */}
-          {heatmapDays.map((d, idx) => (
-            <button
-              key={idx}
-              onClick={() => setSelectedDate(d.date)}
-              className={`aspect-square w-full rounded-[3px] transition-all hover:scale-110 hover:ring-2 ring-theme-text/20 ${
-                d.active ? 'bg-pastel-lavender-dark' : 'bg-theme-sidebar'
-              } ${selectedDate === d.date ? 'ring-2 ring-theme-text' : ''}`}
-              style={{ gridRow: d.row + 2, gridColumn: d.column + 2 }}
-              title={`${d.date}`}
-            />
-          ))}
+        {/* 7-Column Grid Container */}
+        <div className="w-full min-w-0">
+          {/* Weekdays */}
+          <div className="grid grid-cols-7 gap-2 sm:gap-4 mb-4">
+            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+              <div key={day} className="text-center text-[11px] sm:text-[13px] font-bold text-theme-muted uppercase tracking-wider min-w-0 truncate">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          {/* Dates */}
+          <div className="grid grid-cols-7 gap-2 sm:gap-4">
+            {calendarDays.map((d, idx) => {
+              
+              const emoji = (!d.isFuture && d.isCurrentMonth) ? getDayEmoji(d.dateKey, allActivityDates) : null;
+
+              let cellClasses = "aspect-square w-full min-w-0 rounded-[12px] sm:rounded-[16px] flex flex-col items-center justify-start pt-2 sm:pt-3 pb-1 transition-all relative overflow-hidden ";
+              let textClasses = "text-[13px] sm:text-[15px] font-bold z-10 ";
+              
+              if (d.isFuture) {
+                cellClasses += "opacity-40 cursor-not-allowed ";
+                textClasses += "text-theme-muted/50 ";
+              } else if (!d.isCurrentMonth) {
+                cellClasses += "opacity-50 cursor-pointer hover:bg-theme-surface-hover ";
+                textClasses += "text-theme-muted ";
+              } else {
+                cellClasses += "bg-transparent cursor-pointer hover:bg-theme-surface-hover ";
+                textClasses += "text-theme-text ";
+              }
+
+              if (d.isToday) {
+                cellClasses += "ring-2 ring-theme-text shadow-sm bg-theme-card/50 ";
+              }
+
+              if (d.dateKey === selectedDate) {
+                cellClasses += "ring-2 ring-theme-text bg-theme-card ";
+              }
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => !d.isFuture && setSelectedDate(d.dateKey)}
+                  disabled={d.isFuture}
+                  className={cellClasses}
+                >
+                  <span className={textClasses}>{d.dayNumber}</span>
+                  
+                  {emoji && (
+                    <div className="mt-auto mb-1 sm:mb-2 flex items-center justify-center">
+                      {emoji === '🔥' ? (
+                        <div className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full flex items-center justify-center ${
+                          activeMode === 'interviewX' ? 'bg-pastel-pink text-pink-700' :
+                          activeMode === 'data-science' ? 'bg-accent-lavender text-purple-700' :
+                          'bg-pastel-mint text-emerald-700'
+                        }`}>
+                          <span className="text-[10px] sm:text-[14px]">🔥</span>
+                        </div>
+                      ) : (
+                        <div className="w-5 h-5 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-theme-surface-hover">
+                          <span className="text-[10px] sm:text-[14px]">😭</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
+      {/* Compact Streak Bar */}
+      <div className="bg-theme-card rounded-[20px] p-5 border border-theme-border shadow-softer flex items-center justify-center gap-8 sm:gap-16 mb-10 mx-auto max-w-fit px-8 sm:px-12">
+        <div className="flex items-center gap-3">
+          <span className="text-[16px]">🔥</span>
+          <span className="text-[14px] font-bold text-theme-muted uppercase tracking-wider">Current</span>
+          <span className="text-xl font-black text-theme-text">{streak}</span>
+        </div>
+        <div className="w-px h-8 bg-theme-border-strong"></div>
+        <div className="flex items-center gap-3">
+          <span className="text-[14px] font-bold text-theme-muted uppercase tracking-wider">Max</span>
+          <span className="text-xl font-black text-theme-text">{longestStreak}</span>
+        </div>
+      </div>
+
+      {/* Selected Date Details */}
       {selectedDate && selectedDateActivity && (
-        <div className="animate-fade-in bg-theme-card rounded-[28px] p-8 border border-white/50 shadow-softer">
-          <h2 className="text-xl font-bold text-theme-text mb-6">Activity on {selectedDate}</h2>
+        <div className="animate-fade-in bg-theme-card rounded-[28px] p-6 sm:p-8 border border-theme-border shadow-softer">
+          <h2 className="text-xl font-bold text-theme-text mb-6">
+            Activity on {new Date(selectedDate).toLocaleDateString('default', { month: 'long', day: 'numeric', year: 'numeric'})}
+          </h2>
           
-          {selectedDateActivity.dsActs.length === 0 && selectedDateActivity.dsaActs.length === 0 ? (
+          {selectedDateActivity.dsActs.length === 0 && selectedDateActivity.dsaActs.length === 0 && selectedDateActivity.ixCount === 0 ? (
             <p className="text-theme-muted font-medium">No activity recorded for this date.</p>
           ) : (
             <div className="space-y-6">
@@ -183,7 +252,7 @@ export const Calendar = () => {
                     {selectedDateActivity.dsaActs.map((act: any, i: number) => {
                       const problem = problemsData.find((p: any) => p.id === act.id);
                       return (
-                        <div key={i} className="bg-theme-sidebar p-4 rounded-[16px] border border-white shadow-sm flex items-start gap-3">
+                        <div key={i} className="bg-theme-sidebar p-4 rounded-[16px] border border-theme-border shadow-sm flex items-start gap-3">
                            <div className="w-8 h-8 rounded-lg bg-pastel-mint flex items-center justify-center flex-shrink-0">
                              <TerminalSquare className="w-4 h-4 text-theme-text" />
                            </div>
@@ -205,7 +274,7 @@ export const Calendar = () => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {selectedDateActivity.dsActs.map((act: any, i: number) => (
-                        <div key={i} className="bg-theme-sidebar p-4 rounded-[16px] border border-white shadow-sm flex items-start gap-3">
+                        <div key={i} className="bg-theme-sidebar p-4 rounded-[16px] border border-theme-border shadow-sm flex items-start gap-3">
                            <div className="w-8 h-8 rounded-lg bg-pastel-lavender flex items-center justify-center flex-shrink-0">
                              <Clock className="w-4 h-4 text-theme-text" />
                            </div>
@@ -215,6 +284,25 @@ export const Calendar = () => {
                            </div>
                         </div>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedDateActivity.ixCount > 0 && activeMode === 'interviewX' && (
+                <div>
+                  <h3 className="text-sm font-bold text-theme-muted uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <Video className="w-4 h-4" /> InterviewX ({selectedDateActivity.ixCount} activities)
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                     <div className="bg-theme-sidebar p-4 rounded-[16px] border border-theme-border shadow-sm flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-pastel-pink flex items-center justify-center flex-shrink-0">
+                          <Video className="w-4 h-4 text-theme-text" />
+                        </div>
+                        <div>
+                          <p className="font-bold text-theme-text text-[14px] leading-snug">Studied {selectedDateActivity.ixCount} InterviewX Videos</p>
+                          <p className="text-[12px] font-semibold text-theme-muted mt-0.5">Video Activity</p>
+                        </div>
+                     </div>
                   </div>
                 </div>
               )}

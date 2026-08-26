@@ -11,9 +11,9 @@ export const Button = ({ children, variant = 'primary', className = '', ...props
   
   const variants = {
     primary: "bg-theme-text text-theme-card hover:bg-black px-6 py-3",
-    secondary: "bg-pastel-lavender text-theme-text hover:bg-pastel-lavender-dark px-6 py-3",
+    secondary: "bg-pastel-lavender text-theme-text hover:bg-accent-lavender px-6 py-3",
     outline: "border-2 border-theme-text text-theme-text hover:bg-theme-text hover:text-theme-card px-6 py-3",
-    ghost: "bg-transparent text-theme-text hover:bg-black/5 px-4 py-2"
+    ghost: "bg-transparent text-theme-text hover:bg-theme-surface-hover px-4 py-2"
   };
 
   return (

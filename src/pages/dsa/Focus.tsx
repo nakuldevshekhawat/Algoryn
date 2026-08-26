@@ -54,16 +54,16 @@ export default function Focus() {
          <div className="bg-theme-text text-white px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 cursor-default">
            <ListVideo className="w-4 h-4" /> All
          </div>
-         <Link to="/roadmap" className="bg-pastel-mint-dark/40 hover:bg-pastel-mint-dark/60 text-theme-text px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-colors">
+         <Link to="/roadmap" className="bg-accent-mint/40 hover:bg-accent-mint/60 text-theme-text px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-colors">
            <ListVideo className="w-4 h-4" /> Browse
          </Link>
          <button onClick={() => {
            const event = new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true });
            document.dispatchEvent(event);
-         }} className="bg-pastel-lavender hover:bg-pastel-lavender-dark text-theme-text px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-colors">
+         }} className="bg-pastel-lavender hover:bg-accent-lavender text-theme-text px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-colors">
            <SearchIcon className="w-4 h-4" /> Search
          </button>
-         <Link to="/statistics" className="bg-pastel-peach hover:bg-pastel-peach-dark text-theme-text px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-colors">
+         <Link to="/statistics" className="bg-pastel-peach hover:bg-accent-peach text-theme-text px-6 py-3 rounded-full font-bold text-sm flex items-center gap-2 transition-colors">
            <BarChart2 className="w-4 h-4" /> Statistics
          </Link>
       </div>
@@ -73,13 +73,13 @@ export default function Focus() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
         
         {/* Progress Hero */}
-        <div className="bg-pastel-pink border border-white/50 rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
+        <div className="bg-pastel-pink border border-theme-border rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
           <div className="flex items-center justify-between mb-4">
-             <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
+             <div className="flex items-center gap-2 bg-theme-card/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
                 <BarChart2 className="w-4 h-4 text-theme-text" />
                 <span className="text-xs font-bold text-theme-text">Progress</span>
              </div>
-             <div className="bg-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
+             <div className="bg-theme-card px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
                 {overallPercentage}%
              </div>
           </div>
@@ -90,13 +90,13 @@ export default function Focus() {
         </div>
 
         {/* Continue Learning */}
-        <div className="bg-pastel-yellow border border-white/50 rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
+        <div className="bg-pastel-yellow border border-theme-border rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
           <div className="flex items-center justify-between mb-4">
-             <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
+             <div className="flex items-center gap-2 bg-theme-card/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
                 <Play className="w-4 h-4 text-theme-text" />
                 <span className="text-xs font-bold text-theme-text">Continue</span>
              </div>
-             <div className="bg-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
+             <div className="bg-theme-card px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
                 Up next
              </div>
           </div>
@@ -113,13 +113,13 @@ export default function Focus() {
         </div>
 
         {/* Learning Status */}
-        <div className="bg-pastel-lavender border border-white/50 rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
+        <div className="bg-pastel-lavender border border-theme-border rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
           <div className="flex items-center justify-between mb-4">
-             <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
+             <div className="flex items-center gap-2 bg-theme-card/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
                 <CheckCircle className="w-4 h-4 text-theme-text" />
                 <span className="text-xs font-bold text-theme-text">Status</span>
              </div>
-             <div className="bg-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
+             <div className="bg-theme-card px-3 py-1.5 rounded-full text-xs font-bold shadow-sm">
                 Overview
              </div>
           </div>
@@ -133,13 +133,13 @@ export default function Focus() {
         </div>
 
         {/* Course Summary */}
-        <div className="bg-pastel-mint border border-white/50 rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
+        <div className="bg-pastel-mint border border-theme-border rounded-[28px] p-8 flex flex-col justify-between shadow-softer relative overflow-hidden min-h-[200px]">
           <div className="flex items-center justify-between mb-4">
-             <div className="flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
+             <div className="flex items-center gap-2 bg-theme-card/60 px-3 py-1.5 rounded-full backdrop-blur-sm">
                 <BookOpen className="w-4 h-4 text-theme-text" />
                 <span className="text-xs font-bold text-theme-text">Course</span>
              </div>
-             <div className="bg-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
+             <div className="bg-theme-card px-3 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
                 <span className="text-orange-500">★</span> Top 10
              </div>
           </div>
@@ -160,13 +160,13 @@ export default function Focus() {
               <button 
                 key={problem.id}
                 onClick={() => navigate(`/?problemId=${problem.id}`)}
-                className="flex flex-col justify-between p-6 bg-white rounded-[24px] shadow-softer hover:shadow-soft hover:-translate-y-1 transition-all group border border-black/5 text-left w-full h-full"
+                className="flex flex-col justify-between p-6 bg-theme-card rounded-[24px] shadow-softer hover:shadow-soft hover:-translate-y-1 transition-all group border border-theme-border-strong text-left w-full h-full"
               >
                 <div className="flex items-center gap-3 mb-5 w-full">
                   <div className="w-12 h-12 bg-pastel-lavender/40 rounded-[16px] flex items-center justify-center text-theme-text group-hover:bg-pastel-lavender transition-colors flex-shrink-0 shadow-sm">
                     <Clock className="w-5 h-5" />
                   </div>
-                  <span className="text-[11px] font-bold text-theme-muted bg-gray-50 border border-black/5 px-3 py-1.5 rounded-[8px] ml-auto">Recent</span>
+                  <span className="text-[11px] font-bold text-theme-muted bg-theme-surface-muted border border-theme-border-strong px-3 py-1.5 rounded-[8px] ml-auto">Recent</span>
                 </div>
                 <div>
                   <h3 className="font-bold text-theme-text text-[16px] leading-snug mb-1 line-clamp-2 group-hover:text-brand-primary transition-colors">{problem.name}</h3>
@@ -177,9 +177,9 @@ export default function Focus() {
           })}
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center py-12 bg-white border border-black/5 rounded-[24px] shadow-softer text-center">
-           <div className="w-16 h-16 bg-gray-50 rounded-[16px] flex items-center justify-center mb-4 border border-black/5 shadow-sm">
-             <Clock className="w-8 h-8 text-gray-300" />
+        <div className="flex flex-col items-center justify-center py-12 bg-theme-card border border-theme-border-strong rounded-[24px] shadow-softer text-center">
+           <div className="w-16 h-16 bg-theme-surface-muted rounded-[16px] flex items-center justify-center mb-4 border border-theme-border-strong shadow-sm">
+             <Clock className="w-8 h-8 text-theme-text-dim" />
            </div>
            <p className="font-bold text-theme-text text-[18px]">No problems opened yet.</p>
            <p className="text-[15px] font-medium text-theme-muted mt-2">Start exploring problems from the Roadmap.</p>

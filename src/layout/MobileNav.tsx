@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { useMode } from '../contexts/ModeContext';
-import { globalItems, dsaItems, dsItems } from '../navigation/nav';
+import { globalItems, dsaItems, dsItems, interviewXItems } from '../navigation/nav';
 
 interface MobileNavProps {
   isOpen: boolean;
@@ -12,7 +12,7 @@ export const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
   const location = useLocation();
   const { activeMode } = useMode();
 
-  const currentNavItems = activeMode === 'dsa' ? dsaItems : dsItems;
+  const currentNavItems = activeMode === 'dsa' ? dsaItems : activeMode === 'data-science' ? dsItems : interviewXItems;
 
   const renderNavGroup = (title: string, items: any[]) => (
     <div className="px-3 mb-6">
@@ -33,7 +33,7 @@ export const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
             >
               <div className={`
                 w-10 h-10 rounded-[14px] flex items-center justify-center transition-all shadow-sm
-                ${isActive ? 'bg-theme-text text-theme-sidebar' : 'bg-theme-card text-theme-text group-hover:bg-pastel-lavender-dark group-hover:text-theme-text'}
+                ${isActive ? 'bg-theme-text text-theme-sidebar' : 'bg-theme-card text-theme-text group-hover:bg-accent-lavender group-hover:text-theme-text'}
               `}>
                 <Icon className="w-[20px] h-[20px]" strokeWidth={isActive ? 2.5 : 2} />
               </div>
@@ -59,11 +59,11 @@ export const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
         className="fixed inset-y-0 left-0 w-[280px] bg-theme-sidebar shadow-soft z-50 transform transition-transform duration-300 lg:hidden flex flex-col"
         style={{ animation: "slideInLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1)" }}
       >
-        <div className="flex items-center justify-between p-6 border-b border-white/50">
+        <div className="flex items-center justify-between p-6 border-b border-theme-border">
           <span className="text-[14px] font-bold text-theme-text uppercase tracking-widest">Navigation</span>
           <button 
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white text-theme-muted hover:text-theme-text transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-theme-card text-theme-muted hover:text-theme-text transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -71,7 +71,7 @@ export const MobileNav = ({ isOpen, onClose }: MobileNavProps) => {
         
         <nav className="flex-1 overflow-y-auto custom-scrollbar px-2 py-6">
           {renderNavGroup('GLOBAL', globalItems)}
-          {renderNavGroup(activeMode === 'dsa' ? 'DSA PREPARATION' : 'DATA SCIENCE', currentNavItems)}
+          {renderNavGroup(activeMode === 'dsa' ? 'DSA PREPARATION' : activeMode === 'data-science' ? 'DATA SCIENCE' : 'INTERVIEWX', currentNavItems)}
         </nav>
       </div>
 

@@ -19,7 +19,7 @@ export const LectureCard = ({ lecture, progress }: LectureCardProps) => {
   return (
     <Link 
       to={`/data-science/lectures/${lecture.id}`}
-      className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4 bg-white rounded-[20px] border border-border-subtle shadow-softer hover:shadow-soft hover:border-border-normal transition-all group"
+      className="flex flex-col sm:flex-row sm:items-center justify-between p-5 gap-4 bg-theme-card rounded-[20px] border border-border-subtle shadow-softer hover:shadow-soft hover:border-border-normal transition-all group"
     >
       <div className="flex items-center gap-4 min-w-0">
         {/* Number Badge */}
@@ -43,7 +43,7 @@ export const LectureCard = ({ lecture, progress }: LectureCardProps) => {
       <div className="flex items-center justify-between sm:justify-end gap-5 sm:pl-4 w-full sm:w-auto">
         <span className={`
           text-[13px] font-bold px-4 py-1.5 rounded-full whitespace-nowrap
-          ${completed ? 'bg-gray-100 text-gray-500' : 'bg-orange-50 text-orange-500'}
+          ${completed ? 'bg-theme-surface-muted text-theme-text-dim' : 'bg-orange-50 text-orange-500'}
         `}>
           {partsText}
         </span>

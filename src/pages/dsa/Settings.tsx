@@ -86,8 +86,8 @@ export default function Settings() {
   }, [showToast]);
 
   const inputClasses =
-    "w-full px-5 py-3.5 text-[15px] bg-white border border-black/5 rounded-[16px] shadow-sm " +
-    "text-theme-text placeholder:text-gray-400 font-mono font-medium " +
+    "w-full px-5 py-3.5 text-[15px] bg-theme-card border border-theme-border-strong rounded-[16px] shadow-sm " +
+    "text-theme-text placeholder:text-theme-text-dim font-mono font-medium " +
     "focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary " +
     "transition-colors";
 
@@ -98,10 +98,10 @@ export default function Settings() {
           <h1 className="text-3xl font-bold text-theme-text mb-2">Settings</h1>
           <p className="text-theme-muted text-lg font-medium">Configure your application preferences.</p>
         </header>
-        <div className="bg-white rounded-[24px] border border-black/5 shadow-softer p-8">
-          <div className="h-6 w-32 bg-gray-100 rounded mb-4 animate-pulse" />
-          <div className="h-4 w-64 bg-gray-100 rounded mb-6 animate-pulse" />
-          <div className="h-12 w-full bg-gray-100 rounded mb-6 animate-pulse" />
+        <div className="bg-theme-card rounded-[24px] border border-theme-border-strong shadow-softer p-8">
+          <div className="h-6 w-32 bg-theme-surface-muted rounded mb-4 animate-pulse" />
+          <div className="h-4 w-64 bg-theme-surface-muted rounded mb-6 animate-pulse" />
+          <div className="h-12 w-full bg-theme-surface-muted rounded mb-6 animate-pulse" />
         </div>
       </div>
     );
@@ -115,18 +115,18 @@ export default function Settings() {
       </header>
 
       <form onSubmit={handleSubmit((data) => mutation.mutate(data))}>
-        <div className="bg-white rounded-[24px] border border-black/5 shadow-softer overflow-hidden">
+        <div className="bg-theme-card rounded-[24px] border border-theme-border-strong shadow-softer overflow-hidden">
           <div className="p-8 sm:p-10 space-y-10">
             {/* Section 1: Repository */}
             <div>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-[16px] bg-gray-50 border border-black/5 flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-[16px] bg-theme-surface-muted border border-theme-border-strong flex items-center justify-center shadow-sm">
                   <FolderIcon className="w-6 h-6 text-theme-text" />
                 </div>
                 <h3 className="text-[20px] font-bold text-theme-text">Repository Configuration</h3>
               </div>
               
-              <div className="space-y-6 bg-gray-50/50 p-6 rounded-[20px] border border-black/5">
+              <div className="space-y-6 bg-theme-surface-muted/50 p-6 rounded-[20px] border border-theme-border-strong">
                 <SettingsField
                   label="DSA Repository Path"
                   description="Absolute path to your local DSA practice repository."
@@ -140,12 +140,12 @@ export default function Settings() {
               </div>
             </div>
 
-            <hr className="border-black/5" />
+            <hr className="border-theme-border-strong" />
 
             {/* Section 2: Editor & Theme */}
             <div>
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-[16px] bg-gray-50 border border-black/5 flex items-center justify-center shadow-sm">
+                <div className="w-12 h-12 rounded-[16px] bg-theme-surface-muted border border-theme-border-strong flex items-center justify-center shadow-sm">
                   <AdjustmentsHorizontalIcon className="w-6 h-6 text-theme-text" />
                 </div>
                 <h3 className="text-[20px] font-bold text-theme-text">Preferences</h3>
@@ -197,12 +197,12 @@ export default function Settings() {
           </div>
 
           {/* Footer actions */}
-          <div className="p-8 sm:p-10 bg-gray-50/50 border-t border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+          <div className="p-8 sm:p-10 bg-theme-surface-muted/50 border-t border-theme-border-strong flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
               {/* Keyboard Shortcuts Reference */}
               <button
                 type="button"
-                className="flex items-center gap-2 text-[14px] font-bold text-theme-muted hover:text-theme-text transition-colors bg-white px-5 py-2.5 rounded-[12px] shadow-sm border border-black/5"
+                className="flex items-center gap-2 text-[14px] font-bold text-theme-muted hover:text-theme-text transition-colors bg-theme-card px-5 py-2.5 rounded-[12px] shadow-sm border border-theme-border-strong"
                 onClick={() => {
                   const event = new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true });
                   document.dispatchEvent(event);
@@ -217,7 +217,7 @@ export default function Settings() {
               disabled={!isDirty || mutation.isPending}
               className={`px-8 py-3.5 rounded-full font-bold shadow-sm transition-all text-[15px] ${
                 !isDirty || mutation.isPending
-                  ? "bg-gray-100 text-gray-400 border border-transparent cursor-not-allowed"
+                  ? "bg-theme-surface-muted text-theme-text-dim border border-transparent cursor-not-allowed"
                   : "bg-theme-text text-white hover:bg-theme-muted"
               }`}
             >
@@ -229,11 +229,11 @@ export default function Settings() {
 
       {/* Floating Toast Notification */}
       <div 
-        className={`fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-pastel-mint border border-black/5 text-brand-primary-dark rounded-[20px] shadow-soft transition-all duration-300 transform z-50 ${
+        className={`fixed bottom-8 right-8 flex items-center gap-3 px-6 py-4 bg-pastel-mint border border-theme-border-strong text-brand-primary-dark rounded-[20px] shadow-soft transition-all duration-300 transform z-50 ${
           showToast ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0 pointer-events-none"
         }`}
       >
-        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+        <div className="w-8 h-8 bg-theme-card rounded-full flex items-center justify-center shadow-sm">
           <CheckIcon className="w-5 h-5 stroke-[3]" />
         </div>
         <span className="text-[15px] font-bold">Settings saved successfully</span>

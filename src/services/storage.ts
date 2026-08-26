@@ -60,15 +60,18 @@ export function getSolvedList(): string[] {
 export function toggleSolved(problemId: string): boolean {
   const list = getList(STORAGE_KEYS.SOLVED);
   const idx = list.indexOf(problemId);
+  let nowSolved = false;
   if (idx >= 0) {
     list.splice(idx, 1);
     setList(STORAGE_KEYS.SOLVED, list);
-    return false;
+    nowSolved = false;
   } else {
     list.push(problemId);
     setList(STORAGE_KEYS.SOLVED, list);
-    return true;
+    nowSolved = true;
   }
+  window.dispatchEvent(new Event('dsa-update'));
+  return nowSolved;
 }
 
 // ── Favorites ────────────────────────────────────────────────────────
@@ -171,6 +174,8 @@ export function resetProgress(): void {
   setList(STORAGE_KEYS.REVISION3, []);
   setMap(STORAGE_KEYS.NOTES, {});
   setList(STORAGE_KEYS.RECENT, []);
+  setList(STORAGE_KEYS.ACTIVITY_DATES, []);
+  window.dispatchEvent(new Event('dsa-update'));
 }
 
 // ── Recent Activity ──────────────────────────────────────────────────
@@ -230,10 +235,12 @@ export function logRecentProblem(problemId: string): void {
   }
   localStorage.setItem(STORAGE_KEYS.RECENT, JSON.stringify(list));
   logActiveDate();
+  window.dispatchEvent(new Event('dsa-update'));
 }
 
 export function clearRecentProblems(): void {
   setList(STORAGE_KEYS.RECENT, []);
+  window.dispatchEvent(new Event('dsa-update'));
 }
 
 export function getNextDSAProblem(): any {

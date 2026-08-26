@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-type Mode = 'dsa' | 'data-science';
+type Mode = 'dsa' | 'data-science' | 'interviewX';
 
 interface ModeContextType {
   activeMode: Mode;
@@ -14,25 +14,18 @@ const ModeContext = createContext<ModeContextType | undefined>(undefined);
 export function ModeProvider({ children }: { children: ReactNode }) {
   const [activeMode, setActiveMode] = useState<Mode>(() => {
     const saved = localStorage.getItem('learning_mode');
-    return (saved === 'dsa' || saved === 'data-science') ? saved : 'data-science';
+    return (saved === 'dsa' || saved === 'data-science' || saved === 'interviewX') ? saved as Mode : 'data-science';
   });
 
   const navigate = useNavigate();
-  const location = useLocation();
 
   const setMode = (mode: Mode) => {
+    if (activeMode === mode) return; // Do nothing if clicking the currently active mode
+
     setActiveMode(mode);
     localStorage.setItem('learning_mode', mode);
 
-    // If currently on a course specific page, navigate to the other course home
-    const isDSA = location.pathname.startsWith('/dsa');
-    const isDS = location.pathname.startsWith('/data-science') || location.pathname.startsWith('/lectures');
-
-    if (mode === 'dsa' && isDS) {
-      navigate('/dsa/roadmap');
-    } else if (mode === 'data-science' && isDSA) {
-      navigate('/data-science/lectures');
-    }
+    navigate('/');
   };
 
   useEffect(() => {

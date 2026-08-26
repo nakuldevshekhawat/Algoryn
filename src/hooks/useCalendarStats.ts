@@ -1,85 +1,76 @@
-import { useMemo } from 'react';
-import { getRecentActivity as getDSActivity } from '../data/dsStore';
-import { getRecentProblems, getActiveDates } from '../services/storage';
+import { useMemo, useState, useEffect } from 'react';
+import { getRecentActivity as getDSActivity, getDSActiveDates } from '../data/dsStore';
+import { getRecentProblems, getActiveDates as getDSAActiveDates } from '../services/storage';
+import { getInterviewXActivity } from '../services/interviewXStore';
+import { useMode } from '../contexts/ModeContext';
+import { calculateStreakStats, getLocalDateKey } from '../utils/streak';
 
-export function getLocalDateKey(dateInput: Date | string | number): string {
-  const d = new Date(dateInput);
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+export { getLocalDateKey };
+
+export function getDayEmoji(dateStr: string, activityDates: string[]): "🔥" | "😭" | null {
+  if (activityDates.includes(dateStr)) {
+    return "🔥";
+  }
+
+  const d = new Date(dateStr);
+  d.setDate(d.getDate() - 1);
+  const prevDateStr = getLocalDateKey(d);
+
+  if (activityDates.includes(prevDateStr)) {
+    return "😭";
+  }
+
+  return null;
 }
 
 export function useCalendarStats() {
-  const dsActivity = getDSActivity();
-  const dsaActivity = getRecentProblems();
-  const storedActiveDates = getActiveDates();
+  const { activeMode } = useMode();
+  
+  const [ixActivityMap, setIxActivityMap] = useState(getInterviewXActivity());
+  const [dsActivity, setDsActivity] = useState(getDSActivity());
+  const [dsaActivity, setDsaActivity] = useState(getRecentProblems());
+  
+  const [dsaActiveDates, setDsaActiveDates] = useState(getDSAActiveDates());
+  const [dsActiveDates, setDsActiveDates] = useState(getDSActiveDates());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setIxActivityMap(getInterviewXActivity());
+      setDsActivity(getDSActivity());
+      setDsaActivity(getRecentProblems());
+      setDsaActiveDates(getDSAActiveDates());
+      setDsActiveDates(getDSActiveDates());
+    };
+
+    window.addEventListener('storage', handleUpdate);
+    window.addEventListener('interviewx-update', handleUpdate);
+    window.addEventListener('ds-update', handleUpdate);
+    window.addEventListener('dsa-update', handleUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('interviewx-update', handleUpdate);
+      window.removeEventListener('ds-update', handleUpdate);
+      window.removeEventListener('dsa-update', handleUpdate);
+    };
+  }, []);
 
   const allActivityDates = useMemo(() => {
-    const dates = new Set<string>(storedActiveDates);
-    
-    dsActivity.forEach(a => {
-      dates.add(getLocalDateKey(a.timestamp));
-    });
-
-    dsaActivity.forEach(a => {
-      dates.add(getLocalDateKey(a.timestamp));
-    });
-
-    return Array.from(dates).sort();
-  }, [dsActivity, dsaActivity, storedActiveDates]);
-
-  const streak = useMemo(() => {
-    if (allActivityDates.length === 0) return 0;
-    
-    let currentStreak = 0;
-    const today = new Date();
-    today.setHours(0,0,0,0);
-    
-    let checkDate = new Date(today);
-    let isToday = true;
-    
-    while(true) {
-      const dateStr = getLocalDateKey(checkDate);
-      if (allActivityDates.includes(dateStr)) {
-        currentStreak++;
-        checkDate.setDate(checkDate.getDate() - 1);
-        isToday = false;
-      } else if (isToday) {
-        // Missed today, check yesterday
-        checkDate.setDate(checkDate.getDate() - 1);
-        isToday = false;
-      } else {
-        break;
-      }
+    if (activeMode === 'interviewX') {
+      return Object.keys(ixActivityMap).sort();
     }
-    return currentStreak;
+    
+    if (activeMode === 'data-science') {
+      return [...dsActiveDates].sort();
+    }
+    
+    // DSA
+    return [...dsaActiveDates].sort();
+  }, [activeMode, ixActivityMap, dsActiveDates, dsaActiveDates]);
+
+  const { currentStreak: streak, longestStreak, activeDays } = useMemo(() => {
+    return calculateStreakStats(allActivityDates);
   }, [allActivityDates]);
 
-  const longestStreak = useMemo(() => {
-    if (allActivityDates.length === 0) return 0;
-    
-    let max = 1;
-    let current = 1;
-    
-    for (let i = 1; i < allActivityDates.length; i++) {
-      const prevDate = new Date(allActivityDates[i - 1]);
-      const currDate = new Date(allActivityDates[i]);
-      
-      const diffTime = currDate.getTime() - prevDate.getTime();
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-      
-      if (diffDays === 1) {
-        current++;
-        max = Math.max(max, current);
-      } else if (diffDays > 1) {
-        current = 1;
-      }
-    }
-    
-    // Ensure current streak is also considered
-    return Math.max(max, streak);
-  }, [allActivityDates, streak]);
-
-  return { allActivityDates, streak, longestStreak };
+  return { allActivityDates, streak, longestStreak, activeDays, ixActivityMap, dsActivity, dsaActivity };
 }
