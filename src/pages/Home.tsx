@@ -15,6 +15,7 @@ import {
   clearInterviewXActivity,
   clearInterviewXRecentActivity
 } from '../services/interviewXStore';
+import { extractCleanFilename } from '../utils/courseParser';
 
 const DataScienceDashboard = () => {
   const [progress, setProgress] = useState(getProgress());
@@ -377,7 +378,7 @@ const InterviewXDashboard = () => {
             {continueTarget ? (
                <>
                  <h3 className="text-xl font-bold text-theme-text mb-2 tracking-tight leading-snug line-clamp-2">{continueTarget.subject.name}</h3>
-                 <Link to={`/interviewX/${continueTarget.subject.id}`} className="text-[14px] font-bold text-theme-text hover:opacity-70 transition-opacity">{continueTarget.video.title || `Video ${continueTarget.video.id}`} &rarr;</Link>
+                 <Link to={`/interviewX/${continueTarget.subject.id}?video=${continueTarget.video.id}`} className="text-[14px] font-bold text-theme-text hover:opacity-70 transition-opacity">{extractCleanFilename(continueTarget.video.title) || `Video ${continueTarget.video.id}`} &rarr;</Link>
                </>
             ) : (
                <h3 className="text-2xl font-bold text-theme-text mb-2 tracking-tight leading-snug">All caught up! 🎉</h3>
@@ -403,7 +404,7 @@ const InterviewXDashboard = () => {
                   <span className="text-xs font-bold text-theme-text bg-theme-bg px-3 py-1.5 rounded-full">Recent</span>
                 </div>
                 <div>
-                  <h3 className="font-bold text-theme-text text-lg leading-snug mb-1 line-clamp-2">{activity.title || `Video ${activity.videoId}`}</h3>
+                  <h3 className="font-bold text-theme-text text-lg leading-snug mb-1 line-clamp-2">{extractCleanFilename(activity.title) || `Video ${activity.videoId}`}</h3>
                   <p className="text-[13px] font-semibold text-theme-muted uppercase">{activity.subject}</p>
                 </div>
               </Link>

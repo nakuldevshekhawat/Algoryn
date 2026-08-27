@@ -5,6 +5,7 @@ import { Search as SearchIcon, Video, CheckCircle2 } from 'lucide-react';
 import { useMode } from '../contexts/ModeContext';
 import { Link } from 'react-router-dom';
 import { subjectsOrder, interviewXData, getInterviewXSubjectProgress } from '../services/interviewXStore';
+import { extractCleanFilename } from '../utils/courseParser';
 
 export const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,10 +40,12 @@ export const Search = () => {
 
       if (dataset && dataset.videos) {
         dataset.videos.forEach((vid: any) => {
-          if (vid.title?.toLowerCase().includes(query) || vid.id.toString().includes(query)) {
+          const cleanName = extractCleanFilename(vid.title || '');
+          if (cleanName.toLowerCase().includes(query) || vid.id.toString().includes(query)) {
             results.push({
               subject: sub,
               video: vid,
+              cleanName: cleanName,
               completed: completedSet.has(vid.id)
             });
           }
@@ -106,7 +109,7 @@ export const Search = () => {
                        <Video className="w-5 h-5 text-text-main" />
                      </div>
                      <div className="flex-1 pr-16">
-                       <h3 className="font-bold text-text-main text-lg mb-1">{res.video.title || `Video ${res.video.id}`}</h3>
+                       <h3 className="font-bold text-text-main text-lg mb-1">{res.cleanName || `Video ${res.video.id}`}</h3>
                        <div className="flex items-center gap-3 text-text-muted font-bold text-sm">
                          <span className="bg-theme-bg px-2.5 py-1 rounded-md">{res.subject.name}</span>
                          <span>Video {res.video.id}</span>
