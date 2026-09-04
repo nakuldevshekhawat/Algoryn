@@ -191,6 +191,10 @@ export const clearInterviewXProgress = () => {
   });
 };
 
+export const clearInterviewXSubjectProgress = (subjectId: string) => {
+  localStorage.removeItem(`interviewx_${subjectId}_completed`);
+};
+
 export const clearInterviewXActivity = () => {
   localStorage.removeItem('interviewx_activity');
 };

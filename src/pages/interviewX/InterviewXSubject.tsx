@@ -1,12 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { recordInterviewXActivity, recordRecentInterviewXActivity } from '../../services/interviewXStore';
+import { recordInterviewXActivity, recordRecentInterviewXActivity, clearInterviewXSubjectProgress } from '../../services/interviewXStore';
 import { interviewXSubjects, type InterviewXSubjectId } from '../../data/interviewXSubjects';
 import { buildCourseTree } from '../../utils/courseParser';
 import { CourseExplorer } from '../../components/interviewX/CourseExplorer';
 import { useMode } from '../../contexts/ModeContext';
 import { NoteViewer } from '../../components/interviewX/NoteViewer';
-import { PlayCircle, Target, CheckCircle2, Circle, Menu, X, Video, BookOpen, Maximize2, Minimize2, ArrowLeft } from 'lucide-react';
+import { PlayCircle, Target, CheckCircle2, Circle, Menu, X, Video, BookOpen, Maximize2, Minimize2, ArrowLeft, RotateCcw } from 'lucide-react';
 
 const getTelegramAppUrl = (video: any) => {
   return `tg://privatepost?channel=3742161248&post=${video.telegramMessageId}&thread=${video.topicId}`;
@@ -33,6 +33,7 @@ export default function InterviewXSubject() {
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'video' | 'notes'>('video');
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false);
   const { isFocusMode, setIsFocusMode } = useMode();
 
   // Escape key to exit focus mode
@@ -217,8 +218,16 @@ export default function InterviewXSubject() {
             <Menu className="w-5 h-5" />
             <span>Course Explorer</span>
           </button>
-          <div className="text-xs font-bold text-theme-muted bg-theme-surface-hover px-2 py-1 rounded-md">
-            {completedCount}/{totalCount}
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={() => setShowResetModal(true)}
+              className="p-1.5 text-accent-red bg-pastel-red rounded-md hover:opacity-80 transition-colors"
+            >
+              <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+            </button>
+            <div className="text-xs font-bold text-theme-muted bg-theme-surface-hover px-2 py-1 rounded-md">
+              {completedCount}/{totalCount}
+            </div>
           </div>
         </div>
 
@@ -230,6 +239,13 @@ export default function InterviewXSubject() {
             </Link>
             
             <div className="flex items-center gap-3">
+               <button 
+                 onClick={() => setShowResetModal(true)}
+                 className="flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-bold text-accent-red bg-pastel-red rounded-full hover:opacity-80 transition-colors mr-2"
+               >
+                 <RotateCcw className="w-3.5 h-3.5 stroke-[2.5]" />
+                 <span>Reset</span>
+               </button>
                <div className="text-sm font-bold text-theme-text/80">{completedCount} / {totalCount} completed</div>
                <div className="w-24 h-2 bg-theme-border-strong rounded-full overflow-hidden">
                  <div className="h-full bg-brand-primary" style={{ width: `${overallPercentage}%` }} />
@@ -420,6 +436,39 @@ export default function InterviewXSubject() {
           <div className="flex-1 w-full bg-theme-bg overflow-hidden flex flex-col relative">
             <div className="flex-1 flex flex-col w-full max-w-[1200px] mx-auto h-full">
               <NoteViewer url={selectedLesson.note.path} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-theme-card rounded-[24px] shadow-soft max-w-sm w-full p-6 border border-theme-border-strong">
+            <h2 className="text-xl font-bold text-theme-text mb-2">Reset {subjectTitle} Progress?</h2>
+            <p className="text-theme-muted font-medium text-sm mb-6 leading-relaxed">
+              This will remove all completed progress for {subjectTitle}. Progress in other InterviewX subjects will not be affected.
+            </p>
+            
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowResetModal(false)}
+                className="px-4 py-2.5 rounded-[14px] font-bold text-[13px] text-theme-muted hover:text-theme-text bg-transparent hover:bg-theme-surface-hover transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (subject) {
+                    clearInterviewXSubjectProgress(subject);
+                    window.dispatchEvent(new Event('interviewx-update'));
+                  }
+                  setShowResetModal(false);
+                }}
+                className="px-4 py-2.5 rounded-[14px] font-bold text-[13px] bg-theme-text text-theme-sidebar shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
+              >
+                Reset Progress
+              </button>
             </div>
           </div>
         </div>
