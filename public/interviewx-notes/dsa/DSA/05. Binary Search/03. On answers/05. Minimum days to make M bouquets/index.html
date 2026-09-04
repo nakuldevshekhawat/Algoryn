@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minimum days to make M bouquets</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Minimum days to make M bouquets</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Binary Search</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given n roses and an array nums where nums[i] denotes that the 'ith' rose will bloom on the nums[i]th day, only adjacent bloomed roses can be picked to make a bouquet. Exactly k adjacent bloomed roses are required to make a single bouquet. Find the <strong>minimum number of days</strong> required to make at least m bouquets, each containing k roses. Return -1 if it is not possible.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li> 1 <= n <= 10<sup>5</sup></li><li> 1 <= nums[i] <= 10<sup>9</sup></li><li> 1 <= m <= 10<sup>6</sup></li><li> 1 <= k <= n</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: n = 8, nums = [7, 7, 7, 7, 13, 11, 12, 7], m = 2, k = 3</p><p>Output: 12</p><p>Explanation: On the 12th the first 4 flowers and the last 3 flowers would have already bloomed. So, we can easily make 2 bouquets, one with the first 3 and another with the last 3 flowers.</p><h3>Example 2</h3><p>Input: n = 5, nums = [1, 10, 3, 10, 2], m = 3, k = 2</p><p>Output: -1</p><p>Explanation: If we want to make 3 bouquets of 2 flowers each, we need at least 6 flowers. But we are given only 5 flowers, so, we cannot make the bouquets.</p><h3>Example 3</h3><p>Input: n = 5, nums = [1, 10, 3, 10, 2], m = 3, k = 1</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem, at its essence, involves optimal scheduling and resource allocation - concepts critical to many areas in software development. An interesting real-world application is found in distributed computing or microservices architecture, where you need to manage the execution time and ordering of numerous independent tasks (roses blooming) to meet certain requirements (making bouquets). Similarly, this problem can reflect challenges in project management software, where tasks have specific start times (bloom days), and certain tasks have to be completed together (bouquet making) within specified time frames.</p></div>
+<div class="section"><h2>Editorial: Linear Search</h2><html><head></head><body><h3><strong>Intuition: </strong></h3>
+<p>The very straightforward approach is to check all possible answers from range min to max linearly, where, min is the minimum element of the array and max is the maximum element of the array. Each number in the range shows the number of days. The minimum number of days for which at least 'm' bouquet can be made each containing 'k' rose will be our final answer.</p>
+<h3><strong>Approach: </strong></h3>
+<p><strong>Edge case: </strong> If the product k*m(minimum number of roses required) is greater than size of the array, then it is impossible to make bouquet, in that case return -1</p>
+<strong>Working of roseGarden(n,  nums, k, m): </strong>
+<ol>
+<li>Calculate <code>val</code> as the product of 'm' (number of bouquets) and 'k'( number of roses each bouquet should have), ensuring it's cast to long long to avoid overflow.
+Determine the size n of the array.</li>
+<li>Initialize <code>mini</code> and <code>maxi</code> to INT_MAX and INT_MIN, respectively, to find the first day when a flower blooms and the last on which all fowers should have already bloomed.</li>
+<li>Iterate through the days starting from mini to maxi. For each day , use the possible function to check if the total number of bouquets on this day, each containing k roses is greater than or equal to <b>"m"</b>. If yes, return the current day as an answer.</li>
+<li>After coming out of the loop, return -1 as no day is found matching the constraints.</li>
+</ol><br>
+<strong>Working of possible(nums, day, k): </strong>
+<ol>
+<li>First, initialize 'n' is to the size of nums, which represents the number of flowers. Initialize 'cnt' to 0 which keeps track of how many flowers have bloomed within the current day threshold day. Initialize 'noOfB' of 0,  keeps track of the total number of bouquets formed.</li>
+<li>The function iterates through each flower's blooming day in nums. For each flower, if its blooming day is less than or equal to day, increment 'cnt' (indicating a flower that can be used to form a bouquet). If a flower's blooming day exceeds day, calculate how many complete bouquets (cnt / k) can be formed with the flowers that bloomed up to that point (cnt). Add this count to noOfB. Reset 'cnt' to zero because flowers blooming after day cannot be used for the current bouquet.</li>
+<li>After iterating through all flowers, there might be remaining flowers (cnt) that have bloomed within day. Calculate how many additional bouquets can be formed with these remaining flowers and add this to noOfB.</li>
+<li>Finally, check if the total number of bouquets (noOfB) formed is greater than or equal to m. If so, return true, indicating that it's possible to form at least m bouquets with the given constraints (day and k).If not, return false.</li>
+</ol><br>
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day */
+    bool possible(vector<int> &nums, int day, int m, int k) {
+        int n = nums.size(); 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers <= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB >= m; 
+    }
+public:
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each */
+    int roseGarden(int n, vector<int> nums, int k, int m) {
+        
+        /* Calculate the minimum 
+        number of flowers required*/
+        long long val = m * 1ll * k * 1ll; 
+        
+        /* Impossible case: not enough 
+        flowers to make m bouquets*/
+        if (val > n) return -1; 
+        
+        /* Find maximum and minimum
+        bloom days in the array */
+        int mini = INT_MAX, maxi = INT_MIN;
+        for (int i = 0; i < n; i++) {
+            mini = min(mini, nums[i]); 
+            maxi = max(maxi, nums[i]); 
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (int i = mini; i <= maxi; i++) {
+            if (possible(nums, i, m, k))
+                return i;
+        }
+        
+        // Return-1 if no such day exists
+        return -1; 
+    }
+};
+
+int main() {
+    vector<int> arr = {7, 7, 7, 7, 13, 11, 12, 7}; 
+    
+    int n = arr.size();
+    
+    // Number of flowers per bouquet
+    int k = 3; 
+    
+    // Number of bouquets needed
+    int m = 2; 
+
+    // Create an instance of the Solution class
+    Solution sol; 
+    
+    int ans = sol.roseGarden(n, arr, k, m); 
+
+    if (ans == -1) {
+        cout << "We cannot make m bouquets.\n"; 
+    } else {
+        cout << "We can make bouquets on day " << ans << "\n"; 
+    }
+
+    return 0; 
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day*/
+    private boolean possible(int[] nums, int day, int m, int k) {
+        int n = nums.length; 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers <= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB >= m; 
+    }
+
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each*/
+    public int roseGarden(int n, int[] nums, int k, int m) {
+        
+        /* Calculate the minimum 
+           number of flowers required*/
+        long val = (long) m * k; 
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets*/
+        if (val > n) return -1; 
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = Integer.MAX_VALUE, maxi = Integer.MIN_VALUE;
+        for (int i = 0; i < n; i++) {
+            mini = Math.min(mini, nums[i]); 
+            maxi = Math.max(maxi, nums[i]); 
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (int i = mini; i <= maxi; i++) {
+            if (possible(nums, i, m, k))
+                return i;
+        }
+        
+        // Return-1 if no such day exists
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {7, 7, 7, 7, 13, 11, 12, 7}; 
+        
+        int n = arr.length;
+        
+        // Number of flowers per bouquet
+        int k = 3; 
+        
+        // Number of bouquets needed
+        int m = 2; 
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution(); 
+        
+        int ans = sol.roseGarden(n, arr, k, m); 
+
+        if (ans == -1) {
+            System.out.println("We cannot make m bouquets."); 
+        } else {
+            System.out.println("We can make bouquets on day " + ans); 
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="python" class="language-python">
+ class Solution:
+    """Function to check if it's possible to make
+    m bouquets with k flowers each on a given day"""
+    def possible(self, nums, day, m, k):
+        n = len(nums)
+        
+        # Count of flowers bloomed
+        cnt = 0 
+        
+        # Count of bouquets formed
+        noOfB = 0 
+
+        # Count number of bouquets that can be formed
+        for i in range(n):
+            if nums[i] <= day:
+                # Increment flower count
+                cnt += 1 
+            else:
+                # Calculate number of bouquets formed with flowers <= day
+                noOfB += (cnt // k)
+                
+                # Reset flower count
+                cnt = 0 
+        
+        # Add remaining flowers as a bouquet
+        noOfB += (cnt // k) 
+        
+        # Return true if enough bouquets can be formed
+        return noOfB >= m 
+
+    """Function to find the earliest day to
+    make m bouquets of k flowers each"""
+    def roseGarden(self, n, nums, k, m):
+        # Calculate the minimum number of flowers required
+        val = m * k 
+        
+        # Impossible case: not enough flowers to make m bouquets
+        if val > n:
+            return -1 
+        
+        # Find maximum and minimum bloom days in the array
+        mini = float('inf')
+        maxi = float('-inf')
+        for num in nums:
+            mini = min(mini, num) 
+            maxi = max(maxi, num) 
+        
+        # Linear search to find the earliest day to make m bouquets
+        for i in range(mini, maxi + 1):
+            if self.possible(nums, i, m, k):
+                return i
+
+        # Return -1 if no such day exists
+        return -1 
+
+if __name__ == "__main__":
+    arr = [7, 7, 7, 7, 13, 11, 12, 7] 
+    
+    n = len(arr)
+    
+    # Number of flowers per bouquet
+    k = 3 
+    
+    # Number of bouquets needed
+    m = 2 
+
+    # Create an instance of the Solution class
+    sol = Solution() 
+    
+    ans = sol.roseGarden(n, arr, k, m) 
+
+    if ans == -1:
+        print("We cannot make m bouquets.") 
+    else:
+        print(f"We can make bouquets on day {ans}") 
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day */
+    possible(nums, day, m, k) {
+        let n = nums.length;
+        
+        // Count of flowers bloomed
+        let cnt = 0;
+        
+        // Count of bouquets formed
+        let noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (let i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers <= day */
+                noOfB += Math.floor(cnt / k);
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += Math.floor(cnt / k);
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB >= m;
+    }
+
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each */
+    roseGarden(n, nums, k, m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        let val = m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val > n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        let mini = Infinity, maxi = -Infinity;
+        for (let i = 0; i < n; i++) {
+            mini = Math.min(mini, nums[i]);
+            maxi = Math.max(maxi, nums[i]);
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (let i = mini; i <= maxi; i++) {
+            if (this.possible(nums, i, m, k)) {
+                return i;
+            }
+        }
+        // Return -1 if no such day exists
+        return -1;
+    }
+}
+
+function main() {
+    let arr = [7, 7, 7, 7, 13, 11, 12, 7];
+    
+    let n = arr.length;
+    
+    // Number of flowers per bouquet
+    let k = 3;
+    
+    // Number of bouquets needed
+    let m = 2;
+
+    // Create an instance of the Solution class
+    let sol = new Solution();
+    
+    let ans = sol.roseGarden(n, arr, k, m);
+    if (ans == -1) {
+        console.log("We cannot make m bouquets.");
+    } else {
+        console.log("We can make bouquets on day " + ans);
+    }
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution {
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day */
+    private bool Possible(List<int> nums, int day, int m, int k) {
+        int n = nums.Count;
+        
+        // Count of flowers bloomed
+        int cnt = 0;
+        
+        // Count of bouquets formed
+        int noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers <= day */
+                noOfB += cnt / k;
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += cnt / k;
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB >= m;
+    }
+
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each */
+    public int RoseGarden(int n, List<int> nums, int k, int m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        long val = (long)m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val > n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = int.MaxValue, maxi = int.MinValue;
+        for (int i = 0; i < n; i++) {
+            mini = Math.Min(mini, nums[i]);
+            maxi = Math.Max(maxi, nums[i]);
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (int i = mini; i <= maxi; i++) {
+            if (this.Possible(nums, i, m, k)) {
+                return i;
+            }
+        }
+        // Return -1 if no such day exists
+        return -1;
+    }
+}
+
+public class Program {
+    public static void Main(string[] args) {
+        List<int> arr = new List<int> { 7, 7, 7, 7, 13, 11, 12, 7 };
+        
+        int n = arr.Count;
+        
+        // Number of flowers per bouquet
+        int k = 3;
+        
+        // Number of bouquets needed
+        int m = 2;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+        
+        int ans = sol.RoseGarden(n, arr, k, m);
+        if (ans == -1) {
+            Console.WriteLine("We cannot make m bouquets.");
+        } else {
+            Console.WriteLine("We can make bouquets on day " + ans);
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+import "math"
+
+// Function to check if it's possible to make m bouquets with k flowers each on a given day
+func possible(nums []int, day int, m int, k int) bool {
+	n := len(nums)
+
+	// Count of flowers bloomed
+	cnt := 0
+
+	// Count of bouquets formed
+	noOfB := 0
+
+	// Count number of bouquets that can be formed
+	for i := 0; i < n; i++ {
+		if nums[i] <= day {
+			// Increment flower count
+			cnt++
+		} else {
+			// Calculate number of bouquets formed with flowers <= day
+			noOfB += cnt / k
+			// Reset flower count
+			cnt = 0
+		}
+	}
+	// Add remaining flowers as a bouquet
+	noOfB += cnt / k
+
+	// Return true if enough bouquets can be formed
+	return noOfB >= m
+}
+
+// Function to find the earliest day to make m bouquets of k flowers each
+func roseGarden(n int, nums []int, k int, m int) int {
+	// Calculate the minimum number of flowers required
+	val := int64(m) * int64(k)
+
+	// Impossible case: not enough flowers to make m bouquets
+	if val > int64(n) {
+		return -1
+	}
+
+	// Find maximum and minimum bloom days in the array
+	mini := math.MaxInt
+	maxi := math.MinInt
+
+	for i := 0; i < n; i++ {
+		if nums[i] < mini {
+			mini = nums[i]
+		}
+		if nums[i] > maxi {
+			maxi = nums[i]
+		}
+	}
+
+	// Linear search to find the earliest day to make m bouquets
+	for i := mini; i <= maxi; i++ {
+		if possible(nums, i, m, k) {
+			return i
+		}
+	}
+
+	// Return -1 if no such day exists
+	return -1
+}
+
+func main() {
+	// Input array
+	arr := []int{7, 7, 7, 7, 13, 11, 12, 7}
+	n := len(arr)
+
+	// Number of flowers per bouquet
+	k := 3
+
+	// Number of bouquets needed
+	m := 2
+
+	ans := roseGarden(n, arr, k, m)
+
+	if ans == -1 {
+		fmt.Println("We cannot make m bouquets.")
+	} else {
+		fmt.Printf("We can make bouquets on day %d\n", ans)
+	}
+}
+</code></pre></div></div></div>
+
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity:</strong>O((max-min+1) * N), where max is the maximum element of the array, min is the minimum element of the array, N is size of the array}.
+<li>As, running a loop to check answers that are in the range of [min, max]. For every possible answer, the possible() function is being called. Inside the possible() function,  traversing the entire array, which results in O(N).</li><br><br>
+<strong>Space Complexity:</strong> As no additional space is used, so the Space Complexity is O(1).</body></html></div>
+<div class="section"><h2>Editorial: Binary Search</h2><html><head></head><body><h3><strong>Intuition: </strong></h3>
+<p>The idea here is to use binary search algorithm as the search range[min, max] is sorted, where, min is the earliest and max is the latest day for a rose to bloom. So, if it's feasible to make m bouquets on day 'mid'((low+high)/2), eliminate the right half of the search space to search for an earlier day. Else, eliminate the left half to find a  higher range of days. This way, the brute-force solution can be optimized.</p>
+<h3><strong>Approach: </strong></h3>
+<p><strong>Edge case: </strong> If the product k*m is greater than size of the array, then it is impossible to make bouquet, in that case return -1.</p>
+<strong>Working of roseGarden(n,  nums, k, m): </strong>
+<ol>
+<li>Initialize <code>mini</code> to INT_MAX and <code>maxi</code> to INT_MIN to find the earliest and latest bloom days in the nums array.</li>
+<li>Use binary search to find the earliest day (ans) where it’s possible to make m bouquets of k flowers each. Initialize left to mini and right to maxi. The range [low,high] defines the search space.</li>
+<li>While left is less than or equal to right, calculate the middle day 'mid'. Use the possible function to check if it's feasible to make m bouquets on day mid. If feasible, update ans to mid and move right to mid - 1 to search for an earlier day. Otherwise, move left to mid + 1 to search in the higher range of days.</li>
+<li>After the binary search completes, ans will hold the earliest day on which it's possible to make m bouquets of k flowers each. Return ans.
+If no such day exists (ans remains -1), return -1 indicating it's not possible under the given constraints.</li>
+</ol><br>
+<strong>Working of possible(nums, day, k): </strong>
+<ol>
+<li>First, initialize 'n' is to the size of nums, which represents the number of flowers. Initialize 'cnt' to 0 which keeps track of how many flowers have bloomed within the current day threshold day. Initialize 'noOfB' of 0,  keeps track of the total number of bouquets formed.</li>
+<li>The function iterates through each flower's blooming day in nums. For each flower, if its blooming day is less than or equal to day, increment 'cnt' (indicating a flower that can be used to form a bouquet). If a flower's blooming day exceeds day, calculate how many complete bouquets (cnt / k) can be formed with the flowers that bloomed up to that point (cnt). Add this count to noOfB. Reset 'cnt' to zero because flowers blooming after day cannot be used for the current bouquet.</li>
+<li>After iterating through all flowers, there might be remaining flowers (cnt) that have bloomed within day. Calculate how many additional bouquets can be formed with these remaining flowers and add this to noOfB.</li>
+<li>Finally, check if the total number of bouquets (noOfB) formed is greater than or equal to m. If so, return true, indicating that it's possible to form at least m bouquets with the given constraints (day and k).If not, return false.</li>
+</ol><br>
+
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (7).png-MsSSUFA0" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (8).png-g5x0NmsQ" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (9).png-Lxzx0RFO" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (10).png-CpiMMQtw" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (7).png-MsSSUFA0" alt="Image 1"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (8).png-g5x0NmsQ" alt="Image 2"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (9).png-Lxzx0RFO" alt="Image 3"><img src="https://static.takeuforward.org/premium/Binary Search/On answers//K (10).png-CpiMMQtw" alt="Image 4"></div></div>
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day */
+    bool possible(vector<int> &nums, int day, int m, int k) {
+        int n = nums.size(); 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers <= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB >= m; 
+    }
+public:
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each */
+    int roseGarden(int n, vector<int> nums, int k, int m) {
+        
+        /* Calculate the minimum 
+        number of flowers required*/
+        long long val = m * 1ll * k * 1ll; 
+        
+        /* Impossible case: not enough 
+        flowers to make m bouquets*/
+        if (val > n) return -1; 
+        
+        /* Find maximum and minimum
+        bloom days in the array */
+        int mini = INT_MAX, maxi = INT_MIN;
+        for (int i = 0; i < n; i++) {
+            mini = min(mini, nums[i]); 
+            maxi = max(maxi, nums[i]); 
+        }
+
+        /* Binary search to find the
+        earliest day to make m bouquets */
+        int left = mini, right = maxi, ans = -1;
+        while (left <= right) {
+            
+            // Calculate the middle day
+            int mid = left + (right - left) / 2; 
+            
+            /* Check if it's possible to 
+            make m bouquets on day mid */
+            if (possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid; 
+                
+                // Try for a smaller day
+                right = mid - 1; 
+            } else {
+                left = mid + 1; 
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists */
+        return ans; 
+    }
+};
+
+int main() {
+    vector<int> arr = {7, 7, 7, 7, 13, 11, 12, 7}; 
+    
+    int n = arr.size();
+    
+    // Number of flowers per bouquet
+    int k = 3; 
+    
+    // Number of bouquets needed
+    int m = 2; 
+
+    // Create an instance of the Solution class
+    Solution sol; 
+    
+    int ans = sol.roseGarden(n, arr, k, m); 
+
+    if (ans == -1) {
+        cout << "We cannot make m bouquets.\n"; 
+    } else {
+        cout << "We can make bouquets on day " << ans << "\n"; 
+    }
+
+    return 0; 
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day*/
+    private boolean possible(int[] nums, int day, int m, int k) {
+        int n = nums.length; 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers <= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB >= m; 
+    }
+
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each*/
+    public int roseGarden(int n, int[] nums, int k, int m) {
+        
+        /* Calculate the minimum 
+           number of flowers required*/
+        long val = (long) m * k; 
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets*/
+        if (val > n) return -1; 
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = Integer.MAX_VALUE, maxi = Integer.MIN_VALUE;
+        for (int i = 0; i < n; i++) {
+            mini = Math.min(mini, nums[i]); 
+            maxi = Math.max(maxi, nums[i]); 
+        }
+
+        /* Binary search to find the
+           earliest day to make m bouquets */
+        int left = mini, right = maxi, ans = -1;
+        while (left <= right) {
+            
+            // Calculate the middle day
+            int mid = left + (right - left) / 2; 
+            
+            /* Check if it's possible to 
+               make m bouquets on day mid */
+            if (possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid; 
+                
+                // Try for a smaller day
+                right = mid - 1; 
+            } else {
+                left = mid + 1; 
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists*/
+        return ans; 
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {7, 7, 7, 7, 13, 11, 12, 7}; 
+        
+        int n = arr.length;
+        
+        // Number of flowers per bouquet
+        int k = 3; 
+        
+        // Number of bouquets needed
+        int m = 2; 
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution(); 
+        
+        int ans = sol.roseGarden(n, arr, k, m); 
+
+        if (ans == -1) {
+            System.out.println("We cannot make m bouquets."); 
+        } else {
+            System.out.println("We can make bouquets on day " + ans); 
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """Function to check if it's possible to make
+    m bouquets with k flowers each on day """
+    def possible(self, nums, day, m, k):
+        n = len(nums)
+        
+        # Count of flowers bloomed
+        cnt = 0 
+        
+        # Count of bouquets formed
+        noOfB = 0 
+
+        # Count number of bouquets that can be formed
+        for i in range(n):
+            if nums[i] <= day:
+                # Increment flower count
+                cnt += 1 
+            else:
+                """ Calculate number of bouquets
+                formed with flowers <= day """
+                noOfB += (cnt // k)
+                
+                # Reset flower count
+                cnt = 0 
+        
+        # Add remaining flowers as a bouquet
+        noOfB += (cnt // k) 
+        
+        """ Return true if enough 
+        bouquets can be formed """
+        return noOfB >= m 
+
+    """ Function to find the earliest day to
+    make m bouquets of k flowers each """
+    def roseGarden(self, n, nums, k, m):
+        
+        """ Calculate the minimum 
+        number of flowers required """
+        val = m * k 
+        
+        """ Impossible case: not enough 
+            flowers to make m bouquets """
+        if val > n:
+            return -1 
+        
+        """ Find maximum and minimum
+            bloom days in the array """
+        mini = float('inf')
+        maxi = float('-inf')
+        for num in nums:
+            mini = min(mini, num) 
+            maxi = max(maxi, num) 
+        
+        """ Binary search to find the
+            earliest day to make m bouquets """
+        left = mini 
+        right = maxi 
+        ans = -1
+        while left <= right:
+            
+            # Calculate the middle day
+            mid = left + (right - left) // 2 
+            
+            """ Check if it's possible to 
+                make m bouquets on day mid """
+            if self.possible(nums, mid, m, k):
+                
+                # Update the answer to mid
+                ans = mid 
+                
+                # Try for a smaller day
+                right = mid - 1 
+            else:
+                left = mid + 1 
+        
+        """ Return the earliest day or 
+        -1 if no such day exists"""
+        return ans 
+
+if __name__ == "__main__":
+    arr = [7, 7, 7, 7, 13, 11, 12, 7] 
+    
+    n = len(arr)
+    
+    # Number of flowers per bouquet
+    k = 3 
+    
+    # Number of bouquets needed
+    m = 2 
+
+    # Create an instance of the Solution class
+    sol = Solution() 
+    
+    ans = sol.roseGarden(n, arr, k, m) 
+
+    if ans == -1:
+        print("We cannot make m bouquets.") 
+    else:
+        print(f"We can make bouquets on day {ans}") 
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day */
+    possible(nums, day, m, k) {
+        let n = nums.length;
+        
+        // Count of flowers bloomed
+        let cnt = 0;
+        
+        // Count of bouquets formed
+        let noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (let i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers <= day */
+                noOfB += Math.floor(cnt / k);
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += Math.floor(cnt / k);
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB >= m;
+    }
+
+    /*Function to find the earliest day to
+    make m bouquets of k flowers each */
+    roseGarden(n, nums, k, m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        let val = m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val > n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        let mini = Infinity, maxi = -Infinity;
+        for (let i = 0; i < n; i++) {
+            mini = Math.min(mini, nums[i]);
+            maxi = Math.max(maxi, nums[i]);
+        }
+
+        /* Binary search to find the
+           earliest day to make m bouquets */
+        let left = mini, right = maxi, ans = -1;
+        while (left <= right) {
+            
+            // Calculate the middle day
+            let mid = left + Math.floor((right - left) / 2);
+            
+            /* Check if it's possible to 
+               make m bouquets on day mid */
+            if (this.possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid;
+                
+                // Try for a smaller day
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists */
+        return ans;
+    }
+}
+
+function main() {
+    let arr = [7, 7, 7, 7, 13, 11, 12, 7];
+    
+    let n = arr.length;
+    
+    // Number of flowers per bouquet
+    let k = 3;
+    
+    // Number of bouquets needed
+    let m = 2;
+
+    // Create an instance of the Solution class
+    let sol = new Solution();
+    
+    let ans = sol.roseGarden(n, arr, k, m);
+    if (ans == -1) {
+        console.log("We cannot make m bouquets.");
+    } else {
+        console.log("We can make bouquets on day " + ans);
+    }
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution {
+    /* Function to check if it's possible to make
+    m bouquets with k flowers each on day */
+    private bool Possible(List<int> nums, int day, int m, int k) {
+        int n = nums.Count;
+        
+        // Count of flowers bloomed
+        int cnt = 0;
+        
+        // Count of bouquets formed
+        int noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i < n; i++) {
+            if (nums[i] <= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers <= day */
+                noOfB += cnt / k;
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += cnt / k;
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB >= m;
+    }
+
+    /*Function to find the earliest day to
+    make m bouquets of k flowers each */
+    public int RoseGarden(int n, List<int> nums, int k, int m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        long val = (long)m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val > n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = int.MaxValue, maxi = int.MinValue;
+        foreach (int num in nums) {
+            mini = Math.Min(mini, num);
+            maxi = Math.Max(maxi, num);
+        }
+
+        /* Binary search to find the
+           earliest day to make m bouquets */
+        int left = mini, right = maxi, ans = -1;
+        while (left <= right) {
+            
+            // Calculate the middle day
+            int mid = left + (right - left) / 2;
+            
+            /* Check if it's possible to 
+               make m bouquets on day mid */
+            if (this.Possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid;
+                
+                // Try for a smaller day
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists */
+        return ans;
+    }
+}
+
+public class Program {
+    public static void Main(string[] args) {
+        List<int> arr = new List<int> { 7, 7, 7, 7, 13, 11, 12, 7 };
+        
+        int n = arr.Count;
+        
+        // Number of flowers per bouquet
+        int k = 3;
+        
+        // Number of bouquets needed
+        int m = 2;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+        
+        int ans = sol.RoseGarden(n, arr, k, m);
+        if (ans == -1) {
+            Console.WriteLine("We cannot make m bouquets.");
+        } else {
+            Console.WriteLine("We can make bouquets on day " + ans);
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+import "math"
+
+/* Function to check if it's possible to make m bouquets 
+with k flowers each on a given day */
+func possible(nums []int, day int, m int, k int) bool {
+	n := len(nums)
+
+	// Count of flowers bloomed
+	cnt := 0
+
+	// Count of bouquets formed
+	noOfB := 0
+
+	// Count number of bouquets that can be formed
+	for i := 0; i < n; i++ {
+		if nums[i] <= day {
+			// Increment flower count
+			cnt++
+		} else {
+			// Calculate number of bouquets formed with flowers <= day
+			noOfB += cnt / k
+			// Reset flower count
+			cnt = 0
+		}
+	}
+	// Add remaining flowers as a bouquet
+	noOfB += cnt / k
+
+	// Return true if enough bouquets can be formed
+	return noOfB >= m
+}
+
+// Function to find the earliest day to make m bouquets of k flowers each
+func roseGarden(n int, nums []int, k int, m int) int {
+	// Calculate the minimum number of flowers required
+	val := int64(m) * int64(k)
+
+	// Impossible case: not enough flowers to make m bouquets
+	if val > int64(n) {
+		return -1
+	}
+
+	// Find maximum and minimum bloom days in the array
+	mini := math.MaxInt
+	maxi := math.MinInt
+
+	for i := 0; i < n; i++ {
+		if nums[i] < mini {
+			mini = nums[i]
+		}
+		if nums[i] > maxi {
+			maxi = nums[i]
+		}
+	}
+
+	// Binary search to find the earliest day to make m bouquets
+	left := mini
+	right := maxi
+	ans := -1
+
+	for left <= right {
+		// Calculate the middle day
+		mid := left + (right-left)/2
+
+		// Check if it's possible to make m bouquets on day mid
+		if possible(nums, mid, m, k) {
+			// Update the answer to mid
+			ans = mid
+			// Try for a smaller day
+			right = mid - 1
+		} else {
+			left = mid + 1
+		}
+	}
+
+	// Return the earliest day or -1 if no such day exists
+	return ans
+}
+
+func main() {
+	// Input array
+	arr := []int{7, 7, 7, 7, 13, 11, 12, 7}
+	n := len(arr)
+
+	// Number of flowers per bouquet
+	k := 3
+
+	// Number of bouquets needed
+	m := 2
+
+	ans := roseGarden(n, arr, k, m)
+
+	if ans == -1 {
+		fmt.Println("We cannot make m bouquets.")
+	} else {
+		fmt.Printf("We can make bouquets on day %d\n", ans)
+	}
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity:</strong>O(log(max-min+1) * N), where max is the maximum element of the array, min is the minimum element of the array, N is size of the array.
+<li> As binary search is being applied on answers that are in the range of [min, max]. For every possible answer ‘mid’, the possible() function is being called. Inside the possible() function, traversing the entire array, which results in O(N).</li><br>
+<strong>Space Complexity:</strong> As no additional space is used, so the Space Complexity is O(1).</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day */
+    bool possible(vector&lt;int&gt; &amp;nums, int day, int m, int k) {
+        int n = nums.size(); 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers &lt;= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB &gt;= m; 
+    }
+public:
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each */
+    int roseGarden(int n, vector&lt;int&gt; nums, int k, int m) {
+        
+        /* Calculate the minimum 
+        number of flowers required*/
+        long long val = m * 1ll * k * 1ll; 
+        
+        /* Impossible case: not enough 
+        flowers to make m bouquets*/
+        if (val &gt; n) return -1; 
+        
+        /* Find maximum and minimum
+        bloom days in the array */
+        int mini = INT_MAX, maxi = INT_MIN;
+        for (int i = 0; i &lt; n; i++) {
+            mini = min(mini, nums[i]); 
+            maxi = max(maxi, nums[i]); 
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (int i = mini; i &lt;= maxi; i++) {
+            if (possible(nums, i, m, k))
+                return i;
+        }
+        
+        // Return-1 if no such day exists
+        return -1; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day */
+    private bool Possible(List&lt;int&gt; nums, int day, int m, int k) {
+        int n = nums.Count;
+        
+        // Count of flowers bloomed
+        int cnt = 0;
+        
+        // Count of bouquets formed
+        int noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers &lt;= day */
+                noOfB += cnt / k;
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += cnt / k;
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB &gt;= m;
+    }
+
+    public int RoseGarden(int n, List&lt;int&gt; nums, int k, int m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        long val = (long)m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val &gt; n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = int.MaxValue, maxi = int.MinValue;
+        for (int i = 0; i &lt; n; i++) {
+            mini = Math.Min(mini, nums[i]);
+            maxi = Math.Max(maxi, nums[i]);
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (int i = mini; i &lt;= maxi; i++) {
+            if (this.Possible(nums, i, m, k)) {
+                return i;
+            }
+        }
+        // Return -1 if no such day exists
+        return -1;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+// Function to check if it&#x27;s possible to make m bouquets with k flowers each on a given day
+func possible(nums []int, day int, m int, k int) bool {
+	n := len(nums)
+
+	// Count of flowers bloomed
+	cnt := 0
+
+	// Count of bouquets formed
+	noOfB := 0
+
+	// Count number of bouquets that can be formed
+	for i := 0; i &lt; n; i++ {
+		if nums[i] &lt;= day {
+			// Increment flower count
+			cnt++
+		} else {
+			// Calculate number of bouquets formed with flowers &lt;= day
+			noOfB += cnt / k
+			// Reset flower count
+			cnt = 0
+		}
+	}
+	// Add remaining flowers as a bouquet
+	noOfB += cnt / k
+
+	// Return true if enough bouquets can be formed
+	return noOfB &gt;= m
+}
+
+// Function to find the earliest day to make m bouquets of k flowers each
+func roseGarden(n int, nums []int, k int, m int) int {
+	// Calculate the minimum number of flowers required
+	val := int64(m) * int64(k)
+
+	// Impossible case: not enough flowers to make m bouquets
+	if val &gt; int64(n) {
+		return -1
+	}
+
+	// Find maximum and minimum bloom days in the array
+	mini := math.MaxInt
+	maxi := math.MinInt
+
+	for i := 0; i &lt; n; i++ {
+		if nums[i] &lt; mini {
+			mini = nums[i]
+		}
+		if nums[i] &gt; maxi {
+			maxi = nums[i]
+		}
+	}
+
+	// Linear search to find the earliest day to make m bouquets
+	for i := mini; i &lt;= maxi; i++ {
+		if possible(nums, i, m, k) {
+			return i
+		}
+	}
+
+	// Return -1 if no such day exists
+	return -1
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day*/
+    private boolean possible(int[] nums, int day, int m, int k) {
+        int n = nums.length; 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers &lt;= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB &gt;= m; 
+    }
+
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each*/
+    public int roseGarden(int n, int[] nums, int k, int m) {
+        
+        /* Calculate the minimum 
+           number of flowers required*/
+        long val = (long) m * k; 
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets*/
+        if (val &gt; n) return -1; 
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = Integer.MAX_VALUE, maxi = Integer.MIN_VALUE;
+        for (int i = 0; i &lt; n; i++) {
+            mini = Math.min(mini, nums[i]); 
+            maxi = Math.max(maxi, nums[i]); 
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (int i = mini; i &lt;= maxi; i++) {
+            if (possible(nums, i, m, k))
+                return i;
+        }
+        
+        // Return-1 if no such day exists
+        return -1;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day */
+    possible(nums, day, m, k) {
+        let n = nums.length;
+        
+        // Count of flowers bloomed
+        let cnt = 0;
+        
+        // Count of bouquets formed
+        let noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (let i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers &lt;= day */
+                noOfB += Math.floor(cnt / k);
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += Math.floor(cnt / k);
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB &gt;= m;
+    }
+
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each */
+    roseGarden(n, nums, k, m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        let val = m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val &gt; n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        let mini = Infinity, maxi = -Infinity;
+        for (let i = 0; i &lt; n; i++) {
+            mini = Math.min(mini, nums[i]);
+            maxi = Math.max(maxi, nums[i]);
+        }
+
+        /* Linear search to find the
+        earliest day to make m bouquets */
+        for (let i = mini; i &lt;= maxi; i++) {
+            if (this.possible(nums, i, m, k)) {
+                return i;
+            }
+        }
+        // Return -1 if no such day exists
+        return -1;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot;Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on a given day&quot;&quot;&quot;
+    def possible(self, nums, day, m, k):
+        n = len(nums)
+        
+        # Count of flowers bloomed
+        cnt = 0 
+        
+        # Count of bouquets formed
+        noOfB = 0 
+
+        # Count number of bouquets that can be formed
+        for i in range(n):
+            if nums[i] &lt;= day:
+                # Increment flower count
+                cnt += 1 
+            else:
+                # Calculate number of bouquets formed with flowers &lt;= day
+                noOfB += (cnt // k)
+                
+                # Reset flower count
+                cnt = 0 
+        
+        # Add remaining flowers as a bouquet
+        noOfB += (cnt // k) 
+        
+        # Return true if enough bouquets can be formed
+        return noOfB &gt;= m 
+
+    &quot;&quot;&quot;Function to find the earliest day to
+    make m bouquets of k flowers each&quot;&quot;&quot;
+    def roseGarden(self, n, nums, k, m):
+        # Calculate the minimum number of flowers required
+        val = m * k 
+        
+        # Impossible case: not enough flowers to make m bouquets
+        if val &gt; n:
+            return -1 
+        
+        # Find maximum and minimum bloom days in the array
+        mini = float(&#x27;inf&#x27;)
+        maxi = float(&#x27;-inf&#x27;)
+        for num in nums:
+            mini = min(mini, num) 
+            maxi = max(maxi, num) 
+        
+        # Linear search to find the earliest day to make m bouquets
+        for i in range(mini, maxi + 1):
+            if self.possible(nums, i, m, k):
+                return i
+
+        # Return -1 if no such day exists
+        return -1 </code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day */
+    bool possible(vector&lt;int&gt; &amp;nums, int day, int m, int k) {
+        int n = nums.size(); 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers &lt;= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB &gt;= m; 
+    }
+public:
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each */
+    int roseGarden(int n, vector&lt;int&gt; nums, int k, int m) {
+        
+        /* Calculate the minimum 
+        number of flowers required*/
+        long long val = m * 1ll * k * 1ll; 
+        
+        /* Impossible case: not enough 
+        flowers to make m bouquets*/
+        if (val &gt; n) return -1; 
+        
+        /* Find maximum and minimum
+        bloom days in the array */
+        int mini = INT_MAX, maxi = INT_MIN;
+        for (int i = 0; i &lt; n; i++) {
+            mini = min(mini, nums[i]); 
+            maxi = max(maxi, nums[i]); 
+        }
+
+        /* Binary search to find the
+        earliest day to make m bouquets */
+        int left = mini, right = maxi, ans = -1;
+        while (left &lt;= right) {
+            
+            // Calculate the middle day
+            int mid = left + (right - left) / 2; 
+            
+            /* Check if it&#x27;s possible to 
+            make m bouquets on day mid */
+            if (possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid; 
+                
+                // Try for a smaller day
+                right = mid - 1; 
+            } else {
+                left = mid + 1; 
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists */
+        return ans; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day */
+    private bool Possible(List&lt;int&gt; nums, int day, int m, int k) {
+        int n = nums.Count;
+        
+        // Count of flowers bloomed
+        int cnt = 0;
+        
+        // Count of bouquets formed
+        int noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers &lt;= day */
+                noOfB += cnt / k;
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += cnt / k;
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB &gt;= m;
+    }
+
+    public int RoseGarden(int n, List&lt;int&gt; nums, int k, int m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        long val = (long)m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val &gt; n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = int.MaxValue, maxi = int.MinValue;
+        foreach (int num in nums) {
+            mini = Math.Min(mini, num);
+            maxi = Math.Max(maxi, num);
+        }
+
+        /* Binary search to find the
+           earliest day to make m bouquets */
+        int left = mini, right = maxi, ans = -1;
+        while (left &lt;= right) {
+            
+            // Calculate the middle day
+            int mid = left + (right - left) / 2;
+            
+            /* Check if it&#x27;s possible to 
+               make m bouquets on day mid */
+            if (this.Possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid;
+                
+                // Try for a smaller day
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists */
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+/* Function to check if it&#x27;s possible to make m bouquets 
+with k flowers each on a given day */
+func possible(nums []int, day int, m int, k int) bool {
+	n := len(nums)
+
+	// Count of flowers bloomed
+	cnt := 0
+
+	// Count of bouquets formed
+	noOfB := 0
+
+	// Count number of bouquets that can be formed
+	for i := 0; i &lt; n; i++ {
+		if nums[i] &lt;= day {
+			// Increment flower count
+			cnt++
+		} else {
+			// Calculate number of bouquets formed with flowers &lt;= day
+			noOfB += cnt / k
+			// Reset flower count
+			cnt = 0
+		}
+	}
+	// Add remaining flowers as a bouquet
+	noOfB += cnt / k
+
+	// Return true if enough bouquets can be formed
+	return noOfB &gt;= m
+}
+
+// Function to find the earliest day to make m bouquets of k flowers each
+func roseGarden(n int, nums []int, k int, m int) int {
+	// Calculate the minimum number of flowers required
+	val := int64(m) * int64(k)
+
+	// Impossible case: not enough flowers to make m bouquets
+	if val &gt; int64(n) {
+		return -1
+	}
+
+	// Find maximum and minimum bloom days in the array
+	mini := math.MaxInt
+	maxi := math.MinInt
+
+	for i := 0; i &lt; n; i++ {
+		if nums[i] &lt; mini {
+			mini = nums[i]
+		}
+		if nums[i] &gt; maxi {
+			maxi = nums[i]
+		}
+	}
+
+	// Binary search to find the earliest day to make m bouquets
+	left := mini
+	right := maxi
+	ans := -1
+
+	for left &lt;= right {
+		// Calculate the middle day
+		mid := left + (right-left)/2
+
+		// Check if it&#x27;s possible to make m bouquets on day mid
+		if possible(nums, mid, m, k) {
+			// Update the answer to mid
+			ans = mid
+			// Try for a smaller day
+			right = mid - 1
+		} else {
+			left = mid + 1
+		}
+	}
+
+	// Return the earliest day or -1 if no such day exists
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day*/
+    private boolean possible(int[] nums, int day, int m, int k) {
+        int n = nums.length; 
+        
+        // Count of flowers bloomed
+        int cnt = 0; 
+        
+        // Count of bouquets formed
+        int noOfB = 0; 
+
+        // Count number of bouquets that can be formed
+        for (int i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++; 
+            } else {
+                /* Calculate number of bouquets
+                formed with flowers &lt;= day */
+                noOfB += (cnt / k);
+                
+                // Reset flower count
+                cnt = 0; 
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += (cnt / k); 
+
+        /* Return true if enough 
+        bouquets can be formed */
+        return noOfB &gt;= m; 
+    }
+
+    /* Function to find the earliest day to
+    make m bouquets of k flowers each*/
+    public int roseGarden(int n, int[] nums, int k, int m) {
+        
+        /* Calculate the minimum 
+           number of flowers required*/
+        long val = (long) m * k; 
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets*/
+        if (val &gt; n) return -1; 
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        int mini = Integer.MAX_VALUE, maxi = Integer.MIN_VALUE;
+        for (int i = 0; i &lt; n; i++) {
+            mini = Math.min(mini, nums[i]); 
+            maxi = Math.max(maxi, nums[i]); 
+        }
+
+        /* Binary search to find the
+           earliest day to make m bouquets */
+        int left = mini, right = maxi, ans = -1;
+        while (left &lt;= right) {
+            
+            // Calculate the middle day
+            int mid = left + (right - left) / 2; 
+            
+            /* Check if it&#x27;s possible to 
+               make m bouquets on day mid */
+            if (possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid; 
+                
+                // Try for a smaller day
+                right = mid - 1; 
+            } else {
+                left = mid + 1; 
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists*/
+        return ans; 
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day */
+    possible(nums, day, m, k) {
+        let n = nums.length;
+        
+        // Count of flowers bloomed
+        let cnt = 0;
+        
+        // Count of bouquets formed
+        let noOfB = 0;
+
+        // Count number of bouquets that can be formed
+        for (let i = 0; i &lt; n; i++) {
+            if (nums[i] &lt;= day) {
+                // Increment flower count
+                cnt++;
+            } else {
+                /* Calculate number of bouquets
+                   formed with flowers &lt;= day */
+                noOfB += Math.floor(cnt / k);
+                
+                // Reset flower count
+                cnt = 0;
+            }
+        }
+        // Add remaining flowers as a bouquet
+        noOfB += Math.floor(cnt / k);
+
+        /* Return true if enough 
+           bouquets can be formed */
+        return noOfB &gt;= m;
+    }
+
+    /*Function to find the earliest day to
+    make m bouquets of k flowers each */
+    roseGarden(n, nums, k, m) {
+        /* Calculate the minimum 
+           number of flowers required */
+        let val = m * k;
+        
+        /* Impossible case: not enough 
+           flowers to make m bouquets */
+        if (val &gt; n) return -1;
+        
+        /* Find maximum and minimum
+           bloom days in the array */
+        let mini = Infinity, maxi = -Infinity;
+        for (let i = 0; i &lt; n; i++) {
+            mini = Math.min(mini, nums[i]);
+            maxi = Math.max(maxi, nums[i]);
+        }
+
+        /* Binary search to find the
+           earliest day to make m bouquets */
+        let left = mini, right = maxi, ans = -1;
+        while (left &lt;= right) {
+            
+            // Calculate the middle day
+            let mid = left + Math.floor((right - left) / 2);
+            
+            /* Check if it&#x27;s possible to 
+               make m bouquets on day mid */
+            if (this.possible(nums, mid, m, k)) {
+                
+                // Update the answer to mid
+                ans = mid;
+                
+                // Try for a smaller day
+                right = mid - 1;
+            } else {
+                left = mid + 1;
+            }
+        }
+        
+        /* Return the earliest day or
+        -1 if no such day exists */
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot;Function to check if it&#x27;s possible to make
+    m bouquets with k flowers each on day &quot;&quot;&quot;
+    def possible(self, nums, day, m, k):
+        n = len(nums)
+        
+        # Count of flowers bloomed
+        cnt = 0 
+        
+        # Count of bouquets formed
+        noOfB = 0 
+
+        # Count number of bouquets that can be formed
+        for i in range(n):
+            if nums[i] &lt;= day:
+                # Increment flower count
+                cnt += 1 
+            else:
+                &quot;&quot;&quot; Calculate number of bouquets
+                formed with flowers &lt;= day &quot;&quot;&quot;
+                noOfB += (cnt // k)
+                
+                # Reset flower count
+                cnt = 0 
+        
+        # Add remaining flowers as a bouquet
+        noOfB += (cnt // k) 
+        
+        &quot;&quot;&quot; Return true if enough 
+        bouquets can be formed &quot;&quot;&quot;
+        return noOfB &gt;= m 
+
+    &quot;&quot;&quot; Function to find the earliest day to
+    make m bouquets of k flowers each &quot;&quot;&quot;
+    def roseGarden(self, n, nums, k, m):
+        
+        &quot;&quot;&quot; Calculate the minimum 
+        number of flowers required &quot;&quot;&quot;
+        val = m * k 
+        
+        &quot;&quot;&quot; Impossible case: not enough 
+            flowers to make m bouquets &quot;&quot;&quot;
+        if val &gt; n:
+            return -1 
+        
+        &quot;&quot;&quot; Find maximum and minimum
+            bloom days in the array &quot;&quot;&quot;
+        mini = float(&#x27;inf&#x27;)
+        maxi = float(&#x27;-inf&#x27;)
+        for num in nums:
+            mini = min(mini, num) 
+            maxi = max(maxi, num) 
+        
+        &quot;&quot;&quot; Binary search to find the
+            earliest day to make m bouquets &quot;&quot;&quot;
+        left = mini 
+        right = maxi 
+        ans = -1
+        while left &lt;= right:
+            
+            # Calculate the middle day
+            mid = left + (right - left) // 2 
+            
+            &quot;&quot;&quot; Check if it&#x27;s possible to 
+                make m bouquets on day mid &quot;&quot;&quot;
+            if self.possible(nums, mid, m, k):
+                
+                # Update the answer to mid
+                ans = mid 
+                
+                # Try for a smaller day
+                right = mid - 1 
+            else:
+                left = mid + 1 
+        
+        &quot;&quot;&quot; Return the earliest day or 
+        -1 if no such day exists&quot;&quot;&quot;
+        return ans </code></pre></div>
+</body>
+</html>

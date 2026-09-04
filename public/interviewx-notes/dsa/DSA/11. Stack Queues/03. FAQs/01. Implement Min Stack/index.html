@@ -1,0 +1,1695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Implement Min Stack</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Implement Min Stack</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Design</span><span>Stack</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Design a stack that supports the following operations in constant time: <strong>push</strong>, <strong>pop</strong>, <strong>top</strong>, and <strong>retrieving the minimum element</strong>.</p><p><br></p><p>Implement the MinStack class:</p><p><br></p><p><strong>MinStack():</strong> Initializes the stack object.</p><p><strong>void push(int val):</strong> Pushes the element val onto the stack.</p><p><strong>void pop():</strong> removes the element on the top of the stack.</p><p><strong>int top():</strong> gets the top element of the stack.</p><p><strong>int getMin():</strong> retrieves the minimum element in the stack.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>-10<sup>5</sup> <= val <=10<sup>5</sup></li><li>Methods pop, top and getMin operations will always be called on non-empty stacks.</li><li>At most 5*10<sup>4</sup> calls will be made to push, pop, top, and getMin.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input:</p><p>["MinStack", "push", "push", "push", "getMin", "pop", "top", "getMin"]</p><p>[ [], [-2], [0], [-3], [ ], [ ], [ ], [ ] ]</p><p><br></p><p>Output:</p><p>[null, null, null, null, -3, null, 0, -2]</p><p><br></p><p>Explanation:</p><p>MinStack minStack = new MinStack();</p><p>minStack.push(-2);</p><p>minStack.push(0);</p><p>minStack.push(-3);</p><p>minStack.getMin(); // returns -3</p><p>minStack.pop();</p><p>minStack.top();  // returns 0</p><p>minStack.getMin(); // returns -2</p><h3>Example 2</h3><p>Input:</p><p>["MinStack", "push", "push", "getMin", "push", "pop", "getMin", "top"]</p><p>[ [ ], [5], [1], [ ], [3], [ ], [ ], [ ] ]</p><p><br></p><p>Output:</p><p>[null, null, null, 1, null, null, 1, 1]</p><p><br></p><p>Explanation:</p><p>MinStack minStack = new MinStack();</p><p>minStack.push(5);</p><p>minStack.push(1);</p><p>minStack.getMin(); // returns 1</p><p>minStack.push(3);</p><p>minStack.pop();</p><p>minStack.getMin(); // returns 1</p><p>minStack.top();  // returns 1</p><h3>Example 3</h3><p>Input:</p><p>["MinStack", "push", "push", "push", "top", "getMin", "pop", "getMin"]</p><p>[[], [10], [15], [5], [], [], [], []]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Designing a stack that supports operations like push, pop, top, and retrieving the minimum element in constant time is very relevant in real-world software development. One classic example is in the design of the "Undo" functionality in many software programs like text editors, image editing tools, or even web browsers. Each action is 'pushed' onto the stack, then 'popped' off when the user triggers the 'Undo' command. The 'top' operation can help show a preview of the action that will be undone next. The 'getMin' operation, though might not be directly applicable in this case, could still be used in related contexts, say, retrieving the minimal state or least resource-intensive action from a stack of operations. This problem is essentially about efficiently managing and accessing data, a central aspect of software development.</p></div>
+<div class="section"><h2>Editorial: Brute Force Approach</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    In a usual stack data structure, there is no method to get the minimum element present in the stack in constant time. This can be overcome, if all the numbers are stored in pairs with their current minimum element. This way, the stack will not only able to perform the previous methods in constant time, but also perform the <strong>getMin()</strong> method in constant time. <br><br>
+    <strong>Note: </strong>The stack will store the following pair: {element, current minimum}
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>A stack of pairs is used. Each pair contains the element itself and the minimum element at the time the element was pushed onto the stack. The MinStack class is initialized with an empty stack.
+   </li>
+   <li>
+    <ul>
+        <li><strong>Push Operation:</strong> When a new element is pushed, it is compared with the current minimum. The new element and the updated minimum are stored as a pair and pushed onto the stack.</li>
+        <li><strong>Pop Operation:</strong> The top element (which is a pair) is removed from the stack.</li>
+        <li><strong>Top Operation:</strong> The top element of the stack is accessed to get the actual value (first component) stored.</li>
+        <li><strong>GetMin Operation:</strong> The second value of the pair at the top of the stack, which represents the minimum element at that point, is accessed.</li>
+    </ul>
+    </li>
+</ol>
+
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/1.png-wRGjKHf1" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/2.png-rxlIVCRj" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/3.png-FbdS1Tyj" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/4.png-LFLjZ9Po" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/5.png-pFon4nYc" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/6.png-nqm12MDT" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/7.png-5_fcVrbU" alt="Image 7"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/8.png-QMY6PE4k" alt="Image 8"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/9.png-4kMaifSA" alt="Image 9"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/1.png-wRGjKHf1" alt="Image 1"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/2.png-rxlIVCRj" alt="Image 2"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/3.png-FbdS1Tyj" alt="Image 3"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/4.png-LFLjZ9Po" alt="Image 4"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/5.png-pFon4nYc" alt="Image 5"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/6.png-nqm12MDT" alt="Image 6"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/7.png-5_fcVrbU" alt="Image 7"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/8.png-QMY6PE4k" alt="Image 8"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/9.png-4kMaifSA" alt="Image 9"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Class to implement Minimum Stack
+class MinStack {
+private:
+    // Initialize a stack
+    stack <pair<int,int>> st;
+    
+public:
+    
+    // Empty Constructor
+    MinStack() {
+    }
+    
+    // Method to push a value in stack
+    void push(int value) {
+        
+        // If stack is empty
+        if(st.empty()) {
+            
+            // Push current value as minimum
+            st.push( {value, value} );
+            return;
+        }
+        
+        // Update the current minimum 
+        int mini = min(getMin(), value);
+        
+        // Add the pair to the stack
+        st.push({value, mini});
+    }
+    
+    // Method to pop a value from stack
+    void pop() {
+        // Using in-built pop method
+        st.pop(); 
+    }
+    
+    // Method to get the top of stack
+    int top() {
+        // Return the top value
+        return st.top().first;
+    }
+    
+    // Method to get the minimum in stack
+    int getMin() {
+        // Return the minimum
+        return st.top().second;
+    }
+};
+
+int main() {
+    MinStack s;
+    
+    // Function calls
+    s.push(-2);
+    s.push(0);
+    s.push(-3);
+    cout << s.getMin() << " ";
+    s.pop();
+    cout << s.top() << " ";
+    s.pop();
+    cout << s.getMin();
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+// Class to implement Minimum Stack
+class MinStack {
+    // Initialize a stack
+    private Stack<int[]> st;
+
+    // Empty Constructor
+    public MinStack() {
+        st = new Stack<>();
+    }
+
+    // Method to push a value in stack
+    public void push(int value) {
+        // If stack is empty
+        if (st.isEmpty()) {
+            // Push current value as minimum
+            st.push(new int[]{value, value});
+            return;
+        }
+
+        // Update the current minimum
+        int mini = Math.min(getMin(), value);
+
+        // Add the pair to the stack
+        st.push(new int[]{value, mini});
+    }
+
+    // Method to pop a value from stack
+    public void pop() {
+        // Using in-built pop method
+        st.pop();
+    }
+
+    // Method to get the top of stack
+    public int top() {
+        // Return the top value
+        return st.peek()[0];
+    }
+
+    // Method to get the minimum in stack
+    public int getMin() {
+        // Return the minimum
+        return st.peek()[1];
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        MinStack s = new MinStack();
+
+        // Function calls
+        s.push(-2);
+        s.push(0);
+        s.push(-3);
+        System.out.print(s.getMin() + " ");
+        s.pop();
+        System.out.print(s.top() + " ");
+        s.pop();
+        System.out.print(s.getMin());
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class MinStack:
+    # Empty Constructor
+    def __init__(self):
+        # Initialize a stack
+        self.st = []
+
+    # Method to push a value in stack
+    def push(self, value):
+        # If stack is empty
+        if not self.st:
+            # Push current value as minimum
+            self.st.append((value, value))
+            return
+
+        # Update the current minimum
+        mini = min(self.getMin(), value)
+
+        # Add the pair to the stack
+        self.st.append((value, mini))
+
+    # Method to pop a value from stack
+    def pop(self):
+        # Using in-built pop method
+        self.st.pop()
+
+    # Method to get the top of stack
+    def top(self):
+        # Return the top value
+        return self.st[-1][0]
+
+    # Method to get the minimum in stack
+    def getMin(self):
+        # Return the minimum
+        return self.st[-1][1]
+
+if __name__ == "__main__":
+    s = MinStack()
+    
+    # Function calls
+    s.push(-2)
+    s.push(0)
+    s.push(-3)
+    print(s.getMin(), end=" ")
+    s.pop()
+    print(s.top(), end=" ")
+    s.pop()
+    print(s.getMin())
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Class to implement Minimum Stack
+class MinStack {
+    // Initialize a stack
+    constructor() {
+        this.st = [];
+    }
+
+    // Method to push a value in stack
+    push(value) {
+        // If stack is empty
+        if (this.st.length === 0) {
+            // Push current value as minimum
+            this.st.push([value, value]);
+            return;
+        }
+
+        // Update the current minimum
+        const mini = Math.min(this.getMin(), value);
+
+        // Add the pair to the stack
+        this.st.push([value, mini]);
+    }
+
+    // Method to pop a value from stack
+    pop() {
+        // Using in-built pop method
+        this.st.pop();
+    }
+
+    // Method to get the top of stack
+    top() {
+        // Return the top value
+        return this.st[this.st.length - 1][0];
+    }
+
+    // Method to get the minimum in stack
+    getMin() {
+        // Return the minimum
+        return this.st[this.st.length - 1][1];
+    }
+}
+
+// Main function to demonstrate the MinStack functionality
+const s = new MinStack();
+
+// Function calls
+s.push(-2);
+s.push(0);
+s.push(-3);
+console.log(s.getMin() + " ");
+s.pop();
+console.log(s.top() + " ");
+s.pop();
+console.log(s.getMin());
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+// Class to implement Minimum Stack
+public class MinStack {
+    private Stack<Tuple<int, int>> st;
+
+    // Initialize a stack
+    public MinStack() {
+        this.st = new Stack<Tuple<int, int>>();
+    }
+
+    // Method to push a value in stack
+    public void Push(int value) {
+        // If stack is empty
+        if (this.st.Count == 0) {
+            // Push current value as minimum
+            this.st.Push(Tuple.Create(value, value));
+            return;
+        }
+
+        // Update the current minimum
+        int mini = Math.Min(this.GetMin(), value);
+
+        // Add the pair to the stack
+        this.st.Push(Tuple.Create(value, mini));
+    }
+
+    // Method to pop a value from stack
+    public void Pop() {
+        // Using in-built pop method
+        this.st.Pop();
+    }
+
+    // Method to get the top of stack
+    public int Top() {
+        // Return the top value
+        return this.st.Peek().Item1;
+    }
+
+    // Method to get the minimum in stack
+    public int GetMin() {
+        // Return the minimum
+        return this.st.Peek().Item2;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Main function to demonstrate the MinStack functionality
+        MinStack s = new MinStack();
+
+        // Function calls
+        s.Push(-2);
+        s.Push(0);
+        s.Push(-3);
+        Console.WriteLine(s.GetMin());
+        s.Pop();
+        Console.WriteLine(s.Top());
+        s.Pop();
+        Console.WriteLine(s.GetMin());
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Struct to implement Minimum Stack
+type MinStack struct {
+	st [][2]int64 // stack storing pairs: {value, minimum}
+}
+
+// Constructor to initialize MinStack
+func NewMinStack() *MinStack {
+	return &MinStack{
+		st: make([][2]int64, 0),
+	}
+}
+
+// Method to push a value in stack
+func (ms *MinStack) Push(val int64) {
+
+	// If stack is empty
+	if len(ms.st) == 0 {
+		// Push current value as minimum
+		ms.st = append(ms.st, [2]int64{val, val})
+		return
+	}
+
+	// Update the current minimum
+	mini := ms.GetMin()
+	if val < mini {
+		mini = val
+	}
+
+	// Add the pair to the stack
+	ms.st = append(ms.st, [2]int64{val, mini})
+}
+
+// Method to pop a value from stack
+func (ms *MinStack) Pop() {
+	// Using built-in slice pop
+	if len(ms.st) > 0 {
+		ms.st = ms.st[:len(ms.st)-1]
+	}
+}
+
+// Method to get the top of stack
+func (ms *MinStack) Top() int64 {
+	// Return the top value
+	return ms.st[len(ms.st)-1][0]
+}
+
+// Method to get the minimum in stack
+func (ms *MinStack) GetMin() int64 {
+	// Return the minimum
+	return ms.st[len(ms.st)-1][1]
+}
+
+func main() {
+	s := NewMinStack()
+
+	// Function calls
+	s.Push(-2)
+	s.Push(0)
+	s.Push(-3)
+	fmt.Print(s.GetMin(), " ")
+	s.Pop()
+	fmt.Print(s.Top(), " ")
+	s.Pop()
+	fmt.Print(s.GetMin())
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(1)</strong> 
+   All the operations take constant time.
+</p>
+
+<p><strong>Space Complexity: O(2*N)</strong> (where N is the total number of calls made for push operation) <br>
+   All the numbers are stored in pairs leading to a stack space of O(2*N).
+</p>
+</body></html></div>
+<div class="section"><h2>Editorial: Optimal Approach</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    To efficiently keep track of the minimum element in the stack at all times while maintaining constant time complexity for each operation, a clever approach is needed. This can be achieved by modifying the values stored in the stack when a new minimum is encountered. Instead of storing pairs or auxiliary stacks, we store a specially calculated value that allows us to track the minimum.
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Use a stack to store elements. Maintain a variable to keep track of the current minimum value.</li>
+   <li><strong>Push Operation:</strong>
+    <ul>
+        <li>If the stack is empty, push the value and set it as the current minimum.</li>
+        <li>If the value is greater than or equal to the current minimum, push the value.</li>
+        <li>If the value is less than the current minimum, push a modified value calculated using the new value and update the current minimum.</li>
+    </ul>
+
+</li>
+   <li><strong>Pop Operation:</strong>
+    <ul>
+        <li>If the stack is empty, do nothing. Otherwise, Retrieve and pop the top value.</li>
+        <li>If the popped value indicates it was used to store a new minimum, update the current minimum using the retrieved value.</li>
+    </ul>
+</li>
+   <li><strong>Top Operation:</strong>
+    <ul>
+        <li>If the stack is empty, return -1 indicating the stack is empty.</li>
+        <li>Retrieve the top value. If the top value is greater than or equal to the current minimum, return it.</li>
+        <li>If the top value indicates it was used to store a new minimum, return the current minimum.</li>
+    </ul>
+</li>
+<li>
+    <strong>GetMin Operation:</strong> Simply return the current minimum.
+</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/1.png-arleTtG2" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/2.png-IqoCjuKb" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/3.png-Lv54vMfM" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/4.png-T-bJ6o_J" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/5.png-43FV3fg-" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/6.png-E8OOjSXy" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/7.png-Kn4SsjWa" alt="Image 7"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/8.png--VylZTJv" alt="Image 8"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/9.png-u7OF2c1k" alt="Image 9"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/1.png-arleTtG2" alt="Image 1"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/2.png-IqoCjuKb" alt="Image 2"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/3.png-Lv54vMfM" alt="Image 3"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/4.png-T-bJ6o_J" alt="Image 4"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/5.png-43FV3fg-" alt="Image 5"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/6.png-E8OOjSXy" alt="Image 6"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/7.png-Kn4SsjWa" alt="Image 7"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/8.png--VylZTJv" alt="Image 8"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Implement Min Stack/9.png-u7OF2c1k" alt="Image 9"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Class to implement Minimum Stack
+class MinStack {
+private:
+    // Initialize a stack
+    stack <int> st;
+    // To store the minimum value 
+    int mini;
+    
+public:
+    
+    // Empty Constructor
+    MinStack() {
+    }
+    
+    // Method to push a value in stack
+    void push(int value) {
+        
+        // If stack is empty
+        if(st.empty()) {
+            //Update the minimum value
+            mini = value;
+            
+            // Push current value as minimum
+            st.push( value );
+            return;
+        }
+        
+        // If the value is greater than the minimum
+        if(value > mini) {
+            st.push(value);
+        }
+        else {
+            // Add the modified value to stack
+            st.push(2 * value - mini);
+            // Update the minimum
+            mini = value;
+        }
+    }
+    
+    // Method to pop a value from stack
+    void pop() {
+        // Base case
+        if(st.empty()) return;
+        
+        // Get the top
+        int x = st.top();
+        st.pop(); // Pop operation
+        
+        // If the modified value was added to stack
+        if(x < mini) {
+            // Update the minimum
+            mini = 2 * mini - x;
+        }
+    }
+    
+    // Method to get the top of stack
+    int top() {
+        // Base case
+        if(st.empty()) return -1;
+        
+        // Get the top
+        int x = st.top();
+        
+        // Returnn top if minimum is less than the top
+        if(mini < x) return x;
+        
+        //Otherwise return mini
+        return mini;
+    }
+    
+    // Method to get the minimum in stack
+    int getMin() {
+        // Return the minimum
+        return mini;
+    }
+};
+
+int main() {
+    MinStack s;
+    
+    // Function calls
+    s.push(-2);
+    s.push(0);
+    s.push(-3);
+    cout << s.getMin() << " ";
+    s.pop();
+    cout << s.top() << " ";
+    s.pop();
+    cout << s.getMin();
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Stack;
+
+// Class to implement Minimum Stack
+class MinStack {
+    private Stack<Integer> st;
+    private int mini;
+
+    // Empty Constructor
+    public MinStack() {
+        st = new Stack<>();
+    }
+
+    // Method to push a value in stack
+    public void push(int value) {
+        // If stack is empty
+        if (st.isEmpty()) {
+            // Update the minimum value
+            mini = value;
+
+            // Push current value as minimum
+            st.push(value);
+            return;
+        }
+
+        // If the value is greater than the minimum
+        if (value > mini) {
+            st.push(value);
+        } else {
+            // Add the modified value to stack
+            st.push(2 * value - mini);
+            // Update the minimum
+            mini = value;
+        }
+    }
+
+    // Method to pop a value from stack
+    public void pop() {
+        // Base case
+        if (st.isEmpty()) return;
+
+        // Get the top
+        int x = st.pop();
+
+        // If the modified value was added to stack
+        if (x < mini) {
+            // Update the minimum
+            mini = 2 * mini - x;
+        }
+    }
+
+    // Method to get the top of stack
+    public int top() {
+        // Base case
+        if (st.isEmpty()) return -1;
+
+        // Get the top
+        int x = st.peek();
+
+        // Return top if minimum is less than the top
+        if (mini < x) return x;
+
+        // Otherwise return mini
+        return mini;
+    }
+
+    // Method to get the minimum in stack
+    public int getMin() {
+        // Return the minimum
+        return mini;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        MinStack s = new MinStack();
+
+        // Function calls
+        s.push(-2);
+        s.push(0);
+        s.push(-3);
+        System.out.print(s.getMin() + " ");
+        s.pop();
+        System.out.print(s.top() + " ");
+        s.pop();
+        System.out.print(s.getMin());
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class MinStack:
+    def __init__(self):
+        # Initialize a stack
+        self.st = []
+        # To store the minimum value
+        self.mini = None
+
+    # Method to push a value in stack
+    def push(self, value):
+        # If stack is empty
+        if not self.st:
+            # Update the minimum value
+            self.mini = value
+
+            # Push current value as minimum
+            self.st.append(value)
+            return
+
+        # If the value is greater than the minimum
+        if value > self.mini:
+            self.st.append(value)
+        else:
+            # Add the modified value to stack
+            self.st.append(2 * value - self.mini)
+            # Update the minimum
+            self.mini = value
+
+    # Method to pop a value from stack
+    def pop(self):
+        # Base case
+        if not self.st:
+            return
+
+        # Get the top
+        x = self.st.pop()
+
+        # If the modified value was added to stack
+        if x < self.mini:
+            # Update the minimum
+            self.mini = 2 * self.mini - x
+
+    # Method to get the top of stack
+    def top(self):
+        # Base case
+        if not self.st:
+            return -1
+
+        # Get the top
+        x = self.st[-1]
+
+        # Return top if minimum is less than the top
+        if self.mini < x:
+            return x
+
+        # Otherwise return mini
+        return self.mini
+
+    # Method to get the minimum in stack
+    def getMin(self):
+        # Return the minimum
+        return self.mini
+
+
+if __name__ == "__main__":
+    s = MinStack()
+
+    # Function calls
+    s.push(-2)
+    s.push(0)
+    s.push(-3)
+    print(s.getMin(), end=" ")
+    s.pop()
+    print(s.top(), end=" ")
+    s.pop()
+    print(s.getMin())
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class MinStack {
+    constructor() {
+        // Initialize a stack
+        this.st = [];
+        // To store the minimum value
+        this.mini = null;
+    }
+
+    // Method to push a value in stack
+    push(value) {
+        // If stack is empty
+        if (this.st.length === 0) {
+            // Update the minimum value
+            this.mini = value;
+
+            // Push current value as minimum
+            this.st.push(value);
+            return;
+        }
+
+        // If the value is greater than the minimum
+        if (value > this.mini) {
+            this.st.push(value);
+        } else {
+            // Add the modified value to stack
+            this.st.push(2 * value - this.mini);
+            // Update the minimum
+            this.mini = value;
+        }
+    }
+
+    // Method to pop a value from stack
+    pop() {
+        // Base case
+        if (this.st.length === 0) return;
+
+        // Get the top
+        let x = this.st.pop();
+
+        // If the modified value was added to stack
+        if (x < this.mini) {
+            // Update the minimum
+            this.mini = 2 * this.mini - x;
+        }
+    }
+
+    // Method to get the top of stack
+    top() {
+        // Base case
+        if (this.st.length === 0) return -1;
+
+        // Get the top
+        let x = this.st[this.st.length - 1];
+
+        // Return top if minimum is less than the top
+        if (this.mini < x) return x;
+
+        // Otherwise return mini
+        return this.mini;
+    }
+
+    // Method to get the minimum in stack
+    getMin() {
+        // Return the minimum
+        return this.mini;
+    }
+}
+
+// Example usage
+let s = new MinStack();
+
+// Function calls
+s.push(-2);
+s.push(0);
+s.push(-3);
+console.log(s.getMin(), " ");
+s.pop();
+console.log(s.top(), " ");
+s.pop();
+console.log(s.getMin());
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class MinStack
+{
+    // Initialize a stack
+    private Stack<int> st;
+    // To store the minimum value
+    private int mini;
+
+    public MinStack()
+    {
+        st = new Stack<int>();
+    }
+
+    // Method to push a value in stack
+    public void Push(int value)
+    {
+        // If stack is empty
+        if (st.Count == 0)
+        {
+            // Update the minimum value
+            mini = value;
+            // Push current value as minimum
+            st.Push(value);
+            return;
+        }
+
+        // If the value is greater than the minimum
+        if (value > mini)
+        {
+            st.Push(value);
+        }
+        else
+        {
+            // Add the modified value to stack
+            st.Push(2 * value - mini);
+            // Update the minimum
+            mini = value;
+        }
+    }
+
+    // Method to pop a value from stack
+    public void Pop()
+    {
+        // Base case
+        if (st.Count == 0) return;
+
+        // Get the top
+        int x = st.Pop();
+
+        // If the modified value was added to stack
+        if (x < mini)
+        {
+            // Update the minimum
+            mini = 2 * mini - x;
+        }
+    }
+
+    // Method to get the top of stack
+    public int Top()
+    {
+        // Base case
+        if (st.Count == 0) return -1;
+
+        // Get the top
+        int x = st.Peek();
+
+        // Return top if minimum is less than the top
+        if (mini < x) return x;
+
+        // Otherwise return mini
+        return mini;
+    }
+
+    // Method to get the minimum in stack
+    public int GetMin()
+    {
+        // Return the minimum
+        if (st.Count == 0) return -1;
+        return mini;
+    }
+}
+
+public class Solution
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        MinStack s = new MinStack();
+
+        // Function calls
+        s.Push(-2);
+        s.Push(0);
+        s.Push(-3);
+        Console.Write(s.GetMin() + " ");
+        s.Pop();
+        Console.Write(s.Top() + " ");
+        s.Pop();
+        Console.WriteLine(s.GetMin());
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Class to implement Minimum Stack
+type MinStack struct {
+	st   []int64 // stack to store values (can store modified values)
+	mini int64   // to store the minimum value
+}
+
+// Constructor to initialize MinStack
+func NewMinStack() *MinStack {
+	return &MinStack{
+		st: make([]int64, 0),
+	}
+}
+
+// Method to push a value in stack
+func (ms *MinStack) Push(val int64) {
+
+	// If stack is empty
+	if len(ms.st) == 0 {
+		// Update the minimum value
+		ms.mini = val
+
+		// Push current value as minimum
+		ms.st = append(ms.st, val)
+		return
+	}
+
+	// If the value is greater than the minimum
+	if val > ms.mini {
+		ms.st = append(ms.st, val)
+	} else {
+		// Add the modified value to stack
+		ms.st = append(ms.st, 2*val-ms.mini)
+		// Update the minimum
+		ms.mini = val
+	}
+}
+
+// Method to pop a value from stack
+func (ms *MinStack) Pop() {
+	// Base case
+	if len(ms.st) == 0 {
+		return
+	}
+
+	// Get the top
+	x := ms.st[len(ms.st)-1]
+	ms.st = ms.st[:len(ms.st)-1] // Pop operation
+
+	// If the modified value was added to stack
+	if x < ms.mini {
+		// Update the minimum
+		ms.mini = 2*ms.mini - x
+	}
+}
+
+// Method to get the top of stack
+func (ms *MinStack) Top() int64 {
+	// Base case
+	if len(ms.st) == 0 {
+		return -1
+	}
+
+	// Get the top
+	x := ms.st[len(ms.st)-1]
+
+	// Return top if minimum is less than the top
+	if ms.mini < x {
+		return x
+	}
+
+	// Otherwise return mini
+	return ms.mini
+}
+
+// Method to get the minimum in stack
+func (ms *MinStack) GetMin() int64 {
+	// Return the minimum
+	return ms.mini
+}
+
+func main() {
+	s := NewMinStack()
+
+	// Function calls
+	s.Push(-2)
+	s.Push(0)
+	s.Push(-3)
+	fmt.Print(s.GetMin(), " ")
+	s.Pop()
+	fmt.Print(s.Top(), " ")
+	s.Pop()
+	fmt.Print(s.GetMin())
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(1)</strong> All the operations take constant time.
+   
+</p>
+
+<p><strong>Space Complexity: O(N)</strong> (where N is the total number of calls made for push operation) <br>
+    As only one value per element is stored in the stack.
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class MinStack {
+private:
+    // Initialize a stack
+    stack &lt;pair&lt;int,int&gt;&gt; st;
+    
+public:
+    
+    // Empty Constructor
+    MinStack() {
+    }
+    
+    // Method to push a value in stack
+    void push(int value) {
+        
+        // If stack is empty
+        if(st.empty()) {
+            
+            // Push current value as minimum
+            st.push( {value, value} );
+            return;
+        }
+        
+        // Update the current minimum 
+        int mini = min(getMin(), value);
+        
+        // Add the pair to the stack
+        st.push({value, mini});
+    }
+    
+    // Method to pop a value from stack
+    void pop() {
+        // Using in-built pop method
+        st.pop(); 
+    }
+    
+    // Method to get the top of stack
+    int top() {
+        // Return the top value
+        return st.top().first;
+    }
+    
+    // Method to get the minimum in stack
+    int getMin() {
+        // Return the minimum
+        return st.top().second;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class MinStack {
+    private Stack&lt;Tuple&lt;int, int&gt;&gt; st;
+
+    public MinStack() {
+        this.st = new Stack&lt;Tuple&lt;int, int&gt;&gt;();
+    }
+    public void Push(int value) {
+        // If stack is empty
+        if (this.st.Count == 0) {
+            // Push current value as minimum
+            this.st.Push(Tuple.Create(value, value));
+            return;
+        }
+
+        // Update the current minimum
+        int mini = Math.Min(this.GetMin(), value);
+
+        // Add the pair to the stack
+        this.st.Push(Tuple.Create(value, mini));
+    }
+    public void Pop() {
+        // Using in-built pop method
+        this.st.Pop();
+    }
+    public int Top() {
+        // Return the top value
+        return this.st.Peek().Item1;
+    }
+    public int GetMin() {
+        // Return the minimum
+        return this.st.Peek().Item2;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Struct to implement Minimum Stack
+type MinStack struct {
+	st [][2]int64 // stack storing pairs: {value, minimum}
+}
+
+// Constructor to initialize MinStack
+func NewMinStack() *MinStack {
+	return &amp;MinStack{
+		st: make([][2]int64, 0),
+	}
+}
+
+// Method to push a value in stack
+func (ms *MinStack) Push(val int64) {
+
+	// If stack is empty
+	if len(ms.st) == 0 {
+		// Push current value as minimum
+		ms.st = append(ms.st, [2]int64{val, val})
+		return
+	}
+
+	// Update the current minimum
+	mini := ms.GetMin()
+	if val &lt; mini {
+		mini = val
+	}
+
+	// Add the pair to the stack
+	ms.st = append(ms.st, [2]int64{val, mini})
+}
+
+// Method to pop a value from stack
+func (ms *MinStack) Pop() {
+	// Using built-in slice pop
+	if len(ms.st) &gt; 0 {
+		ms.st = ms.st[:len(ms.st)-1]
+	}
+}
+
+// Method to get the top of stack
+func (ms *MinStack) Top() int64 {
+	// Return the top value
+	return ms.st[len(ms.st)-1][0]
+}
+
+// Method to get the minimum in stack
+func (ms *MinStack) GetMin() int64 {
+	// Return the minimum
+	return ms.st[len(ms.st)-1][1]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class MinStack {
+    // Initialize a stack
+    private Stack&lt;int[]&gt; st;
+
+    // Empty Constructor
+    public MinStack() {
+        st = new Stack&lt;&gt;();
+    }
+
+    // Method to push a value in stack
+    public void push(int value) {
+        // If stack is empty
+        if (st.isEmpty()) {
+            // Push current value as minimum
+            st.push(new int[]{value, value});
+            return;
+        }
+
+        // Update the current minimum
+        int mini = Math.min(getMin(), value);
+
+        // Add the pair to the stack
+        st.push(new int[]{value, mini});
+    }
+
+    // Method to pop a value from stack
+    public void pop() {
+        // Using in-built pop method
+        st.pop();
+    }
+
+    // Method to get the top of stack
+    public int top() {
+        // Return the top value
+        return st.peek()[0];
+    }
+
+    // Method to get the minimum in stack
+    public int getMin() {
+        // Return the minimum
+        return st.peek()[1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class MinStack {
+    // Initialize a stack
+    constructor() {
+        this.st = [];
+    }
+
+    // Method to push a value in stack
+    push(value) {
+        // If stack is empty
+        if (this.st.length === 0) {
+            // Push current value as minimum
+            this.st.push([value, value]);
+            return;
+        }
+
+        // Update the current minimum
+        const mini = Math.min(this.getMin(), value);
+
+        // Add the pair to the stack
+        this.st.push([value, mini]);
+    }
+
+    // Method to pop a value from stack
+    pop() {
+        // Using in-built pop method
+        this.st.pop();
+    }
+
+    // Method to get the top of stack
+    top() {
+        // Return the top value
+        return this.st[this.st.length - 1][0];
+    }
+
+    // Method to get the minimum in stack
+    getMin() {
+        // Return the minimum
+        return this.st[this.st.length - 1][1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class MinStack:
+    # Empty Constructor
+    def __init__(self):
+        # Initialize a stack
+        self.st = []
+
+    # Method to push a value in stack
+    def push(self, value):
+        # If stack is empty
+        if not self.st:
+            # Push current value as minimum
+            self.st.append((value, value))
+            return
+
+        # Update the current minimum
+        mini = min(self.getMin(), value)
+
+        # Add the pair to the stack
+        self.st.append((value, mini))
+
+    # Method to pop a value from stack
+    def pop(self):
+        # Using in-built pop method
+        self.st.pop()
+
+    # Method to get the top of stack
+    def top(self):
+        # Return the top value
+        return self.st[-1][0]
+
+    # Method to get the minimum in stack
+    def getMin(self):
+        # Return the minimum
+        return self.st[-1][1]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class MinStack {
+private:
+    // Initialize a stack
+    stack &lt;int&gt; st;
+    // To store the minimum value 
+    int mini;
+    
+public:
+    
+    // Empty Constructor
+    MinStack() {
+    }
+    
+    // Method to push a value in stack
+    void push(int value) {
+        
+        // If stack is empty
+        if(st.empty()) {
+            //Update the minimum value
+            mini = value;
+            
+            // Push current value as minimum
+            st.push( value );
+            return;
+        }
+        
+        // If the value is greater than the minimum
+        if(value &gt; mini) {
+            st.push(value);
+        }
+        else {
+            // Add the modified value to stack
+            st.push(2 * value - mini);
+            // Update the minimum
+            mini = value;
+        }
+    }
+    
+    // Method to pop a value from stack
+    void pop() {
+        // Base case
+        if(st.empty()) return;
+        
+        // Get the top
+        int x = st.top();
+        st.pop(); // Pop operation
+        
+        // If the modified value was added to stack
+        if(x &lt; mini) {
+            // Update the minimum
+            mini = 2 * mini - x;
+        }
+    }
+    
+    // Method to get the top of stack
+    int top() {
+        // Base case
+        if(st.empty()) return -1;
+        
+        // Get the top
+        int x = st.top();
+        
+        // Returnn top if minimum is less than the top
+        if(mini &lt; x) return x;
+        
+        //Otherwise return mini
+        return mini;
+    }
+    
+    // Method to get the minimum in stack
+    int getMin() {
+        // Return the minimum
+        return mini;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class MinStack {
+    // Initialize a stack
+    private Stack&lt;int&gt; st;
+    // To store the minimum value
+    private int mini;
+
+    public MinStack() {
+        st = new Stack&lt;int&gt;();
+    }
+    public void Push(int value) {
+        // If stack is empty
+        if (st.Count == 0) {
+            // Update the minimum value
+            mini = value;
+            // Push current value as minimum
+            st.Push(value);
+            return;
+        }
+
+        // If the value is greater than the minimum
+        if (value &gt; mini) {
+            st.Push(value);
+        } else {
+            // Add the modified value to stack
+            st.Push(2 * value - mini);
+            // Update the minimum
+            mini = value;
+        }
+    }
+    public void Pop() {
+        // Base case
+        if (st.Count == 0) return;
+
+        // Get the top
+        int x = st.Pop();
+
+        // If the modified value was added to stack
+        if (x &lt; mini) {
+            // Update the minimum
+            mini = 2 * mini - x;
+        }
+    }
+    public int Top() {
+        // Base case
+        if (st.Count == 0) return -1;
+
+        // Get the top
+        int x = st.Peek();
+
+        // Return top if minimum is less than the top
+        if (mini &lt; x) return x;
+
+        // Otherwise return mini
+        return mini;
+    }
+    public int GetMin() {
+        // Return the minimum
+        if (st.Count == 0) return -1;
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Class to implement Minimum Stack
+type MinStack struct {
+	st   []int64 // stack to store values (can store modified values)
+	mini int64   // to store the minimum value
+}
+
+// Constructor to initialize MinStack
+func NewMinStack() *MinStack {
+	return &amp;MinStack{
+		st: make([]int64, 0),
+	}
+}
+
+// Method to push a value in stack
+func (ms *MinStack) Push(val int64) {
+
+	// If stack is empty
+	if len(ms.st) == 0 {
+		// Update the minimum value
+		ms.mini = val
+
+		// Push current value as minimum
+		ms.st = append(ms.st, val)
+		return
+	}
+
+	// If the value is greater than the minimum
+	if val &gt; ms.mini {
+		ms.st = append(ms.st, val)
+	} else {
+		// Add the modified value to stack
+		ms.st = append(ms.st, 2*val-ms.mini)
+		// Update the minimum
+		ms.mini = val
+	}
+}
+
+// Method to pop a value from stack
+func (ms *MinStack) Pop() {
+	// Base case
+	if len(ms.st) == 0 {
+		return
+	}
+
+	// Get the top
+	x := ms.st[len(ms.st)-1]
+	ms.st = ms.st[:len(ms.st)-1] // Pop operation
+
+	// If the modified value was added to stack
+	if x &lt; ms.mini {
+		// Update the minimum
+		ms.mini = 2*ms.mini - x
+	}
+}
+
+// Method to get the top of stack
+func (ms *MinStack) Top() int64 {
+	// Base case
+	if len(ms.st) == 0 {
+		return -1
+	}
+
+	// Get the top
+	x := ms.st[len(ms.st)-1]
+
+	// Return top if minimum is less than the top
+	if ms.mini &lt; x {
+		return x
+	}
+
+	// Otherwise return mini
+	return ms.mini
+}
+
+// Method to get the minimum in stack
+func (ms *MinStack) GetMin() int64 {
+	// Return the minimum
+	return ms.mini
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class MinStack {
+    private Stack&lt;Integer&gt; st;
+    private int mini;
+
+    // Empty Constructor
+    public MinStack() {
+        st = new Stack&lt;&gt;();
+    }
+
+    // Method to push a value in stack
+    public void push(int value) {
+        // If stack is empty
+        if (st.isEmpty()) {
+            // Update the minimum value
+            mini = value;
+
+            // Push current value as minimum
+            st.push(value);
+            return;
+        }
+
+        // If the value is greater than the minimum
+        if (value &gt; mini) {
+            st.push(value);
+        } else {
+            // Add the modified value to stack
+            st.push(2 * value - mini);
+            // Update the minimum
+            mini = value;
+        }
+    }
+
+    // Method to pop a value from stack
+    public void pop() {
+        // Base case
+        if (st.isEmpty()) return;
+
+        // Get the top
+        int x = st.pop();
+
+        // If the modified value was added to stack
+        if (x &lt; mini) {
+            // Update the minimum
+            mini = 2 * mini - x;
+        }
+    }
+
+    // Method to get the top of stack
+    public int top() {
+        // Base case
+        if (st.isEmpty()) return -1;
+
+        // Get the top
+        int x = st.peek();
+
+        // Return top if minimum is less than the top
+        if (mini &lt; x) return x;
+
+        // Otherwise return mini
+        return mini;
+    }
+
+    // Method to get the minimum in stack
+    public int getMin() {
+        // Return the minimum
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class MinStack {
+    constructor() {
+        // Initialize a stack
+        this.st = [];
+        // To store the minimum value
+        this.mini = null;
+    }
+
+    // Method to push a value in stack
+    push(value) {
+        // If stack is empty
+        if (this.st.length === 0) {
+            // Update the minimum value
+            this.mini = value;
+
+            // Push current value as minimum
+            this.st.push(value);
+            return;
+        }
+
+        // If the value is greater than the minimum
+        if (value &gt; this.mini) {
+            this.st.push(value);
+        } else {
+            // Add the modified value to stack
+            this.st.push(2 * value - this.mini);
+            // Update the minimum
+            this.mini = value;
+        }
+    }
+
+    // Method to pop a value from stack
+    pop() {
+        // Base case
+        if (this.st.length === 0) return;
+
+        // Get the top
+        let x = this.st.pop();
+
+        // If the modified value was added to stack
+        if (x &lt; this.mini) {
+            // Update the minimum
+            this.mini = 2 * this.mini - x;
+        }
+    }
+
+    // Method to get the top of stack
+    top() {
+        // Base case
+        if (this.st.length === 0) return -1;
+
+        // Get the top
+        let x = this.st[this.st.length - 1];
+
+        // Return top if minimum is less than the top
+        if (this.mini &lt; x) return x;
+
+        // Otherwise return mini
+        return this.mini;
+    }
+
+    // Method to get the minimum in stack
+    getMin() {
+        // Return the minimum
+        return this.mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class MinStack:
+    def __init__(self):
+        # Initialize a stack
+        self.st = []
+        # To store the minimum value
+        self.mini = None
+
+    # Method to push a value in stack
+    def push(self, value):
+        # If stack is empty
+        if not self.st:
+            # Update the minimum value
+            self.mini = value
+
+            # Push current value as minimum
+            self.st.append(value)
+            return
+
+        # If the value is greater than the minimum
+        if value &gt; self.mini:
+            self.st.append(value)
+        else:
+            # Add the modified value to stack
+            self.st.append(2 * value - self.mini)
+            # Update the minimum
+            self.mini = value
+
+    # Method to pop a value from stack
+    def pop(self):
+        # Base case
+        if not self.st:
+            return
+
+        # Get the top
+        x = self.st.pop()
+
+        # If the modified value was added to stack
+        if x &lt; self.mini:
+            # Update the minimum
+            self.mini = 2 * self.mini - x
+
+    # Method to get the top of stack
+    def top(self):
+        # Base case
+        if not self.st:
+            return -1
+
+        # Get the top
+        x = self.st[-1]
+
+        # Return top if minimum is less than the top
+        if self.mini &lt; x:
+            return x
+
+        # Otherwise return mini
+        return self.mini
+
+    # Method to get the minimum in stack
+    def getMin(self):
+        # Return the minimum
+        return self.mini</code></pre></div>
+</body>
+</html>

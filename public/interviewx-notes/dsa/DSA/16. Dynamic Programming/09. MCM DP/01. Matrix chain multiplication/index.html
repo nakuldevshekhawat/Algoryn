@@ -1,0 +1,1806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Matrix chain multiplication</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Matrix chain multiplication</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span><span>Matrix</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a chain of matrices A<sub>1</sub>, A<sub>2</sub>, A<sub>3</sub>,.....A<sub>n</sub>, you have to figure out the most efficient way to multiply these matrices. In other words, determine where to place parentheses to<strong> minimize</strong> the number of<strong> multiplications.</strong></p><p><br></p><p>Given an array nums of size n. Dimension of matrix A<sub>i </sub>( 0 < i < n ) is nums[i - 1] x nums[i].Find a minimum number of multiplications needed to multiply the chain.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>2 <= n <= 100</li><li>1 <= nums[i] <= 100</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> nums = [10, 15, 20, 25]</p><p><strong>Output :</strong> 8000</p><p><strong>Explanation :</strong> There are two ways to multiply the chain - A1*(A2*A3) or (A1*A2)*A3.</p><p>If we multiply in order- A1*(A2*A3), then number of multiplications required are 11250.</p><p>If we multiply in order- (A1*A2)*A3, then number of multiplications required are 8000.</p><p>Thus minimum number of multiplications required is 8000.</p><h3>Example 2</h3><p><strong>Input :</strong> nums = [4, 2, 3]</p><p><strong>Output :</strong> 24</p><p><strong>Explanation : </strong>There is only one way to multiply the chain - A1*A2.</p><p>Thus minimum number of multiplications required is 24.</p><h3>Example 3</h3><p><strong>Input :</strong> nums = [1, 2, 3, 4, 5]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>A fun fact about this problem's practical usage can be seen in the field of computer graphics. The stages of a 3D graphics pipeline often involve multiplication of matrices for transformations like scaling, rotation, translation, and shearing. Having an efficient way to multiply these matrices can make the graphics rendering faster and more efficient, significantly improving the performance and speed of video games, simulations, 3D modeling software, and more!</p></div>
+<div class="section"><h2>Editorial: Recursion</h2><html><head></head><body><h5><strong>Identification:</strong></h5>
+<p>Whenever we need to find the answer to a large problem such that the problem can be broken into subproblems and the final answer varies due to the order in which the subproblems are solved, we can think in terms of partition DP.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-3KHt3vLA"><br>
+
+<h5><strong>Matrix Chain Multiplication:</strong></h5>
+<p>Let us first understand the problem of matrix chain multiplication. In order to understand the problem we need to first understand the rules of matrix multiplication:</p>
+<ol>
+<li>Two matrices A1 and A2 of dimensions [p x q] and [r x s] can only be multiplied if and only if q=r.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-1ljmsfKD"><br>
+
+<li>The total number of multiplications required to multiply A1 and A2 are: p*q*s</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-U8ocsaja"><br>
+</ol>
+<h5><strong>Understanding:</strong></h5>
+<p>As this problem of matrix multiplication solves one big problem ( minimum operations to get A1.A2….An) and the answer varies in the order the subproblems are being solved, we can identify this problem of pattern partition DP.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-HhqRvb-y"><br>
+
+<h5><strong>Rules to solve the problem of partition DP:</strong></h5>
+<ol>
+<li>Start with the entire block/array and mark it with i,j: We are given an array, which can be represented by 'i' and 'j' as shown in the image below.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-ndmklJEN"><br>
+
+<b>Try out all partitions: </b>Let us first analyse all the partitions that can be made with respect to the indexing.<br><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-cVJvfk-2"><br>
+<p>As we can see 3 partitions are possible, to try all three partitions, initialize a for loop starting from 'i' and ending at (j-1), (1 to 3) in this case. The two partitions will be f(i,k) and f(k+1,j).</p>
+
+<li><b>Base Case:</b> If i==j, it means we are interested in a single matrix and no operation is required to multiply it so return 0.</li>
+
+<li><b>Run the best possible answer of the two partitions:</b> Answer that comes after dividing the problem into two subproblems and solving them recursively.  Let's understand this by the help of an example.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-3E-dhICV" width="450"><br>
+<p>As there are only two matrices, we can say that only one partition is possible at k=1, when we do this partition, we see that the two partitions made are f(1,1) and f(2,2) (by f(i,k) and f(k+1,j) therefore we hit the base condition in both of these subcases which return 0.</p>
+
+<p>Now, we know that the subproblems/partitions give us 0 operations, but we still have some work to do. The partition f(i,k) gives us a resultant matrix of dimensions [i -1 x k] and the partition f(k+1,j) gives us a resultant matrix of dimensions [k,j]. Therefore we need to count the number of operations for our two partitions (k=1) as shown:</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Matrix chain multiplication/-7dd1YBva"><br>
+<p>Now, this is at one partition, in general, we need to calculate this answer of every partition and return the minimum as the answer.</p>
+</ol>
+<h5><strong>To summarize:</strong></h5>
+<ol>
+<li>Represent the entire array by two indexes i and j. In this question i =1 and j = n. We need to find f(i,j).</li>
+<li>Maintain a 'mini' variable to get the minimum answer.>/li>
+</li><li>Set a for loop to find the answer( variable k) from i to j-1. In every iteration find the answer, with the formula discussed above and compare it with the 'mini' value.
+</li><li>Finally, return the 'mini' variable as the answer.</li></ol><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    int func(vector<int>& arr, int i, int j) {
+    
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+    
+        int mini = INT_MAX; 
+    
+        // Partition the matrices between i and j
+        for (int k = i; k <= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k) + func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+        
+            // Update the minimum cost
+            mini = min(mini, ans);
+        }
+        // Return the minimum cost found
+        return mini; 
+    }
+public:
+    /* Function to set up the parameters
+    and call the recursive function*/
+    int matrixMultiplication(vector<int>& nums) {
+        int N = nums.size();
+        
+        // Starting index of the matrix chain
+        int i = 1; 
+        
+        // Ending index of the matrix chain
+        int j = N - 1; 
+    
+        // Call the recursive function
+        return func(nums, i, j);
+    }
+};
+
+int main() {
+    vector<int> arr = {10, 20, 30, 40, 50}; 
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    // Print the result
+    cout << "The minimum number of operations is " << sol.matrixMultiplication(arr);
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int func(int[] arr, int i, int j) {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+
+        int mini = Integer.MAX_VALUE;
+
+        // Partition the matrices between i and j
+        for (int k = i; k <= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k) + func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+        // Return the minimum cost found
+        return mini;
+    }
+
+    /* Function to set up the parameters
+    and call the recursive function*/
+    public int matrixMultiplication(int[] nums) {
+        int N = nums.length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        // Call the recursive function
+        return func(nums, i, j);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {10, 20, 30, 40, 50};
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the result
+        System.out.println("The minimum number of operations is " + sol.matrixMultiplication(arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Recursive function to compute the 
+    minimum cost of matrix multiplication"""
+    def func(self, arr, i, j):
+        """ Base case: When there is only one 
+        matrix, no multiplication is needed"""
+        if i == j:
+            return 0
+
+        mini = float('inf')
+
+        # Partition the matrices between i and j
+        for k in range(i, j):
+            """ Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices"""
+            ans = self.func(arr, i, k) + self.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j]
+            
+            # Update the minimum cost
+            mini = min(mini, ans)
+
+        return mini
+
+    def matrixMultiplication(self, nums):
+        N = len(nums)
+
+        # Starting index of the matrix chain
+        i = 1
+        
+        # Ending index of the matrix chain
+        j = N - 1
+
+        # Call the recursive function
+        return self.func(nums, i, j)
+
+if __name__ == "__main__":
+    arr = [10, 20, 30, 40, 50]
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    # Print the result
+    print("The minimum number of operations is", sol.matrixMultiplication(arr))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    func(arr, i, j) {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i === j) return 0;
+
+        let mini = Infinity;
+
+        // Partition the matrices between i and j
+        for (let k = i; k <= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            const ans = this.func(arr, i, k) + this.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+        return mini;
+    }
+
+    /* Function to set up the parameters
+    and call the recursive function*/
+    matrixMultiplication(nums) {
+        const N = nums.length;
+
+        // Starting index of the matrix chain
+        const i = 1;
+        
+        // Ending index of the matrix chain
+        const j = N - 1;
+
+        // Call the recursive function
+        return this.func(nums, i, j);
+    }
+}
+
+const arr = [10, 20, 30, 40, 50];
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log(`The minimum number of operations is ${sol.matrixMultiplication(arr)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int func(int[] arr, int i, int j)
+    {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j) return 0;
+
+        int mini = int.MaxValue;
+
+        // Partition the matrices between i and j
+        for (int k = i; k <= j - 1; k++)
+        {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k) + func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.Min(mini, ans);
+        }
+        return mini;
+    }
+
+    /* Function to set up the parameters
+    and call the recursive function*/
+    public int MatrixMultiplication(int[] nums)
+    {
+        int N = nums.Length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        // Call the recursive function
+        return func(nums, i, j);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = {10, 20, 30, 40, 50};
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine($"The minimum number of operations is {sol.MatrixMultiplication(arr)}");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Recursive function to compute the minimum cost of matrix multiplication
+func funcRec(arr []int, i, j int) int {
+
+	/* Base case: When there is only one
+	matrix, no multiplication is needed */
+	if i == j {
+		return 0
+	}
+
+	mini := math.MaxInt32
+
+	// Partition the matrices between i and j
+	for k := i; k <= j-1; k++ {
+		/* Compute the cost of multiplying matrices
+		from i to k and from k+1 to j and add cost
+		of multiplying the two resulting matrices */
+		ans := funcRec(arr, i, k) + funcRec(arr, k+1, j) + arr[i-1]*arr[k]*arr[j]
+
+		// Update the minimum cost
+		if ans < mini {
+			mini = ans
+		}
+	}
+	// Return the minimum cost found
+	return mini
+}
+
+// Function to set up the parameters and call the recursive function
+func matrixMultiplication(nums []int) int {
+	N := len(nums)
+
+	// Starting index of the matrix chain
+	i := 1
+
+	// Ending index of the matrix chain
+	j := N - 1
+
+	// Call the recursive function
+	return funcRec(nums, i, j)
+}
+
+func main() {
+	arr := []int{10, 20, 30, 40, 50}
+
+	// Print the result
+	fmt.Println("The minimum number of operations is", matrixMultiplication(arr))
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>Exponential.<br><br>
+<strong>Space Complexity: </strong>O(N), As we are using auxiliary stack space.</body></html></div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][n]: </b>As there are two changing parameters in the recursive solution,  'i' and 'j'. The maximum value 'i' and 'j' can attain is (n), where n is the size of array. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li>
+</ol><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    int func(vector<int>& arr, int i, int j, vector<vector<int>>& dp) {
+    
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+        
+        //Check if the subproblem is already calculated    
+        if(dp[i][j]!=-1)
+        return dp[i][j];
+    
+        int mini = INT_MAX; 
+    
+        // Partition the matrices between i and j
+        for (int k = i; k <= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k, dp) + func(arr, k + 1, j, dp) + arr[i - 1] * arr[k] * arr[j];
+        
+            // Update the minimum cost
+            mini = min(mini, ans);
+        }
+        // Store and return the minimum cost found
+        return dp[i][j] = mini; 
+    }
+public:
+    /* Function to set up the parameters
+    and call the recursive function*/
+    int matrixMultiplication(vector<int>& nums) {
+        int N = nums.size();
+        
+        // Starting index of the matrix chain
+        int i = 1; 
+        
+        // Ending index of the matrix chain
+        int j = N - 1; 
+        
+        vector<vector<int>> dp(N,vector<int>(N,-1));
+        
+        // Call the recursive function
+        return func(nums, i, j, dp);
+    }
+};
+
+int main() {
+    vector<int> arr = {10, 20, 30, 40, 50}; 
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    // Print the result
+    cout << "The minimum number of operations is " << sol.matrixMultiplication(arr);
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int func(int[] arr, int i, int j, int[][] dp) {
+        /* Base case: When there is only one 
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+        
+        // Check if the subproblem is already calculated
+        if (dp[i][j] != -1)
+            return dp[i][j];
+        
+        int mini = Integer.MAX_VALUE;
+
+        // Partition the matrices between i and j
+        for (int k = i; k <= j - 1; k++) {
+            /* Compute the cost of multiplying 
+            matrices from i to k and from k+1 to j*/
+            int ans = func(arr, i, k, dp) + func(arr, k + 1, j, dp) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+        // Store and return the minimum cost found
+        dp[i][j] = mini;
+        return mini;
+    }
+
+    /* Function to set up the parameters
+    and call the recursive function*/
+    public int matrixMultiplication(int[] nums) {
+        int N = nums.length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        int[][] dp = new int[N][N];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+
+        // Call the recursive function
+        return func(nums, i, j, dp);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {10, 20, 30, 40, 50};
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the result
+        System.out.println("The minimum number of operations is " + sol.matrixMultiplication(arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import sys
+
+class Solution:
+    def __init__(self):
+        self.dp = None
+    """ Recursive function to compute the 
+    minimum cost of matrix multiplication"""
+    def func(self, arr, i, j):
+        """ Base case: When there is only one 
+        matrix, no multiplication is needed"""
+        if i == j:
+            return 0
+        
+        # Check if the subproblem is already calculated
+        if self.dp[i][j] != -1:
+            return self.dp[i][j]
+
+        mini = float('inf')
+
+        # Partition the matrices between i and j
+        for k in range(i, j):
+            """ Compute the cost of multiplying
+            matrices from i to k and from k+1 to j"""
+            ans = self.func(arr, i, k) + self.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j]
+            
+            # Update the minimum cost
+            mini = min(mini, ans)
+
+        # Store and return the minimum cost found
+        self.dp[i][j] = mini
+        return mini
+
+    """ Function to set up the parameters 
+    and call the recursive function"""
+    def matrixMultiplication(self, arr):
+        N = len(arr)
+
+        # Starting index of the matrix chain
+        i = 1
+        
+        # Ending index of the matrix chain
+        j = N - 1
+
+        self.dp = [[-1] * N for _ in range(N)]
+
+        # Call the recursive function
+        return self.func(arr, i, j)
+
+if __name__ == "__main__":
+    arr = [10, 20, 30, 40, 50]
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    # Print the result
+    print("The minimum number of operations is", sol.matrixMultiplication(arr))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.dp = null;
+    }
+
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    func(arr, i, j) {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i === j) return 0;
+        
+        // Check if the subproblem is already calculated
+        if (this.dp[i][j] !== -1) return this.dp[i][j];
+
+        let mini = Infinity;
+
+        // Partition the matrices between i and j
+        for (let k = i; k <= j - 1; k++) {
+            /* Compute the cost of multiplying 
+            matrices from i to k and from k+1 to j*/
+            const ans = this.func(arr, i, k) + this.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+
+        // Store and return the minimum cost found
+        this.dp[i][j] = mini;
+        return mini;
+    }
+
+    /* Function to set up the parameters 
+    and call the recursive function*/
+    matrixMultiplication(nums) {
+        const N = nums.length;
+
+        // Starting index of the matrix chain
+        const i = 1;
+        
+        // Ending index of the matrix chain
+        const j = N - 1;
+
+        this.dp = Array.from({ length: N }, () => Array(N).fill(-1));
+
+        // Call the recursive function
+        return this.func(nums, i, j);
+    }
+}
+
+const arr = [10, 20, 30, 40, 50];
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log(`The minimum number of operations is ${sol.matrixMultiplication(arr)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = { 10, 20, 30, 40, 50 };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine($"The minimum number of operations is {sol.MatrixMultiplication(arr)}");
+    }
+}
+
+class Solution
+{
+    private int[,] dp;
+
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int Func(int[] arr, int i, int j)
+    {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j) return 0;
+        
+        // Check if the subproblem is already calculated
+        if (dp[i, j] != -1) return dp[i, j];
+
+        int mini = int.MaxValue;
+
+        // Partition the matrices between i and j
+        for (int k = i; k <= j - 1; k++)
+        {
+            /* Compute the cost of multiplying 
+            matrices from i to k and from k+1 to j*/
+            int ans = Func(arr, i, k) + Func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.Min(mini, ans);
+        }
+
+        // Store and return the minimum cost found
+        dp[i, j] = mini;
+        return mini;
+    }
+
+    /* Function to set up the parameters 
+    and call the recursive function*/
+    public int MatrixMultiplication(int[] nums)
+    {
+        int N = nums.Length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        dp = new int[N, N];
+        for (int row = 0; row < N; row++)
+        {
+            for (int col = 0; col < N; col++)
+            {
+                dp[row, col] = -1;
+            }
+        }
+
+        // Call the recursive function
+        return Func(nums, i, j);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Recursive function to compute the minimum cost of matrix multiplication
+func funcRec(arr []int, i, j int, dp [][]int) int {
+
+	/* Base case: When there is only one
+	matrix, no multiplication is needed */
+	if i == j {
+		return 0
+	}
+
+	// Check if the subproblem is already calculated
+	if dp[i][j] != -1 {
+		return dp[i][j]
+	}
+
+	mini := math.MaxInt32
+
+	// Partition the matrices between i and j
+	for k := i; k <= j-1; k++ {
+		/* Compute the cost of multiplying matrices
+		from i to k and from k+1 to j and add cost
+		of multiplying the two resulting matrices */
+		ans := funcRec(arr, i, k, dp) + funcRec(arr, k+1, j, dp) + arr[i-1]*arr[k]*arr[j]
+
+		// Update the minimum cost
+		if ans < mini {
+			mini = ans
+		}
+	}
+
+	// Store and return the minimum cost found
+	dp[i][j] = mini
+	return dp[i][j]
+}
+
+// Function to set up the parameters and call the recursive function
+func matrixMultiplication(nums []int) int {
+	N := len(nums)
+
+	// Create a DP table initialized with -1
+	dp := make([][]int, N)
+	for i := range dp {
+		dp[i] = make([]int, N)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Starting index of the matrix chain
+	i := 1
+
+	// Ending index of the matrix chain
+	j := N - 1
+
+	// Call the recursive function
+	return funcRec(nums, i, j, dp)
+}
+
+func main() {
+	arr := []int{10, 20, 30, 40, 50}
+
+	// Print the result
+	fmt.Println("The minimum number of operations is", matrixMultiplication(arr))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*N*N), There are N*N states and we explicitly run a loop inside the function which will run for N times, therefore at max ‘N*N*N’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*N) + O(N). We are using an auxiliary recursion stack space O(N) and a 2D array  O(N*N).</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><h2>Intuition</h2>
+    <p>
+        The matrix chain multiplication problem aims to determine the optimal order of multiplying a given sequence of matrices to minimize the total number of scalar multiplications. The key insight is to utilize dynamic programming by breaking down the problem into smaller subproblems, solving each subproblem once, and storing the solutions. This method avoids redundant calculations and efficiently computes the minimum cost. The process involves considering every possible way to split the chain of matrices, calculating the cost for each split, and then choosing the split that results in the minimum cost.
+    </p>
+
+    <h2>Approach</h2>
+    <ol>
+        <li>Define a 2D array <code>dp</code> where <code>dp[i][j]</code> represents the minimum cost of multiplying the chain of matrices from index <code>i</code> to index <code>j</code>.</li>
+        <li>Initialize the diagonal elements of the <code>dp</code> array to 0, as a single matrix requires no multiplication.</li>
+        <li>Iterate over the length of the chain, starting from 2 up to the length of the matrix array.</li>
+        <li>For each length, iterate over the possible starting indices of the chain.</li>
+        <li>For each starting index, determine the ending index based on the current chain length.</li>
+        <li>For each pair of starting and ending indices, iterate over all possible split points.</li>
+        <li>Calculate the cost of multiplying the matrices at the current split point, which includes the cost of multiplying the left sub-chain, the right sub-chain, and the cost of multiplying the resulting two matrices.</li>
+        <li>Update the <code>dp</code> array with the minimum cost found for each pair of starting and ending indices.</li>
+        <li>The result is stored in <code>dp[1][n-1]</code>, representing the minimum cost of multiplying the entire chain of matrices.</li>
+    </ol>
+
+ <h3>  Solution </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int matrixMultiplication(vector<int>& nums) {
+        int n = nums.size();
+        vector<vector<int>> dp(n, vector<int>(n, INT_MAX));
+
+        // A single matrix needs no multiplication cost
+        for (int i = 1; i < n; ++i) {
+            dp[i][i] = 0;
+        }
+
+        // Filling the dp array
+        for (int length = 2; length < n; ++length) { // length of the chain
+            for (int i = 1; i <= n - length; ++i) {
+                int j = i + length - 1;
+                for (int k = i; k < j; ++k) {
+                    int cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j];
+                    if (cost < dp[i][j]) {
+                        dp[i][j] = cost;
+                    }
+                }
+            }
+        }
+
+        // The result is in dp[1][n-1]
+        return dp[1][n - 1];
+    }
+};
+
+int main() {
+    Solution sol;
+    vector<int> nums = {10, 15, 20, 25};
+    // Output should be 8000
+    cout << sol.matrixMultiplication(nums) << endl; 
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="java" class="language-java">class Solution {
+    public int matrixMultiplication(int[] nums) {
+        int n = nums.length;
+        int[][] dp = new int[n][n];
+
+        // Initialize the dp array with large values
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                dp[i][j] = Integer.MAX_VALUE;
+            }
+        }
+
+        // A single matrix doesn't require any multiplication
+        for (int i = 1; i < n; i++) {
+            dp[i][i] = 0;
+        }
+
+        // Filling the dp array in a bottom-up manner
+        for (int length = 2; length < n; length++) {
+            for (int i = 1; i <= n - length; i++) {
+                int j = i + length - 1;
+                for (int k = i; k < j; k++) {
+                    // Calculate cost
+                    int cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j];
+                    // Take the minimum cost
+                    if (cost < dp[i][j]) {
+                        dp[i][j] = cost;
+                    }
+                }
+            }
+        }
+
+        // The result is in dp[1][n-1] (multiplying from matrix 1 to n-1)
+        return dp[1][n - 1];
+    }
+
+    // Main method to test the solution
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[] nums = {10, 15, 20, 25};
+        // Output should be 8000
+        System.out.println(sol.matrixMultiplication(nums)); 
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def matrixMultiplication(self, nums):
+        n = len(nums)
+        dp = [[float('inf')] * n for _ in range(n)]
+
+        # A single matrix needs no multiplication cost
+        for i in range(1, n):
+            dp[i][i] = 0
+
+        # Filling the dp array
+        for length in range(2, n):  # length of the chain
+            for i in range(1, n - length + 1):
+                j = i + length - 1
+                for k in range(i, j):
+                    cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j]
+                    if cost < dp[i][j]:
+                        dp[i][j] = cost
+
+        # The result is in dp[1][n-1]
+        return dp[1][n - 1]
+
+# Main method to test the solution
+if __name__ == "__main__":
+    sol = Solution()
+    nums = [10, 15, 20, 25]
+    print(sol.matrixMultiplication(nums))  # Output should be 8000
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    matrixMultiplication(nums) {
+        const n = nums.length;
+        const dp = Array.from({ length: n }, () => Array(n).fill(Infinity));
+
+        // A single matrix needs no multiplication cost
+        for (let i = 1; i < n; i++) {
+            dp[i][i] = 0;
+        }
+
+        // Filling the dp array
+        for (let length = 2; length < n; length++) { // length of the chain
+            for (let i = 1; i <= n - length; i++) {
+                let j = i + length - 1;
+                for (let k = i; k < j; k++) {
+                    let cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j];
+                    if (cost < dp[i][j]) {
+                        dp[i][j] = cost;
+                    }
+                }
+            }
+        }
+
+        // The result is in dp[1][n-1]
+        return dp[1][n - 1];
+    }
+}
+
+// Main method to test the solution
+const sol = new Solution();
+const nums = [10, 15, 20, 25];
+console.log(sol.matrixMultiplication(nums)); // Output should be 8000
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Solution sol = new Solution();
+        int[] nums = { 10, 15, 20, 25 };
+        int result = sol.MatrixMultiplication(nums);
+        Console.WriteLine(result);
+    }
+}
+
+class Solution
+{
+    public int MatrixMultiplication(int[] nums)
+    {
+        int n = nums.Length;
+        int[,] dp = new int[n, n];
+
+        // Initialize dp array with a large value (equivalent to Infinity)
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < n; j++)
+            {
+                dp[i, j] = int.MaxValue;
+            }
+        }
+
+        // A single matrix needs no multiplication cost
+        for (int i = 1; i < n; i++)
+        {
+            dp[i, i] = 0;
+        }
+
+        // Filling the dp array
+        for (int length = 2; length < n; length++) // length of the chain
+        {
+            for (int i = 1; i <= n - length; i++)
+            {
+                int j = i + length - 1;
+                for (int k = i; k < j; k++)
+                {
+                    long cost = (long)dp[i, k] + dp[k + 1, j] + (long)nums[i - 1] * nums[k] * nums[j];
+                    if (cost < dp[i, j])
+                    {
+                        dp[i, j] = (int)cost;
+                    }
+                }
+            }
+        }
+
+        // The result is in dp[1][n-1]
+        return dp[1, n - 1];
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+func matrixMultiplication(nums []int) int {
+	n := len(nums)
+
+	// Create a DP table initialized with max int values
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, n)
+		for j := range dp[i] {
+			dp[i][j] = math.MaxInt32
+		}
+	}
+
+	// A single matrix needs no multiplication cost
+	for i := 1; i < n; i++ {
+		dp[i][i] = 0
+	}
+
+	// Filling the dp array
+	for length := 2; length < n; length++ { // length of the chain
+		for i := 1; i <= n-length; i++ {
+			j := i + length - 1
+			for k := i; k < j; k++ {
+				cost := dp[i][k] + dp[k+1][j] + nums[i-1]*nums[k]*nums[j]
+				if cost < dp[i][j] {
+					dp[i][j] = cost
+				}
+			}
+		}
+	}
+
+	// The result is in dp[1][n-1]
+	return dp[1][n-1]
+}
+
+func main() {
+	nums := []int{10, 15, 20, 25}
+
+	// Output should be 8000
+	fmt.Println(matrixMultiplication(nums))
+}
+</code></pre></div></div></div>
+
+   <h3>Complexity Analysis</h3>
+    <p><strong>Time Complexity: </strong>O(N^3) due to three nested loops</p>
+    <p><strong>Space Complexity: </strong>O(N^2) for the dp array storage</p></body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    int func(vector&lt;int&gt;&amp; arr, int i, int j) {
+    
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+    
+        int mini = INT_MAX; 
+    
+        // Partition the matrices between i and j
+        for (int k = i; k &lt;= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k) + func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+        
+            // Update the minimum cost
+            mini = min(mini, ans);
+        }
+        // Return the minimum cost found
+        return mini; 
+    }
+public:
+    /* Function to set up the parameters
+    and call the recursive function*/
+    int matrixMultiplication(vector&lt;int&gt;&amp; nums) {
+        int N = nums.size();
+        
+        // Starting index of the matrix chain
+        int i = 1; 
+        
+        // Ending index of the matrix chain
+        int j = N - 1; 
+    
+        // Call the recursive function
+        return func(nums, i, j);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int func(int[] arr, int i, int j)
+    {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j) return 0;
+
+        int mini = int.MaxValue;
+
+        // Partition the matrices between i and j
+        for (int k = i; k &lt;= j - 1; k++)
+        {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k) + func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = System.Math.Min(mini, ans);
+        }
+        return mini;
+    }
+
+    public int MatrixMultiplication(int[] nums)
+    {
+        //your code goes here
+        /* Function to set up the parameters
+        and call the recursive function*/
+        int N = nums.Length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        // Call the recursive function
+        return func(nums, i, j);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot; 
+
+// Recursive function to compute the minimum cost of matrix multiplication
+func funcRec(arr []int, i, j int) int {
+
+	/* Base case: When there is only one
+	matrix, no multiplication is needed */
+	if i == j {
+		return 0
+	}
+
+	mini := math.MaxInt32
+
+	// Partition the matrices between i and j
+	for k := i; k &lt;= j-1; k++ {
+		/* Compute the cost of multiplying matrices
+		from i to k and from k+1 to j and add cost
+		of multiplying the two resulting matrices */
+		ans := funcRec(arr, i, k) + funcRec(arr, k+1, j) + arr[i-1]*arr[k]*arr[j]
+
+		// Update the minimum cost
+		if ans &lt; mini {
+			mini = ans
+		}
+	}
+	// Return the minimum cost found
+	return mini
+}
+
+// Function to set up the parameters and call the recursive function
+func matrixMultiplication(nums []int) int {
+	N := len(nums)
+
+	// Starting index of the matrix chain
+	i := 1
+
+	// Ending index of the matrix chain
+	j := N - 1
+
+	// Call the recursive function
+	return funcRec(nums, i, j)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int func(int[] arr, int i, int j) {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+
+        int mini = Integer.MAX_VALUE;
+
+        // Partition the matrices between i and j
+        for (int k = i; k &lt;= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k) + func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+        // Return the minimum cost found
+        return mini;
+    }
+
+    /* Function to set up the parameters
+    and call the recursive function*/
+    public int matrixMultiplication(int[] nums) {
+        int N = nums.length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        // Call the recursive function
+        return func(nums, i, j);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    func(arr, i, j) {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i === j) return 0;
+
+        let mini = Infinity;
+
+        // Partition the matrices between i and j
+        for (let k = i; k &lt;= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            const ans = this.func(arr, i, k) + this.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+        return mini;
+    }
+
+    /* Function to set up the parameters
+    and call the recursive function*/
+    matrixMultiplication(nums) {
+        const N = nums.length;
+
+        // Starting index of the matrix chain
+        const i = 1;
+        
+        // Ending index of the matrix chain
+        const j = N - 1;
+
+        // Call the recursive function
+        return this.func(nums, i, j);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Recursive function to compute the 
+    minimum cost of matrix multiplication&quot;&quot;&quot;
+    def func(self, arr, i, j):
+        &quot;&quot;&quot; Base case: When there is only one 
+        matrix, no multiplication is needed&quot;&quot;&quot;
+        if i == j:
+            return 0
+
+        mini = float(&#x27;inf&#x27;)
+
+        # Partition the matrices between i and j
+        for k in range(i, j):
+            &quot;&quot;&quot; Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices&quot;&quot;&quot;
+            ans = self.func(arr, i, k) + self.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j]
+            
+            # Update the minimum cost
+            mini = min(mini, ans)
+
+        return mini
+
+    def matrixMultiplication(self, nums):
+        N = len(nums)
+
+        # Starting index of the matrix chain
+        i = 1
+        
+        # Ending index of the matrix chain
+        j = N - 1
+
+        # Call the recursive function
+        return self.func(nums, i, j)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    int func(vector&lt;int&gt;&amp; arr, int i, int j, vector&lt;vector&lt;int&gt;&gt;&amp; dp) {
+    
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+        
+        //Check if the subproblem is already calculated    
+        if(dp[i][j]!=-1)
+        return dp[i][j];
+    
+        int mini = INT_MAX; 
+    
+        // Partition the matrices between i and j
+        for (int k = i; k &lt;= j - 1; k++) {
+            /* Compute the cost of multiplying matrices 
+            from i to k and from k+1 to j and add cost
+            of multiplying the two resulting matrices*/
+            int ans = func(arr, i, k, dp) + func(arr, k + 1, j, dp) + arr[i - 1] * arr[k] * arr[j];
+        
+            // Update the minimum cost
+            mini = min(mini, ans);
+        }
+        // Store and return the minimum cost found
+        return dp[i][j] = mini; 
+    }
+public:
+    /* Function to set up the parameters
+    and call the recursive function*/
+    int matrixMultiplication(vector&lt;int&gt;&amp; nums) {
+        int N = nums.size();
+        
+        // Starting index of the matrix chain
+        int i = 1; 
+        
+        // Ending index of the matrix chain
+        int j = N - 1; 
+        
+        vector&lt;vector&lt;int&gt;&gt; dp(N,vector&lt;int&gt;(N,-1));
+        
+        // Call the recursive function
+        return func(nums, i, j, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    private int[,] dp;
+
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int Func(int[] arr, int i, int j)
+    {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i == j) return 0;
+        
+        // Check if the subproblem is already calculated
+        if (dp[i, j] != -1) return dp[i, j];
+
+        int mini = int.MaxValue;
+
+        // Partition the matrices between i and j
+        for (int k = i; k &lt;= j - 1; k++)
+        {
+            /* Compute the cost of multiplying 
+            matrices from i to k and from k+1 to j*/
+            int ans = Func(arr, i, k) + Func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.Min(mini, ans);
+        }
+
+        // Store and return the minimum cost found
+        dp[i, j] = mini;
+        return mini;
+    }
+
+    public int MatrixMultiplication(int[] nums)
+    {
+        int N = nums.Length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        dp = new int[N, N];
+        for (int row = 0; row &lt; N; row++)
+        {
+            for (int col = 0; col &lt; N; col++)
+            {
+                dp[row, col] = -1;
+            }
+        }
+
+        // Call the recursive function
+        return Func(nums, i, j);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+// Recursive function to compute the minimum cost of matrix multiplication
+func funcRec(arr []int, i, j int, dp [][]int) int {
+
+	/* Base case: When there is only one
+	matrix, no multiplication is needed */
+	if i == j {
+		return 0
+	}
+
+	// Check if the subproblem is already calculated
+	if dp[i][j] != -1 {
+		return dp[i][j]
+	}
+
+	mini := math.MaxInt32
+
+	// Partition the matrices between i and j
+	for k := i; k &lt;= j-1; k++ {
+		/* Compute the cost of multiplying matrices
+		from i to k and from k+1 to j and add cost
+		of multiplying the two resulting matrices */
+		ans := funcRec(arr, i, k, dp) + funcRec(arr, k+1, j, dp) + arr[i-1]*arr[k]*arr[j]
+
+		// Update the minimum cost
+		if ans &lt; mini {
+			mini = ans
+		}
+	}
+
+	// Store and return the minimum cost found
+	dp[i][j] = mini
+	return dp[i][j]
+}
+
+// Function to set up the parameters and call the recursive function
+func matrixMultiplication(nums []int) int {
+	N := len(nums)
+
+	// Create a DP table initialized with -1
+	dp := make([][]int, N)
+	for i := range dp {
+		dp[i] = make([]int, N)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Starting index of the matrix chain
+	i := 1
+
+	// Ending index of the matrix chain
+	j := N - 1
+
+	// Call the recursive function
+	return funcRec(nums, i, j, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+/* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    private int func(int[] arr, int i, int j, int[][] dp) {
+        /* Base case: When there is only one 
+        matrix, no multiplication is needed*/
+        if (i == j)
+            return 0;
+        
+        // Check if the subproblem is already calculated
+        if (dp[i][j] != -1)
+            return dp[i][j];
+        
+        int mini = Integer.MAX_VALUE;
+
+        // Partition the matrices between i and j
+        for (int k = i; k &lt;= j - 1; k++) {
+            /* Compute the cost of multiplying 
+            matrices from i to k and from k+1 to j*/
+            int ans = func(arr, i, k, dp) + func(arr, k + 1, j, dp) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+        // Store and return the minimum cost found
+        dp[i][j] = mini;
+        return mini;
+    }
+
+    /* Function to set up the parameters
+    and call the recursive function*/
+    public int matrixMultiplication(int[] nums) {
+        int N = nums.length;
+
+        // Starting index of the matrix chain
+        int i = 1;
+        
+        // Ending index of the matrix chain
+        int j = N - 1;
+
+        int[][] dp = new int[N][N];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+
+        // Call the recursive function
+        return func(nums, i, j, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.dp = null;
+    }
+
+    /* Recursive function to compute the 
+    minimum cost of matrix multiplication*/
+    func(arr, i, j) {
+        /* Base case: When there is only one
+        matrix, no multiplication is needed*/
+        if (i === j) return 0;
+        
+        // Check if the subproblem is already calculated
+        if (this.dp[i][j] !== -1) return this.dp[i][j];
+
+        let mini = Infinity;
+
+        // Partition the matrices between i and j
+        for (let k = i; k &lt;= j - 1; k++) {
+            /* Compute the cost of multiplying 
+            matrices from i to k and from k+1 to j*/
+            const ans = this.func(arr, i, k) + this.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j];
+            
+            // Update the minimum cost
+            mini = Math.min(mini, ans);
+        }
+
+        // Store and return the minimum cost found
+        this.dp[i][j] = mini;
+        return mini;
+    }
+
+    /* Function to set up the parameters 
+    and call the recursive function*/
+    matrixMultiplication(nums) {
+        const N = nums.length;
+
+        // Starting index of the matrix chain
+        const i = 1;
+        
+        // Ending index of the matrix chain
+        const j = N - 1;
+
+        this.dp = Array.from({ length: N }, () =&gt; Array(N).fill(-1));
+
+        // Call the recursive function
+        return this.func(nums, i, j);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def __init__(self):
+        self.dp = None
+    &quot;&quot;&quot; Recursive function to compute the 
+    minimum cost of matrix multiplication&quot;&quot;&quot;
+    def func(self, arr, i, j):
+        &quot;&quot;&quot; Base case: When there is only one 
+        matrix, no multiplication is needed&quot;&quot;&quot;
+        if i == j:
+            return 0
+        
+        # Check if the subproblem is already calculated
+        if self.dp[i][j] != -1:
+            return self.dp[i][j]
+
+        mini = float(&#x27;inf&#x27;)
+
+        # Partition the matrices between i and j
+        for k in range(i, j):
+            &quot;&quot;&quot; Compute the cost of multiplying
+            matrices from i to k and from k+1 to j&quot;&quot;&quot;
+            ans = self.func(arr, i, k) + self.func(arr, k + 1, j) + arr[i - 1] * arr[k] * arr[j]
+            
+            # Update the minimum cost
+            mini = min(mini, ans)
+
+        # Store and return the minimum cost found
+        self.dp[i][j] = mini
+        return mini
+
+    &quot;&quot;&quot; Function to set up the parameters 
+    and call the recursive function&quot;&quot;&quot;
+    def matrixMultiplication(self, arr):
+        N = len(arr)
+
+        # Starting index of the matrix chain
+        i = 1
+        
+        # Ending index of the matrix chain
+        j = N - 1
+
+        self.dp = [[-1] * N for _ in range(N)]
+
+        # Call the recursive function
+        return self.func(arr, i, j)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    int matrixMultiplication(vector&lt;int&gt;&amp; nums) {
+        int n = nums.size();
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(n, INT_MAX));
+
+        // A single matrix needs no multiplication cost
+        for (int i = 1; i &lt; n; ++i) {
+            dp[i][i] = 0;
+        }
+
+        // Filling the dp array
+        for (int length = 2; length &lt; n; ++length) { // length of the chain
+            for (int i = 1; i &lt;= n - length; ++i) {
+                int j = i + length - 1;
+                for (int k = i; k &lt; j; ++k) {
+                    int cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j];
+                    if (cost &lt; dp[i][j]) {
+                        dp[i][j] = cost;
+                    }
+                }
+            }
+        }
+
+        // The result is in dp[1][n-1]
+        return dp[1][n - 1];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int MatrixMultiplication(int[] nums)
+    {
+        int n = nums.Length;
+        int[,] dp = new int[n, n];
+
+        // Initialize dp array with a large value (equivalent to Infinity)
+        for (int i = 0; i &lt; n; i++)
+        {
+            for (int j = 0; j &lt; n; j++)
+            {
+                dp[i, j] = int.MaxValue;
+            }
+        }
+
+        // A single matrix needs no multiplication cost
+        for (int i = 1; i &lt; n; i++)
+        {
+            dp[i, i] = 0;
+        }
+
+        // Filling the dp array
+        for (int length = 2; length &lt; n; length++) // length of the chain
+        {
+            for (int i = 1; i &lt;= n - length; i++)
+            {
+                int j = i + length - 1;
+                for (int k = i; k &lt; j; k++)
+                {
+                    long cost = (long)dp[i, k] + dp[k + 1, j] + (long)nums[i - 1] * nums[k] * nums[j];
+                    if (cost &lt; dp[i, j])
+                    {
+                        dp[i, j] = (int)cost;
+                    }
+                }
+            }
+        }
+
+        // The result is in dp[1][n-1]
+        return dp[1, n - 1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+func matrixMultiplication(nums []int) int {
+	n := len(nums)
+
+	// Create a DP table initialized with max int values
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, n)
+		for j := range dp[i] {
+			dp[i][j] = math.MaxInt32
+		}
+	}
+
+	// A single matrix needs no multiplication cost
+	for i := 1; i &lt; n; i++ {
+		dp[i][i] = 0
+	}
+
+	// Filling the dp array
+	for length := 2; length &lt; n; length++ { // length of the chain
+		for i := 1; i &lt;= n-length; i++ {
+			j := i + length - 1
+			for k := i; k &lt; j; k++ {
+				cost := dp[i][k] + dp[k+1][j] + nums[i-1]*nums[k]*nums[j]
+				if cost &lt; dp[i][j] {
+					dp[i][j] = cost
+				}
+			}
+		}
+	}
+
+	// The result is in dp[1][n-1]
+	return dp[1][n-1]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+public int matrixMultiplication(int[] nums) {
+    int n = nums.length;
+    int[][] dp = new int[n][n];
+
+    // Initialize the dp array with large values
+    for (int i = 0; i &lt; n; i++) {
+        for (int j = 0; j &lt; n; j++) {
+            dp[i][j] = Integer.MAX_VALUE;
+        }
+    }
+
+    // A single matrix doesn&#x27;t require any multiplication
+    for (int i = 1; i &lt; n; i++) {
+        dp[i][i] = 0;
+    }
+
+    // Filling the dp array in a bottom-up manner
+    for (int length = 2; length &lt; n; length++) {
+        for (int i = 1; i &lt;= n - length; i++) {
+            int j = i + length - 1;
+            for (int k = i; k &lt; j; k++) {
+                // Calculate cost
+                int cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j];
+                // Take the minimum cost
+                if (cost &lt; dp[i][j]) {
+                    dp[i][j] = cost;
+                }
+            }
+        }
+    }
+
+    // The result is in dp[1][n-1] (multiplying from matrix 1 to n-1)
+    return dp[1][n - 1];
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    matrixMultiplication(nums) {
+        const n = nums.length;
+        const dp = Array.from({ length: n }, () =&gt; Array(n).fill(Infinity));
+
+        // A single matrix needs no multiplication cost
+        for (let i = 1; i &lt; n; i++) {
+            dp[i][i] = 0;
+        }
+
+        // Filling the dp array
+        for (let length = 2; length &lt; n; length++) { // length of the chain
+            for (let i = 1; i &lt;= n - length; i++) {
+                let j = i + length - 1;
+                for (let k = i; k &lt; j; k++) {
+                    let cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j];
+                    if (cost &lt; dp[i][j]) {
+                        dp[i][j] = cost;
+                    }
+                }
+            }
+        }
+
+        // The result is in dp[1][n-1]
+        return dp[1][n - 1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def matrixMultiplication(self, nums):
+        n = len(nums)
+        dp = [[float(&#x27;inf&#x27;)] * n for _ in range(n)]
+
+        # A single matrix needs no multiplication cost
+        for i in range(1, n):
+            dp[i][i] = 0
+
+        # Filling the dp array
+        for length in range(2, n):  # length of the chain
+            for i in range(1, n - length + 1):
+                j = i + length - 1
+                for k in range(i, j):
+                    cost = dp[i][k] + dp[k + 1][j] + nums[i - 1] * nums[k] * nums[j]
+                    if cost &lt; dp[i][j]:
+                        dp[i][j] = cost
+
+        # The result is in dp[1][n-1]
+        return dp[1][n - 1]</code></pre></div>
+</body>
+</html>

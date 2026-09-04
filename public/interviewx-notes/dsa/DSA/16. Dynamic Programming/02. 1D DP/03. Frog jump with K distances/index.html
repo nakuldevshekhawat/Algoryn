@@ -1,0 +1,2270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frog jump with K distances</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Frog jump with K distances</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>A frog wants to climb a staircase with n steps. Given an integer array heights, where heights[i] contains the height of the i<sup>th</sup> step, and an integer k.</p><p><br></p><p>To jump from the i<sup>th</sup> step to the j<sup>th</sup> step, the frog requires <strong>abs(heights[i] - heights[j])</strong> energy, where abs() denotes the absolute difference. The frog can jump from the i<sup>th</sup> step to any step in the range [i + 1, i + k], provided it exists. </p><p><br></p><p>Return the <strong>minimum</strong> amount of energy required by the frog to go from the 0<sup>th</sup> step to the (n-1)<sup>th </sup>step.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 10<sup>4</sup></li><li>1 <= k <= 10</li><li>0 <= heights[i] <= 10<sup>4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: heights = [10, 5, 20, 0, 15], k = 2</p><p><strong>Output</strong>: 15</p><p><strong>Explanation</strong>:</p><p>0th step -> 2nd step, cost = abs(10 - 20) = 10</p><p>2nd step -> 4th step, cost = abs(20 - 15) = 5</p><p>Total cost = 10 + 5 = 15.</p><h3>Example 2</h3><p><strong>Input</strong>: heights = [15, 4, 1, 14, 15], k = 3</p><p><strong>Output</strong>: 2</p><p><strong>Explanation</strong>:</p><p>0th step -> 3rd step, cost = abs(15 - 14) = 1</p><p>3rd step -> 4th step, cost = abs(14 - 15) = 1</p><p>Total cost = 1 + 1 = 2.</p><h3>Example 3</h3><p><strong>Input</strong>: heights = [15, 4, 1, 14, 15], k = 4</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem can be seen as an example of Dynamic Programming and Graph Theory implemented in routing and network analysis. In fact, it mimics real-world scenarios like Google Maps' task of finding the shortest or least energy-consuming path from one location to another. Google has to take into account various factors such as path lengths, transportation modes, or even varying altitudes (if you're biking or walking) - just as our frog needs the lowest energy path to reach its goal!</p></div>
+<div class="section"><h2>Editorial: Recursion</h2><h5><strong>Why greedy approach will not work: </strong></h5>
+<p>As the problem states to find the minimum energy required, the first approache that comes to our mind is greedy.</p>
+<p>In greedy we tend to make our moves greedily on each step, here the greedy move will be to select the path with
+    minimum energy. But this approach will fail here as total energy required by the frog depends upon the path taken by
+    the frog. If the frog just takes the minimum energy path in every stage it can happen that it eventually takes a
+    path with greater energy after a certain number of jumps.</p>
+<p><img src="https://static.takeuforward.org/premium/Dynamic Programming/1D DP/Frog jump with K distances/-6YIH4jWv">
+</p>
+<p>The problem here is asking for the minimum possible energy and as discussed in the previous problem, this kind of
+    problem can be solved using recusion.</p>
+<p>Using the steps described in previous problem, write the recursive solution:</p>
+<p><strong>Express the problem in terms of indexes:</strong> This can be easily done as there are array indexes
+    [0,1,2,..., n-1]. As f(n-1) signifies the minimum amount of energy required to move from stair 0 to stair n-1.
+    Therefore f(0) simply should give us the answer as 0(base case).</p>
+<p><strong>Try all the choices to reach the goal: </strong> As the frog can make jump upto K steps. Therefore, we can
+    set a for loop to run from 1 to K, and in each iteration, a function call will be made, corresponding to a step.</p>
+<p><strong>Take the minimum of all the choices:</strong> As the problem statement asks to find the minimum total energy,
+    return the minimum of all K choices. Also if the index is less than the number of steps, we can’t try the all that
+    step.</p>
+<br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode and not tied to 
+any specific programming language.*/
+f(ind, height){
+    if(ind == 0) return 0
+    mmSteps = INT_MAX
+    for(int j = 1; j <= K; j++){
+        if((ind-j) >= 0){
+            jump = f(ind-j), height + abs(a[ind] - a[ind-j]);
+            mmSteps = min(mmSteps, jump);
+        }
+    }
+    return mmSteps;
+}</code></pre></div></div></div>
+
+<p><strong>Base case: </strong>When N = 0, then we will have only one option to stay at the same place and that would
+    take 0 energy.</p>
+<p><br></p>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    //Helper function for recursion
+    int func(int ind, vector<int> &heights, int k){
+        //Base case
+        if(ind == 0){
+            return 0;
+        }
+        //Initialize mmStep to INT_MAX
+        int mmStep = INT_MAX;
+        
+        //Try all possible steps
+        for(int j = 1; j <= k; j++){
+            
+            //Check if ind-j is non negative 
+            if(ind-j >= 0){
+                int jump = func(ind-j, heights, k) + abs(heights[ind] - heights[ind-j]);
+                
+                //Update the mimimum energy
+                mmStep = min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return mmStep;
+    }
+public:
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    int frogJump(vector<int> &heights, int k) {
+        int ind = heights.size()-1;
+        
+        //Return the mimimum energy
+        return func(ind, heights, k);
+    }
+};
+
+int main() {
+    vector<int> height{15, 4, 1, 14, 15};
+    int k = 3;
+    
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the answer
+    cout << "Minimum energy : " << sol.frogJump(height, k) << endl;
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    //Helper function for recursion
+    private int func(int ind, int[] heights, int k) {
+        //Base case
+        if (ind == 0) {
+            return 0;
+        }
+        //Initialize mmStep to INT_MAX
+        int mmStep = Integer.MAX_VALUE;
+        
+        //Try all possible steps
+        for (int j = 1; j <= k; j++) {
+            
+            //Check if ind-j is non negative
+            if (ind - j >= 0) {
+                int jump = func(ind - j, heights, k) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the mimimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return mmStep;
+    }
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    public int frogJump(int[] heights, int k) {
+        int ind = heights.length - 1;
+        
+        //Return the mimimum energy
+        return func(ind, heights, k);
+    }
+    
+    public static void main(String[] args) {
+        int[] heights = {15, 4, 1, 14, 15};
+        int k = 3;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the answer
+        System.out.println("Minimum energy: " + sol.frogJump(heights, k));
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    #Helper function for recursion
+    def func(self, ind, heights, k):
+        #Base case
+        if ind == 0:
+            return 0
+        
+        #Initialize mmStep to INT_MAX
+        mmStep = float('inf')
+        
+        #Try all possible steps
+        for j in range(1, k + 1):
+            
+            #Check if ind-j is non negative
+            if ind - j >= 0:
+                jump = self.func(ind - j, heights, k) + abs(heights[ind] - heights[ind - j])
+                
+                #Update the mimimum energy
+                mmStep = min(mmStep, jump)
+                
+        #Return the answer
+        return mmStep
+    
+    """Function to find the mimimum 
+    energy to reach last stair"""
+    def frogJump(self, heights, k):
+        ind = len(heights) - 1
+        
+        #Return the mimimum energy
+        return self.func(ind, heights, k)
+    
+if __name__ == "__main__":
+    heights = [15, 4, 1, 14, 15]
+    k = 3
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    # Print the answer
+    print("Minimum energy:", sol.frogJump(heights, k))</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    //Helper function for recursion
+    func(ind, heights, k) {
+        //Base case
+        if (ind === 0) {
+            return 0;
+        }
+        
+        //Initialize mmStep to INT_MAX
+        let mmStep = Infinity;
+        
+        //Try all possible steps
+        for (let j = 1; j <= k; j++) {
+            
+            //Check if ind-j is non negative
+            if (ind - j >= 0) {
+                let jump = this.func(ind - j, heights, k) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the mimimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return mmStep;
+    }
+    
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    frogJump(heights, k) {
+        let ind = heights.length - 1;
+        
+        //Return the mimimum energy
+        return this.func(ind, heights, k);
+    }
+}
+
+    let heights = [15, 4, 1, 14, 15];
+    let k = 3;
+    
+    // Create an instance of Solution class
+    let sol = new Solution();
+    
+    // Print the answer
+    console.log("Minimum energy:", sol.frogJump(heights, k));
+
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Helper function for recursion
+    private int Func(int ind, int[] heights, int k)
+    {
+        // Base case
+        if (ind == 0)
+        {
+            return 0;
+        }
+
+        // Initialize mmStep to int.MaxValue
+        int mmStep = int.MaxValue;
+
+        // Try all possible steps
+        for (int j = 1; j <= k; j++)
+        {
+            // Check if ind-j is non negative 
+            if (ind - j >= 0)
+            {
+                int jump = Func(ind - j, heights, k) + Math.Abs(heights[ind] - heights[ind - j]);
+
+                // Update the minimum energy
+                mmStep = Math.Min(jump, mmStep);
+            }
+        }
+
+        // Return the answer
+        return mmStep;
+    }
+
+    /* Function to find the minimum 
+       energy to reach last stair */
+    public int frogJump(int[] heights, int k)
+    {
+        int ind = heights.Length - 1;
+
+        // Return the minimum energy
+        return Func(ind, heights, k);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] height = { 15, 4, 1, 14, 15 };
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the answer
+        Console.WriteLine("Minimum energy : " + sol.frogJump(height, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+)
+
+func funcRec(ind int, heights []int, k int) int {
+    // Base case
+    if ind == 0 {
+        return 0
+    }
+    // Initialize mmStep to INT_MAX
+    mmStep := int(^uint(0) >> 1) // equivalent of INT_MAX
+
+    // Try all possible steps
+    for j := 1; j <= k; j++ {
+
+        // Check if ind-j is non negative
+        if ind-j >= 0 {
+            diff := heights[ind] - heights[ind-j]
+            if diff < 0 {
+                diff = -diff
+            }
+            jump := funcRec(ind-j, heights, k) + diff
+
+            // Update the mimimum energy
+            if jump < mmStep {
+                mmStep = jump
+            }
+        }
+    }
+    // Return the answer
+    return mmStep
+}
+
+// Function to find the mimimum 
+// energy to reach last stair
+func frogJump(heights []int, k int) int {
+    ind := len(heights) - 1
+
+    // Return the mimimum energy
+    return funcRec(ind, heights, k)
+}
+
+func main() {
+    height := []int{15, 4, 1, 14, 15}
+    k := 3
+
+    // Print the answer
+    result := frogJump(height, k)
+    fmt.Printf("Minimum energy : %d\n", result)
+}
+
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<p><strong>Time Complexity: </strong>O(k^N), the function is called recursively for each index from N-1 down to 0, where N is the length of the heights array and each state branches in upto k recursive calls</p>
+<p><strong>Space Complexity:</strong>The space complexity of this recursive approach is O(N). This is because the
+    maximum depth of the recursion stack can go up to n, due to the linear nature of the stack usage relative to the
+    input size n.</p></div>
+<div class="section"><h2>Editorial: Memoization</h2><p>Memoization tends to store the value of subproblems in some map/ table. As, here we have only one parameter in
+    recursive function, so we can create an 1D array to store the values of subproblems.</p>
+<p><img src="https://static.takeuforward.org/premium/Dynamic Programming/1D DP/Frog jump with K distances/-rOTHqapM">
+</p>
+<p>Steps to convert Recursive code to memoization solution:</p>
+<p><strong>Declare an Array dp[] of Size n: </strong>Here, n is the parameter or size of the problem, as the highest
+    number of subproblems can be n(including 0 as well). It represents the solution to the subproblem for any given
+    index. Initially, fill the array with -1, to indicate that no subproblem has been solved yet.</p>
+<p><strong>While encountering an overlapping subproblem: </strong>When we come across a subproblem, for which the dp
+    array has value other than -1, it means we have found a subproblem which has been solved before hence it is an
+    overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.
+</p>
+<p><strong>Store the value of subproblem: </strong>Whenever, a subproblem is enocountered and it is not solved yet(the
+    value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</p>
+<br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Function to recursion with memoization
+    int func(int ind, vector<int> &heights, int k, vector<int>& dp){
+        //Base case
+        if(ind == 0){
+            return 0;
+        }
+        
+        /* If the result for this index has 
+        been previously calculated, return it */
+        if (dp[ind] != -1) return dp[ind];
+        
+        //Initialize mmStep to INT_MAX
+        int mmStep = INT_MAX;
+        
+        //Try all possible steps
+        for(int j = 1; j <= k; j++){
+            
+            //Check if ind-j is non negative 
+            if(ind-j >= 0){
+                int jump = func(ind-j, heights, k, dp) + abs(heights[ind] - heights[ind-j]);
+                
+                //Update the mimimum energy
+                mmStep = min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return dp[ind] = mmStep;
+    }
+public:
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    int frogJump(vector<int> &heights, int k) {
+        int ind = heights.size()-1;
+        
+        /*Initialize a memoization array
+        to store calculated results*/
+        vector<int> dp(ind+1, -1); 
+        
+        //Return the mimimum energy
+        return func(ind, heights, k, dp);
+    }
+};
+
+int main() {
+    vector<int> height{15, 4, 1, 14, 15};
+    int k = 3;
+    
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the answer
+    cout << "Minimum energy : " << sol.frogJump(height, k) << endl;
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Helper function for recursion with memoization
+    private int func(int ind, int[] heights, int k, int[] dp) {
+        // Base case
+        if (ind == 0) {
+            return 0;
+        }
+        
+        /* If the result for this index has been 
+        previously calculated, return it*/
+        if (dp[ind] != -1) {
+            return dp[ind];
+        }
+        
+        // Initialize mmStep to Integer.MAX_VALUE
+        int mmStep = Integer.MAX_VALUE;
+        
+        // Try all possible jumps
+        for (int j = 1; j <= k; j++) {
+            
+            // Check if ind - j is non-negative
+            if (ind - j >= 0) {
+                int jump = func(ind - j, heights, k, dp) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the minimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        
+        // Store the result in dp array and return
+        dp[ind] = mmStep;
+        return dp[ind];
+    }
+    
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    public int frogJump(int[] heights, int k) {
+        int ind = heights.length - 1;
+        
+        /* Initialize a memoization array
+        to store calculated results*/
+        int[] dp = new int[ind + 1];
+        Arrays.fill(dp, -1);
+        
+        // Return the minimum energy
+        return func(ind, heights, k, dp);
+    }
+    
+    public static void main(String[] args) {
+        int[] heights = {15, 4, 1, 14, 15};
+        int k = 3;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the answer
+        System.out.println("Minimum energy: " + sol.frogJump(heights, k));
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    #Function for recusion using memoization
+    def func(self, ind, heights, k, dp):
+        # Base case
+        if ind == 0:
+            return 0
+        
+        """ If the result for this index has been
+        previously calculated, return it"""
+        if dp[ind] != -1:
+            return dp[ind]
+        
+        # Initialize mmStep to float('inf')
+        mmStep = float('inf')
+        
+        # Try all possible jumps
+        for j in range(1, k + 1):
+            # Check if ind - j is non-negative
+            if ind - j >= 0:
+                jump = self.func(ind - j, heights, k, dp) + abs(heights[ind] - heights[ind - j])
+                
+                #Update the minimum energy
+                mmStep = min(mmStep, jump)
+        
+        # Store the result in dp array and return
+        dp[ind] = mmStep
+        return dp[ind]
+    
+    def frogJump(self, heights, k):
+        ind = len(heights) - 1
+        
+        """ Initialize a memoization array
+        to store calculated results"""
+        dp = [-1] * (ind + 1)
+        
+        # Return the minimum energy
+        return self.func(ind, heights, k, dp)
+    
+if __name__ == "__main__":
+    heights = [15, 4, 1, 14, 15]
+    k = 3
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    # Print the answer
+    print("Minimum energy:", sol.frogJump(heights, k))</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Helper function for recursion with memoization
+    func(ind, heights, k, dp) {
+        // Base case
+        if (ind === 0) {
+            return 0;
+        }
+        
+        /* If the result for this index has been
+        previously calculated, return it*/
+        if (dp[ind] !== -1) {
+            return dp[ind];
+        }
+        
+        // Initialize mmStep to Infinity
+        let mmStep = Infinity;
+        
+        // Try all possible jumps
+        for (let j = 1; j <= k; j++) {
+            // Check if ind - j is non-negative
+            if (ind - j >= 0) {
+                let jump = this.func(ind - j, heights, k, dp) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the minimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        
+        // Store the result in dp array and return
+        dp[ind] = mmStep;
+        return dp[ind];
+    }
+    
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    frogJump(heights, k) {
+        let ind = heights.length - 1;
+        
+        /* Initialize a memoization array
+        to store calculated results*/
+        let dp = new Array(ind + 1).fill(-1);
+        
+        // Return the minimum energy
+        return this.func(ind, heights, k, dp);
+    }
+}
+    let heights = [15, 4, 1, 14, 15];
+    let k = 3;
+    
+    // Create an instance of Solution class
+    let sol = new Solution();
+    
+    // Print the answer
+    console.log("Minimum energy:", sol.frogJump(heights, k));</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution {
+    // Helper function for recursion with memoization
+    private int func(int ind, int[] heights, int k, int[] dp) {
+        // Base case
+        if (ind == 0) {
+            return 0;
+        }
+        
+        /* If the result for this index has been
+        previously calculated, return it*/
+        if (dp[ind] != -1) {
+            return dp[ind];
+        }
+        
+        // Initialize mmStep to Infinity
+        int mmStep = int.MaxValue;
+        
+        // Try all possible jumps
+        for (int j = 1; j <= k; j++) {
+            // Check if ind - j is non-negative
+            if (ind - j >= 0) {
+                int jump = this.func(ind - j, heights, k, dp) + Math.Abs(heights[ind] - heights[ind - j]);
+                
+                //Update the minimum energy
+                mmStep = Math.Min(jump, mmStep);
+            } else {
+                // If ind - j is negative, cannot jump further back, break the inner loop
+                break;
+            }
+        }
+        
+        // Store the result in dp array and return
+        dp[ind] = mmStep;
+        return dp[ind];
+    }
+    
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    public int frogJump(int[] heights, int k) {
+        int n = heights.Length;
+        
+        /* Initialize a memoization array
+        to store calculated results*/
+        int[] dp = new int[n];
+        Array.Fill(dp, -1);
+        
+        // Return the minimum energy
+        return this.func(n - 1, heights, k, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int t = int.Parse(Console.ReadLine());
+        while (t-- > 0)
+        {   
+            // The following two lines are commented out as they seem to be for echoing input, not core logic.
+            // string testCase = Console.ReadLine();
+            // Console.WriteLine(testCase);
+
+            int n = int.Parse(Console.ReadLine());
+            int[] heights = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+            int k = int.Parse(Console.ReadLine());
+
+            Solution s = new Solution();
+            int ans = s.frogJump(heights, k);
+            Console.WriteLine(ans);
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function to get absolute value
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+// Function for recursion with memoization
+func funcMemo(ind int, heights []int, k int, dp []int) int {
+	// Base case
+	if ind == 0 {
+		return 0
+	}
+
+	/* If the result for this index has
+	been previously calculated, return it */
+	if dp[ind] != -1 {
+		return dp[ind]
+	}
+
+	// Initialize mmStep to a large value
+	mmStep := int(1e9)
+
+	// Try all possible steps
+	for j := 1; j <= k; j++ {
+		// Check if ind-j is non-negative
+		if ind-j >= 0 {
+			jump := funcMemo(ind-j, heights, k, dp) + abs(heights[ind]-heights[ind-j])
+
+			// Update the minimum energy
+			if jump < mmStep {
+				mmStep = jump
+			}
+		}
+	}
+
+	// Return and store the answer
+	dp[ind] = mmStep
+	return dp[ind]
+}
+
+/* Function to find the minimum
+energy to reach the last stair */
+func frogJump(heights []int, k int) int {
+	ind := len(heights) - 1
+
+	/* Initialize a memoization array
+	to store calculated results */
+	dp := make([]int, ind+1)
+	for i := range dp {
+		dp[i] = -1
+	}
+
+	// Return the minimum energy
+	return funcMemo(ind, heights, k, dp)
+}
+
+func main() {
+	height := []int{15, 4, 1, 14, 15}
+	k := 3
+
+	// Print the answer
+	fmt.Println("Minimum energy :", frogJump(height, k))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<p><strong>Time Complexity: </strong>O(k*N),The function is called recursively for each index from N-1 down to 0. For
+    each index, the function explores up to k possible jumps, where N is the length of the heights array.</p>
+<p><strong>Space Complexity:</strong>O(N)+O(N), We are using a recursion stack space O(N) and an array (again O(N)).
+    Therefore total space complexity will be O(N) + O(N) ≈ O(N).</p></div>
+<div class="section"><h2>Editorial: Tabulation</h2><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here
+    are the steps:</p>
+<ol>
+    <li><strong>Bottom-Up Approach in Tabulation:</strong> Tabulation involves solving a problem by building a solution
+        from the bottom up. This means start with the smallest subproblems and iteratively compute solutions for larger
+        subproblems until the desired solution has been found.</li>
+    <li><strong>Declare an Array dp[] of Size n:</strong> Here, n is the size of the array. It represents the solution
+        to the subproblem for any given index.</li>
+    <li><strong>Setting Base Cases in the Array:</strong>In the recursive code, we knew the answer for base case, when N
+        = 0, we had only one choice, to stay at 0 and that takes 0 energy. Similarly if we are computing in tabulation,
+        we definitely know that the answer for dp[0] = 0.</li>
+    <li><strong>Iterative Computation Using a Loop:</strong> Set an iterative loop that traverses the array( from index
+        1 to n-1). To compute the solution for larger values, use a loop that iterates from the smallest subproblem up
+        to n.</li>
+    <li><strong>Explanation of dp[i] Calculation: </strong>The current value(dp[i]) represents the subproblem and by the
+        recurrence relation it is obvious that dp[i] is calculated by considering all possible 'k' previous stairs, from
+        where the frog could jump to i.</li>
+    <li><strong>Choosing the minimum</strong>: Among all the computed energies for each jump(from 1 to k), dp[i] is set
+        to the minimum value. This ensures that dp[i] holds the minimum energy required.</li>
+    <li><strong>Returning the last element:</strong> The last element of the dp array is returned because it holds the
+        optimal solution to the entire problem after the bottom-up computation has been completed.</li>
+</ol>
+<br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    int frogJump(vector<int> &heights, int k) {
+        int ind = heights.size();
+
+        /*Initialize a memoization array
+        to store calculated results*/
+        vector<int> dp(ind + 1, -1);
+
+        dp[0] = 0;
+
+        // Loop through the array 
+        for (int i = 1; i < ind; i++) {
+            int mmSteps = INT_MAX;
+
+            // Loop to try all possible jumps from '1' to 'k'
+            for (int j = 1; j <= k; j++) {
+                if (i - j >= 0) {
+                    int jump = dp[i - j] + abs(heights[i] - heights[i - j]);
+                    
+                    //Update the Minimum energy
+                    mmSteps = min(jump, mmSteps);
+                }
+            }
+            dp[i] = mmSteps;
+        }
+        //Result is stored in the last element of dp
+        return dp[ind - 1]; 
+
+    }
+};
+
+int main() {
+    vector<int> height {15,4,1,14,15};
+    int k = 3;
+
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the answer
+    cout << "Minimum energy : " << sol.frogJump(height, k) << endl;
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    public int frogJump(int[] heights, int k) {
+        int ind = heights.length;
+        
+        /* Initialize a memoization array
+        to store calculated results*/
+        int[] dp = new int[ind + 1];
+        Arrays.fill(dp, -1);
+        
+        dp[0] = 0; 
+        
+        // Loop through the array
+        for (int i = 1; i < ind; i++) {
+            int mmSteps = Integer.MAX_VALUE;
+            
+            // Loop to try all possible jumps from 1 to k
+            for (int j = 1; j <= k; j++) {
+                if (i - j >= 0) {
+                    int jump = dp[i - j] + Math.abs(heights[i] - heights[i - j]);
+                    
+                    //Update the minimum energy
+                    mmSteps = Math.min(jump, mmSteps);
+                }
+            }
+            
+            dp[i] = mmSteps;
+        }
+        
+        // Result is stored in the last element of dp
+        return dp[ind - 1];
+    }
+    
+    public static void main(String[] args) {
+        int[] heights = {15, 4, 1, 14, 15};
+        int k = 3;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the answer
+        System.out.println("Minimum energy: " + sol.frogJump(heights, k));
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def frogJump(self, heights, k):
+        ind = len(heights)
+        
+        """ Initialize a memoization array 
+        to store calculated results"""
+        dp = [-1] * (ind + 1)
+        dp[0] = 0  
+        
+        # Loop through the array
+        for i in range(1, ind):
+            mmSteps = float('inf')
+            
+            # Loop to try all possible jumps from 1 to k
+            for j in range(1, k + 1):
+                if i - j >= 0:
+                    jump = dp[i - j] + abs(heights[i] - heights[i - j])
+                    
+                    #Update the minimum energy
+                    mmSteps = min(jump, mmSteps)
+            
+            dp[i] = mmSteps
+        
+        # Result is stored in the last element of dp
+        return dp[ind - 1]
+    
+if __name__ == "__main__":
+    heights = [15, 4, 1, 14, 15]
+    k = 3
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    # Print the answer
+    print("Minimum energy:", sol.frogJump(heights, k))</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    frogJump(heights, k) {
+        let ind = heights.length;
+        
+        /* Initialize a memoization array 
+        to store calculated results*/
+        let dp = new Array(ind + 1).fill(-1);
+        dp[0] = 0; // Base case
+        
+        // Loop through the array
+        for (let i = 1; i < ind; i++) {
+            let mmSteps = Infinity;
+            
+            // Loop to try all possible jumps from 1 to k
+            for (let j = 1; j <= k; j++) {
+                if (i - j >= 0) {
+                    let jump = dp[i - j] + Math.abs(heights[i] - heights[i - j]);
+                    mmSteps = Math.min(jump, mmSteps);
+                }
+            }
+            
+            dp[i] = mmSteps;
+        }
+        
+        // Result is stored in the last element of dp
+        return dp[ind - 1];
+    }
+}
+
+    let heights = [15, 4, 1, 14, 15];
+    let k = 3;
+    
+    // Create an instance of Solution class
+    let sol = new Solution();
+    
+    // Print the answer
+    console.log("Minimum energy:", sol.frogJump(heights, k));</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution {
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    public int frogJump(int[] heights, int k) {
+        int ind = heights.Length;
+        
+        /* Initialize a memoization array 
+        to store calculated results*/
+        int[] dp = new int[ind];
+        dp[0] = 0; // Base case
+        
+        // Loop through the array
+        for (int i = 1; i < ind; i++) {
+            int mmSteps = int.MaxValue;
+            
+            // Loop to try all possible jumps from 1 to k
+            for (int j = 1; j <= k; j++) {
+                if (i - j >= 0) {
+                    int jump = dp[i - j] + Math.Abs(heights[i] - heights[i - j]);
+                    mmSteps = Math.Min(jump, mmSteps);
+                }
+            }
+            
+            dp[i] = mmSteps;
+        }
+        
+        // Result is stored in the last element of dp
+        return dp[ind - 1];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] heights = {15, 4, 1, 14, 15};
+        int k = 3;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the answer
+        Console.WriteLine("Minimum energy: " + sol.frogJump(heights, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function to get absolute value
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+/* Function to find the minimum
+energy to reach last stair */
+func frogJump(heights []int, k int) int {
+	ind := len(heights)
+
+	/* Initialize a memoization array
+	to store calculated results */
+	dp := make([]int, ind+1)
+	for i := range dp {
+		dp[i] = -1
+	}
+
+	dp[0] = 0
+
+	// Loop through the array
+	for i := 1; i < ind; i++ {
+		mmSteps := int(1e9)
+
+		// Loop to try all possible jumps from '1' to 'k'
+		for j := 1; j <= k; j++ {
+			if i-j >= 0 {
+				jump := dp[i-j] + abs(heights[i]-heights[i-j])
+
+				// Update the Minimum energy
+				if jump < mmSteps {
+					mmSteps = jump
+				}
+			}
+		}
+		dp[i] = mmSteps
+	}
+
+	// Result is stored in the last element of dp
+	return dp[ind-1]
+}
+
+func main() {
+	height := []int{15, 4, 1, 14, 15}
+	k := 3
+
+	// Print the answer
+	fmt.Println("Minimum energy :", frogJump(height, k))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<p><strong>Time Complexity: </strong>O(N*k), where N is the given size of given array. As for each element of the array,
+    we are considering all possible steps from 1 to k.</p>
+<p><strong>Space Complexity:</strong>O(N), an additional array dp of size n is used to store intermediate results.
+    Hence, the space complexity is O(N).</p></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><p>If we observe the recurrence relation, we notice that to calculate the current value at index i, we only need the
+    previous last k values, where k is the number of steps the frog can jump. So, we can use a list data structure and
+    store the last k values and in each iteration we will delete the last value and add the current value to the list.
+    As the current value will be coming under the last k values for (i+1)th index element.</p>
+<p><img src="https://static.takeuforward.org/premium/Dynamic Programming/1D DP/Frog jump with K distances/-tS-KwK5B">
+</p>
+<p>By doing so we can optimize the space complexity of the tabulation approach which was O(N) to O(k).</p>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    int frogJump(vector<int> &heights, int k) {
+        int n = heights.size();
+
+        /* Use a rolling vector of size k 
+        to store only last k dp values */
+        vector<int> dp(k, 0);  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (int i = 1; i < n; i++) {
+            int mmSteps = INT_MAX;
+
+            // Loop to try all possible jumps from '1' to 'k'
+            for (int j = 1; j <= k; j++) {
+                if (i - j >= 0) {
+                    int prevIndex = (i - j) % k;
+                    int jump = dp[prevIndex] + abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling vector
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+};
+
+int main() {
+    vector<int> height {15, 4, 1, 14, 15};
+    int k = 3;
+
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the answer
+    cout << "Minimum energy : " << sol.frogJump(height, k) << endl;
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="java" class="language-java">class Solution {
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    public int frogJump(int[] heights, int k) {
+        int n = heights.length;
+
+        /* Use a rolling array of size k 
+        to store only last k dp values */
+        int[] dp = new int[k];  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (int i = 1; i < n; i++) {
+            int mmSteps = Integer.MAX_VALUE;
+
+            // Loop to try all possible jumps from '1' to 'k'
+            for (int j = 1; j <= k; j++) {
+                if (i - j >= 0) {
+                    int prevIndex = (i - j) % k;
+                    int jump = dp[prevIndex] + Math.abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = Math.min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling array
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] height = {15, 4, 1, 14, 15};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the answer
+        System.out.println("Minimum energy : " + sol.frogJump(height, k));
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the mimimum 
+    # energy to reach last stair
+    def frogJump(self, heights, k):
+        n = len(heights)
+
+        # Use a rolling vector of size k 
+        # to store only last k dp values
+        dp = [0] * k  # dp[i % k] stores the energy to reach stair i
+
+        # Start filling the dp values from 1 to n-1
+        for i in range(1, n):
+            mmSteps = float('inf')
+
+            # Loop to try all possible jumps from '1' to 'k'
+            for j in range(1, k + 1):
+                if i - j >= 0:
+                    prevIndex = (i - j) % k
+                    jump = dp[prevIndex] + abs(heights[i] - heights[i - j])
+
+                    # Update the Minimum energy
+                    mmSteps = min(mmSteps, jump)
+
+            # Store the current result in rolling vector
+            dp[i % k] = mmSteps
+
+        # Result is stored in the last index
+        return dp[(n - 1) % k]
+
+
+if __name__ == "__main__":
+    height = [15, 4, 1, 14, 15]
+    k = 3
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Print the answer
+    print("Minimum energy :", sol.frogJump(height, k))</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    frogJump(heights, k) {
+        const n = heights.length;
+
+        /* Use a rolling vector of size k 
+        to store only last k dp values */
+        const dp = new Array(k).fill(0);  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (let i = 1; i < n; i++) {
+            let mmSteps = Infinity;
+
+            // Loop to try all possible jumps from '1' to 'k'
+            for (let j = 1; j <= k; j++) {
+                if (i - j >= 0) {
+                    let prevIndex = (i - j) % k;
+                    let jump = dp[prevIndex] + Math.abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = Math.min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling vector
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+}
+
+// Example usage
+const height = [15, 4, 1, 14, 15];
+const k = 3;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the answer
+console.log("Minimum energy :", sol.frogJump(height, k));</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the minimum 
+       energy to reach last stair */
+    public int frogJump(int[] heights, int k)
+    {
+        int n = heights.Length;
+
+        /* Use a rolling array of size k 
+           to store only last k dp values */
+        int[] dp = new int[k];  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (int i = 1; i < n; i++)
+        {
+            int mmSteps = int.MaxValue;
+
+            // Loop to try all possible jumps from '1' to 'k'
+            for (int j = 1; j <= k; j++)
+            {
+                if (i - j >= 0)
+                {
+                    int prevIndex = (i - j) % k;
+                    int jump = dp[prevIndex] + Math.Abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = Math.Min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling array
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] height = { 15, 4, 1, 14, 15 };
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the answer
+        Console.WriteLine("Minimum energy : " + sol.frogJump(height, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function to get absolute value
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+// Function to find the minimum energy to reach the last stair
+func frogJump(heights []int, k int) int {
+	n := len(heights)
+
+	/* Use a rolling slice of size k
+	to store only last k dp values */
+	dp := make([]int, k) // dp[i % k] stores the energy to reach stair i
+
+	// Start filling the dp values from 1 to n-1
+	for i := 1; i < n; i++ {
+		mmSteps := int(1e9)
+
+		// Loop to try all possible jumps from '1' to 'k'
+		for j := 1; j <= k; j++ {
+			if i-j >= 0 {
+				prevIndex := (i - j) % k
+				jump := dp[prevIndex] + abs(heights[i]-heights[i-j])
+
+				// Update the minimum energy
+				if jump < mmSteps {
+					mmSteps = jump
+				}
+			}
+		}
+
+		// Store the current result in rolling slice
+		dp[i%k] = mmSteps
+	}
+
+	// Result is stored in the last index
+	return dp[(n-1)%k]
+}
+
+func main() {
+	height := []int{15, 4, 1, 14, 15}
+	k := 3
+
+	// Print the answer
+	fmt.Println("Minimum energy :", frogJump(height, k))
+}
+</code></pre></div></div></div></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    //Helper function for recursion
+    int func(int ind, vector&lt;int&gt; &amp;heights, int k){
+        //Base case
+        if(ind == 0){
+            return 0;
+        }
+        //Initialize mmStep to INT_MAX
+        int mmStep = INT_MAX;
+        
+        //Try all possible steps
+        for(int j = 1; j &lt;= k; j++){
+            
+            //Check if ind-j is non negative 
+            if(ind-j &gt;= 0){
+                int jump = func(ind-j, heights, k) + abs(heights[ind] - heights[ind-j]);
+                
+                //Update the mimimum energy
+                mmStep = min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return mmStep;
+    }
+public:
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    int frogJump(vector&lt;int&gt; &amp;heights, int k) {
+        int ind = heights.size()-1;
+        
+        //Return the mimimum energy
+        return func(ind, heights, k);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Helper function for recursion
+    private int Func(int ind, int[] heights, int k)
+    {
+        // Base case
+        if (ind == 0)
+        {
+            return 0;
+        }
+
+        // Initialize mmStep to int.MaxValue
+        int mmStep = int.MaxValue;
+
+        // Try all possible steps
+        for (int j = 1; j &lt;= k; j++)
+        {
+            // Check if ind-j is non negative 
+            if (ind - j &gt;= 0)
+            {
+                int jump = Func(ind - j, heights, k) + Math.Abs(heights[ind] - heights[ind - j]);
+
+                // Update the minimum energy
+                mmStep = Math.Min(jump, mmStep);
+            }
+        }
+
+        // Return the answer
+        return mmStep;
+    }
+
+    /* Function to find the minimum 
+       energy to reach last stair */
+    public int frogJump(int[] heights, int k)
+    {
+        int ind = heights.Length - 1;
+
+        // Return the minimum energy
+        return Func(ind, heights, k);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>func funcRec(ind int, heights []int, k int) int {
+    // Base case
+    if ind == 0 {
+        return 0
+    }
+    // Initialize mmStep to INT_MAX
+    mmStep := int(^uint(0) &gt;&gt; 1) // equivalent of INT_MAX
+
+    // Try all possible steps
+    for j := 1; j &lt;= k; j++ {
+
+        // Check if ind-j is non negative
+        if ind-j &gt;= 0 {
+            diff := heights[ind] - heights[ind-j]
+            if diff &lt; 0 {
+                diff = -diff
+            }
+            jump := funcRec(ind-j, heights, k) + diff
+
+            // Update the mimimum energy
+            if jump &lt; mmStep {
+                mmStep = jump
+            }
+        }
+    }
+    // Return the answer
+    return mmStep
+}
+
+// Function to find the mimimum 
+// energy to reach last stair
+func frogJump(heights []int, k int) int {
+    ind := len(heights) - 1
+
+    // Return the mimimum energy
+    return funcRec(ind, heights, k)
+}
+
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    //Helper function for recursion
+    private int func(int ind, int[] heights, int k) {
+        //Base case
+        if (ind == 0) {
+            return 0;
+        }
+        //Initialize mmStep to INT_MAX
+        int mmStep = Integer.MAX_VALUE;
+        
+        //Try all possible steps
+        for (int j = 1; j &lt;= k; j++) {
+            //Check if ind-j is non negative
+            if (ind - j &gt;= 0) {
+                int jump = func(ind - j, heights, k) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the mimimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return mmStep;
+    }
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    public int frogJump(int[] heights, int k) {
+        int ind = heights.length - 1;
+        
+        //Return the mimimum energy
+        return func(ind, heights, k);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    //Helper function for recursion
+    func(ind, heights, k) {
+        //Base case
+        if (ind === 0) {
+            return 0;
+        }
+        
+        //Initialize mmStep to INT_MAX
+        let mmStep = Infinity;
+        
+        //Try all possible steps
+        for (let j = 1; j &lt;= k; j++) {
+            
+            //Check if ind-j is non negative
+            if (ind - j &gt;= 0) {
+                let jump = this.func(ind - j, heights, k) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the mimimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return mmStep;
+    }
+    
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    frogJump(heights, k) {
+        let ind = heights.length - 1;
+        
+        //Return the mimimum energy
+        return this.func(ind, heights, k);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    #Helper function for recursion
+    def func(self, ind, heights, k):
+        #Base case
+        if ind == 0:
+            return 0
+        
+        #Initialize mmStep to INT_MAX
+        mmStep = float(&#x27;inf&#x27;)
+        
+        #Try all possible steps
+        for j in range(1, k + 1):
+            
+            #Check if ind-j is non negative
+            if ind - j &gt;= 0:
+                jump = self.func(ind - j, heights, k) + abs(heights[ind] - heights[ind - j])
+                
+                #Update the mimimum energy
+                mmStep = min(mmStep, jump)
+                
+        #Return the answer
+        return mmStep
+    
+    &quot;&quot;&quot;Function to find the mimimum 
+    energy to reach last stair&quot;&quot;&quot;
+    def frogJump(self, heights, k):
+        ind = len(heights) - 1
+        
+        #Return the mimimum energy
+        return self.func(ind, heights, k)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Function to recursion with memoization
+    int func(int ind, vector&lt;int&gt; &amp;heights, int k, vector&lt;int&gt;&amp; dp){
+        //Base case
+        if(ind == 0){
+            return 0;
+        }
+        
+        /* If the result for this index has 
+        been previously calculated, return it */
+        if (dp[ind] != -1) return dp[ind];
+        
+        //Initialize mmStep to INT_MAX
+        int mmStep = INT_MAX;
+        
+        //Try all possible steps
+        for(int j = 1; j &lt;= k; j++){
+            
+            //Check if ind-j is non negative 
+            if(ind-j &gt;= 0){
+                int jump = func(ind-j, heights, k, dp) + abs(heights[ind] - heights[ind-j]);
+                
+                //Update the mimimum energy
+                mmStep = min(jump, mmStep);
+            }
+        }
+        //Return the answer
+        return dp[ind] = mmStep;
+    }
+public:
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    int frogJump(vector&lt;int&gt; &amp;heights, int k) {
+        int ind = heights.size()-1;
+        
+        /*Initialize a memoization array
+        to store calculated results*/
+        vector&lt;int&gt; dp(ind+1, -1); 
+        
+        //Return the mimimum energy
+        return func(ind, heights, k, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
+
+public class Solution {
+    public int frogJump(int[] heights, int k) {
+        int n = heights.Length;
+        int[] dp = new int[n];
+
+        // Initialize dp array with a large value representing infinity
+        for (int i = 0; i &lt; n; i++) {
+            dp[i] = int.MaxValue;
+        }
+
+        dp[0] = 0; // Base case: energy to reach step 0 is 0
+
+        // Iterate through each step the frog can reach
+        for (int i = 1; i &lt; n; i++) {
+            // Consider all possible previous steps the frog could have jumped from
+            for (int j = 1; j &lt;= k; j++) {
+                // Check if the previous step (i - j) is within bounds
+                if (i - j &gt;= 0) {
+                    // Calculate the cost to jump from i-j to i
+                    int cost = Math.Abs(heights[i] - heights[i - j]);
+
+                    // If the previous step i-j is reachable (dp[i-j] is not infinity)
+                    // Update the minimum energy to reach step i
+                    if (dp[i - j] != int.MaxValue) {
+                        dp[i] = Math.Min(dp[i], dp[i - j] + cost);
+                    }
+                } else {
+                    // If i - j is negative, cannot jump further back, break the inner loop
+                    break;
+                }
+            }
+        }
+
+        // The minimum energy to reach the last step (n-1)
+        return dp[n - 1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to get absolute value
+func abs(x int) int {
+	if x &lt; 0 {
+		return -x
+	}
+	return x
+}
+
+// Function for recursion with memoization
+func funcMemo(ind int, heights []int, k int, dp []int) int {
+	// Base case
+	if ind == 0 {
+		return 0
+	}
+
+	/* If the result for this index has
+	been previously calculated, return it */
+	if dp[ind] != -1 {
+		return dp[ind]
+	}
+
+	// Initialize mmStep to a large value
+	mmStep := int(1e9)
+
+	// Try all possible steps
+	for j := 1; j &lt;= k; j++ {
+		// Check if ind-j is non-negative
+		if ind-j &gt;= 0 {
+			jump := funcMemo(ind-j, heights, k, dp) + abs(heights[ind]-heights[ind-j])
+
+			// Update the minimum energy
+			if jump &lt; mmStep {
+				mmStep = jump
+			}
+		}
+	}
+
+	// Return and store the answer
+	dp[ind] = mmStep
+	return dp[ind]
+}
+
+/* Function to find the minimum
+energy to reach the last stair */
+func frogJump(heights []int, k int) int {
+	ind := len(heights) - 1
+
+	/* Initialize a memoization array
+	to store calculated results */
+	dp := make([]int, ind+1)
+	for i := range dp {
+		dp[i] = -1
+	}
+
+	// Return the minimum energy
+	return funcMemo(ind, heights, k, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    // Helper function for recursion with memoization
+    private int func(int ind, int[] heights, int k, int[] dp) {
+        // Base case
+        if (ind == 0) {
+            return 0;
+        }
+        
+        /* If the result for this index has been 
+        previously calculated, return it*/
+        if (dp[ind] != -1) {
+            return dp[ind];
+        }
+        
+        // Initialize mmStep to Integer.MAX_VALUE
+        int mmStep = Integer.MAX_VALUE;
+        
+        // Try all possible jumps
+        for (int j = 1; j &lt;= k; j++) {
+            
+            // Check if ind - j is non-negative
+            if (ind - j &gt;= 0) {
+                int jump = func(ind - j, heights, k, dp) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the minimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        
+        // Store the result in dp array and return
+        dp[ind] = mmStep;
+        return dp[ind];
+    }
+    
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    public int frogJump(int[] heights, int k) {
+        int ind = heights.length - 1;
+        
+        /* Initialize a memoization array
+        to store calculated results*/
+        int[] dp = new int[ind + 1];
+        Arrays.fill(dp, -1);
+        
+        // Return the minimum energy
+        return func(ind, heights, k, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Helper function for recursion with memoization
+    func(ind, heights, k, dp) {
+        // Base case
+        if (ind === 0) {
+            return 0;
+        }
+        
+        /* If the result for this index has been
+        previously calculated, return it*/
+        if (dp[ind] !== -1) {
+            return dp[ind];
+        }
+        
+        // Initialize mmStep to Infinity
+        let mmStep = Infinity;
+        
+        // Try all possible jumps
+        for (let j = 1; j &lt;= k; j++) {
+            // Check if ind - j is non-negative
+            if (ind - j &gt;= 0) {
+                let jump = this.func(ind - j, heights, k, dp) + Math.abs(heights[ind] - heights[ind - j]);
+                
+                //Update the minimum energy
+                mmStep = Math.min(jump, mmStep);
+            }
+        }
+        
+        // Store the result in dp array and return
+        dp[ind] = mmStep;
+        return dp[ind];
+    }
+    
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    frogJump(heights, k) {
+        let ind = heights.length - 1;
+        
+        /* Initialize a memoization array
+        to store calculated results*/
+        let dp = new Array(ind + 1).fill(-1);
+        
+        // Return the minimum energy
+        return this.func(ind, heights, k, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    #Function for recusion using memoization
+    def func(self, ind, heights, k, dp):
+        # Base case
+        if ind == 0:
+            return 0
+        
+        &quot;&quot;&quot; If the result for this index has been
+        previously calculated, return it&quot;&quot;&quot;
+        if dp[ind] != -1:
+            return dp[ind]
+        
+        # Initialize mmStep to float(&#x27;inf&#x27;)
+        mmStep = float(&#x27;inf&#x27;)
+        
+        # Try all possible jumps
+        for j in range(1, k + 1):
+            # Check if ind - j is non-negative
+            if ind - j &gt;= 0:
+                jump = self.func(ind - j, heights, k, dp) + abs(heights[ind] - heights[ind - j])
+                
+                #Update the minimum energy
+                mmStep = min(mmStep, jump)
+        
+        # Store the result in dp array and return
+        dp[ind] = mmStep
+        return dp[ind]
+    
+    def frogJump(self, heights, k):
+        ind = len(heights) - 1
+        
+        &quot;&quot;&quot; Initialize a memoization array
+        to store calculated results&quot;&quot;&quot;
+        dp = [-1] * (ind + 1)
+        
+        # Return the minimum energy
+        return self.func(ind, heights, k, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to find the minimum 
+    energy to reach last stair*/
+    int frogJump(vector&lt;int&gt; &amp;heights, int k) {
+        int ind = heights.size();
+
+        /*Initialize a memoization array
+        to store calculated results*/
+        vector&lt;int&gt; dp(ind + 1, -1);
+
+        dp[0] = 0;
+
+        // Loop through the array 
+        for (int i = 1; i &lt; ind; i++) {
+            int mmSteps = INT_MAX;
+
+            // Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+            for (int j = 1; j &lt;= k; j++) {
+                if (i - j &gt;= 0) {
+                    int jump = dp[i - j] + abs(heights[i] - heights[i - j]);
+                    
+                    //Update the Minimum energy
+                    mmSteps = min(jump, mmSteps);
+                }
+            }
+            dp[i] = mmSteps;
+        }
+        //Result is stored in the last element of dp
+        return dp[ind - 1]; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.IO;
+
+public class Solution {
+    public int frogJump(int[] heights, int k) {
+        int n = heights.Length;
+        int[] dp = new int[n];
+
+        // Initialize dp array with a large value representing infinity
+        for (int i = 0; i &lt; n; i++) {
+            dp[i] = int.MaxValue;
+        }
+
+        dp[0] = 0; // Base case: energy to reach step 0 is 0
+
+        // Iterate through each step the frog can reach
+        for (int i = 1; i &lt; n; i++) {
+            // Consider all possible previous steps the frog could have jumped from
+            for (int j = 1; j &lt;= k; j++) {
+                // Check if the previous step (i - j) is within bounds
+                if (i - j &gt;= 0) {
+                    // Calculate the cost to jump from i-j to i
+                    int cost = Math.Abs(heights[i] - heights[i - j]);
+
+                    // If the previous step i-j is reachable (dp[i-j] is not infinity)
+                    // Update the minimum energy to reach step i
+                    if (dp[i - j] != int.MaxValue) {
+                        dp[i] = Math.Min(dp[i], dp[i - j] + cost);
+                    }
+                } else {
+                    // If i - j is negative, cannot jump further back, break the inner loop
+                    break;
+                }
+            }
+        }
+
+        // The minimum energy to reach the last step (n-1)
+        return dp[n - 1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to get absolute value
+func abs(x int) int {
+	if x &lt; 0 {
+		return -x
+	}
+	return x
+}
+
+/* Function to find the minimum
+energy to reach last stair */
+func frogJump(heights []int, k int) int {
+	ind := len(heights)
+
+	/* Initialize a memoization array
+	to store calculated results */
+	dp := make([]int, ind+1)
+	for i := range dp {
+		dp[i] = -1
+	}
+
+	dp[0] = 0
+
+	// Loop through the array
+	for i := 1; i &lt; ind; i++ {
+		mmSteps := int(1e9)
+
+		// Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+		for j := 1; j &lt;= k; j++ {
+			if i-j &gt;= 0 {
+				jump := dp[i-j] + abs(heights[i]-heights[i-j])
+
+				// Update the Minimum energy
+				if jump &lt; mmSteps {
+					mmSteps = jump
+				}
+			}
+		}
+		dp[i] = mmSteps
+	}
+
+	// Result is stored in the last element of dp
+	return dp[ind-1]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    public int frogJump(int[] heights, int k) {
+        int ind = heights.length;
+        
+        /* Initialize a memoization array
+        to store calculated results*/
+        int[] dp = new int[ind + 1];
+        Arrays.fill(dp, -1);
+        
+        dp[0] = 0; 
+        
+        // Loop through the array
+        for (int i = 1; i &lt; ind; i++) {
+            int mmSteps = Integer.MAX_VALUE;
+            
+            // Loop to try all possible jumps from 1 to k
+            for (int j = 1; j &lt;= k; j++) {
+                if (i - j &gt;= 0) {
+                    int jump = dp[i - j] + Math.abs(heights[i] - heights[i - j]);
+                    
+                    //Update the minimum energy
+                    mmSteps = Math.min(jump, mmSteps);
+                }
+            }
+            
+            dp[i] = mmSteps;
+        }
+        
+        // Result is stored in the last element of dp
+        return dp[ind - 1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the minimum 
+    energy to reach the last stair*/
+    frogJump(heights, k) {
+        let ind = heights.length;
+        
+        /* Initialize a memoization array 
+        to store calculated results*/
+        let dp = new Array(ind + 1).fill(-1);
+        dp[0] = 0; // Base case
+        
+        // Loop through the array
+        for (let i = 1; i &lt; ind; i++) {
+            let mmSteps = Infinity;
+            
+            // Loop to try all possible jumps from 1 to k
+            for (let j = 1; j &lt;= k; j++) {
+                if (i - j &gt;= 0) {
+                    let jump = dp[i - j] + Math.abs(heights[i] - heights[i - j]);
+                    mmSteps = Math.min(jump, mmSteps);
+                }
+            }
+            
+            dp[i] = mmSteps;
+        }
+        
+        // Result is stored in the last element of dp
+        return dp[ind - 1];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def frogJump(self, heights, k):
+        ind = len(heights)
+        
+        &quot;&quot;&quot; Initialize a memoization array 
+        to store calculated results&quot;&quot;&quot;
+        dp = [-1] * (ind + 1)
+        dp[0] = 0  
+        
+        # Loop through the array
+        for i in range(1, ind):
+            mmSteps = float(&#x27;inf&#x27;)
+            
+            # Loop to try all possible jumps from 1 to k
+            for j in range(1, k + 1):
+                if i - j &gt;= 0:
+                    jump = dp[i - j] + abs(heights[i] - heights[i - j])
+                    
+                    #Update the minimum energy
+                    mmSteps = min(jump, mmSteps)
+            
+            dp[i] = mmSteps
+        
+        # Result is stored in the last element of dp
+        return dp[ind - 1]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    int frogJump(vector&lt;int&gt; &amp;heights, int k) {
+        int n = heights.size();
+
+        /* Use a rolling vector of size k 
+        to store only last k dp values */
+        vector&lt;int&gt; dp(k, 0);  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (int i = 1; i &lt; n; i++) {
+            int mmSteps = INT_MAX;
+
+            // Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+            for (int j = 1; j &lt;= k; j++) {
+                if (i - j &gt;= 0) {
+                    int prevIndex = (i - j) % k;
+                    int jump = dp[prevIndex] + abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling vector
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the minimum 
+       energy to reach last stair */
+    public int frogJump(int[] heights, int k)
+    {
+        int n = heights.Length;
+
+        /* Use a rolling array of size k 
+           to store only last k dp values */
+        int[] dp = new int[k];  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (int i = 1; i &lt; n; i++)
+        {
+            int mmSteps = int.MaxValue;
+
+            // Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+            for (int j = 1; j &lt;= k; j++)
+            {
+                if (i - j &gt;= 0)
+                {
+                    int prevIndex = (i - j) % k;
+                    int jump = dp[prevIndex] + Math.Abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = Math.Min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling array
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to get absolute value
+func abs(x int) int {
+	if x &lt; 0 {
+		return -x
+	}
+	return x
+}
+
+// Function to find the minimum energy to reach the last stair
+func frogJump(heights []int, k int) int {
+	n := len(heights)
+
+	/* Use a rolling slice of size k
+	to store only last k dp values */
+	dp := make([]int, k) // dp[i % k] stores the energy to reach stair i
+
+	// Start filling the dp values from 1 to n-1
+	for i := 1; i &lt; n; i++ {
+		mmSteps := int(1e9)
+
+		// Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+		for j := 1; j &lt;= k; j++ {
+			if i-j &gt;= 0 {
+				prevIndex := (i - j) % k
+				jump := dp[prevIndex] + abs(heights[i]-heights[i-j])
+
+				// Update the minimum energy
+				if jump &lt; mmSteps {
+					mmSteps = jump
+				}
+			}
+		}
+
+		// Store the current result in rolling slice
+		dp[i%k] = mmSteps
+	}
+
+	// Result is stored in the last index
+	return dp[(n-1)%k]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    public int frogJump(int[] heights, int k) {
+        int n = heights.length;
+
+        /* Use a rolling array of size k 
+        to store only last k dp values */
+        int[] dp = new int[k];  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (int i = 1; i &lt; n; i++) {
+            int mmSteps = Integer.MAX_VALUE;
+
+            // Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+            for (int j = 1; j &lt;= k; j++) {
+                if (i - j &gt;= 0) {
+                    int prevIndex = (i - j) % k;
+                    int jump = dp[prevIndex] + Math.abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = Math.min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling array
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the mimimum 
+    energy to reach last stair*/
+    frogJump(heights, k) {
+        const n = heights.length;
+
+        /* Use a rolling vector of size k 
+        to store only last k dp values */
+        const dp = new Array(k).fill(0);  // dp[i % k] stores the energy to reach stair i
+
+        // Start filling the dp values from 1 to n-1
+        for (let i = 1; i &lt; n; i++) {
+            let mmSteps = Infinity;
+
+            // Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+            for (let j = 1; j &lt;= k; j++) {
+                if (i - j &gt;= 0) {
+                    let prevIndex = (i - j) % k;
+                    let jump = dp[prevIndex] + Math.abs(heights[i] - heights[i - j]);
+
+                    // Update the Minimum energy
+                    mmSteps = Math.min(mmSteps, jump);
+                }
+            }
+
+            // Store the current result in rolling vector
+            dp[i % k] = mmSteps;
+        }
+
+        // Result is stored in the last index
+        return dp[(n - 1) % k];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the mimimum 
+    # energy to reach last stair
+    def frogJump(self, heights, k):
+        n = len(heights)
+
+        # Use a rolling vector of size k 
+        # to store only last k dp values
+        dp = [0] * k  # dp[i % k] stores the energy to reach stair i
+
+        # Start filling the dp values from 1 to n-1
+        for i in range(1, n):
+            mmSteps = float(&#x27;inf&#x27;)
+
+            # Loop to try all possible jumps from &#x27;1&#x27; to &#x27;k&#x27;
+            for j in range(1, k + 1):
+                if i - j &gt;= 0:
+                    prevIndex = (i - j) % k
+                    jump = dp[prevIndex] + abs(heights[i] - heights[i - j])
+
+                    # Update the Minimum energy
+                    mmSteps = min(mmSteps, jump)
+
+            # Store the current result in rolling vector
+            dp[i % k] = mmSteps
+
+        # Result is stored in the last index
+        return dp[(n - 1) % k]</code></pre></div>
+</body>
+</html>

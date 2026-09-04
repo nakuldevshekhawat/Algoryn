@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find Peak Element - II</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Find Peak Element - II</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Binary Search</span><span>Matrix</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a 0-indexed n x m matrix mat where no two adjacent cells are equal, find any <strong>peak element</strong> mat[i][j] and return the <strong>array [i, j]</strong>.A peak element in a 2D grid is an element that is strictly greater than all of its adjacent neighbours to the left, right, top, and bottom.</p><p><br></p><p>Assume that the entire matrix is surrounded by an outer perimeter with the value -1 in each cell.</p><p><br></p><p>Note: As there can be many peak values, 1 is given as output if the returned index is a peak number, otherwise 0.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  n == mat.length</li><li>  m == mat[i].length</li><li>  1 <= m, n <= 500</li><li>  1 <= mat[i][j] <= 10<sup>5</sup></li><li>  No two adjacent cells are equal</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: mat=[[10, 20, 15], [21, 30, 14], [7, 16, 32]]</p><p>Output: [1, 1]</p><p>Explanation: The value at index [1, 1] is 30, which is a peak element because all its neighbours are smaller or equal to it. Similarly, {2, 2} can also be picked as a peak.</p><h3>Example 2</h3><p>Input: mat=[[10, 7], [11, 17]]</p><p>Output : [1, 1]</p><p>Explanation:<span style="color: rgb(245, 245, 245);">The value at index [1, 1] is 17, which is the only peak element because all its neighbours are smaller or equal to it.</span></p><h3>Example 3</h3><p>Input: mat=[[1, 2, 3], [4, 5, 6], [7, 8, 9]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem statement to find a peak element in a 2D grid can be seen as a core concept behind many terrain mapping systems in software like geographic information systems (GIS). In these scenarios, different altitudes can be represented as different values in the matrix, a 'peak' would represent the highest point in surrounding region (like a hill or mountain). Algorithms for finding such peak elements are crucial when it comes to features like terrain visualization, path planning or shortest path computations in uneven landscapes.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3><strong>Intuition: </strong></h3>
+<li>The brute-force solution to this problem involves searching for the largest element in the matrix by iterating through all cells. Since the question suggests that no two adjacent elements are equal, the largest element will be the peak element. However, this approach has a time complexity of O(N*M), where N is the number of rows and M is the number of columns.</li>
+
+<li>To optimize the previous solution, binary search can be employed. The intuition behind the peak element in 1-D array can be used here. For each element (mid), we check if it is greater than its previous and next elements. If so, mid is identified as a peak element. Alternatively, if mid is smaller than its previous element, a peak must exist on the left side, so the right half is eliminated. Similarly, if mid is less than the next element, a peak must exist on the right side, so the left half is eliminated. This approach trims down the search space in each iteration, thereby enhancing the time complexity.</li>
+
+<li>Here, for a 2-D array, the search will start from range [0, col-1], where col is the total number of columns in each row. First, find the 'mid' and find out the largest element in column 'mid' and apply the same approach as a 1-D array. That is, if the element at mid is a peak, return it. Otherwise, if the left element is greater, eliminate the right half; otherwise, eliminate the left half.</li>
+<h3><strong>Approach: </strong></h3>
+
+<strong>Working of findPeakElement(matrix):</strong>
+<ol>
+<li>Use two pointers, low initialized to 0 and high initialized to m - 1, to define the search range across columns.</li>
+<li>Execute a loop where low is less than or equal to high and compute mid as (low + high) / 2 to determine the middle column.</li>
+<li>Utilize maxElement() function to find the row index where the middle column(mid) has the maximum element and let's call it 'row'.</li>
+<li>If element at cell(row,mid) is greater than both neighbors, return {row, mid} as the peak element coordinates.</li>
+<li>If the left neighbor is greater than the element at cell(row,mid), adjust high to mid - 1 to search in the left half.
+Otherwise, adjust low to mid + 1 to search in the right half.</li>
+<li>If the loop exits without finding a peak (i.e., low > high), return {-1, -1} to indicate no peak element exists in the matrix.</li>
+</ol><br>
+<strong>Working of maxElement(matrix,col):</strong>
+<ol>
+<li>Start by initializing n to arr.length, which gives the number of rows in the 2D array arr. Initialize max to Integer.MIN_VALUE to store the maximum value found in the specified column col and  also initialize index to -1, which will store the index of the row containing the maximum element in the specified column.</li>
+<li>Iterate through each row of the 2D array, find the maximum element in the  column 'col' of matrix and return its index.</li>
+</ol><br>
+<img src="https://static.takeuforward.org/premium/Binary Search/2D Arrays/Find Peak Element-dup/image1-ozLQGy-O"><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Helper function to find the index of the row
+    with the maximum element in a given column*/
+    int maxElement(vector<vector<int>>& arr, int col) {
+        int n = arr.size();
+        int max_val = INT_MIN;
+        int index = -1;
+        
+        /* Iterate through each row to find the
+        maximum element in the specified column*/
+        for (int i = 0; i < n; i++) {
+            if (arr[i][col] > max_val) {
+                max_val = arr[i][col];
+                index = i;
+            }
+        }
+        // Return the index
+        return index;
+    }
+    
+    /* Function to find a peak element in 
+     the 2D matrix using binary search */
+    vector<int> findPeakGrid(vector<vector<int>>& arr) {
+        int n = arr.size();     
+        int m = arr[0].size();  
+        
+        /* Initialize the lower bound for 
+        and upper bound for binary search */
+        int low = 0;           
+        int high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low <= high) {
+            int mid = (low + high) / 2;  
+            
+            /* Find the index of the row with the 
+            maximum element in the middle column*/
+            int row = maxElement(arr, mid);
+            
+            /* Determine the elements to left and 
+            right of middle element in the found row */
+            int left = mid - 1 >= 0 ? arr[row][mid - 1] : INT_MIN;
+            int right = mid + 1 < m ? arr[row][mid + 1] : INT_MIN;
+            
+            /* Check if the middle element 
+             is greater than its neighbors */
+            if (arr[row][mid] > left && arr[row][mid] > right) {
+                return {row, mid};  
+            } 
+            else if (left > arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return {-1, -1} if no peak element is found
+        return {-1, -1};  
+    }
+};
+
+int main() {
+    // Example usage
+    vector<vector<int>> mat = {
+        {4, 2, 5, 1, 4, 5},
+        {2, 9, 3, 2, 3, 2},
+        {1, 7, 6, 0, 1, 3},
+        {3, 6, 2, 3, 7, 2}
+    };
+    
+    // Create an instance of Solution class
+    Solution sol;
+    
+    // Call findPeakGridfunction and print the result
+    vector<int> peak = sol.findPeakGrid(mat);
+    cout << "The row of peak element is " << peak[0] << " and column of the peak element is " << peak[1] << endl;
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Helper function to find the index of the row
+    with the maximum element in a given column*/
+    public int maxElement(int[][] arr, int col) {
+        int n = arr.length;
+        int max = Integer.MIN_VALUE;
+        int index = -1;
+        
+        /* Iterate through each row to find the
+        maximum element in the specified column*/
+        for (int i = 0; i < n; i++) {
+            if (arr[i][col] > max) {
+                max = arr[i][col];
+                index = i;
+            }
+        }
+        //Return the index
+        return index; 
+    }
+    
+    /* Function to find a peak element in 
+    the 2D matrix using binary search */
+    public int[] findPeakGrid(int[][] arr) {
+        int n = arr.length;   
+        int m = arr[0].length; 
+        
+        /* Initialize the lower bound for 
+        and upper bound for binary search */
+        int low = 0;           
+        int high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low <= high) {
+            int mid = (low + high) / 2;  
+            
+            /* Find the index of the row with the 
+            maximum element in the middle column*/
+            int row = maxElement(arr, mid);
+            
+            /* Determine the elements to left and 
+            right of middle element in the found row */
+            int left = mid - 1 >= 0 ? arr[row][mid - 1] : Integer.MIN_VALUE;
+            int right = mid + 1 < m ? arr[row][mid + 1] : Integer.MIN_VALUE;
+            
+            /* Check if the middle element 
+            is greater than its neighbors */
+            if (arr[row][mid] > left && arr[row][mid] > right) {
+                return new int[]{row,mid};  
+            } 
+            else if (left > arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return -1 if no peak element is found
+        return new int[]{-1,-1};  
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        int[][] mat = {
+            {4, 2, 5, 1, 4, 5},
+            {2, 9, 3, 2, 3, 2},
+            {1, 7, 6, 0, 1, 3},
+            {3, 6, 2, 3, 7, 2}
+        };
+        
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Call findPeakGridfunction and print the result
+        System.out.println("The row of peak element is "+sol.findPeakGrid(mat)[0]+" and column of the peak element is "+sol.findPeakGrid(mat)[1]);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """Helper function to find the index of the row
+    with the maximum element in a given column"""
+    def maxElement(self, arr, col):
+        n = len(arr)
+        max_val = float('-inf')
+        index = -1
+        
+        """Iterate through each row to find the
+        maximum element in the specified column"""
+        for i in range(n):
+            if arr[i][col] > max_val:
+                max_val = arr[i][col]
+                index = i
+                
+        # Return the index
+        return index
+    
+    """Function to find a peak element in 
+    the 2D matrix using binary search """
+    def findPeakGrid(self, arr):
+        n = len(arr)    
+        m = len(arr[0])  
+        
+        """Initialize the lower bound for 
+        and upper bound for binary search"""
+        low = 0           
+        high = m - 1      
+        
+        # Perform binary search on columns
+        while low <= high:
+            mid = (low + high) // 2 
+            
+            """Find the index of the row with the 
+            maximum element in the middle column"""
+            row = self.maxElement(arr, mid)
+            
+            """ Determine the elements to left and 
+            right of middle element in the found row """
+            left = arr[row][mid - 1] if mid - 1 >= 0 else float('-inf')
+            right = arr[row][mid + 1] if mid + 1 < m else float('-inf')
+            
+            """ Check if the middle element 
+            is greater than its neighbors """
+            if arr[row][mid] > left and arr[row][mid] > right:
+                return [row, mid]  
+            elif left > arr[row][mid]:
+                high = mid - 1  
+            else:
+                low = mid + 1  
+        
+        # Return [-1, -1] if no peak element is found
+        return [-1, -1]
+
+mat = [
+    [4, 2, 5, 1, 4, 5],
+    [2, 9, 3, 2, 3, 2],
+    [1, 7, 6, 0, 1, 3],
+    [3, 6, 2, 3, 7, 2]
+]
+
+#Create an instance of Solution class
+sol = Solution()
+
+# Call findPeakGrid function and print the result
+peak = sol.findPeakGrid(mat)
+print(f"The row of peak element is {peak[0]} and column of the peak element is {peak[1]}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /*Helper function to find the index of the row
+    with the maximum element in a given column*/
+    maxElement(arr, col) {
+        let n = arr.length;
+        let max_val = Number.MIN_SAFE_INTEGER;
+        let index = -1;
+        
+        /*Iterate through each row to find the
+        maximum element in the specified column*/
+        for (let i = 0; i < n; i++) {
+            if (arr[i][col] > max_val) {
+                max_val = arr[i][col];
+                index = i;
+            }
+        }
+        // Return the index
+        return index;
+    }
+    
+    /*Function to find a peak element in 
+    the 2D matrix using binary search */
+    findPeakGrid(arr) {
+        let n = arr.length; 
+        let m = arr[0].length;  
+        
+        /*Initialize the lower bound for 
+        and upper bound for binary search */
+        let low = 0;           
+        let high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low <= high) {
+            let mid = Math.floor((low + high) / 2);   
+            
+            /*Find the index of the row with the 
+            maximum element in the middle column*/
+            let row = this.maxElement(arr, mid);
+            
+            /*Determine the elements to left and 
+            right of middle element in the found row */
+            let left = mid - 1 >= 0 ? arr[row][mid - 1] : Number.MIN_SAFE_INTEGER;
+            let right = mid + 1 < m ? arr[row][mid + 1] : Number.MIN_SAFE_INTEGER;
+            
+            /*Check if the middle element 
+            is greater than its neighbors */
+            if (arr[row][mid] > left && arr[row][mid] > right) {
+                return [row, mid];  
+            } 
+            else if (left > arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return [-1, -1] if no peak element is found
+        return [-1, -1];  
+    }
+}
+
+// Example usage
+let mat = [
+    [4, 2, 5, 1, 4, 5],
+    [2, 9, 3, 2, 3, 2],
+    [1, 7, 6, 0, 1, 3],
+    [3, 6, 2, 3, 7, 2]
+];
+
+//Create an instance of Solution class
+let sol = new Solution();
+
+// Call findPeakElement function and print the result
+let peak = sol.findPeakGrid(mat);
+console.log(`The row of peak element is ${peak[0]} and column of the peak element is ${peak[1]}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution {
+    /*Helper function to find the index of the row
+    with the maximum element in a given column*/
+    private int MaxElement(int[][] arr, int col) {
+        int n = arr.Length;
+        int max_val = int.MinValue;
+        int index = -1;
+        
+        /*Iterate through each row to find the
+        maximum element in the specified column*/
+        for (int i = 0; i < n; i++) {
+            if (arr[i][col] > max_val) {
+                max_val = arr[i][col];
+                index = i;
+            }
+        }
+        // Return the index
+        return index;
+    }
+    
+    /*Function to find a peak element in 
+    the 2D matrix using binary search */
+    public int[] FindPeakGrid(int[][] arr) {
+        int n = arr.Length; 
+        int m = arr[0].Length;  
+        
+        /*Initialize the lower bound for 
+        and upper bound for binary search */
+        int low = 0;           
+        int high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            
+            /*Find the index of the row with the 
+            maximum element in the middle column*/
+            int row = this.MaxElement(arr, mid);
+            
+            /*Determine the elements to left and 
+            right of middle element in the found row */
+            int left = mid - 1 >= 0 ? arr[row][mid - 1] : int.MinValue;
+            int right = mid + 1 < m ? arr[row][mid + 1] : int.MinValue;
+            
+            /*Check if the middle element 
+            is greater than its neighbors */
+            if (arr[row][mid] > left && arr[row][mid] > right) {
+                return new int[] { row, mid };  
+            } 
+            else if (left > arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return [-1, -1] if no peak element is found
+        return new int[] { -1, -1 };  
+    }
+}
+
+public class Program {
+    public static void Main(string[] args) {
+        // Example usage
+        int[][] mat = new int[][] {
+            new int[] {4, 2, 5, 1, 4, 5},
+            new int[] {2, 9, 3, 2, 3, 2},
+            new int[] {1, 7, 6, 0, 1, 3},
+            new int[] {3, 6, 2, 3, 7, 2}
+        };
+
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call findPeakGrid function and print the result
+        int[] peak = sol.FindPeakGrid(mat);
+        Console.WriteLine($"The row of peak element is {peak[0]} and column of the peak element is {peak[1]}");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Helper function to find the index of the row with the maximum element in a given column
+func maxElement(arr [][]int, col int) int {
+	n := len(arr)
+	maxVal := math.MinInt
+	index := -1
+
+	// Iterate through each row to find the maximum element in the specified column
+	for i := 0; i < n; i++ {
+		if arr[i][col] > maxVal {
+			maxVal = arr[i][col]
+			index = i
+		}
+	}
+	// Return the index
+	return index
+}
+
+// Function to find a peak element in the 2D matrix using binary search
+func findPeakGrid(arr [][]int) []int {
+
+	m := len(arr[0])
+
+	// Initialize the lower bound and upper bound for binary search
+	low := 0
+	high := m - 1
+
+	// Perform binary search on columns
+	for low <= high {
+		mid := (low + high) / 2
+
+		// Find the index of the row with the maximum element in the middle column
+		row := maxElement(arr, mid)
+
+		// Determine the elements to left and right of middle element in the found row
+		left := math.MinInt
+		if mid-1 >= 0 {
+			left = arr[row][mid-1]
+		}
+		right := math.MinInt
+		if mid+1 < m {
+			right = arr[row][mid+1]
+		}
+
+		// Check if the middle element is greater than its neighbors
+		if arr[row][mid] > left && arr[row][mid] > right {
+			return []int{row, mid}
+		} else if left > arr[row][mid] {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+
+	// Return {-1, -1} if no peak element is found
+	return []int{-1, -1}
+}
+
+func main() {
+	// Example usage
+	mat := [][]int{
+		{4, 2, 5, 1, 4, 5},
+		{2, 9, 3, 2, 3, 2},
+		{1, 7, 6, 0, 1, 3},
+		{3, 6, 2, 3, 7, 2},
+	}
+
+	// Call findPeakGrid function and print the result
+	peak := findPeakGrid(mat)
+	fmt.Printf("The row of peak element is %d and column of the peak element is %d\n", peak[0], peak[1])
+}</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N * logM), where N is the number of rows in the matrix, M is the number of columns in each row.  The complexity arises because binary search is performed on the columns, and for each mid column, a linear search through the rows is executed to find the maximum element.<br><br>
+<strong>Space Complexity:</strong> As no additional space is used, so the Space Complexity is O(1).</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Helper function to find the index of the row
+    with the maximum element in a given column*/
+    int maxElement(vector&lt;vector&lt;int&gt;&gt;&amp; arr, int col) {
+        int n = arr.size();
+        int max_val = INT_MIN;
+        int index = -1;
+        
+        /* Iterate through each row to find the
+        maximum element in the specified column*/
+        for (int i = 0; i &lt; n; i++) {
+            if (arr[i][col] &gt; max_val) {
+                max_val = arr[i][col];
+                index = i;
+            }
+        }
+        // Return the index
+        return index;
+    }
+    
+    /* Function to find a peak element in 
+     the 2D matrix using binary search */
+    vector&lt;int&gt; findPeakGrid(vector&lt;vector&lt;int&gt;&gt;&amp; arr) {
+        int n = arr.size();     
+        int m = arr[0].size();  
+        
+        /* Initialize the lower bound for 
+        and upper bound for binary search */
+        int low = 0;           
+        int high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low &lt;= high) {
+            int mid = (low + high) / 2;  
+            
+            /* Find the index of the row with the 
+            maximum element in the middle column*/
+            int row = maxElement(arr, mid);
+            
+            /* Determine the elements to left and 
+            right of middle element in the found row */
+            int left = mid - 1 &gt;= 0 ? arr[row][mid - 1] : INT_MIN;
+            int right = mid + 1 &lt; m ? arr[row][mid + 1] : INT_MIN;
+            
+            /* Check if the middle element 
+             is greater than its neighbors */
+            if (arr[row][mid] &gt; left &amp;&amp; arr[row][mid] &gt; right) {
+                return {row, mid};  
+            } 
+            else if (left &gt; arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return {-1, -1} if no peak element is found
+        return {-1, -1};  
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    /*Helper function to find the index of the row
+    with the maximum element in a given column*/
+    private int MaxElement(int[][] arr, int col) {
+        int n = arr.Length;
+        int max_val = int.MinValue;
+        int index = -1;
+        
+        /*Iterate through each row to find the
+        maximum element in the specified column*/
+        for (int i = 0; i &lt; n; i++) {
+            if (arr[i][col] &gt; max_val) {
+                max_val = arr[i][col];
+                index = i;
+            }
+        }
+        // Return the index
+        return index;
+    }
+    
+    /*Function to find a peak element in 
+    the 2D matrix using binary search */
+    public int[] FindPeakGrid(int[][] arr) {
+        int n = arr.Length; 
+        int m = arr[0].Length;  
+        
+        /*Initialize the lower bound for 
+        and upper bound for binary search */
+        int low = 0;           
+        int high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low &lt;= high) {
+            int mid = low + (high - low) / 2;
+            
+            /*Find the index of the row with the 
+            maximum element in the middle column*/
+            int row = this.MaxElement(arr, mid);
+            
+            /*Determine the elements to left and 
+            right of middle element in the found row */
+            int left = mid - 1 &gt;= 0 ? arr[row][mid - 1] : int.MinValue;
+            int right = mid + 1 &lt; m ? arr[row][mid + 1] : int.MinValue;
+            
+            /*Check if the middle element 
+            is greater than its neighbors */
+            if (arr[row][mid] &gt; left &amp;&amp; arr[row][mid] &gt; right) {
+                return new int[] { row, mid };  
+            } 
+            else if (left &gt; arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return [-1, -1] if no peak element is found
+        return new int[] { -1, -1 };  
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;math&quot;)
+// Helper function to find the index of the row with the maximum element in a given column
+func maxElement(arr [][]int, col int) int {
+	n := len(arr)
+	maxVal := math.MinInt
+	index := -1
+
+	// Iterate through each row to find the maximum element in the specified column
+	for i := 0; i &lt; n; i++ {
+		if arr[i][col] &gt; maxVal {
+			maxVal = arr[i][col]
+			index = i
+		}
+	}
+	// Return the index
+	return index
+}
+
+// Function to find a peak element in the 2D matrix using binary search
+func findPeakGrid(arr [][]int) []int {
+
+	m := len(arr[0])
+
+	// Initialize the lower bound and upper bound for binary search
+	low := 0
+	high := m - 1
+
+	// Perform binary search on columns
+	for low &lt;= high {
+		mid := (low + high) / 2
+
+		// Find the index of the row with the maximum element in the middle column
+		row := maxElement(arr, mid)
+
+		// Determine the elements to left and right of middle element in the found row
+		left := math.MinInt
+		if mid-1 &gt;= 0 {
+			left = arr[row][mid-1]
+		}
+		right := math.MinInt
+		if mid+1 &lt; m {
+			right = arr[row][mid+1]
+		}
+
+		// Check if the middle element is greater than its neighbors
+		if arr[row][mid] &gt; left &amp;&amp; arr[row][mid] &gt; right {
+			return []int{row, mid}
+		} else if left &gt; arr[row][mid] {
+			high = mid - 1
+		} else {
+			low = mid + 1
+		}
+	}
+
+	// Return {-1, -1} if no peak element is found
+	return []int{-1, -1}
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{    
+/* Helper function to find the index of the row
+    with the maximum element in a given column*/
+    public int maxElement(int[][] arr, int col) {
+        int n = arr.length;
+        int max = Integer.MIN_VALUE;
+        int index = -1;
+        
+        /* Iterate through each row to find the
+        maximum element in the specified column*/
+        for (int i = 0; i &lt; n; i++) {
+            if (arr[i][col] &gt; max) {
+                max = arr[i][col];
+                index = i;
+            }
+        }
+        //Return the index
+        return index; 
+    }
+    
+    /* Function to find a peak element in 
+    the 2D matrix using binary search */
+    public int[] findPeakGrid(int[][] arr) {
+        int n = arr.length;   
+        int m = arr[0].length; 
+        
+        /* Initialize the lower bound for 
+        and upper bound for binary search */
+        int low = 0;           
+        int high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low &lt;= high) {
+            int mid = (low + high) / 2;  
+            
+            /* Find the index of the row with the 
+            maximum element in the middle column*/
+            int row = maxElement(arr, mid);
+            
+            /* Determine the elements to left and 
+            right of middle element in the found row */
+            int left = mid - 1 &gt;= 0 ? arr[row][mid - 1] : Integer.MIN_VALUE;
+            int right = mid + 1 &lt; m ? arr[row][mid + 1] : Integer.MIN_VALUE;
+            
+            /* Check if the middle element 
+            is greater than its neighbors */
+            if (arr[row][mid] &gt; left &amp;&amp; arr[row][mid] &gt; right) {
+                return new int[]{row,mid};  
+            } 
+            else if (left &gt; arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return -1 if no peak element is found
+        return new int[]{-1,-1};  
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution{    
+/*Helper function to find the index of the row
+    with the maximum element in a given column*/
+    maxElement(arr, col) {
+        let n = arr.length;
+        let max_val = Number.MIN_SAFE_INTEGER;
+        let index = -1;
+        
+        /*Iterate through each row to find the
+        maximum element in the specified column*/
+        for (let i = 0; i &lt; n; i++) {
+            if (arr[i][col] &gt; max_val) {
+                max_val = arr[i][col];
+                index = i;
+            }
+        }
+        // Return the index
+        return index;
+    }
+    
+    /*Function to find a peak element in 
+    the 2D matrix using binary search */
+    findPeakGrid(arr) {
+        let n = arr.length; 
+        let m = arr[0].length;  
+        
+        /*Initialize the lower bound for 
+        and upper bound for binary search */
+        let low = 0;           
+        let high = m - 1;      
+        
+        // Perform binary search on columns
+        while (low &lt;= high) {
+            let mid = Math.floor((low + high) / 2);   
+            
+            /*Find the index of the row with the 
+            maximum element in the middle column*/
+            let row = this.maxElement(arr, mid);
+            
+            /*Determine the elements to left and 
+            right of middle element in the found row */
+            let left = mid - 1 &gt;= 0 ? arr[row][mid - 1] : Number.MIN_SAFE_INTEGER;
+            let right = mid + 1 &lt; m ? arr[row][mid + 1] : Number.MIN_SAFE_INTEGER;
+            
+            /*Check if the middle element 
+            is greater than its neighbors */
+            if (arr[row][mid] &gt; left &amp;&amp; arr[row][mid] &gt; right) {
+                return [row, mid];  
+            } 
+            else if (left &gt; arr[row][mid]) {
+                high = mid - 1;  
+            } 
+            else {
+                low = mid + 1;
+            }
+        }
+        
+        // Return [-1, -1] if no peak element is found
+        return [-1, -1];  
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot;Helper function to find the index of the row
+    with the maximum element in a given column&quot;&quot;&quot;
+    def maxElement(self, arr, col):
+        n = len(arr)
+        max_val = float(&#x27;-inf&#x27;)
+        index = -1
+        
+        &quot;&quot;&quot;Iterate through each row to find the
+        maximum element in the specified column&quot;&quot;&quot;
+        for i in range(n):
+            if arr[i][col] &gt; max_val:
+                max_val = arr[i][col]
+                index = i
+                
+        # Return the index
+        return index
+    
+    &quot;&quot;&quot;Function to find a peak element in 
+    the 2D matrix using binary search &quot;&quot;&quot;
+    def findPeakGrid(self, arr):
+        n = len(arr)    
+        m = len(arr[0])  
+        
+        &quot;&quot;&quot;Initialize the lower bound for 
+        and upper bound for binary search&quot;&quot;&quot;
+        low = 0           
+        high = m - 1      
+        
+        # Perform binary search on columns
+        while low &lt;= high:
+            mid = (low + high) // 2 
+            
+            &quot;&quot;&quot;Find the index of the row with the 
+            maximum element in the middle column&quot;&quot;&quot;
+            row = self.maxElement(arr, mid)
+            
+            &quot;&quot;&quot; Determine the elements to left and 
+            right of middle element in the found row &quot;&quot;&quot;
+            left = arr[row][mid - 1] if mid - 1 &gt;= 0 else float(&#x27;-inf&#x27;)
+            right = arr[row][mid + 1] if mid + 1 &lt; m else float(&#x27;-inf&#x27;)
+            
+            &quot;&quot;&quot; Check if the middle element 
+            is greater than its neighbors &quot;&quot;&quot;
+            if arr[row][mid] &gt; left and arr[row][mid] &gt; right:
+                return [row, mid]  
+            elif left &gt; arr[row][mid]:
+                high = mid - 1  
+            else:
+                low = mid + 1  
+        
+        # Return [-1, -1] if no peak element is found
+        return [-1, -1]</code></pre></div>
+</body>
+</html>

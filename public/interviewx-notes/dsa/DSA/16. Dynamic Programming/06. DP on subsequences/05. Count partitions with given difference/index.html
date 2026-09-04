@@ -1,0 +1,3816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Count partitions with given difference</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Count partitions with given difference</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Math</span><span>Prefix Sum</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array arr of n integers and an integer diff, count the number of ways to partition the array into two subsets S1 and S2 such that:</p><ul><li><strong>∣S1−S2∣ = diff and S1 ≥ S2</strong></li><li><strong style="color: rgb(249, 250, 251);">Where |S1| and |S2| are sum of Subsets S1 and S2 respectively.</strong></li></ul><p><br></p><p>Return the result modulo 10<sup>9 </sup>+ 7.</p><p><br></p><p><strong>Note: </strong>A partition means that the union of <strong>S1</strong> and <strong>S2</strong> is the original array, and no element is left out or used twice — every element of the array belongs to exactly one of the two subsets.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 200</li><li>0 <= d <= 10<sup>4</sup></li><li>0 <= arr[i] <= 50</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> arr = [1, 1, 2, 3], diff = 1</p><p><strong>Output:</strong> 3</p><p><strong>Explanation:</strong> The subsets are [1, 2] and [1, 3], [1, 3] and [1, 2], [1, 1, 2] and [3].</p><h3>Example 2</h3><p><strong>Input:</strong> arr = [1, 2, 3, 4], diff = 2</p><p><strong>Output:</strong> 2</p><p><strong>Explanation: </strong>The subsets are [1, 3] and [2, 4], [1, 2, 3] and [4].</p><h3>Example 3</h3><p><strong>Input:</strong> arr = [5, 2, 6, 4], diff = 3</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem and its underlying concept of dynamic programming is a fundamental part of many algorithms used in machine learning and data analysis. For instance, these types of partitioning problems are often used in dividing datasets for testing and training purposes, in a way that a certain condition is met - be it the difference between sums of subsets, or maximizing the similarity of data within each subset. Additionally, it is also common in load balancing problems where tasks are distributed across different servers in a way that the workload difference between any two servers is minimum.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Understanding:</strong></h5>
+<p>This article will be divided into two parts:</p>
+
+<p>First, we will discuss an extra edge case of the problem discussed in Count Subsets with Sum K, and then,
+we will discuss the problem for this article: Partitions with Given Difference.</p>
+<ol>
+<li><b>Part 1:  </b>Extra edge case for the problem Count Subsets with Sum K</li>
+
+<p>In the problem Count Subsets with Sum K, the problem constraints stated that an array element is greater than 0, so the code we have written there works perfectly for the given constraints.</p>
+
+<p>If the constraints mentioned that an array element can also be equal to 0 and the target sum can also be 0, then that code will fail. To understand it we will take an example:</p>
+<p>Let the target arr = [0,0,1] and the target = 1.</p>
+
+<p>The previous code will give us the answer 1 as it first takes the element arr[2] and then finds the answer by picking it. Then from the base condition, we will return 0 ( as the target will become 0 by picking 1). But for this question, the answer will be 4 with the following subsets({0,1},{0,1},{0,0,1} and {1}).</p>
+
+<p>Therefore we need to modify the base conditions in order to handle the changes. These are the base conditions of that problem.</p>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, target){
+    if(target == 0) return  1
+    if(ind == 0)  return arr[ind] == target
+}</code></pre></div></div></div>
+
+<p>First of all, we will remove target==0 because now when target ==0, there can be many 0s present in the array which needs to be counted in the answer.</p>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, target){
+    if(ind == 0)  return arr[ind] == target
+}</code></pre></div></div></div>
+
+
+<p>Now, the following cases can arise when we are at index 0, if the target sum is 0 and the first index is also 0, like in case [0,1], we can form the subset in two ways, either by considering the first element or leaving it, so we can return 2.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-PHzwKVrv"><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, target){
+    if(ind == 0) {
+        if(target == 0 && arr[0] == 0)
+             return 2
+    }
+}</code></pre></div></div></div>
+
+
+<p>Else at index 0, if target == 0, and the first element is not 0, it means we will not pick the first element so we just return 1 way.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-zarpuNMp"><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, target){
+    if(ind == 0) {
+        if(target == 0 && arr[0] == 0)
+             return 2
+        if(target == 0)
+            return 1
+    }
+}</code></pre></div></div></div>
+
+
+<p>Or if at index 0, when the first element is not 0, and the target is equal to the first element , then we will include it in the subset and we will return 1 way.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-z6-W7hJ6"><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, target){
+    if(ind == 0) {
+        if(target == 0 && arr[0] == 0)
+             return 2
+        if(target == 0 || arr[0] == target)
+            return 1
+    }
+}</code></pre></div></div></div>
+<p>Else in all other cases, we simply return 0.</p>
+
+<li><b>Part 2: </b>Count Partitions with Given Difference.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-Jk3ccf87"><br>
+<p>This question is a slight modification of the problem discussed in "Count Subsets with Sum K". We have the following two conditions given to us.</p>
+
+<p>S1 - S2 = D   – (i)</p>
+
+<p>S1 >= S2     – (ii)</p>
+
+<p> If we calculate the total sum of elements of the array (say totSum), we can say that,</p>
+
+<p>S1 = totSum - S2      – (iii)</p>
+
+<p>Now solving for equations (i) and (iii), we can say that </p>
+
+<p>S2 = (totSum - D)/2    – (iv)</p>
+
+<p>Therefore the question “Count Partitions with a difference D” is modified to “Count Number of subsets with sum (totSum - D)/2 ”. This is exactly what we had discussed in the article  "Count Subsets with Sum K".</p>
+
+<p>The following edge cases need to be handled:</p>
+
+<p>As the array elements are positive integers including zero, we don’t want to find the case when S2 is negative or we can say that totSum is lesser than D, therefore if totSum<D, we simply return 0.
+S2 can’t be a fraction, as all elements are integers, therefore if totSum - D is odd, we can return 0.
+From here on we will discuss the approach to “Count Subsets with Sum K” with the required modifications. Moreover, as the array elements can also contain 0, we will handle it as discussed in part-1 of this article.</p></ol>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes: </b>The array will have an index but there is one more parameter “target”. We are given the initial problem to find whether there exists in the whole array a subsequence whose sum is equal to the target.</li>
+
+<p>So, we can say that initially, we need to find(n-1, target) which means that we are counting the number of subsequences in the array from index 0 to n-1, whose sum is equal to the target. </p>
+
+<li><b>Try out all possible choices at a given index:</b>We have two choices:</li>
+
+<p><b>Exclude the current element from the subsequence: </b>We first try to find a subsequence without considering the current index element. For this, we will make a recursive call to f(ind-1, target).</p>
+
+<p><b>Include the current element in the subsequence:  </b>We will try to find a subsequence by considering the current index as an element as part of the subsequence. As we have included arr[ind], the updated target which we need to find in the rest of the array will be a target - arr[ind]. Therefore, we will call f(ind-1,target-arr[ind]).</p>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, target){
+    notTaken = f(ind-1, target)
+    taken = 0
+    if(arr[ind] <= target)
+        taken = f(ind-1, target-arr[ind])
+}</code></pre></div></div></div>
+<p><b>Note:  </b>We will consider the current element in the subsequence only when the current element is less than or equal to the target.</p>
+
+<li><b>Return the sum of taken and notTaken: </b>As we have to return the total count of subsets with the target sum, we will return the sum of taken and notTaken from our recursive call.</li>
+
+<li><b>Base Cases: </b>If target == 0, it means that we have already found the subsequence from the previous steps, so we can return 1. If ind==0, it means we are at the first element, so we need to return arr[ind]==target. If the element is equal to the target we return 1 else we return 0.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+public:
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, vector<int>& arr) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0,there 
+            are 2 ways to achieve this (include or exclude).*/
+            if (target == 0 && arr[0] == 0)
+                return 2;
+                
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this*/
+            if (target == 0 || target == arr[0])
+                return 1;
+                
+            return 0; 
+        }
+        
+        /* Calculate the number of ways not
+        including the current element.*/
+        int notTaken = countPartitionsUtil(ind - 1, target, arr);
+        
+        /* Calculate the number of ways including the
+        current element (if it can be included).*/
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr);
+        
+        // Return the result 
+        return (notTaken + taken) % mod;
+    }
+
+public:
+    /* Function to count number of subsets with a
+    given difference.Uses the helper function 
+    `countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    int countPartitions(int n, int diff, vector<int>& arr) {
+        int totSum = 0;
+        
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < arr.size(); i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it's not possible to divide 
+        the array into two subsets with the given difference.*/
+        if (totSum - diff < 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+        
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+        
+        /* Call the helper function to count
+        the number of subsets with sum s2.*/
+        return countPartitionsUtil(n - 1, s2, arr);
+    }
+};
+
+int main() {
+    vector<int> arr = {5, 2, 6, 4};
+    int n = arr.size();
+    int diff = 3;
+  
+    // Create an instance of Solution class
+    Solution sol;
+                                 
+    // Print the number of subsets found
+    cout << "The number of subsets found are " << sol.countPartitions(n, diff, arr) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, int[] arr) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude). */
+            if (target == 0 && arr[0] == 0)
+                return 2;
+
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this. */
+            if (target == 0 || target == arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Calculate number of ways not including current element.
+        int notTaken = countPartitionsUtil(ind - 1, target, arr);
+
+        /* Calculate the number of ways including the
+        current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr);
+
+        // Return the result 
+        return (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a given
+    difference.Uses the helper function `countPartitionsUtil`
+    to find the number of subsets with a specific target sum. */
+    int countPartitions(int n, int diff, int[] arr) {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < arr.length; i++) {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative,
+           or if it is not even, it's not possible to divide 
+           the array into two subsets with the given difference. */
+        if (totSum - diff < 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+
+        /* Call the helper function to count
+        the number of subsets with sum s2. */
+        return countPartitionsUtil(n - 1, s2, arr);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {5, 2, 6, 4};
+        int n = arr.length;
+        int diff = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the number of subsets found
+        System.out.println("The number of subsets found are " + sol.countPartitions(n, diff, arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Modulus value to avoid overflow in calculations.
+    mod = int(1e9 + 7)
+
+    def countPartitionsUtil(self, ind, target, arr):
+        # Base case: If we are at the first element.
+        if ind == 0:
+            """ If target is 0 and element is also 0, there
+            are 2 ways to achieve this (include or exclude)."""
+            if target == 0 and arr[0] == 0:
+                return 2
+            """ If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this."""
+            if target == 0 or target == arr[0]:
+                return 1
+            return 0
+        
+        # Calculate number of ways not including current element.
+        not_taken = self.countPartitionsUtil(ind - 1, target, arr)
+        
+        """ Calculate the number of ways including 
+        the current element (if it can be included)."""
+        taken = 0
+        if arr[ind] <= target:
+            taken = self.countPartitionsUtil(ind - 1, target - arr[ind], arr)
+        
+        # Return the result 
+        return (not_taken + taken) % self.mod
+
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        """If the total sum minus the difference is negative,
+        or if it is not even, it's not possible to divide
+        the array into two subsets with the given difference."""
+        if tot_sum - diff < 0 or (tot_sum - diff) % 2 == 1:
+            return 0
+        
+        # Calculate the target sum for one of the subsets.
+        s2 = (tot_sum - diff) // 2
+
+        """ Call the helper function to count 
+        the number of subsets with sum s2."""
+        return self.countPartitionsUtil(n - 1, s2, arr)
+
+arr = [5, 2, 6, 4]
+n = len(arr)
+diff = 3
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the number of subsets found
+print(f"The number of subsets found are {sol.countPartitions(n, diff, arr)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Modulus value to avoid overflow in calculations.
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Recursive function to count the number of subsets
+    with a given target sum. Uses memoization to store results
+    of subproblems to avoid redundant computations. */
+    countPartitionsUtil(ind, target, arr) {
+        // Base case: If we are at the first element.
+        if (ind === 0) {
+            /* If target is 0 and the element is also 0,
+            there are 2 ways to achieve this */
+            if (target === 0 && arr[0] === 0)
+                return 2;
+
+            /* If target is 0 or the element is equal 
+            to target, there is 1 way to achieve this.*/
+            if (target === 0 || target === arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Calculate number of ways not including current element.
+        const notTaken = this.countPartitionsUtil(ind - 1, target, arr);
+
+        /* Calculate the number of ways including the 
+        current element (if it can be included).*/
+        let taken = 0;
+        if (arr[ind] <= target)
+            taken = this.countPartitionsUtil(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return (notTaken + taken) % this.mod;
+    }
+
+    /* Function to count the number of subsets with a
+    given difference.Uses the helper function
+    'countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    countPartitions(n, diff, arr) {
+        let totSum = arr.reduce((sum, num) => sum + num, 0);
+
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it's not possible to divide
+        the array into two subsets with the given difference.*/
+        if (totSum - diff < 0 || (totSum - diff) % 2 === 1)
+            return 0;
+
+        // Calculate the target sum for one of the subsets.
+        let s2 = (totSum - diff) / 2;
+
+        // Call the helper function to count the number of subsets with sum s2.
+        return this.countPartitionsUtil(n - 1, s2, arr);
+    }
+}
+
+let arr = [5, 2, 6, 4];
+let n = arr.length;
+let diff = 3;
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Print the number of subsets found
+console.log(`The number of subsets found are ${sol.countPartitions(n, diff, arr)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Modulus value to avoid overflow in calculations.
+    private int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    private int CountPartitionsUtil(int ind, int target, int[] arr)
+    {
+        // Base case: If we are at the first element.
+        if (ind == 0)
+        {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude).*/
+            if (target == 0 && arr[0] == 0)
+                return 2;
+
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this */
+            if (target == 0 || target == arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        /* Calculate the number of ways not
+        including the current element. */
+        int notTaken = CountPartitionsUtil(ind - 1, target, arr);
+
+        /* Calculate the number of ways including the
+        current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = CountPartitionsUtil(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a
+    given difference. Uses the helper function 
+    `CountPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr)
+    {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < arr.Length; i++)
+        {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it's not possible to divide 
+        the array into two subsets with the given difference. */
+        if (totSum - diff < 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+
+        /* Call the helper function to count
+        the number of subsets with sum s2. */
+        return CountPartitionsUtil(n - 1, s2, arr);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = {5, 2, 6, 4};
+        int n = arr.Length;
+        int diff = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the number of subsets found
+        Console.WriteLine("The number of subsets found are " + sol.countPartitions(n, diff, arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Modulus value to avoid overflow in calculations.
+const mod = int(1e9 + 7)
+
+/* Recursive function to count the number of subsets
+   with a given target sum. */
+func countPartitionsUtil(ind int, target int, arr []int) int {
+	// Base case: If we are at the first element.
+	if ind == 0 {
+		/* If target is 0 and the element is also 0,there 
+		are 2 ways to achieve this (include or exclude).*/
+		if target == 0 && arr[0] == 0 {
+			return 2
+		}
+
+		/* If target is 0 or the element is equal to 
+		target, there is 1 way to achieve this */
+		if target == 0 || target == arr[0] {
+			return 1
+		}
+
+		return 0
+	}
+
+	/* Calculate the number of ways not
+	including the current element. */
+	notTaken := countPartitionsUtil(ind-1, target, arr)
+
+	/* Calculate the number of ways including the
+	current element (if it can be included). */
+	taken := 0
+	if arr[ind] <= target {
+		taken = countPartitionsUtil(ind-1, target-arr[ind], arr)
+	}
+
+	// Return the result 
+	return (notTaken + taken) % mod
+}
+
+/* Function to count number of subsets with a
+given difference. Uses the helper function 
+`countPartitionsUtil` to find the number of subsets
+with a specific target sum. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+
+	// Calculate the total sum of elements in the array.
+	for i := 0; i < len(arr); i++ {
+		totSum += arr[i]
+	}
+
+	/* If the total sum minus the difference is negative,
+	or if it is not even, it's not possible to divide 
+	the array into two subsets with the given difference. */
+	if totSum-diff < 0 {
+		return 0
+	}
+	if (totSum-diff)%2 == 1 {
+		return 0
+	}
+
+	// Calculate the target sum for one of the subsets.
+	s2 := (totSum - diff) / 2
+
+	/* Call the helper function to count
+	the number of subsets with sum s2. */
+	return countPartitionsUtil(n-1, s2, arr)
+}
+
+func main() {
+	arr := []int{5, 2, 6, 4}
+	n := len(arr)
+	diff := 3
+
+	// Print the number of subsets found
+	fmt.Printf("The number of subsets found are %d\n", countPartitions(n, diff, arr))
+}
+
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(2<sup>N</sup>), As there are 2 choices for each index.<br><br>
+<strong>Space Complexity:</strong>O(N), As we are using recursion stack of depth N.</div>
+<div class="section"><h2>Editorial: Memoization</h2>
+<p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-kbGM36Ra"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][k+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'k'. The maximum value 'ind' can attain is (n-1){0 to n-1}, where n is the size of array and for 'k'  only values from 0 to k is possible. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+public:
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, vector<int>& arr, vector<vector<int>> &dp) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0,there 
+            are 2 ways to achieve this (include or exclude).*/
+            if (target == 0 && arr[0] == 0)
+                return 2;
+                
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this*/
+            if (target == 0 || target == arr[0])
+                return 1;
+                
+            return 0; 
+        }
+        
+        // Return the result if it has already been computed.
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+        
+        /* Calculate the number of ways not
+        including the current element.*/
+        int notTaken = countPartitionsUtil(ind - 1, target, arr, dp);
+        
+        /* Calculate the number of ways including the
+        current element (if it can be included).*/
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+        
+        /* Store and return the result 
+        for the current subproblem.*/
+        return dp[ind][target] = (notTaken + taken) % mod;
+    }
+
+public:
+    /* Function to count number of subsets with a
+    given difference.Uses the helper function 
+    `countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    int countPartitions(int n, int diff, vector<int>& arr) {
+        int totSum = 0;
+        
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < arr.size(); i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it's not possible to divide 
+        the array into two subsets with the given difference.*/
+        if (totSum - diff < 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+        
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+        
+        // Initialize the DP table with -1 for memoization.
+        vector<vector<int>> dp(n, vector<int>(s2 + 1, -1));
+        
+        /* Call the helper function to count
+        the number of subsets with sum s2.*/
+        return countPartitionsUtil(n - 1, s2, arr, dp);
+    }
+};
+
+int main() {
+    vector<int> arr = {5, 2, 6, 4};
+    int n = arr.size();
+    int diff = 3;
+  
+    // Create an instance of Solution class
+    Solution sol;
+                                 
+    // Print the number of subsets found
+    cout << "The number of subsets found are " << sol.countPartitions(n, diff, arr) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, int[] arr, int[][] dp) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude). */
+            if (target == 0 && arr[0] == 0)
+                return 2;
+
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this. */
+            if (target == 0 || target == arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Return the result if it has already been computed.
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Calculate number of ways not including current element.
+        int notTaken = countPartitionsUtil(ind - 1, target, arr, dp);
+
+        /* Calculate the number of ways including the
+        current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+
+        // Store and return the result for current subproblem.
+        return dp[ind][target] = (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a given
+    difference.Uses the helper function `countPartitionsUtil`
+    to find the number of subsets with a specific target sum. */
+    int countPartitions(int n, int diff, int[] arr) {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < arr.length; i++) {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative,
+           or if it is not even, it's not possible to divide 
+           the array into two subsets with the given difference. */
+        if (totSum - diff < 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+
+        // Initialize the DP table with -1 for memoization.
+        int[][] dp = new int[n][s2 + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        /* Call the helper function to count
+        the number of subsets with sum s2. */
+        return countPartitionsUtil(n - 1, s2, arr, dp);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {5, 2, 6, 4};
+        int n = arr.length;
+        int diff = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the number of subsets found
+        System.out.println("The number of subsets found are " + sol.countPartitions(n, diff, arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Modulus value to avoid overflow in calculations.
+    mod = int(1e9 + 7)
+
+    def countPartitionsUtil(self, ind, target, arr, dp):
+        # Base case: If we are at the first element.
+        if ind == 0:
+            """ If target is 0 and element is also 0, there
+            are 2 ways to achieve this (include or exclude)."""
+            if target == 0 and arr[0] == 0:
+                return 2
+            """ If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this."""
+            if target == 0 or target == arr[0]:
+                return 1
+            return 0
+        
+        # Return the result if it has already been computed.
+        if dp[ind][target] != -1:
+            return dp[ind][target]
+        
+        # Calculate number of ways not including current element.
+        not_taken = self.countPartitionsUtil(ind - 1, target, arr, dp)
+        
+        """ Calculate the number of ways including 
+        the current element (if it can be included)."""
+        taken = 0
+        if arr[ind] <= target:
+            taken = self.countPartitionsUtil(ind - 1, target - arr[ind], arr, dp)
+        
+        # Store and return the result for the current subproblem.
+        dp[ind][target] = (not_taken + taken) % self.mod
+        return dp[ind][target]
+
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        """If the total sum minus the difference is negative,
+        or if it is not even, it's not possible to divide
+        the array into two subsets with the given difference."""
+        if tot_sum - diff < 0 or (tot_sum - diff) % 2 == 1:
+            return 0
+        
+        # Calculate the target sum for one of the subsets.
+        s2 = (tot_sum - diff) // 2
+        
+        # Initialize the DP table with -1 for memoization.
+        dp = [[-1 for _ in range(s2 + 1)] for _ in range(n)]
+        
+        """ Call the helper function to count 
+        the number of subsets with sum s2."""
+        return self.countPartitionsUtil(n - 1, s2, arr, dp)
+
+arr = [5, 2, 6, 4]
+n = len(arr)
+diff = 3
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the number of subsets found
+print(f"The number of subsets found are {sol.countPartitions(n, diff, arr)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Modulus value to avoid overflow in calculations.
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Recursive function to count the number of subsets
+    with a given target sum. Uses memoization to store results
+    of subproblems to avoid redundant computations. */
+    countPartitionsUtil(ind, target, arr, dp) {
+        // Base case: If we are at the first element.
+        if (ind === 0) {
+            /* If target is 0 and the element is also 0,
+            there are 2 ways to achieve this */
+            if (target === 0 && arr[0] === 0)
+                return 2;
+
+            /* If target is 0 or the element is equal 
+            to target, there is 1 way to achieve this.*/
+            if (target === 0 || target === arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Return the result if it has already been computed.
+        if (dp[ind][target] !== -1)
+            return dp[ind][target];
+
+        // Calculate the number of ways not including current element.
+        const notTaken = this.countPartitionsUtil(ind - 1, target, arr, dp);
+
+        /* Calculate the number of ways including the 
+        current element (if it can be included).*/
+        let taken = 0;
+        if (arr[ind] <= target)
+            taken = this.countPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+
+        // Store and return the result for current subproblem.
+        dp[ind][target] = (notTaken + taken) % this.mod;
+        return dp[ind][target];
+    }
+
+    /* Function to count the number of subsets with a
+    given difference.Uses the helper function
+    'countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    countPartitions(n, diff, arr) {
+        let totSum = arr.reduce((sum, num) => sum + num, 0);
+
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it's not possible to divide
+        the array into two subsets with the given difference.*/
+        if (totSum - diff < 0 || (totSum - diff) % 2 === 1)
+            return 0;
+
+        // Calculate the target sum for one of the subsets.
+        let s2 = (totSum - diff) / 2;
+
+        // Initialize the DP table with -1 for memoization.
+        let dp = Array.from({ length: n }, () => Array(s2 + 1).fill(-1));
+
+        // Call the helper function to count the number of subsets with sum s2.
+        return this.countPartitionsUtil(n - 1, s2, arr, dp);
+    }
+}
+
+let arr = [5, 2, 6, 4];
+let n = arr.length;
+let diff = 3;
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Print the number of subsets found
+console.log(`The number of subsets found are ${sol.countPartitions(n, diff, arr)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Modulus value to avoid overflow in calculations.
+    private int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    private int CountPartitionsUtil(int ind, int target, int[] arr, int[,] dp)
+    {
+        // Base case: If we are at the first element.
+        if (ind == 0)
+        {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude). */
+            if (target == 0 && arr[0] == 0)
+                return 2;
+                
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this */
+            if (target == 0 || target == arr[0])
+                return 1;
+                
+            return 0;
+        }
+        
+        // Return the result if it has already been computed.
+        if (dp[ind, target] != -1)
+            return dp[ind, target];
+        
+        /* Calculate the number of ways not including the current element. */
+        int notTaken = CountPartitionsUtil(ind - 1, target, arr, dp);
+        
+        /* Calculate the number of ways including the current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = CountPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+        
+        /* Store and return the result for the current subproblem. */
+        return dp[ind, target] = (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a given difference.
+       Uses the helper function `CountPartitionsUtil` to find the number of subsets
+       with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr)
+    {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < arr.Length; i++)
+        {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative,
+           or if it is not even, it's not possible to divide 
+           the array into two subsets with the given difference. */
+        if (totSum - diff < 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+        
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+        
+        // Initialize the DP table with -1 for memoization.
+        int[,] dp = new int[n, s2 + 1];
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j <= s2; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+        
+        /* Call the helper function to count
+           the number of subsets with sum s2. */
+        return CountPartitionsUtil(n - 1, s2, arr, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = {5, 2, 6, 4};
+        int n = arr.Length;
+        int diff = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the number of subsets found
+        Console.WriteLine("The number of subsets found are " + sol.countPartitions(n, diff, arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+var mod int = 1000000007
+
+/* Recursive function to count the number of subsets
+   with a given target sum. Uses memoization to store
+   results of subproblems to avoid redundant computations. */
+func countPartitionsUtil(ind int, target int, arr []int, dp [][]int) int {
+	// Base case: If we are at the first element.
+	if ind == 0 {
+		/* If target is 0 and the element is also 0,there
+		are 2 ways to achieve this (include or exclude). */
+		if target == 0 && arr[0] == 0 {
+			return 2
+		}
+
+		/* If target is 0 or the element is equal to
+		target, there is 1 way to achieve this */
+		if target == 0 || target == arr[0] {
+			return 1
+		}
+
+		return 0
+	}
+
+	// Return the result if it has already been computed.
+	if dp[ind][target] != -1 {
+		return dp[ind][target]
+	}
+
+	/* Calculate the number of ways not
+	including the current element. */
+	notTaken := countPartitionsUtil(ind-1, target, arr, dp)
+
+	/* Calculate the number of ways including the
+	current element (if it can be included). */
+	taken := 0
+	if arr[ind] <= target {
+		taken = countPartitionsUtil(ind-1, target-arr[ind], arr, dp)
+	}
+
+	/* Store and return the result
+	for the current subproblem. */
+	dp[ind][target] = (notTaken + taken) % mod
+	return dp[ind][target]
+}
+
+/* Function to count number of subsets with a
+given difference. Uses the helper function
+`countPartitionsUtil` to find the number of
+subsets with a specific target sum. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+
+	// Calculate the total sum of elements in the array.
+	for _, val := range arr {
+		totSum += val
+	}
+
+	/* If the total sum minus the difference is negative,
+	or if it is not even, it's not possible to divide
+	the array into two subsets with the given difference. */
+	if totSum-diff < 0 {
+		return 0
+	}
+	if (totSum-diff)%2 == 1 {
+		return 0
+	}
+
+	// Calculate the target sum for one of the subsets.
+	s2 := (totSum - diff) / 2
+
+	// Initialize the DP table with -1 for memoization.
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, s2+1)
+		for j := 0; j <= s2; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	/* Call the helper function to count
+	the number of subsets with sum s2. */
+	return countPartitionsUtil(n-1, s2, arr, dp)
+}
+
+func main() {
+	arr := []int{5, 2, 6, 4}
+	n := len(arr)
+	diff := 3
+
+	// Print the number of subsets found
+	fmt.Println("The number of subsets found are", countPartitions(n, diff, arr))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*K), There are 'N*K' states therefore at max ‘N*K’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*K) + O(N), As we are using a recursion stack space(O(N)) and a 2D array ( O(N*K)).</div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li><b>Declare a dp array of size [n][k+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'k'. The maximum value 'ind' can attain is (n-1){0 to n-1}, where n is the size of array and for 'k'  only values from 0 to k is possible. Therefore, we need 2D dp array.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-zVf6tNAg"><br>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when target == 0.  If target == 0, 'ind' can take any value from 0 to n-1, therefore we need to set the value of the first column as 1.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-TPlk7blE"><br>
+
+<p>The first row dp[0][] indicates that only the first element of the array is considered, therefore for the target value equal to arr[0], only cell with that target will be true, so explicitly set dp[0][arr[0]] =1, (dp[0][arr[0]] means that we are considering the first element of the array with the target equal to the first element itself). Please note that it can happen that arr[0]>target, so we first check it: if(arr[0]<=target) then set dp[0][arr[0]] = 1</p>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count partitions with given difference/-MHo234Kf"><br>
+
+<li><b>Iterative Computation Using Loops: </b>Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.</li>
+
+<li><b>Returning the answer: </b>At last dp[n-1][k] will hold the solution after the completion of whole process, as we are doing the calculations in bottom-up manner.</li></ol><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+private:
+    /* Function to calculate the number of ways to
+    achieve a target sum with the given numbers.*/
+    int findWays(vector<int> &num, int tar) {
+        int n = num.size();
+        /* DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.*/
+        vector<vector<int>> dp(n, vector<int>(tar + 1, 0));
+    
+        /* If the first element is 0, we have 2 
+        ways to achieve sum 0: by either including
+        or excluding the element.*/
+        if (num[0] == 0) dp[0][0] = 2;  
+        else dp[0][0] = 1;  
+    
+        /* If the first element is not 0 and is less
+        than or equal to target, we have 1 way to 
+        achieve the sum equal to that element.*/
+        if (num[0] != 0 && num[0] <= tar) dp[0][num[0]] = 1;  
+    
+        // Fill the DP table for the rest of the elements.
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 0; target <= tar; target++) {
+                
+                /* Number of ways to achieve target sum 
+                without using the current element.*/
+                int notTaken = dp[ind - 1][target];
+    
+                /* Number of ways to achieve target
+                sum using the current element.*/
+                int taken = 0;
+                if (num[ind] <= target)
+                    taken = dp[ind - 1][target - num[ind]];
+        
+                /* Total ways to achieve target sum with
+                or without including the current element.*/
+                dp[ind][target] = (notTaken + taken) % mod;
+            }
+        }
+        /* Return the number of ways to achieve
+        the target sum using all elements.*/
+        return dp[n - 1][tar];
+    }
+
+public:
+    /* Function to count the number of
+    subsets with a given difference.*/
+    int countPartitions(int n, int diff, vector<int>& arr) {
+        int totSum = 0;
+        
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+    
+        /* If the difference is more than the total sum or
+        if the difference is not even (as (totalSum - diff)
+        must be even to divide into two subsets), return 0.*/
+        if (totSum - diff < 0 || (totSum - diff) % 2) return 0;
+    
+        /* Call the helper function to find the number 
+        of subsets with sum (totSum - diff) / 2.*/
+        return findWays(arr, (totSum - diff) / 2);
+    }
+};
+
+int main() {
+    vector<int> arr = {5, 2, 6, 4};
+    int n = arr.size();
+    int diff = 3;
+  
+    // Create an instance of Solution class
+    Solution sol;
+                                 
+    // Print the number of subsets found
+    cout << "The number of subsets found are " << sol.countPartitions(n, diff, arr) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    private static final int MOD = (int)1e9 + 7;
+
+    /* Function to calculate the number of ways to
+    achieve a target sum with the given numbers.*/
+    private int findWays(int[] num, int tar) {
+        int n = num.length;
+        /* DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.*/
+        int[][] dp = new int[n][tar + 1];
+    
+        /* If the first element is 0, we have 2 
+        ways to achieve sum 0: by either including
+        or excluding the element.*/
+        if (num[0] == 0) dp[0][0] = 2;  
+        else dp[0][0] = 1;  
+    
+        /* If the first element is not 0 and is less
+        than or equal to target, we have 1 way to 
+        achieve the sum equal to that element.*/
+        if (num[0] != 0 && num[0] <= tar) dp[0][num[0]] = 1;  
+    
+        // Fill the DP table for the rest of the elements.
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 0; target <= tar; target++) {
+                
+                /* Number of ways to achieve target sum 
+                without using the current element.*/
+                int notTaken = dp[ind - 1][target];
+    
+                /* Number of ways to achieve target
+                sum using the current element.*/
+                int taken = 0;
+                if (num[ind] <= target)
+                    taken = dp[ind - 1][target - num[ind]];
+        
+                /* Total ways to achieve target sum with
+                or without including the current element.*/
+                dp[ind][target] = (notTaken + taken) % MOD;
+            }
+        }
+        /* Return the number of ways to achieve
+        the target sum using all elements.*/
+        return dp[n - 1][tar];
+    }
+
+    /* Function to count the number of
+    subsets with a given difference.*/
+    public int countPartitions(int n, int diff, int[] arr) {
+        int totSum = 0;
+        
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+    
+        /* If the difference is more than the total sum or
+        if the difference is not even (as (totalSum - diff)
+        must be even to divide into two subsets), return 0.*/
+        if (totSum - diff < 0 || (totSum - diff) % 2 != 0) return 0;
+    
+        /* Call the helper function to find the number 
+        of subsets with sum (totSum - diff) / 2.*/
+        return findWays(arr, (totSum - diff) / 2);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {5, 2, 6, 4};
+        int n = arr.length;
+        int diff = 3;
+  
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+                                 
+        // Print the number of subsets found
+        System.out.println("The number of subsets found are " + sol.countPartitions(n, diff, arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="python" class="language-python">MOD = int(1e9 + 7)
+
+class Solution:
+    """ Function to calculate the number of ways to
+    achieve a target sum with the given numbers."""
+    def findWays(self, num, tar):
+        n = len(num)
+        """ DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements."""
+        dp = [[0] * (tar + 1) for _ in range(n)]
+    
+        """ If the first element is 0, we have 2
+        ways to achieve sum 0: by either including 
+        or excluding the element."""
+        if num[0] == 0:
+            dp[0][0] = 2
+        else:
+            dp[0][0] = 1
+    
+        """ If the first element is not 0 and is less
+        than or equal to target, we have 1 way to 
+        achieve the sum equal to that element."""
+        if num[0] != 0 and num[0] <= tar:
+            dp[0][num[0]] = 1
+    
+        # Fill the DP table for the rest of the elements.
+        for ind in range(1, n):
+            for target in range(tar + 1):
+                """ Number of ways to achieve target sum
+                without using the current element."""
+                not_taken = dp[ind - 1][target]
+                
+                """ Number of ways to achieve target 
+                sum using the current element."""
+                taken = 0
+                if num[ind] <= target:
+                    taken = dp[ind - 1][target - num[ind]]
+                
+                """ Total ways to achieve target sum with
+                or without including the current element."""
+                dp[ind][target] = (not_taken + taken) % MOD
+        
+        """ Return the number of ways to achieve
+        the target sum using all elements."""
+        return dp[n - 1][tar]
+
+    """ Function to count the number of
+    subsets with a given difference."""
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        """ If the difference is more than the total sum
+        or if the difference is not even, return 0."""
+        if tot_sum - diff < 0 or (tot_sum - diff) % 2 != 0:
+            return 0
+        
+        """ Call the helper function to find the number
+        of subsets with sum (tot_sum - diff) / 2."""
+        return self.findWays(arr, (tot_sum - diff) // 2)
+
+if __name__ == "__main__":
+    arr = [5, 2, 6, 4]
+    n = len(arr)
+    diff = 3
+  
+    # Create an instance of Solution class
+    sol = Solution()
+                                 
+    # Print the number of subsets found
+    print("The number of subsets found are", sol.countPartitions(n, diff, arr))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">const MOD = 1e9 + 7;
+
+class Solution {
+    /* Function to calculate the number of ways to
+    achieve a target sum with the given numbers.*/
+    findWays(num, tar) {
+        const n = num.length;
+        
+        /* DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.*/
+        const dp = Array.from({ length: n }, () => Array(tar + 1).fill(0));
+    
+        /* If the first element is 0, we have 2 
+        ways to achieve sum 0: by either including
+        or excluding the element.*/
+        if (num[0] === 0) dp[0][0] = 2;
+        else dp[0][0] = 1;
+    
+        /* If the first element is not 0 and is less
+        than or equal to target, we have 1 way to
+        achieve the sum equal to that element.*/
+        if (num[0] !== 0 && num[0] <= tar) dp[0][num[0]] = 1;
+    
+        // Fill the DP table for the rest of the elements.
+        for (let ind = 1; ind < n; ind++) {
+            for (let target = 0; target <= tar; target++) {
+                /* Number of ways to achieve target 
+                sum without using the current element.*/
+                const notTaken = dp[ind - 1][target];
+                
+                /* Number of ways to achieve target
+                sum using the current element.*/
+                let taken = 0;
+                if (num[ind] <= target)
+                    taken = dp[ind - 1][target - num[ind]];
+                
+                /* Total ways to achieve target sum with 
+                or without including the current element.*/
+                dp[ind][target] = (notTaken + taken) % MOD;
+            }
+        }
+        /* Return the number of ways to achieve
+        the target sum using all elements.*/
+        return dp[n - 1][tar];
+    }
+
+    /* Function to count the number of
+    subsets with a given difference.*/
+    countPartitions(n, diff, arr) {
+        const totSum = arr.reduce((a, b) => a + b, 0);
+        
+        /* If the difference is more than the total
+        sum or if the difference is not even, return 0.*/
+        if (totSum - diff < 0 || (totSum - diff) % 2 !== 0)
+            return 0;
+        
+        /* Call the helper function to find the number
+        of subsets with sum (totSum - diff) / 2.*/
+        return this.findWays(arr, (totSum - diff) / 2);
+    }
+}
+
+const arr = [5, 2, 6, 4];
+const n = arr.length;
+const diff = 3;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the number of subsets found
+console.log("The number of subsets found are", sol.countPartitions(n, diff, arr));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Linq;
+
+public class Solution
+{
+    /* Function to calculate the number of ways to
+    achieve a target sum with the given numbers.*/
+    private const long MOD = 1_000_000_007L;
+
+    private long findWays(int[] num, int tar)
+    {
+        int n = num.Length;
+        
+        /* DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.*/
+        long[,] dp = new long[n, tar + 1];
+    
+        /* If the first element is 0, we have 2 
+        ways to achieve sum 0: by either including
+        or excluding the element.*/
+        if (num[0] == 0) 
+            dp[0, 0] = 2;
+        else 
+            dp[0, 0] = 1;
+    
+        /* If the first element is not 0 and is less
+        than or equal to target, we have 1 way to
+        achieve the sum equal to that element.*/
+        if (num[0] != 0 && num[0] <= tar) 
+            dp[0, num[0]] = 1;
+    
+        // Fill the DP table for the rest of the elements.
+        for (int ind = 1; ind < n; ind++)
+        {
+            for (int target = 0; target <= tar; target++)
+            {
+                /* Number of ways to achieve target 
+                sum without using the current element.*/
+                long notTaken = dp[ind - 1, target];
+                
+                /* Number of ways to achieve target
+                sum using the current element.*/
+                long taken = 0;
+                if (num[ind] <= target)
+                    taken = dp[ind - 1, target - num[ind]];
+                
+                /* Total ways to achieve target sum with 
+                or without including the current element.*/
+                dp[ind, target] = (notTaken + taken) % MOD;
+            }
+        }
+        /* Return the number of ways to achieve
+        the target sum using all elements.*/
+        return dp[n - 1, tar];
+    }
+
+    /* Function to count the number of
+    subsets with a given difference.*/
+    public int countPartitions(int n, int diff, int[] arr)
+    {
+        long totSum = arr.Sum();
+        
+        /* If the difference is more than the total
+        sum or if the difference is not even, return 0.*/
+        if ((totSum - diff) < 0 || (totSum - diff) % 2 != 0)
+            return 0;
+        
+        /* Call the helper function to find the number
+        of subsets with sum (totSum - diff) / 2.*/
+        int targetSum = (int)((totSum - diff) / 2);
+        return (int)this.findWays(arr, targetSum);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = { 5, 2, 6, 4 };
+        int n = arr.Length;
+        int diff = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the number of subsets found
+        Console.WriteLine("The number of subsets found are " + sol.countPartitions(n, diff, arr));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+var mod int = 1000000007
+
+/* Function to calculate the number of ways to
+achieve a target sum with the given numbers. */
+func findWays(num []int, tar int) int {
+	n := len(num)
+
+	/* DP table where dp[i][j] represents the number
+	of ways to get sum j using the first i elements. */
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, tar+1)
+	}
+
+	/* If the first element is 0, we have 2
+	ways to achieve sum 0: by either including
+	or excluding the element. */
+	if num[0] == 0 {
+		dp[0][0] = 2
+	} else {
+		dp[0][0] = 1
+	}
+
+	/* If the first element is not 0 and is less
+	than or equal to target, we have 1 way to
+	achieve the sum equal to that element. */
+	if num[0] != 0 && num[0] <= tar {
+		dp[0][num[0]] = 1
+	}
+
+	// Fill the DP table for the rest of the elements.
+	for ind := 1; ind < n; ind++ {
+		for target := 0; target <= tar; target++ {
+			/* Number of ways to achieve target sum
+			without using the current element. */
+			notTaken := dp[ind-1][target]
+
+			/* Number of ways to achieve target
+			sum using the current element. */
+			taken := 0
+			if num[ind] <= target {
+				taken = dp[ind-1][target-num[ind]]
+			}
+
+			/* Total ways to achieve target sum with
+			or without including the current element. */
+			dp[ind][target] = (notTaken + taken) % mod
+		}
+	}
+
+	/* Return the number of ways to achieve
+	the target sum using all elements. */
+	return dp[n-1][tar]
+}
+
+/* Function to count the number of
+subsets with a given difference. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+
+	// Calculate the total sum of elements in the array.
+	for i := 0; i < n; i++ {
+		totSum += arr[i]
+	}
+
+	/* If the difference is more than the total sum or
+	if the difference is not even, return 0. */
+	if totSum-diff < 0 || (totSum-diff)%2 != 0 {
+		return 0
+	}
+
+	/* Call the helper function to find the number
+	of subsets with sum (totSum - diff) / 2. */
+	return findWays(arr, (totSum-diff)/2)
+}
+
+func main() {
+	arr := []int{5, 2, 6, 4}
+	n := len(arr)
+	diff := 3
+
+	// Print the number of subsets found
+	fmt.Println("The number of subsets found are", countPartitions(n, diff, arr))
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*K),  As, here are three nested loops that account for O(N*K) complexity.<br><br>
+<strong>Space Complexity:</strong>O(N*K),  As a 2D array  of size N*K  is used.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2>
+<p>If we observe the relation, dp[ind][target] =  dp[ind-1][target] + dp[ind-1][target-arr[ind]]. We find that to calculate a value of a cell of the dp array, we need only the previous row values (say prev). So, we don’t need to store an entire array. Hence we can space optimize it.</p>
+
+
+<h5><strong>Steps to space optimize the tabulation approach: </strong></h5>
+<ol>
+ <li>Decalre an array of size target to store the previous row of the DP table. Initialize the first row and first column of the DP table based on the base conditions discussed in tabulation.
+<li>Now, initiate two nested loops in bottom-up approach. The first loop will run for 'ind' and the second loop will run for the 'target' variable.</li>
+<li>In order to store the current row of the DP table, initialize  a new array 'cur' and fill the first cell to 1 for base condition.
+<li> Do the calculations for 'cur' row by performing the pick/non-pick technique used in previous approaches.
+<li>Now, update the previous row with the current row for the next iteration and at last return the final result stored in the last cell of the previous row(prev[k]).</ol>
+<br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+private:
+    /* Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table. */
+    int findWays(vector<int> &num, int tar) {
+        int n = num.size();
+        
+        /* DP table to store number of ways
+        to achieve a certain target sum.*/
+        vector<int> prev(tar + 1, 0);
+        
+        /* 2 cases for target 0 when the first 
+        element is 0: either pick it or not.*/
+        if (num[0] == 0) prev[0] = 2;  
+        /* 1 case for target 0 when the first
+        element is non-zero: just don't pick it.*/
+        else prev[0] = 1;  
+
+        /* Initialize the base case for the
+        first element and non-zero target.*/
+        if (num[0] != 0 && num[0] <= tar) prev[num[0]] = 1;  
+
+        /* Iterate through all elements of the 
+        array starting from the second element.*/
+        for (int ind = 1; ind < n; ind++) {
+            
+            vector<int> cur(tar + 1, 0); 
+            for (int target = 0; target <= tar; target++) {
+                /* Number of ways to achieve the target 
+                sum without including the current element.*/
+                int notTaken = prev[target];
+                
+                /* Number of ways to achieve the target sum 
+                by including the current element.*/
+                int taken = 0;
+                if (num[ind] <= target)
+                    taken = prev[target - num[ind]];
+                
+                /* Total ways to achieve the target sum either
+                including or excluding the current element.*/
+                cur[target] = (notTaken + taken) % mod;
+            }
+            /* Update the previous state to the current
+            state for the next iteration.*/
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+public:
+    /* Function to count the number of subsets with a 
+    given difference.Uses the helper function findWays
+    to find number of subsets with a specific target sum. */
+    int countPartitions(int n, int diff, vector<int>& arr) {
+        int totSum = 0;
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative
+        or odd, it's not possible to partition the array
+        into subsets with the given difference.*/
+        if (totSum - diff < 0 || (totSum - diff) % 2) return 0;
+        
+        // Calculate the target sum for one subset.
+        return findWays(arr, (totSum - diff) / 2);
+    }
+};
+
+int main() {
+    vector<int> arr = {5, 2, 6, 4};  
+    int n = arr.size();  
+    int diff = 3;  
+  
+    // Create an instance of the Solution class
+    Solution sol;
+                                 
+    // Print the number of subsets 
+    cout << "The number of subsets found are " << sol.countPartitions(n, diff, arr) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Modulus value to avoid overflow in calculations.
+    private static final int MOD = (int) 1e9 + 7;
+
+    /* Function to calculate the number of subsets
+    with a specific target sum. Uses space optimization
+    to store only the previous state in the DP table. */
+    private int findWays(int[] num, int tar) {
+        int n = num.length;
+        
+        /* DP table to store number of ways
+           to achieve a certain target sum. */
+        int[] prev = new int[tar + 1];
+        
+        /* 2 cases for target 0 when the first 
+           element is 0: either pick it or not. */
+        if (num[0] == 0) prev[0] = 2;  
+        /* 1 case for target 0 when the first
+           element is non-zero: just don't pick it. */
+        else prev[0] = 1;  
+
+        /* Initialize the base case for the
+           first element and non-zero target. */
+        if (num[0] != 0 && num[0] <= tar) prev[num[0]] = 1;  
+
+        /* Iterate through all elements of the
+           array starting from the second element. */
+        for (int ind = 1; ind < n; ind++) {
+            int[] cur = new int[tar + 1]; 
+            for (int target = 0; target <= tar; target++) {
+                /* Number of ways to achieve the target 
+                   sum without including the current element. */
+                int notTaken = prev[target];
+                
+                /* Number of ways to achieve the target sum 
+                   by including the current element. */
+                int taken = 0;
+                if (num[ind] <= target)
+                    taken = prev[target - num[ind]];
+                
+                /* Total ways to achieve the target sum either
+                   including or excluding the current element. */
+                cur[target] = (notTaken + taken) % MOD;
+            }
+            /* Update the previous state to the current
+               state for the next iteration. */
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+    /* Function to count the number of subsets with a 
+       given difference. Uses the helper function findWays
+       to find number of subsets with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr) {
+        int totSum = 0;
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative
+           or odd, it's not possible to partition the array
+           into subsets with the given difference. */
+        if (totSum - diff < 0 || (totSum - diff) % 2 != 0) return 0;
+        
+        // Calculate the target sum for one subset.
+        return findWays(arr, (totSum - diff) / 2);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {5, 2, 6, 4};
+        int n = arr.length;
+        int diff = 3;
+        
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+        
+        // Print the number of subsets 
+        System.out.println("The number of subsets found are " + sol.countPartitions(n, diff, arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Modulus value to avoid overflow in calculations.
+    mod = int(1e9 + 7)
+    
+    """Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table."""
+    def findWays(self, num, tar):
+        n = len(num)
+        
+        """ DP table to store number of ways
+        to achieve a certain target sum."""
+        prev = [0] * (tar + 1)
+        
+        """ 2 cases for target 0 when the first
+        element is 0: either pick it or not."""
+        if num[0] == 0:
+            prev[0] = 2
+
+        else:
+            prev[0] = 1
+        
+        """ Initialize the base case for the
+        first element and non-zero target."""
+        if num[0] != 0 and num[0] <= tar:
+            prev[num[0]] = 1
+        
+        """ Iterate through all elements of the 
+        array starting from the second element."""
+        for ind in range(1, n):
+            cur = [0] * (tar + 1)
+            for target in range(tar + 1):
+                """ Number of ways to achieve the target
+                sum without including the current element."""
+                not_taken = prev[target]
+                
+                """ Number of ways to achieve the target sum
+                by including the current element."""
+                taken = 0
+                if num[ind] <= target:
+                    taken = prev[target - num[ind]]
+                
+                """ Total ways to achieve the target sum either 
+                including or excluding the current element."""
+                cur[target] = (not_taken + taken) % Solution.mod
+            
+            """ Update the previous state to the 
+            current state for the next iteration."""
+            prev = cur
+        
+        # Return the number of subsets
+        return prev[tar]
+
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        # Checking for edge cases
+        if tot_sum - diff < 0 or (tot_sum - diff) % 2:
+            return 0
+        
+        # Calculate the target sum for one subset.
+        return self.findWays(arr, (tot_sum - diff) // 2)
+
+if __name__ == "__main__":
+    arr = [5, 2, 6, 4]
+    n = len(arr)
+    diff = 3
+    
+    # Create an instance of the Solution class
+    sol = Solution()
+    
+    # Print the number of subsets
+    print("The number of subsets found are", sol.countPartitions(n, diff, arr))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Modulus value to avoid overflow in calculations.
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table. */
+    findWays(num, tar) {
+        const n = num.length;
+        
+        /* DP table to store number of ways
+        to achieve a certain target sum.*/
+        let prev = new Array(tar + 1).fill(0);
+        
+        /* 2 cases for target 0 when the first 
+        element is 0: either pick it or not.*/
+        if (num[0] === 0) prev[0] = 2;
+        
+        else prev[0] = 1;
+        
+        /* Initialize the base case for 
+        the first element and non-zero target.*/
+        if (num[0] !== 0 && num[0] <= tar) prev[num[0]] = 1;
+        
+        /* Iterate through all elements of the 
+        array starting from the second element.*/
+        for (let ind = 1; ind < n; ind++) {
+            let cur = new Array(tar + 1).fill(0);
+            for (let target = 0; target <= tar; target++) {
+                /* Number of ways to achieve the target
+                sum without including the current element.*/
+                let notTaken = prev[target];
+                
+                /* Number of ways to achieve the target 
+                sum by including the current element.*/
+                let taken = 0;
+                if (num[ind] <= target)
+                    taken = prev[target - num[ind]];
+                
+                /* Total ways to achieve the target sum either 
+                including or excluding the current element.*/
+                cur[target] = (notTaken + taken) % this.mod;
+            }
+            /* Update the previous state to the 
+            current state for the next iteration.*/
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+    /* Function to count the number of subsets with a 
+       given difference. Uses the helper function findWays
+       to find number of subsets with a specific target sum. */
+    countPartitions(n, diff, arr) {
+        const totSum = arr.reduce((sum, num) => sum + num, 0);
+        
+        // Checking for edge cases
+        if (totSum - diff < 0 || (totSum - diff) % 2 !== 0) return 0;
+        
+        // Calculate the target sum for one subset.
+        return this.findWays(arr, (totSum - diff) / 2);
+    }
+}
+const arr = [5, 2, 6, 4];
+const n = arr.length;
+const diff = 3;
+
+// Create an instance of the Solution class
+const sol = new Solution();
+
+// Print the number of subsets
+console.log("The number of subsets found are", sol.countPartitions(n, diff, arr));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Modulus value to avoid overflow in calculations.
+    private readonly int mod = (int)1e9 + 7;
+
+    /* Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table. */
+    private int findWays(int[] num, int tar)
+    {
+        int n = num.Length;
+
+        /* DP table to store number of ways
+           to achieve a certain target sum. */
+        int[] prev = new int[tar + 1];
+
+        /* 2 cases for target 0 when the first 
+           element is 0: either pick it or not. */
+        if (num[0] == 0) prev[0] = 2;
+        /* 1 case for target 0 when the first
+           element is non-zero: just don't pick it.*/
+        else prev[0] = 1;
+
+        /* Initialize the base case for the
+           first element and non-zero target. */
+        if (num[0] != 0 && num[0] <= tar) prev[num[0]] = 1;
+
+        /* Iterate through all elements of the 
+           array starting from the second element.*/
+        for (int ind = 1; ind < n; ind++)
+        {
+            int[] cur = new int[tar + 1];
+            for (int target = 0; target <= tar; target++)
+            {
+                /* Number of ways to achieve the target 
+                   sum without including the current element.*/
+                int notTaken = prev[target];
+
+                /* Number of ways to achieve the target sum 
+                   by including the current element.*/
+                int taken = 0;
+                if (num[ind] <= target)
+                    taken = prev[target - num[ind]];
+
+                /* Total ways to achieve the target sum either
+                   including or excluding the current element.*/
+                cur[target] = (notTaken + taken) % mod;
+            }
+            /* Update the previous state to the current
+               state for the next iteration.*/
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+    /* Function to count the number of subsets with a 
+       given difference. Uses the helper function findWays
+       to find number of subsets with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr)
+    {
+        int totSum = 0;
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i < n; i++)
+        {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative
+           or odd, it's not possible to partition the array
+           into subsets with the given difference.*/
+        if (totSum - diff < 0 || ((totSum - diff) % 2) != 0)
+            return 0;
+
+        // Calculate the target sum for one subset.
+        int target = (totSum - diff) / 2;
+        return findWays(arr, target);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] arr = { 5, 2, 6, 4 };
+        int n = arr.Length;
+        int diff = 3;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Print the number of subsets 
+        Console.WriteLine("The number of subsets found are " 
+            + sol.countPartitions(n, diff, arr));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+var mod int = 1000000007
+
+/* Function to calculate the number of subsets
+   with a specific target sum. Uses space optimization
+   to store only the previous state in the DP table. */
+func findWays(num []int, tar int) int {
+	n := len(num)
+
+	/* DP table to store number of ways
+	to achieve a certain target sum. */
+	prev := make([]int, tar+1)
+
+	/* 2 cases for target 0 when the first
+	element is 0: either pick it or not. */
+	if num[0] == 0 {
+		prev[0] = 2
+	} else { // 1 case for target 0 when first element is non-zero
+		prev[0] = 1
+	}
+
+	/* Initialize the base case for the
+	first element and non-zero target. */
+	if num[0] != 0 && num[0] <= tar {
+		prev[num[0]] = 1
+	}
+
+	/* Iterate through all elements of the
+	array starting from the second element. */
+	for ind := 1; ind < n; ind++ {
+		cur := make([]int, tar+1)
+		for target := 0; target <= tar; target++ {
+			/* Number of ways to achieve the target
+			sum without including the current element. */
+			notTaken := prev[target]
+
+			/* Number of ways to achieve the target sum
+			by including the current element. */
+			taken := 0
+			if num[ind] <= target {
+				taken = prev[target-num[ind]]
+			}
+
+			/* Total ways to achieve the target sum either
+			including or excluding the current element. */
+			cur[target] = (notTaken + taken) % mod
+		}
+		/* Update the previous state to the current
+		state for the next iteration. */
+		prev = cur
+	}
+
+	// Return the number of subsets
+	return prev[tar]
+}
+
+/* Function to count the number of subsets with a
+given difference. Uses the helper function findWays
+to find number of subsets with a specific target sum. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+	// Calculate the total sum of elements in the array.
+	for i := 0; i < n; i++ {
+		totSum += arr[i]
+	}
+
+	/* If the total sum minus the difference is negative
+	or odd, it's not possible to partition the array
+	into subsets with the given difference. */
+	if totSum-diff < 0 || (totSum-diff)%2 != 0 {
+		return 0
+	}
+
+	// Calculate the target sum for one subset.
+	return findWays(arr, (totSum-diff)/2)
+}
+
+func main() {
+	arr := []int{5, 2, 6, 4}
+	n := len(arr)
+	diff := 3
+
+	// Print the number of subsets
+	fmt.Println("The number of subsets found are", countPartitions(n, diff, arr))
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*K),  As, here are three nested loops that account for O(N*K) complexity.<br><br>
+<strong>Space Complexity:</strong>O(K),  As we are using an external array of size ‘K+1’ to store only one row.</div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+public:
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, vector&lt;int&gt;&amp; arr) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0,there 
+            are 2 ways to achieve this (include or exclude).*/
+            if (target == 0 &amp;&amp; arr[0] == 0)
+                return 2;
+                
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this*/
+            if (target == 0 || target == arr[0])
+                return 1;
+                
+            return 0; 
+        }
+        
+        /* Calculate the number of ways not
+        including the current element.*/
+        int notTaken = countPartitionsUtil(ind - 1, target, arr);
+        
+        /* Calculate the number of ways including the
+        current element (if it can be included).*/
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr);
+        
+        // Return the result 
+        return (notTaken + taken) % mod;
+    }
+
+public:
+    /* Function to count number of subsets with a
+    given difference.Uses the helper function 
+    `countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    int countPartitions(int n, int diff, vector&lt;int&gt;&amp; arr) {
+        int totSum = 0;
+        
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; arr.size(); i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it&#x27;s not possible to divide 
+        the array into two subsets with the given difference.*/
+        if (totSum - diff &lt; 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+        
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+        
+        /* Call the helper function to count
+        the number of subsets with sum s2.*/
+        return countPartitionsUtil(n - 1, s2, arr);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Modulus value to avoid overflow in calculations.
+    private int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    private int CountPartitionsUtil(int ind, int target, int[] arr)
+    {
+        // Base case: If we are at the first element.
+        if (ind == 0)
+        {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude).*/
+            if (target == 0 &amp;&amp; arr[0] == 0)
+                return 2;
+
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this */
+            if (target == 0 || target == arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        /* Calculate the number of ways not
+        including the current element. */
+        int notTaken = CountPartitionsUtil(ind - 1, target, arr);
+
+        /* Calculate the number of ways including the
+        current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = CountPartitionsUtil(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a
+    given difference. Uses the helper function 
+    `CountPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr)
+    {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; arr.Length; i++)
+        {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it&#x27;s not possible to divide 
+        the array into two subsets with the given difference. */
+        if (totSum - diff &lt; 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+
+        /* Call the helper function to count
+        the number of subsets with sum s2. */
+        return CountPartitionsUtil(n - 1, s2, arr);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Modulus value to avoid overflow in calculations.
+const mod = int(1e9 + 7)
+
+/* Recursive function to count the number of subsets
+   with a given target sum. */
+func countPartitionsUtil(ind int, target int, arr []int) int {
+	// Base case: If we are at the first element.
+	if ind == 0 {
+		/* If target is 0 and the element is also 0,there 
+		are 2 ways to achieve this (include or exclude).*/
+		if target == 0 &amp;&amp; arr[0] == 0 {
+			return 2
+		}
+
+		/* If target is 0 or the element is equal to 
+		target, there is 1 way to achieve this */
+		if target == 0 || target == arr[0] {
+			return 1
+		}
+
+		return 0
+	}
+
+	/* Calculate the number of ways not
+	including the current element. */
+	notTaken := countPartitionsUtil(ind-1, target, arr)
+
+	/* Calculate the number of ways including the
+	current element (if it can be included). */
+	taken := 0
+	if arr[ind] &lt;= target {
+		taken = countPartitionsUtil(ind-1, target-arr[ind], arr)
+	}
+
+	// Return the result 
+	return (notTaken + taken) % mod
+}
+
+/* Function to count number of subsets with a
+given difference. Uses the helper function 
+`countPartitionsUtil` to find the number of subsets
+with a specific target sum. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+
+	// Calculate the total sum of elements in the array.
+	for i := 0; i &lt; len(arr); i++ {
+		totSum += arr[i]
+	}
+
+	/* If the total sum minus the difference is negative,
+	or if it is not even, it&#x27;s not possible to divide 
+	the array into two subsets with the given difference. */
+	if totSum-diff &lt; 0 {
+		return 0
+	}
+	if (totSum-diff)%2 == 1 {
+		return 0
+	}
+
+	// Calculate the target sum for one of the subsets.
+	s2 := (totSum - diff) / 2
+
+	/* Call the helper function to count
+	the number of subsets with sum s2. */
+	return countPartitionsUtil(n-1, s2, arr)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, int[] arr) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude). */
+            if (target == 0 &amp;&amp; arr[0] == 0)
+                return 2;
+
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this. */
+            if (target == 0 || target == arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Calculate number of ways not including current element.
+        int notTaken = countPartitionsUtil(ind - 1, target, arr);
+
+        /* Calculate the number of ways including the
+        current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr);
+
+        // Return the result 
+        return (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a given
+    difference. Uses the helper function `countPartitionsUtil`
+    to find the number of subsets with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr) {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; arr.length; i++) {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative,
+           or if it is not even, it&#x27;s not possible to divide 
+           the array into two subsets with the given difference. */
+        if (totSum - diff &lt; 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+
+        /* Call the helper function to count
+        the number of subsets with sum s2. */
+        return countPartitionsUtil(n - 1, s2, arr);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Recursive function to count the number of subsets
+    with a given target sum. Uses memoization to store results
+    of subproblems to avoid redundant computations. */
+    countPartitionsUtil(ind, target, arr) {
+        // Base case: If we are at the first element.
+        if (ind === 0) {
+            /* If target is 0 and the element is also 0,
+            there are 2 ways to achieve this */
+            if (target === 0 &amp;&amp; arr[0] === 0)
+                return 2;
+
+            /* If target is 0 or the element is equal 
+            to target, there is 1 way to achieve this.*/
+            if (target === 0 || target === arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Calculate number of ways not including current element.
+        const notTaken = this.countPartitionsUtil(ind - 1, target, arr);
+
+        /* Calculate the number of ways including the 
+        current element (if it can be included).*/
+        let taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = this.countPartitionsUtil(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return (notTaken + taken) % this.mod;
+    }
+
+    /* Function to count the number of subsets with a
+    given difference.Uses the helper function
+    &#x27;countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    countPartitions(n, diff, arr) {
+        let totSum = arr.reduce((sum, num) =&gt; sum + num, 0);
+
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it&#x27;s not possible to divide
+        the array into two subsets with the given difference.*/
+        if (totSum - diff &lt; 0 || (totSum - diff) % 2 === 1)
+            return 0;
+
+        // Calculate the target sum for one of the subsets.
+        let s2 = (totSum - diff) / 2;
+
+        // Call the helper function to count the number of subsets with sum s2.
+        return this.countPartitionsUtil(n - 1, s2, arr);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Modulus value to avoid overflow in calculations.
+    mod = int(1e9 + 7)
+
+    def countPartitionsUtil(self, ind, target, arr):
+        # Base case: If we are at the first element.
+        if ind == 0:
+            &quot;&quot;&quot; If target is 0 and element is also 0, there
+            are 2 ways to achieve this (include or exclude).&quot;&quot;&quot;
+            if target == 0 and arr[0] == 0:
+                return 2
+            &quot;&quot;&quot; If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this.&quot;&quot;&quot;
+            if target == 0 or target == arr[0]:
+                return 1
+            return 0
+        
+        # Calculate number of ways not including current element.
+        not_taken = self.countPartitionsUtil(ind - 1, target, arr)
+        
+        &quot;&quot;&quot; Calculate the number of ways including 
+        the current element (if it can be included).&quot;&quot;&quot;
+        taken = 0
+        if arr[ind] &lt;= target:
+            taken = self.countPartitionsUtil(ind - 1, target - arr[ind], arr)
+        
+        # Return the result 
+        return (not_taken + taken) % self.mod
+
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        &quot;&quot;&quot;If the total sum minus the difference is negative,
+        or if it is not even, it&#x27;s not possible to divide
+        the array into two subsets with the given difference.&quot;&quot;&quot;
+        if tot_sum - diff &lt; 0 or (tot_sum - diff) % 2 == 1:
+            return 0
+        
+        # Calculate the target sum for one of the subsets.
+        s2 = (tot_sum - diff) // 2
+
+        &quot;&quot;&quot; Call the helper function to count 
+        the number of subsets with sum s2.&quot;&quot;&quot;
+        return self.countPartitionsUtil(n - 1, s2, arr)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+public:
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, vector&lt;int&gt;&amp; arr, vector&lt;vector&lt;int&gt;&gt; &amp;dp) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0,there 
+            are 2 ways to achieve this (include or exclude).*/
+            if (target == 0 &amp;&amp; arr[0] == 0)
+                return 2;
+                
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this*/
+            if (target == 0 || target == arr[0])
+                return 1;
+                
+            return 0; 
+        }
+        
+        // Return the result if it has already been computed.
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+        
+        /* Calculate the number of ways not
+        including the current element.*/
+        int notTaken = countPartitionsUtil(ind - 1, target, arr, dp);
+        
+        /* Calculate the number of ways including the
+        current element (if it can be included).*/
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+        
+        /* Store and return the result 
+        for the current subproblem.*/
+        return dp[ind][target] = (notTaken + taken) % mod;
+    }
+
+public:
+    /* Function to count number of subsets with a
+    given difference.Uses the helper function 
+    `countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    int countPartitions(int n, int diff, vector&lt;int&gt;&amp; arr) {
+        int totSum = 0;
+        
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; arr.size(); i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it&#x27;s not possible to divide 
+        the array into two subsets with the given difference.*/
+        if (totSum - diff &lt; 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+        
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+        
+        // Initialize the DP table with -1 for memoization.
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(s2 + 1, -1));
+        
+        /* Call the helper function to count
+        the number of subsets with sum s2.*/
+        return countPartitionsUtil(n - 1, s2, arr, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Modulus value to avoid overflow in calculations.
+    private int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    private int CountPartitionsUtil(int ind, int target, int[] arr, int[,] dp)
+    {
+        // Base case: If we are at the first element.
+        if (ind == 0)
+        {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude). */
+            if (target == 0 &amp;&amp; arr[0] == 0)
+                return 2;
+                
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this */
+            if (target == 0 || target == arr[0])
+                return 1;
+                
+            return 0;
+        }
+        
+        // Return the result if it has already been computed.
+        if (dp[ind, target] != -1)
+            return dp[ind, target];
+        
+        /* Calculate the number of ways not including the current element. */
+        int notTaken = CountPartitionsUtil(ind - 1, target, arr, dp);
+        
+        /* Calculate the number of ways including the current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = CountPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+        
+        /* Store and return the result for the current subproblem. */
+        return dp[ind, target] = (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a given difference.
+       Uses the helper function `CountPartitionsUtil` to find the number of subsets
+       with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr)
+    {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; arr.Length; i++)
+        {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative,
+           or if it is not even, it&#x27;s not possible to divide 
+           the array into two subsets with the given difference. */
+        if (totSum - diff &lt; 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+        
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+        
+        // Initialize the DP table with -1 for memoization.
+        int[,] dp = new int[n, s2 + 1];
+        for (int i = 0; i &lt; n; i++)
+        {
+            for (int j = 0; j &lt;= s2; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+        
+        /* Call the helper function to count
+           the number of subsets with sum s2. */
+        return CountPartitionsUtil(n - 1, s2, arr, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>var mod int = 1000000007
+
+/* Recursive function to count the number of subsets
+   with a given target sum. Uses memoization to store
+   results of subproblems to avoid redundant computations. */
+func countPartitionsUtil(ind int, target int, arr []int, dp [][]int) int {
+	// Base case: If we are at the first element.
+	if ind == 0 {
+		/* If target is 0 and the element is also 0,there
+		are 2 ways to achieve this (include or exclude). */
+		if target == 0 &amp;&amp; arr[0] == 0 {
+			return 2
+		}
+
+		/* If target is 0 or the element is equal to
+		target, there is 1 way to achieve this */
+		if target == 0 || target == arr[0] {
+			return 1
+		}
+
+		return 0
+	}
+
+	// Return the result if it has already been computed.
+	if dp[ind][target] != -1 {
+		return dp[ind][target]
+	}
+
+	/* Calculate the number of ways not
+	including the current element. */
+	notTaken := countPartitionsUtil(ind-1, target, arr, dp)
+
+	/* Calculate the number of ways including the
+	current element (if it can be included). */
+	taken := 0
+	if arr[ind] &lt;= target {
+		taken = countPartitionsUtil(ind-1, target-arr[ind], arr, dp)
+	}
+
+	/* Store and return the result
+	for the current subproblem. */
+	dp[ind][target] = (notTaken + taken) % mod
+	return dp[ind][target]
+}
+
+/* Function to count number of subsets with a
+given difference. Uses the helper function
+`countPartitionsUtil` to find the number of
+subsets with a specific target sum. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+
+	// Calculate the total sum of elements in the array.
+	for _, val := range arr {
+		totSum += val
+	}
+
+	/* If the total sum minus the difference is negative,
+	or if it is not even, it&#x27;s not possible to divide
+	the array into two subsets with the given difference. */
+	if totSum-diff &lt; 0 {
+		return 0
+	}
+	if (totSum-diff)%2 == 1 {
+		return 0
+	}
+
+	// Calculate the target sum for one of the subsets.
+	s2 := (totSum - diff) / 2
+
+	// Initialize the DP table with -1 for memoization.
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, s2+1)
+		for j := 0; j &lt;= s2; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	/* Call the helper function to count
+	the number of subsets with sum s2. */
+	return countPartitionsUtil(n-1, s2, arr, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+    /* Recursive function to count the number of subsets
+       with a given target sum. Uses memoization to store results
+       of subproblems to avoid redundant computations. */
+    int countPartitionsUtil(int ind, int target, int[] arr, int[][] dp) {
+        // Base case: If we are at the first element.
+        if (ind == 0) {
+            /* If target is 0 and the element is also 0, there 
+            are 2 ways to achieve this (include or exclude). */
+            if (target == 0 &amp;&amp; arr[0] == 0)
+                return 2;
+
+            /* If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this. */
+            if (target == 0 || target == arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Return the result if it has already been computed.
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Calculate number of ways not including current element.
+        int notTaken = countPartitionsUtil(ind - 1, target, arr, dp);
+
+        /* Calculate the number of ways including the
+        current element (if it can be included). */
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = countPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+
+        // Store and return the result for current subproblem.
+        return dp[ind][target] = (notTaken + taken) % mod;
+    }
+
+    /* Function to count number of subsets with a given
+    difference.Uses the helper function `countPartitionsUtil`
+    to find the number of subsets with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr) {
+        int totSum = 0;
+
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; arr.length; i++) {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative,
+           or if it is not even, it&#x27;s not possible to divide 
+           the array into two subsets with the given difference. */
+        if (totSum - diff &lt; 0) return 0;
+        if ((totSum - diff) % 2 == 1) return 0;
+
+        // Calculate the target sum for one of the subsets.
+        int s2 = (totSum - diff) / 2;
+
+        // Initialize the DP table with -1 for memoization.
+        int[][] dp = new int[n][s2 + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        /* Call the helper function to count
+        the number of subsets with sum s2. */
+        return countPartitionsUtil(n - 1, s2, arr, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Recursive function to count the number of subsets
+    with a given target sum. Uses memoization to store results
+    of subproblems to avoid redundant computations. */
+    countPartitionsUtil(ind, target, arr, dp) {
+        // Base case: If we are at the first element.
+        if (ind === 0) {
+            /* If target is 0 and the element is also 0,
+            there are 2 ways to achieve this */
+            if (target === 0 &amp;&amp; arr[0] === 0)
+                return 2;
+
+            /* If target is 0 or the element is equal 
+            to target, there is 1 way to achieve this.*/
+            if (target === 0 || target === arr[0])
+                return 1;
+
+            return 0;
+        }
+
+        // Return the result if it has already been computed.
+        if (dp[ind][target] !== -1)
+            return dp[ind][target];
+
+        // Calculate the number of ways not including current element.
+        const notTaken = this.countPartitionsUtil(ind - 1, target, arr, dp);
+
+        /* Calculate the number of ways including the 
+        current element (if it can be included).*/
+        let taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = this.countPartitionsUtil(ind - 1, target - arr[ind], arr, dp);
+
+        // Store and return the result for current subproblem.
+        dp[ind][target] = (notTaken + taken) % this.mod;
+        return dp[ind][target];
+    }
+
+    /* Function to count the number of subsets with a
+    given difference.Uses the helper function
+    &#x27;countPartitionsUtil` to find the number of subsets
+    with a specific target sum. */
+    countPartitions(n, diff, arr) {
+        let totSum = arr.reduce((sum, num) =&gt; sum + num, 0);
+
+        /* If the total sum minus the difference is negative,
+        or if it is not even, it&#x27;s not possible to divide
+        the array into two subsets with the given difference.*/
+        if (totSum - diff &lt; 0 || (totSum - diff) % 2 === 1)
+            return 0;
+
+        // Calculate the target sum for one of the subsets.
+        let s2 = (totSum - diff) / 2;
+
+        // Initialize the DP table with -1 for memoization.
+        let dp = Array.from({ length: n }, () =&gt; Array(s2 + 1).fill(-1));
+
+        // Call the helper function to count the number of subsets with sum s2.
+        return this.countPartitionsUtil(n - 1, s2, arr, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Modulus value to avoid overflow in calculations.
+    mod = int(1e9 + 7)
+
+    def countPartitionsUtil(self, ind, target, arr, dp):
+        # Base case: If we are at the first element.
+        if ind == 0:
+            &quot;&quot;&quot; If target is 0 and element is also 0, there
+            are 2 ways to achieve this (include or exclude).&quot;&quot;&quot;
+            if target == 0 and arr[0] == 0:
+                return 2
+            &quot;&quot;&quot; If target is 0 or the element is equal to 
+            target, there is 1 way to achieve this.&quot;&quot;&quot;
+            if target == 0 or target == arr[0]:
+                return 1
+            return 0
+        
+        # Return the result if it has already been computed.
+        if dp[ind][target] != -1:
+            return dp[ind][target]
+        
+        # Calculate number of ways not including current element.
+        not_taken = self.countPartitionsUtil(ind - 1, target, arr, dp)
+        
+        &quot;&quot;&quot; Calculate the number of ways including 
+        the current element (if it can be included).&quot;&quot;&quot;
+        taken = 0
+        if arr[ind] &lt;= target:
+            taken = self.countPartitionsUtil(ind - 1, target - arr[ind], arr, dp)
+        
+        # Store and return the result for the current subproblem.
+        dp[ind][target] = (not_taken + taken) % self.mod
+        return dp[ind][target]
+
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        &quot;&quot;&quot;If the total sum minus the difference is negative,
+        or if it is not even, it&#x27;s not possible to divide
+        the array into two subsets with the given difference.&quot;&quot;&quot;
+        if tot_sum - diff &lt; 0 or (tot_sum - diff) % 2 == 1:
+            return 0
+        
+        # Calculate the target sum for one of the subsets.
+        s2 = (tot_sum - diff) // 2
+        
+        # Initialize the DP table with -1 for memoization.
+        dp = [[-1 for _ in range(s2 + 1)] for _ in range(n)]
+        
+        &quot;&quot;&quot; Call the helper function to count 
+        the number of subsets with sum s2.&quot;&quot;&quot;
+        return self.countPartitionsUtil(n - 1, s2, arr, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+private:
+    /* Function to calculate the number of ways to
+    achieve a target sum with the given numbers.*/
+    int findWays(vector&lt;int&gt; &amp;num, int tar) {
+        int n = num.size();
+        /* DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.*/
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(tar + 1, 0));
+    
+        /* If the first element is 0, we have 2 
+        ways to achieve sum 0: by either including
+        or excluding the element.*/
+        if (num[0] == 0) dp[0][0] = 2;  
+        else dp[0][0] = 1;  
+    
+        /* If the first element is not 0 and is less
+        than or equal to target, we have 1 way to 
+        achieve the sum equal to that element.*/
+        if (num[0] != 0 &amp;&amp; num[0] &lt;= tar) dp[0][num[0]] = 1;  
+    
+        // Fill the DP table for the rest of the elements.
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int target = 0; target &lt;= tar; target++) {
+                
+                /* Number of ways to achieve target sum 
+                without using the current element.*/
+                int notTaken = dp[ind - 1][target];
+    
+                /* Number of ways to achieve target
+                sum using the current element.*/
+                int taken = 0;
+                if (num[ind] &lt;= target)
+                    taken = dp[ind - 1][target - num[ind]];
+        
+                /* Total ways to achieve target sum with
+                or without including the current element.*/
+                dp[ind][target] = (notTaken + taken) % mod;
+            }
+        }
+        /* Return the number of ways to achieve
+        the target sum using all elements.*/
+        return dp[n - 1][tar];
+    }
+
+public:
+    /* Function to count the number of
+    subsets with a given difference.*/
+    int countPartitions(int n, int diff, vector&lt;int&gt;&amp; arr) {
+        int totSum = 0;
+        
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+    
+        /* If the difference is more than the total sum or
+        if the difference is not even (as (totalSum - diff)
+        must be even to divide into two subsets), return 0.*/
+        if (totSum - diff &lt; 0 || (totSum - diff) % 2) return 0;
+    
+        /* Call the helper function to find the number 
+        of subsets with sum (totSum - diff) / 2.*/
+        return findWays(arr, (totSum - diff) / 2);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    private const long MOD = 1_000_000_007L;
+
+    /* Function to calculate the number of ways to
+    achieve a target sum with the given numbers.*/
+    private long findWays(int[] num, int tar)
+    {
+        int n = num.Length;
+        
+        /* DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.*/
+        long[,] dp = new long[n, tar + 1];
+    
+        /* If the first element is 0, we have 2 
+        ways to achieve sum 0: by either including
+        or excluding the element.*/
+        if (num[0] == 0) 
+            dp[0, 0] = 2;
+        else 
+            dp[0, 0] = 1;
+    
+        /* If the first element is not 0 and is less
+        than or equal to target, we have 1 way to
+        achieve the sum equal to that element.*/
+        if (num[0] != 0 &amp;&amp; num[0] &lt;= tar) 
+            dp[0, num[0]] = 1;
+    
+        // Fill the DP table for the rest of the elements.
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            for (int target = 0; target &lt;= tar; target++)
+            {
+                /* Number of ways to achieve target 
+                sum without using the current element.*/
+                long notTaken = dp[ind - 1, target];
+                
+                /* Number of ways to achieve target
+                sum using the current element.*/
+                long taken = 0;
+                if (num[ind] &lt;= target)
+                    taken = dp[ind - 1, target - num[ind]];
+                
+                /* Total ways to achieve target sum with 
+                or without including the current element.*/
+                dp[ind, target] = (notTaken + taken) % MOD;
+            }
+        }
+        /* Return the number of ways to achieve
+        the target sum using all elements.*/
+        return dp[n - 1, tar];
+    }
+
+    /* Function to count the number of
+    subsets with a given difference.*/
+    public int countPartitions(int n, int diff, int[] arr) {
+        long totSum = 0;
+        foreach (int x in arr) {
+            totSum += x;
+        }
+        
+        /* If the difference is more than the total
+        sum or if the difference is not even, return 0.*/
+        if ((totSum - diff) &lt; 0 || (totSum - diff) % 2 != 0)
+            return 0;
+        
+        /* Call the helper function to find the number
+        of subsets with sum (totSum - diff) / 2.*/
+        int targetSum = (int)((totSum - diff) / 2);
+        return (int)this.findWays(arr, targetSum);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>var mod int = 1000000007
+
+/* Function to calculate the number of ways to
+achieve a target sum with the given numbers. */
+func findWays(num []int, tar int) int {
+	n := len(num)
+
+	/* DP table where dp[i][j] represents the number
+	of ways to get sum j using the first i elements. */
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, tar+1)
+	}
+
+	/* If the first element is 0, we have 2
+	ways to achieve sum 0: by either including
+	or excluding the element. */
+	if num[0] == 0 {
+		dp[0][0] = 2
+	} else {
+		dp[0][0] = 1
+	}
+
+	/* If the first element is not 0 and is less
+	than or equal to target, we have 1 way to
+	achieve the sum equal to that element. */
+	if num[0] != 0 &amp;&amp; num[0] &lt;= tar {
+		dp[0][num[0]] = 1
+	}
+
+	// Fill the DP table for the rest of the elements.
+	for ind := 1; ind &lt; n; ind++ {
+		for target := 0; target &lt;= tar; target++ {
+			/* Number of ways to achieve target sum
+			without using the current element. */
+			notTaken := dp[ind-1][target]
+
+			/* Number of ways to achieve target
+			sum using the current element. */
+			taken := 0
+			if num[ind] &lt;= target {
+				taken = dp[ind-1][target-num[ind]]
+			}
+
+			/* Total ways to achieve target sum with
+			or without including the current element. */
+			dp[ind][target] = (notTaken + taken) % mod
+		}
+	}
+
+	/* Return the number of ways to achieve
+	the target sum using all elements. */
+	return dp[n-1][tar]
+}
+
+/* Function to count the number of
+subsets with a given difference. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+
+	// Calculate the total sum of elements in the array.
+	for i := 0; i &lt; n; i++ {
+		totSum += arr[i]
+	}
+
+	/* If the difference is more than the total sum or
+	if the difference is not even, return 0. */
+	if totSum-diff &lt; 0 || (totSum-diff)%2 != 0 {
+		return 0
+	}
+
+	/* Call the helper function to find the number
+	of subsets with sum (totSum - diff) / 2. */
+	return findWays(arr, (totSum-diff)/2)
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+// Modulus value to avoid overflow in calculations.
+private static final int MOD = (int)1e9 + 7;
+
+/* Function to calculate the number of ways to
+achieve a target sum with the given numbers.*/
+private int findWays(int[] num, int tar) {
+    int n = num.length;
+    /* DP table where dp[i][j] represents the number
+    of ways to get sum j using the first i elements.*/
+    int[][] dp = new int[n][tar + 1];
+
+    /* If the first element is 0, we have 2 
+    ways to achieve sum 0: by either including
+    or excluding the element.*/
+    if (num[0] == 0) dp[0][0] = 2;  
+    else dp[0][0] = 1;  
+
+    /* If the first element is not 0 and is less
+    than or equal to target, we have 1 way to 
+    achieve the sum equal to that element.*/
+    if (num[0] != 0 &amp;&amp; num[0] &lt;= tar) dp[0][num[0]] = 1;  
+
+    // Fill the DP table for the rest of the elements.
+    for (int ind = 1; ind &lt; n; ind++) {
+        for (int target = 0; target &lt;= tar; target++) {
+            
+            /* Number of ways to achieve target sum 
+            without using the current element.*/
+            int notTaken = dp[ind - 1][target];
+
+            /* Number of ways to achieve target
+            sum using the current element.*/
+            int taken = 0;
+            if (num[ind] &lt;= target)
+                taken = dp[ind - 1][target - num[ind]];
+    
+            /* Total ways to achieve target sum with
+            or without including the current element.*/
+            dp[ind][target] = (notTaken + taken) % MOD;
+        }
+    }
+    /* Return the number of ways to achieve
+    the target sum using all elements.*/
+    return dp[n - 1][tar];
+}
+
+/* Function to count the number of
+subsets with a given difference.*/
+public int countPartitions(int n, int diff, int[] arr) {
+    int totSum = 0;
+    
+    // Calculate the total sum of elements in the array.
+    for (int i = 0; i &lt; n; i++) {
+        totSum += arr[i];
+    }
+
+    /* If the difference is more than the total sum or
+    if the difference is not even (as (totalSum - diff)
+    must be even to divide into two subsets), return 0.*/
+    if (totSum - diff &lt; 0 || (totSum - diff) % 2 != 0) return 0;
+
+    /* Call the helper function to find the number 
+    of subsets with sum (totSum - diff) / 2.*/
+    return findWays(arr, (totSum - diff) / 2);
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>const MOD = 1e9 + 7;
+class Solution {
+    /* Function to calculate the number of ways to
+    achieve a target sum with the given numbers.*/
+    findWays(num, tar) {
+        const n = num.length;
+        
+        /* DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.*/
+        const dp = Array.from({ length: n }, () =&gt; Array(tar + 1).fill(0));
+    
+        /* If the first element is 0, we have 2 
+        ways to achieve sum 0: by either including
+        or excluding the element.*/
+        if (num[0] === 0) dp[0][0] = 2;
+        else dp[0][0] = 1;
+    
+        /* If the first element is not 0 and is less
+        than or equal to target, we have 1 way to
+        achieve the sum equal to that element.*/
+        if (num[0] !== 0 &amp;&amp; num[0] &lt;= tar) dp[0][num[0]] = 1;
+    
+        // Fill the DP table for the rest of the elements.
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let target = 0; target &lt;= tar; target++) {
+                /* Number of ways to achieve target 
+                sum without using the current element.*/
+                const notTaken = dp[ind - 1][target];
+                
+                /* Number of ways to achieve target
+                sum using the current element.*/
+                let taken = 0;
+                if (num[ind] &lt;= target)
+                    taken = dp[ind - 1][target - num[ind]];
+                
+                /* Total ways to achieve target sum with 
+                or without including the current element.*/
+                dp[ind][target] = (notTaken + taken) % MOD;
+            }
+        }
+        /* Return the number of ways to achieve
+        the target sum using all elements.*/
+        return dp[n - 1][tar];
+    }
+
+    /* Function to count the number of
+    subsets with a given difference.*/
+    countPartitions(n, diff, arr) {
+        const totSum = arr.reduce((a, b) =&gt; a + b, 0);
+        
+        /* If the difference is more than the total
+        sum or if the difference is not even, return 0.*/
+        if (totSum - diff &lt; 0 || (totSum - diff) % 2 !== 0)
+            return 0;
+        
+        /* Call the helper function to find the number
+        of subsets with sum (totSum - diff) / 2.*/
+        return this.findWays(arr, (totSum - diff) / 2);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>MOD = int(1e9 + 7)
+
+class Solution:
+    &quot;&quot;&quot; Function to calculate the number of ways to
+    achieve a target sum with the given numbers.&quot;&quot;&quot;
+    def findWays(self, num, tar):
+        n = len(num)
+        &quot;&quot;&quot; DP table where dp[i][j] represents the number
+        of ways to get sum j using the first i elements.&quot;&quot;&quot;
+        dp = [[0] * (tar + 1) for _ in range(n)]
+    
+        &quot;&quot;&quot; If the first element is 0, we have 2
+        ways to achieve sum 0: by either including 
+        or excluding the element.&quot;&quot;&quot;
+        if num[0] == 0:
+            dp[0][0] = 2
+        else:
+            dp[0][0] = 1
+    
+        &quot;&quot;&quot; If the first element is not 0 and is less
+        than or equal to target, we have 1 way to 
+        achieve the sum equal to that element.&quot;&quot;&quot;
+        if num[0] != 0 and num[0] &lt;= tar:
+            dp[0][num[0]] = 1
+    
+        # Fill the DP table for the rest of the elements.
+        for ind in range(1, n):
+            for target in range(tar + 1):
+                &quot;&quot;&quot; Number of ways to achieve target sum
+                without using the current element.&quot;&quot;&quot;
+                not_taken = dp[ind - 1][target]
+                
+                &quot;&quot;&quot; Number of ways to achieve target 
+                sum using the current element.&quot;&quot;&quot;
+                taken = 0
+                if num[ind] &lt;= target:
+                    taken = dp[ind - 1][target - num[ind]]
+                
+                &quot;&quot;&quot; Total ways to achieve target sum with
+                or without including the current element.&quot;&quot;&quot;
+                dp[ind][target] = (not_taken + taken) % MOD
+        
+        &quot;&quot;&quot; Return the number of ways to achieve
+        the target sum using all elements.&quot;&quot;&quot;
+        return dp[n - 1][tar]
+
+    &quot;&quot;&quot; Function to count the number of
+    subsets with a given difference.&quot;&quot;&quot;
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        &quot;&quot;&quot; If the difference is more than the total sum
+        or if the difference is not even, return 0.&quot;&quot;&quot;
+        if tot_sum - diff &lt; 0 or (tot_sum - diff) % 2 != 0:
+            return 0
+        
+        &quot;&quot;&quot; Call the helper function to find the number
+        of subsets with sum (tot_sum - diff) / 2.&quot;&quot;&quot;
+        return self.findWays(arr, (tot_sum - diff) // 2)
+</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    int mod = (int)1e9 + 7;
+
+private:
+    /* Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table. */
+    int findWays(vector&lt;int&gt; &amp;num, int tar) {
+        int n = num.size();
+        
+        /* DP table to store number of ways
+        to achieve a certain target sum.*/
+        vector&lt;int&gt; prev(tar + 1, 0);
+        
+        /* 2 cases for target 0 when the first 
+        element is 0: either pick it or not.*/
+        if (num[0] == 0) prev[0] = 2;  
+        /* 1 case for target 0 when the first
+        element is non-zero: just don&#x27;t pick it.*/
+        else prev[0] = 1;  
+
+        /* Initialize the base case for the
+        first element and non-zero target.*/
+        if (num[0] != 0 &amp;&amp; num[0] &lt;= tar) prev[num[0]] = 1;  
+
+        /* Iterate through all elements of the 
+        array starting from the second element.*/
+        for (int ind = 1; ind &lt; n; ind++) {
+            
+            vector&lt;int&gt; cur(tar + 1, 0); 
+            for (int target = 0; target &lt;= tar; target++) {
+                /* Number of ways to achieve the target 
+                sum without including the current element.*/
+                int notTaken = prev[target];
+                
+                /* Number of ways to achieve the target sum 
+                by including the current element.*/
+                int taken = 0;
+                if (num[ind] &lt;= target)
+                    taken = prev[target - num[ind]];
+                
+                /* Total ways to achieve the target sum either
+                including or excluding the current element.*/
+                cur[target] = (notTaken + taken) % mod;
+            }
+            /* Update the previous state to the current
+            state for the next iteration.*/
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+public:
+    /* Function to count the number of subsets with a 
+    given difference.Uses the helper function findWays
+    to find number of subsets with a specific target sum. */
+    int countPartitions(int n, int diff, vector&lt;int&gt;&amp; arr) {
+        int totSum = 0;
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative
+        or odd, it&#x27;s not possible to partition the array
+        into subsets with the given difference.*/
+        if (totSum - diff &lt; 0 || (totSum - diff) % 2) return 0;
+        
+        // Calculate the target sum for one subset.
+        return findWays(arr, (totSum - diff) / 2);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Modulus value to avoid overflow in calculations.
+    private readonly int mod = (int)1e9 + 7;
+
+    /* Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table. */
+    private int findWays(int[] num, int tar)
+    {
+        int n = num.Length;
+
+        /* DP table to store number of ways
+           to achieve a certain target sum. */
+        int[] prev = new int[tar + 1];
+
+        /* 2 cases for target 0 when the first 
+           element is 0: either pick it or not. */
+        if (num[0] == 0) prev[0] = 2;
+        /* 1 case for target 0 when the first
+           element is non-zero: just don&#x27;t pick it.*/
+        else prev[0] = 1;
+
+        /* Initialize the base case for the
+           first element and non-zero target. */
+        if (num[0] != 0 &amp;&amp; num[0] &lt;= tar) prev[num[0]] = 1;
+
+        /* Iterate through all elements of the 
+           array starting from the second element.*/
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            int[] cur = new int[tar + 1];
+            for (int target = 0; target &lt;= tar; target++)
+            {
+                /* Number of ways to achieve the target 
+                   sum without including the current element.*/
+                int notTaken = prev[target];
+
+                /* Number of ways to achieve the target sum 
+                   by including the current element.*/
+                int taken = 0;
+                if (num[ind] &lt;= target)
+                    taken = prev[target - num[ind]];
+
+                /* Total ways to achieve the target sum either
+                   including or excluding the current element.*/
+                cur[target] = (notTaken + taken) % mod;
+            }
+            /* Update the previous state to the current
+               state for the next iteration.*/
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+    /* Function to count the number of subsets with a 
+       given difference. Uses the helper function findWays
+       to find number of subsets with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr)
+    {
+        int totSum = 0;
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; n; i++)
+        {
+            totSum += arr[i];
+        }
+
+        /* If the total sum minus the difference is negative
+           or odd, it&#x27;s not possible to partition the array
+           into subsets with the given difference.*/
+        if (totSum - diff &lt; 0 || ((totSum - diff) % 2) != 0)
+            return 0;
+
+        // Calculate the target sum for one subset.
+        int target = (totSum - diff) / 2;
+        return findWays(arr, target);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>var mod int = 1000000007
+
+/* Function to calculate the number of subsets
+   with a specific target sum. Uses space optimization
+   to store only the previous state in the DP table. */
+func findWays(num []int, tar int) int {
+	n := len(num)
+
+	/* DP table to store number of ways
+	to achieve a certain target sum. */
+	prev := make([]int, tar+1)
+
+	/* 2 cases for target 0 when the first
+	element is 0: either pick it or not. */
+	if num[0] == 0 {
+		prev[0] = 2
+	} else { // 1 case for target 0 when first element is non-zero
+		prev[0] = 1
+	}
+
+	/* Initialize the base case for the
+	first element and non-zero target. */
+	if num[0] != 0 &amp;&amp; num[0] &lt;= tar {
+		prev[num[0]] = 1
+	}
+
+	/* Iterate through all elements of the
+	array starting from the second element. */
+	for ind := 1; ind &lt; n; ind++ {
+		cur := make([]int, tar+1)
+		for target := 0; target &lt;= tar; target++ {
+			/* Number of ways to achieve the target
+			sum without including the current element. */
+			notTaken := prev[target]
+
+			/* Number of ways to achieve the target sum
+			by including the current element. */
+			taken := 0
+			if num[ind] &lt;= target {
+				taken = prev[target-num[ind]]
+			}
+
+			/* Total ways to achieve the target sum either
+			including or excluding the current element. */
+			cur[target] = (notTaken + taken) % mod
+		}
+		/* Update the previous state to the current
+		state for the next iteration. */
+		prev = cur
+	}
+
+	// Return the number of subsets
+	return prev[tar]
+}
+
+/* Function to count the number of subsets with a
+given difference. Uses the helper function findWays
+to find number of subsets with a specific target sum. */
+func countPartitions(n int, diff int, arr []int) int {
+	totSum := 0
+	// Calculate the total sum of elements in the array.
+	for i := 0; i &lt; n; i++ {
+		totSum += arr[i]
+	}
+
+	/* If the total sum minus the difference is negative
+	or odd, it&#x27;s not possible to partition the array
+	into subsets with the given difference. */
+	if totSum-diff &lt; 0 || (totSum-diff)%2 != 0 {
+		return 0
+	}
+
+	// Calculate the target sum for one subset.
+	return findWays(arr, (totSum-diff)/2)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{   
+// Modulus value to avoid overflow in calculations.
+    private static final int MOD = (int) 1e9 + 7;
+
+    /* Function to calculate the number of subsets
+    with a specific target sum. Uses space optimization
+    to store only the previous state in the DP table. */
+    private int findWays(int[] num, int tar) {
+        int n = num.length;
+        
+        /* DP table to store number of ways
+           to achieve a certain target sum. */
+        int[] prev = new int[tar + 1];
+        
+        /* 2 cases for target 0 when the first 
+           element is 0: either pick it or not. */
+        if (num[0] == 0) prev[0] = 2;  
+        /* 1 case for target 0 when the first
+           element is non-zero: just don&#x27;t pick it. */
+        else prev[0] = 1;  
+
+        /* Initialize the base case for the
+           first element and non-zero target. */
+        if (num[0] != 0 &amp;&amp; num[0] &lt;= tar) prev[num[0]] = 1;  
+
+        /* Iterate through all elements of the
+           array starting from the second element. */
+        for (int ind = 1; ind &lt; n; ind++) {
+            int[] cur = new int[tar + 1]; 
+            for (int target = 0; target &lt;= tar; target++) {
+                /* Number of ways to achieve the target 
+                   sum without including the current element. */
+                int notTaken = prev[target];
+                
+                /* Number of ways to achieve the target sum 
+                   by including the current element. */
+                int taken = 0;
+                if (num[ind] &lt;= target)
+                    taken = prev[target - num[ind]];
+                
+                /* Total ways to achieve the target sum either
+                   including or excluding the current element. */
+                cur[target] = (notTaken + taken) % MOD;
+            }
+            /* Update the previous state to the current
+               state for the next iteration. */
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+    /* Function to count the number of subsets with a 
+       given difference. Uses the helper function findWays
+       to find number of subsets with a specific target sum. */
+    public int countPartitions(int n, int diff, int[] arr) {
+        int totSum = 0;
+        // Calculate the total sum of elements in the array.
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* If the total sum minus the difference is negative
+           or odd, it&#x27;s not possible to partition the array
+           into subsets with the given difference. */
+        if (totSum - diff &lt; 0 || (totSum - diff) % 2 != 0) return 0;
+        
+        // Calculate the target sum for one subset.
+        return findWays(arr, (totSum - diff) / 2);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Modulus value to avoid overflow in calculations.
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table. */
+    findWays(num, tar) {
+        const n = num.length;
+        
+        /* DP table to store number of ways
+        to achieve a certain target sum.*/
+        let prev = new Array(tar + 1).fill(0);
+        
+        /* 2 cases for target 0 when the first 
+        element is 0: either pick it or not.*/
+        if (num[0] === 0) prev[0] = 2;
+        
+        else prev[0] = 1;
+        
+        /* Initialize the base case for 
+        the first element and non-zero target.*/
+        if (num[0] !== 0 &amp;&amp; num[0] &lt;= tar) prev[num[0]] = 1;
+        
+        /* Iterate through all elements of the 
+        array starting from the second element.*/
+        for (let ind = 1; ind &lt; n; ind++) {
+            let cur = new Array(tar + 1).fill(0);
+            for (let target = 0; target &lt;= tar; target++) {
+                /* Number of ways to achieve the target
+                sum without including the current element.*/
+                let notTaken = prev[target];
+                
+                /* Number of ways to achieve the target 
+                sum by including the current element.*/
+                let taken = 0;
+                if (num[ind] &lt;= target)
+                    taken = prev[target - num[ind]];
+                
+                /* Total ways to achieve the target sum either 
+                including or excluding the current element.*/
+                cur[target] = (notTaken + taken) % this.mod;
+            }
+            /* Update the previous state to the 
+            current state for the next iteration.*/
+            prev = cur;
+        }
+        // Return the number of subsets
+        return prev[tar];
+    }
+
+    /* Function to count the number of subsets with a 
+       given difference. Uses the helper function findWays
+       to find number of subsets with a specific target sum. */
+    countPartitions(n, diff, arr) {
+        const totSum = arr.reduce((sum, num) =&gt; sum + num, 0);
+        
+        // Checking for edge cases
+        if (totSum - diff &lt; 0 || (totSum - diff) % 2 !== 0) return 0;
+        
+        // Calculate the target sum for one subset.
+        return this.findWays(arr, (totSum - diff) / 2);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Modulus value to avoid overflow in calculations.
+    mod = int(1e9 + 7)
+
+    &quot;&quot;&quot;Function to calculate the number of subsets
+       with a specific target sum. Uses space optimization
+       to store only the previous state in the DP table.&quot;&quot;&quot;
+    def findWays(self, num, tar):
+        n = len(num)
+        
+        &quot;&quot;&quot; DP table to store number of ways
+        to achieve a certain target sum.&quot;&quot;&quot;
+        prev = [0] * (tar + 1)
+        
+        &quot;&quot;&quot; 2 cases for target 0 when the first
+        element is 0: either pick it or not.&quot;&quot;&quot;
+        if num[0] == 0:
+            prev[0] = 2
+
+        else:
+            prev[0] = 1
+        
+        &quot;&quot;&quot; Initialize the base case for the
+        first element and non-zero target.&quot;&quot;&quot;
+        if num[0] != 0 and num[0] &lt;= tar:
+            prev[num[0]] = 1
+        
+        &quot;&quot;&quot; Iterate through all elements of the 
+        array starting from the second element.&quot;&quot;&quot;
+        for ind in range(1, n):
+            cur = [0] * (tar + 1)
+            for target in range(tar + 1):
+                &quot;&quot;&quot; Number of ways to achieve the target
+                sum without including the current element.&quot;&quot;&quot;
+                not_taken = prev[target]
+                
+                &quot;&quot;&quot; Number of ways to achieve the target sum
+                by including the current element.&quot;&quot;&quot;
+                taken = 0
+                if num[ind] &lt;= target:
+                    taken = prev[target - num[ind]]
+                
+                &quot;&quot;&quot; Total ways to achieve the target sum either 
+                including or excluding the current element.&quot;&quot;&quot;
+                cur[target] = (not_taken + taken) % Solution.mod
+            
+            &quot;&quot;&quot; Update the previous state to the 
+            current state for the next iteration.&quot;&quot;&quot;
+            prev = cur
+        
+        # Return the number of subsets
+        return prev[tar]
+
+    def countPartitions(self, n, diff, arr):
+        tot_sum = sum(arr)
+        
+        # Checking for edge cases
+        if tot_sum - diff &lt; 0 or (tot_sum - diff) % 2:
+            return 0
+        
+        # Calculate the target sum for one subset.
+        return self.findWays(arr, (tot_sum - diff) // 2)</code></pre></div>
+</body>
+</html>

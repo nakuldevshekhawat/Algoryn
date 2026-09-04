@@ -1,0 +1,2158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trie Implementation and Advanced Operations</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Trie Implementation and Advanced Operations</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Trie</span><span>Implementation</span><span>Data Structures</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Implement "TRIE” data structure from scratch with the following functions.</p><p><br></p><ul><li><strong>Trie():</strong> Initialize the object of this “TRIE” data structure.</li></ul><p><br></p><ul><li><strong>insert(“</strong>WORD<strong>”):</strong> Insert the string “WORD” into this “TRIE” data structure.</li></ul><p><br></p><ul><li><strong>countWordsEqualTo(“</strong>WORD<strong>”):</strong> Return how many times this “WORD” is present in this “TRIE”.</li></ul><p><br></p><ul><li><strong>countWordsStartingWith(“</strong>PREFIX<strong>”):</strong> Return how many words are there in this “TRIE” that have the string “PREFIX” as a prefix.</li></ul><p><br></p><ul><li><strong>erase(“</strong>WORD<strong>”):</strong> Delete one occurrence of the string “WORD” from the “TRIE”.</li></ul>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= word.length , prefix.length <= 2000</li><li>word and prefix consist only of lowercase English letters.</li><li>At most 3*10<sup>4</sup> calls <strong>in total</strong> will be made to insert, countWordsEqualTo , countWordsStartingWith and erase.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> ["Trie", "insert", "countWordsEqualTo", "insert", "countWordsStartingWith", "erase", "countWordsStartingWith"]</p><p>[ "apple", "apple", "app", "app", "apple", "app" ]</p><p><br></p><p><strong>Output :</strong> [null, null, 1, null, 2, null, 1]</p><p><br></p><p><strong>Explanation :</strong></p><p>Trie trie = new Trie()</p><p>trie.insert("apple")</p><p>trie.countWordsEqualTo("apple")  // return 1</p><p>trie.insert("app") </p><p>trie.countWordsStartingWith("app") // return 2</p><p>trie.erase("apple")</p><p>trie.countWordsStartingWith("app")   // return 1</p><h3>Example 2</h3><p><strong>Input :</strong> ["Trie", "insert", "countWordsEqualTo", "insert", "erase", "countWordsStartingWith"]</p><p>[ "mango", "apple", "app", "app", "mango" ]</p><p><br></p><p><strong>Output :</strong> [null, null, 0, null, null, 1]</p><p><br></p><p><strong>Explanation :</strong></p><p>Trie trie = new Trie()</p><p>trie.insert("mango")</p><p>trie.countWordsEqualTo("apple")  // return 0</p><p>trie.insert("app") </p><p>trie.erase("app")</p><p>trie.countWordsStartingWith("mango") // return 1</p><h3>Example 3</h3><p><strong>Input :</strong> ["Trie", "insert", "insert", "erase", "countWordsEqualTo", "insert", "countWordsStartingWith"]</p><p>["abcde","fghij","abcde", "bcde", "abcde", "fgh"]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The Trie data structure, also known as a prefix tree, is incredibly useful in real-world applications, especially in scenarios where we need fast and efficient retrieval of words or data. For instance, it is the underlying data structure powering the auto-complete feature in your smartphone keyboard or search engine. When you start typing, it looks for words in its trie data structure that starts with the prefix you've typed and proposes the most probable completions. Similarly, spell-checking tools or predictive text technology in chatbots and AI-based customer service platforms make extensive use of Tries.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition</h3>
+<p>Refer to this <a href="/plus/dsa/problems/trie-implementation-and-operations?category=tries&subcategory=triessubc" style="text-decoration: underline;">article</a> to get the basic idea about Tries.</p>
+<h3>Approach</h3>
+<h6>To Insert a Node in the Prefix Trie</h6>
+ <ul>
+        <li>Begin at the root node.</li>
+        <li> Iterate through each character in the word. For each character:
+            <ul>
+                <li>Verify if a child node for that character exists.</li>
+                <li>If it doesn't, create a new node for the character and link it to the current node.</li>
+                <li>Increase the prefix count for each node.</li>
+            </ul>
+        </li>
+        <li>Finally, increase the end count for the last node of the word.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Advanced Operations/-LNel_2HA">
+<h6>To Count the Number of Words Equal to the Given Word in the Trie</h6>
+<ul>
+        <li> Begin at the root node.</li>
+        <li> Iterate through each character in the word. For each character:
+            <ul>
+                <li>Traverse down the Trie by following the characters of the word.</li>
+                <li>If any character is not found, return 0 (indicating the word is not in the Trie).</li>
+            </ul>
+        </li>
+        <li> Once all characters are found, return the end count of the node corresponding to the last character.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Advanced Operations/-c7KZF8oe">
+<h6>To Count the Number of Words Starting with the Given Word in the Trie</h6>
+<ul>
+        <li>Begin at the root node.</li>
+        <li>Iterate through each character in the prefix. For each character:
+            <ul>
+                <li>Move down the Trie by following the characters of the prefix.</li>
+                <li>If any character is not found, return 0 (indicating no words start with the given prefix).</li>
+            </ul>
+        </li>
+        <li> Once all characters are found, return the prefix count of the node corresponding to the last character.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Advanced Operations/-MXAyVPJc">
+<h6>To Erase the Given Word from the Trie</h6>
+<ul>
+        <li>Begin at the root node.</li>
+        <li>Iterate through each character in the word. For each character, move down the Trie following the characters of the word and at each node:
+            <ul>
+                <li>Decrease the prefix count.</li>
+                <li>It is assumed that the word to be erased is always present in the Trie.</li>
+            </ul>
+        </li>
+        <li>Once the end of the word is reached, decrease the end count.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Advanced Operations/-NyDWrKRM">
+<h3>Dry Run</h3>
+<p>For more details, watch the video above.</p>
+<h3>Solution</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* Define a struct for
+each node in the trie */
+struct Node {
+    /* Array to store
+    links to child nodes */
+    Node* links[26];
+    /* Counter for number of
+    words that end at this node */
+    int cntEndWith = 0;
+    /* Counter for number of words
+    that have this node as a prefix */
+    int cntPrefix = 0;
+
+    /* Function to check if the
+    node contains a specific key */
+    bool containsKey(char ch) {
+        /* Check if the link corresponding
+        to the character exists */
+        return (links[ch - 'a'] != NULL);
+    }
+
+    /* Function to get the child
+    node corresponding to a key */
+    Node* get(char ch) {
+        /* Return the link
+        corresponding to the character */
+        return links[ch - 'a'];
+    }
+
+    /* Function to insert a child
+    node with a specific key */
+    void put(char ch, Node* node) {
+        /* Set the link corresponding to
+        the character to the provided node */
+        links[ch - 'a'] = node;
+    }
+
+    /* Function to increment the
+    count of words that end at this node */
+    void increaseEnd() {
+        /* Increment the counter */
+        cntEndWith++;
+    }
+
+    /* Function to increment the count of
+    words that have this node as a prefix */
+    void increasePrefix() {
+        /* Increment the counter */
+        cntPrefix++;
+    }
+
+    /* Function to decrement the count
+    of words that end at this node */
+    void deleteEnd() {
+        /* Decrement the counter */
+        cntEndWith--;
+    }
+
+    /* Function to decrement the count of
+    words that have this node as a prefix */
+    void reducePrefix() {
+        /* Decrement the counter */
+        cntPrefix--;
+    }
+};
+
+/* Define a class for the
+trie data structure */
+class Trie {
+private:
+    /* Pointer to the
+    root node of the trie */
+    Node* root;
+
+public:
+    /* Constructor to initialize
+    the trie with an empty root node */
+    Trie() {
+        /* Create a new root node */
+        root = new Node();
+    }
+
+    /* Function to insert
+    a word into the trie */
+    void insert(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each
+        character in the word */
+        for (int i = 0; i < word.size(); i++) {
+            /* If the character is
+            not already in the trie */
+            if (!node->containsKey(word[i])) {
+                /* Create a new node
+                for the character */
+                node->put(word[i], new Node());
+            }
+            /* Move to the child node
+            corresponding to the character */
+            node = node->get(word[i]);
+            /* Increment the prefix
+            count for the node */
+            node->increasePrefix();
+        }
+        /* Increment the end count
+        for the last node of the word */
+        node->increaseEnd();
+    }
+
+    /* Function to count the number
+    of words equal to a given word */
+    int countWordsEqualTo(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each character in the word */
+        for (int i = 0; i < word.size(); i++) {
+            /* If the character is found in the trie */
+            if (node->containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node->get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words ending at the node */
+        return node->cntEndWith;
+    }
+
+    /* Function to count the number of
+    words starting with a given prefix */
+    int countWordsStartingWith(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each character in the prefix */
+        for (int i = 0; i < word.size(); i++) {
+            /* If the character is found in the trie */
+            if (node->containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node->get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words with the prefix */
+        return node->cntPrefix;
+    }
+
+    /* Function to erase a
+    word from the trie */
+    void erase(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each
+        character in the word */
+        for (int i = 0; i < word.size(); i++) {
+            /* If the character is
+            found in the trie */
+            if (node->containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node->get(word[i]);
+                /* Decrement the prefix
+                count for the node */
+                node->reducePrefix();
+            } else {
+                /* Return if the
+                character is not found */
+                return;
+            }
+        }
+        /* Decrement the end count
+        for the last node of the word */
+        node->deleteEnd();
+    }
+};
+
+int main() {
+    Trie trie;
+    trie.insert("apple");
+    trie.insert("apple");
+    cout << "Inserting strings 'apple' twice into Trie" << endl;
+    cout << "Count Words Equal to 'apple': ";
+    cout << trie.countWordsEqualTo("apple") << endl;
+    cout << "Count Words Starting With 'app': ";
+    cout << trie.countWordsStartingWith("app") << endl;
+    cout << "Erasing word 'apple' from trie" << endl;
+    trie.erase("apple");
+    cout << "Count Words Equal to 'apple': ";
+    cout << trie.countWordsEqualTo("apple") << endl;
+    cout << "Count Words Starting With 'app': ";
+    cout << trie.countWordsStartingWith("app") << endl;
+    cout << "Erasing word 'apple' from trie" << endl;
+    trie.erase("apple");
+    cout << "Count Words Starting With 'app': ";
+    cout << trie.countWordsStartingWith("app") << endl;
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Node {
+    /* Array to store links to child nodes,
+    each index represents a letter */
+    private Node[] links;
+    /* Counter for number of words
+    that end at this node */
+    private int cntEndWith;
+    /* Counter for number of words
+    that have this node as a prefix */
+    private int cntPrefix;
+
+    // Constructor
+    public Node() {
+        links = new Node[26];
+        cntEndWith = 0;
+        cntPrefix = 0;
+    }
+
+    /* Check if the node contains
+    a specific key (letter) */
+    public boolean containsKey(char ch) {
+        /* Check if the link corresponding
+        to the character exists */
+        return links[ch - 'a'] != null;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    public Node get(char ch) {
+        /* Return the link
+        corresponding to the character */
+        return links[ch - 'a'];
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    public void put(char ch, Node node) {
+        /* Set the link corresponding to
+        the character to the provided node */
+        links[ch - 'a'] = node;
+    }
+
+    /* Increment the count of words
+    that end at this node */
+    public void increaseEnd() {
+        /* Increment the counter */
+        cntEndWith++;
+    }
+
+    /* Increment the count of words
+    that have this node as a prefix */
+    public void increasePrefix() {
+        /* Increment the counter */
+        cntPrefix++;
+    }
+
+    /* Decrement the count of words
+    that end at this node */
+    public void deleteEnd() {
+        /* Decrement the counter */
+        cntEndWith--;
+    }
+
+    /* Decrement the count of words
+    that have this node as a prefix */
+    public void reducePrefix() {
+        /* Decrement the counter */
+        cntPrefix--;
+    }
+
+    public int getEnd() {
+        return cntEndWith;
+    }
+
+    public int getPrefix() {
+        return cntPrefix;
+    }
+}
+
+// Trie class
+class Trie {
+    private Node root;
+
+    /* Constructor to initialize the
+    Trie with an empty root node */
+    public Trie() {
+        root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    public void insert(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each
+        character in the word */
+        for (int i = 0; i < word.length(); i++) {
+            if (!node.containsKey(word.charAt(i))) {
+                /* Create a new node
+                for the character */
+                node.put(word.charAt(i), new Node());
+            }
+            /* Move to the child node
+            corresponding to the character */
+            node = node.get(word.charAt(i));
+            /* Increment the prefix
+            count for the node */
+            node.increasePrefix();
+        }
+        /* Increment the end count
+        for the last node of the word */
+        node.increaseEnd();
+    }
+
+    /* Returns the number of words
+    equal to a given word */
+    public int countWordsEqualTo(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the word */
+        for (int i = 0; i < word.length(); i++) {
+            if (node.containsKey(word.charAt(i))) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word.charAt(i));
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words ending at the node */
+        return node.getEnd();
+    }
+
+    /* Returns the number of words
+    starting with a given prefix */
+    public int countWordsStartingWith(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the prefix */
+        for (int i = 0; i < word.length(); i++) {
+            if (node.containsKey(word.charAt(i))) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word.charAt(i));
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words with the prefix */
+        return node.getPrefix();
+    }
+
+    /* Erases a word from the Trie */
+    public void erase(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the word */
+        for (int i = 0; i < word.length(); i++) {
+            if (node.containsKey(word.charAt(i))) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word.charAt(i));
+                /* Decrement the prefix
+                count for the node */
+                node.reducePrefix();
+            } else {
+                /* Return if the
+                character is not found */
+                return;
+            }
+        }
+        /* Decrement the end count
+        for the last node of the word */
+        node.deleteEnd();
+    }
+
+    public static void main(String[] args) {
+        Trie trie = new Trie();
+        trie.insert("apple");
+        trie.insert("apple");
+        System.out.println("Inserting strings 'apple' twice into Trie");
+        System.out.println("Count Words Equal to 'apple': " + trie.countWordsEqualTo("apple"));
+        System.out.println("Count Words Starting With 'app': " + trie.countWordsStartingWith("app"));
+        System.out.println("Erasing word 'apple' from Trie");
+        trie.erase("apple");
+        System.out.println("Count Words Equal to 'apple': " + trie.countWordsEqualTo("apple"));
+        System.out.println("Count Words Starting With 'app': " + trie.countWordsStartingWith("app"));
+        System.out.println("Erasing word 'apple' from Trie");
+        trie.erase("apple");
+        System.out.println("Count Words Starting With 'app': " + trie.countWordsStartingWith("app"));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Node:
+    def __init__(self):
+        # Array to store links to child nodes,
+        # each index represents a letter
+        self.links = [None] * 26
+        # Counter for number of words
+        # that end at this node
+        self.cntEndWith = 0
+        # Counter for number of words
+        # that have this node as a prefix
+        self.cntPrefix = 0
+
+    # Check if the node contains
+    # a specific key (letter)
+    def containsKey(self, ch):
+        # Check if the link corresponding
+        # to the character exists
+        return self.links[ord(ch) - ord('a')] is not None
+
+    # Get the node with a specific
+    # key (letter) from the Trie
+    def get(self, ch):
+        # Return the link
+        # corresponding to the character
+        return self.links[ord(ch) - ord('a')]
+
+    # Insert a new node with a specific
+    # key (letter) into the Trie
+    def put(self, ch, node):
+        # Set the link corresponding to
+        # the character to the provided node
+        self.links[ord(ch) - ord('a')] = node
+
+    # Increment the count of words
+    # that end at this node
+    def increaseEnd(self):
+        # Increment the counter
+        self.cntEndWith += 1
+
+    # Increment the count of words
+    # that have this node as a prefix
+    def increasePrefix(self):
+        # Increment the counter
+        self.cntPrefix += 1
+
+    # Decrement the count of words
+    # that end at this node
+    def deleteEnd(self):
+        # Decrement the counter
+        self.cntEndWith -= 1
+
+    # Decrement the count of words
+    # that have this node as a prefix
+    def reducePrefix(self):
+        # Decrement the counter
+        self.cntPrefix -= 1
+
+class Trie:
+    def __init__(self):
+        # Constructor to initialize the
+        # Trie with an empty root node
+        self.root = Node()
+
+    # Inserts a word into the Trie
+    # Time Complexity O(len), where len
+    # is the length of the word
+    def insert(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each
+        # character in the word
+        for ch in word:
+            if not node.containsKey(ch):
+                # Create a new node
+                # for the character
+                node.put(ch, Node())
+            # Move to the child node
+            # corresponding to the character
+            node = node.get(ch)
+            # Increment the prefix
+            # count for the node
+            node.increasePrefix()
+        # Increment the end count
+        # for the last node of the word
+        node.increaseEnd()
+
+    # Returns the number of words
+    # equal to a given word
+    def countWordsEqualTo(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each character in the word
+        for ch in word:
+            if node.containsKey(ch):
+                # Move to the child node
+                # corresponding to the character
+                node = node.get(ch)
+            else:
+                # Return 0 if the
+                # character is not found
+                return 0
+        # Return the count of
+        # words ending at the node
+        return node.cntEndWith
+
+    # Returns the number of words
+    # starting with a given prefix
+    def countWordsStartingWith(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each character in the prefix
+        for ch in word:
+            if node.containsKey(ch):
+                # Move to the child node
+                # corresponding to the character
+                node = node.get(ch)
+            else:
+                # Return 0 if the
+                # character is not found
+                return 0
+        # Return the count of
+        # words with the prefix
+        return node.cntPrefix
+
+    # Erases a word from the Trie
+    def erase(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each character in the word
+        for ch in word:
+            if node.containsKey(ch):
+                # Move to the child node
+                # corresponding to the character
+                node = node.get(ch)
+                # Decrement the prefix
+                # count for the node
+                node.reducePrefix()
+            else:
+                # Return if the
+                # character is not found
+                return
+        # Decrement the end count
+        # for the last node of the word
+        node.deleteEnd()
+
+# Testing the Trie class
+trie = Trie()
+trie.insert("apple")
+trie.insert("apple")
+print("Inserting strings 'apple' twice into Trie")
+print("Count Words Equal to 'apple':", trie.countWordsEqualTo("apple"))
+print("Count Words Starting With 'app':", trie.countWordsStartingWith("app"))
+print("Erasing word 'apple' from Trie")
+trie.erase("apple")
+print("Count Words Equal to 'apple':", trie.countWordsEqualTo("apple"))
+print("Count Words Starting With 'app':", trie.countWordsStartingWith("app"))
+print("Erasing word 'apple' from Trie")
+trie.erase("apple")
+print("Count Words Starting With 'app':", trie.countWordsStartingWith("app"))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Node {
+    constructor() {
+        /* Array to store links to child nodes,
+        each index represents a letter */
+        this.links = new Array(26).fill(null);
+        /* Counter for number of words
+        that end at this node */
+        this.cntEndWith = 0;
+        /* Counter for number of words
+        that have this node as a prefix */
+        this.cntPrefix = 0;
+    }
+
+    /* Check if the node contains
+    a specific key (letter) */
+    containsKey(ch) {
+        /* Check if the link corresponding
+        to the character exists */
+        return this.links[ch.charCodeAt(0) - 'a'.charCodeAt(0)] !== null;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    get(ch) {
+        /* Return the link
+        corresponding to the character */
+        return this.links[ch.charCodeAt(0) - 'a'.charCodeAt(0)];
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    put(ch, node) {
+        /* Set the link corresponding to
+        the character to the provided node */
+        this.links[ch.charCodeAt(0) - 'a'.charCodeAt(0)] = node;
+    }
+
+    /* Increment the count of words
+    that end at this node */
+    increaseEnd() {
+        /* Increment the counter */
+        this.cntEndWith++;
+    }
+
+    /* Increment the count of words
+    that have this node as a prefix */
+    increasePrefix() {
+        /* Increment the counter */
+        this.cntPrefix++;
+    }
+
+    /* Decrement the count of words
+    that end at this node */
+    deleteEnd() {
+        /* Decrement the counter */
+        this.cntEndWith--;
+    }
+
+    /* Decrement the count of words
+    that have this node as a prefix */
+    reducePrefix() {
+        /* Decrement the counter */
+        this.cntPrefix--;
+    }
+}
+
+// Trie class
+class Trie {
+    constructor() {
+        /* Constructor to initialize the
+        Trie with an empty root node */
+        this.root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    insert(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each
+        character in the word */
+        for (let i = 0; i < word.length; i++) {
+            if (!node.containsKey(word[i])) {
+                /* Create a new node
+                for the character */
+                node.put(word[i], new Node());
+            }
+            /* Move to the child node
+            corresponding to the character */
+            node = node.get(word[i]);
+            /* Increment the prefix
+            count for the node */
+            node.increasePrefix();
+        }
+        /* Increment the end count
+        for the last node of the word */
+        node.increaseEnd();
+    }
+
+    /* Returns the number of words
+    equal to a given word */
+    countWordsEqualTo(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each character in the word */
+        for (let i = 0; i < word.length; i++) {
+            if (node.containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words ending at the node */
+        return node.cntEndWith;
+    }
+
+    /* Returns the number of words
+    starting with a given prefix */
+    countWordsStartingWith(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each character in the prefix */
+        for (let i = 0; i < word.length; i++) {
+            if (node.containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words with the prefix */
+        return node.cntPrefix;
+    }
+
+    /* Erases a word from the Trie */
+    erase(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each character in the word */
+        for (let i = 0; i < word.length; i++) {
+            if (node.containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word[i]);
+                /* Decrement the prefix
+                count for the node */
+                node.reducePrefix();
+            } else {
+                /* Return if the
+                character is not found */
+                return;
+            }
+        }
+        /* Decrement the end count
+        for the last node of the word */
+        node.deleteEnd();
+    }
+}
+
+// Testing the Trie class
+const trie = new Trie();
+trie.insert("apple");
+trie.insert("apple");
+console.log("Inserting strings 'apple' twice into Trie");
+console.log("Count Words Equal to 'apple':", trie.countWordsEqualTo("apple"));
+console.log("Count Words Starting With 'app':", trie.countWordsStartingWith("app"));
+console.log("Erasing word 'apple' from Trie");
+trie.erase("apple");
+console.log("Count Words Equal to 'apple':", trie.countWordsEqualTo("apple"));
+console.log("Count Words Starting With 'app':", trie.countWordsStartingWith("app"));
+console.log("Erasing word 'apple' from Trie");
+trie.erase("apple");
+console.log("Count Words Starting With 'app':", trie.countWordsStartingWith("app"));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span><span>210</span><span>211</span><span>212</span><span>213</span><span>214</span><span>215</span><span>216</span><span>217</span><span>218</span><span>219</span><span>220</span><span>221</span><span>222</span><span>223</span><span>224</span><span>225</span><span>226</span><span>227</span><span>228</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Node
+{
+    /* Array to store links to child nodes,
+    each index represents a letter */
+    public Node[] links;
+    /* Counter for number of words
+    that end at this node */
+    public int cntEndWith;
+    /* Counter for number of words
+    that have this node as a prefix */
+    public int cntPrefix;
+
+    public Node()
+    {
+        /* Constructor to initialize the
+        Trie with an empty root node */
+        links = new Node[26];
+        cntEndWith = 0;
+        cntPrefix = 0;
+    }
+
+    /* Check if the node contains
+    a specific key (letter) */
+    public bool ContainsKey(char ch)
+    {
+        /* Check if the link corresponding
+        to the character exists */
+        return links[ch - 'a'] != null;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    public Node Get(char ch)
+    {
+        /* Return the link
+        corresponding to the character */
+        return links[ch - 'a'];
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    public void Put(char ch, Node node)
+    {
+        /* Set the link corresponding to
+        the character to the provided node */
+        links[ch - 'a'] = node;
+    }
+
+    /* Increment the count of words
+    that end at this node */
+    public void IncreaseEnd()
+    {
+        /* Increment the counter */
+        cntEndWith++;
+    }
+
+    /* Increment the count of words
+    that have this node as a prefix */
+    public void IncreasePrefix()
+    {
+        /* Increment the counter */
+        cntPrefix++;
+    }
+
+    /* Decrement the count of words
+    that end at this node */
+    public void DeleteEnd()
+    {
+        /* Decrement the counter */
+        cntEndWith--;
+    }
+
+    /* Decrement the count of words
+    that have this node as a prefix */
+    public void ReducePrefix()
+    {
+        /* Decrement the counter */
+        cntPrefix--;
+    }
+}
+
+// Trie class
+public class Trie
+{
+    private Node root;
+
+    public Trie()
+    {
+        /* Constructor to initialize the
+        Trie with an empty root node */
+        root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    public void Insert(string word)
+    {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each
+        character in the word */
+        foreach (char c in word)
+        {
+            if (!node.ContainsKey(c))
+            {
+                /* Create a new node
+                for the character */
+                node.Put(c, new Node());
+            }
+            /* Move to the child node
+            corresponding to the character */
+            node = node.Get(c);
+            /* Increment the prefix
+            count for the node */
+            node.IncreasePrefix();
+        }
+        /* Increment the end count
+        for the last node of the word */
+        node.IncreaseEnd();
+    }
+
+    /* Returns the number of words
+    equal to a given word */
+    public int CountWordsEqualTo(string word)
+    {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the word */
+        foreach (char c in word)
+        {
+            if (node.ContainsKey(c))
+            {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.Get(c);
+            }
+            else
+            {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words ending at the node */
+        return node.cntEndWith;
+    }
+
+    /* Returns the number of words
+    starting with a given prefix */
+    public int CountWordsStartingWith(string word)
+    {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the prefix */
+        foreach (char c in word)
+        {
+            if (node.ContainsKey(c))
+            {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.Get(c);
+            }
+            else
+            {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words with the prefix */
+        return node.cntPrefix;
+    }
+
+    /* Erases a word from the Trie */
+    public void Erase(string word)
+    {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the word */
+        foreach (char c in word)
+        {
+            if (node.ContainsKey(c))
+            {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.Get(c);
+                /* Decrement the prefix
+                count for the node */
+                node.ReducePrefix();
+            }
+            else
+            {
+                /* Return if the
+                character is not found */
+                return;
+            }
+        }
+        /* Decrement the end count
+        for the last node of the word */
+        node.DeleteEnd();
+    }
+}
+
+public class Solution
+{
+    public static void Main(string[] args)
+    {
+        // Testing the Trie class
+        Trie trie = new Trie();
+        trie.Insert("apple");
+        trie.Insert("apple");
+        Console.WriteLine("Inserting strings 'apple' twice into Trie");
+        Console.WriteLine("Count Words Equal to 'apple':" + trie.CountWordsEqualTo("apple"));
+        Console.WriteLine("Count Words Starting With 'app':" + trie.CountWordsStartingWith("app"));
+        Console.WriteLine("Erasing word 'apple' from Trie");
+        trie.Erase("apple");
+        Console.WriteLine("Count Words Equal to 'apple':" + trie.CountWordsEqualTo("apple"));
+        Console.WriteLine("Count Words Starting With 'app':" + trie.CountWordsStartingWith("app"));
+        Console.WriteLine("Erasing word 'apple' from Trie");
+        trie.Erase("apple");
+        Console.WriteLine("Count Words Starting With 'app':" + trie.CountWordsStartingWith("app"));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Define a struct for each node in the trie
+type Node struct {
+	// Array to store links to child nodes
+	links [26]*Node
+	// Counter for number of words that end at this node
+	cntEndWith int
+	// Counter for number of words that have this node as a prefix
+	cntPrefix int
+}
+
+// Function to check if the node contains a specific key
+func (n *Node) containsKey(ch byte) bool {
+	// Check if the link corresponding to the character exists
+	return n.links[ch-'a'] != nil
+}
+
+// Function to get the child node corresponding to a key
+func (n *Node) get(ch byte) *Node {
+	// Return the link corresponding to the character
+	return n.links[ch-'a']
+}
+
+// Function to insert a child node with a specific key
+func (n *Node) put(ch byte, node *Node) {
+	// Set the link corresponding to the character to the provided node
+	n.links[ch-'a'] = node
+}
+
+// Function to increment the count of words that end at this node
+func (n *Node) increaseEnd() {
+	// Increment the counter
+	n.cntEndWith++
+}
+
+// Function to increment the count of words that have this node as a prefix
+func (n *Node) increasePrefix() {
+	// Increment the counter
+	n.cntPrefix++
+}
+
+// Function to decrement the count of words that end at this node
+func (n *Node) deleteEnd() {
+	// Decrement the counter
+	n.cntEndWith--
+}
+
+// Function to decrement the count of words that have this node as a prefix
+func (n *Node) reducePrefix() {
+	// Decrement the counter
+	n.cntPrefix--
+}
+
+// Define a class for the trie data structure
+type Trie struct {
+	// Pointer to the root node of the trie
+	root *Node
+}
+
+// Constructor to initialize the trie with an empty root node
+func NewTrie() *Trie {
+	// Create a new root node
+	root := &Node{}
+	return &Trie{root: root}
+}
+
+// Function to insert a word into the trie
+func (t *Trie) Insert(word string) {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the word
+	for i := 0; i < len(word); i++ {
+		// If the character is not already in the trie
+		if !node.containsKey(word[i]) {
+			// Create a new node for the character
+			node.put(word[i], &Node{})
+		}
+		// Move to the child node corresponding to the character
+		node = node.get(word[i])
+		// Increment the prefix count for the node
+		node.increasePrefix()
+	}
+	// Increment the end count for the last node of the word
+	node.increaseEnd()
+}
+
+// Function to count the number of words equal to a given word
+func (t *Trie) CountWordsEqualTo(word string) int {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the word
+	for i := 0; i < len(word); i++ {
+		// If the character is found in the trie
+		if node.containsKey(word[i]) {
+			// Move to the child node corresponding to the character
+			node = node.get(word[i])
+		} else {
+			// Return 0 if the character is not found
+			return 0
+		}
+	}
+	// Return the count of words ending at the node
+	return node.cntEndWith
+}
+
+// Function to count the number of words starting with a given prefix
+func (t *Trie) CountWordsStartingWith(word string) int {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the prefix
+	for i := 0; i < len(word); i++ {
+		// If the character is found in the trie
+		if node.containsKey(word[i]) {
+			// Move to the child node corresponding to the character
+			node = node.get(word[i])
+		} else {
+			// Return 0 if the character is not found
+			return 0
+		}
+	}
+	// Return the count of words with the prefix
+	return node.cntPrefix
+}
+
+// Function to erase a word from the trie
+func (t *Trie) Erase(word string) {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the word
+	for i := 0; i < len(word); i++ {
+		// If the character is found in the trie
+		if node.containsKey(word[i]) {
+			// Move to the child node corresponding to the character
+			node = node.get(word[i])
+			// Decrement the prefix count for the node
+			node.reducePrefix()
+		} else {
+			// Return if the character is not found
+			return
+		}
+	}
+	// Decrement the end count for the last node of the word
+	node.deleteEnd()
+}
+
+func main() {
+	// Creating an instance of Trie
+	trie := NewTrie()
+	// Insert some words
+	trie.Insert("apple")
+	trie.Insert("apple")
+	fmt.Println("Inserting strings 'apple' twice into Trie")
+	// Count words equal to 'apple'
+	fmt.Print("Count Words Equal to 'apple': ")
+	fmt.Println(trie.CountWordsEqualTo("apple"))
+	// Count words starting with 'app'
+	fmt.Print("Count Words Starting With 'app': ")
+	fmt.Println(trie.CountWordsStartingWith("app"))
+	// Erase the word 'apple'
+	fmt.Println("Erasing word 'apple' from trie")
+	trie.Erase("apple")
+	// Count words equal to 'apple' after erasure
+	fmt.Print("Count Words Equal to 'apple': ")
+	fmt.Println(trie.CountWordsEqualTo("apple"))
+	// Count words starting with 'app' after erasure
+	fmt.Print("Count Words Starting With 'app': ")
+	fmt.Println(trie.CountWordsStartingWith("app"))
+	// Erase the word 'apple' again
+	fmt.Println("Erasing word 'apple' from trie")
+	trie.Erase("apple")
+	// Count words starting with 'app' after second erasure
+	fmt.Print("Count Words Starting With 'app': ")
+	fmt.Println(trie.CountWordsStartingWith("app"))
+}
+</code></pre></div></div></div>
+<h3>Complexity Analysis</h3>
+<strong>Time Complexity:  O(N) </strong> where N is the length of the word or prefix being processed.
+<ul>
+        <li><strong>Each method (inserting a word, counting words equal to a given word, counting words starting with a prefix, and erasing a word) involves traversing the Trie for each character of the input word or prefix.</strong></li>
+        <li><strong>Thus, the time complexity is linear relative to the length of the word or prefix being processed.</strong></li>
+    </ul>
+<br>
+<strong>Space Complexity: O(N)</strong> where N is the total number of characters across all words inserted into the Trie. The space complexity depends on the number of unique words added to the Trie and the average length of these words.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>struct Node {
+    /* Array to store
+    links to child nodes */
+    Node* links[26];
+    /* Counter for number of
+    words that end at this node */
+    int cntEndWith = 0;
+    /* Counter for number of words
+    that have this node as a prefix */
+    int cntPrefix = 0;
+
+    /* Function to check if the
+    node contains a specific key */
+    bool containsKey(char ch) {
+        /* Check if the link corresponding
+        to the character exists */
+        return (links[ch - &#x27;a&#x27;] != NULL);
+    }
+
+    /* Function to get the child
+    node corresponding to a key */
+    Node* get(char ch) {
+        /* Return the link
+        corresponding to the character */
+        return links[ch - &#x27;a&#x27;];
+    }
+
+    /* Function to insert a child
+    node with a specific key */
+    void put(char ch, Node* node) {
+        /* Set the link corresponding to
+        the character to the provided node */
+        links[ch - &#x27;a&#x27;] = node;
+    }
+
+    /* Function to increment the
+    count of words that end at this node */
+    void increaseEnd() {
+        /* Increment the counter */
+        cntEndWith++;
+    }
+
+    /* Function to increment the count of
+    words that have this node as a prefix */
+    void increasePrefix() {
+        /* Increment the counter */
+        cntPrefix++;
+    }
+
+    /* Function to decrement the count
+    of words that end at this node */
+    void deleteEnd() {
+        /* Decrement the counter */
+        cntEndWith--;
+    }
+
+    /* Function to decrement the count of
+    words that have this node as a prefix */
+    void reducePrefix() {
+        /* Decrement the counter */
+        cntPrefix--;
+    }
+};
+
+/* Define a class for the
+trie data structure */
+class Trie {
+private:
+    /* Pointer to the
+    root node of the trie */
+    Node* root;
+
+public:
+    /* Constructor to initialize
+    the trie with an empty root node */
+    Trie() {
+        /* Create a new root node */
+        root = new Node();
+    }
+
+    /* Function to insert
+    a word into the trie */
+    void insert(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each
+        character in the word */
+        for (int i = 0; i &lt; word.size(); i++) {
+            /* If the character is
+            not already in the trie */
+            if (!node-&gt;containsKey(word[i])) {
+                /* Create a new node
+                for the character */
+                node-&gt;put(word[i], new Node());
+            }
+            /* Move to the child node
+            corresponding to the character */
+            node = node-&gt;get(word[i]);
+            /* Increment the prefix
+            count for the node */
+            node-&gt;increasePrefix();
+        }
+        /* Increment the end count
+        for the last node of the word */
+        node-&gt;increaseEnd();
+    }
+
+    /* Function to count the number
+    of words equal to a given word */
+    int countWordsEqualTo(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each character in the word */
+        for (int i = 0; i &lt; word.size(); i++) {
+            /* If the character is found in the trie */
+            if (node-&gt;containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node-&gt;get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words ending at the node */
+        return node-&gt;cntEndWith;
+    }
+
+    /* Function to count the number of
+    words starting with a given prefix */
+    int countWordsStartingWith(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each character in the prefix */
+        for (int i = 0; i &lt; word.size(); i++) {
+            /* If the character is found in the trie */
+            if (node-&gt;containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node-&gt;get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words with the prefix */
+        return node-&gt;cntPrefix;
+    }
+
+    /* Function to erase a
+    word from the trie */
+    void erase(string word) {
+        /* Start from the root node */
+        Node* node = root;
+        /* Iterate over each
+        character in the word */
+        for (int i = 0; i &lt; word.size(); i++) {
+            /* If the character is
+            found in the trie */
+            if (node-&gt;containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node-&gt;get(word[i]);
+                /* Decrement the prefix
+                count for the node */
+                node-&gt;reducePrefix();
+            } else {
+                /* Return if the
+                character is not found */
+                return;
+            }
+        }
+        /* Decrement the end count
+        for the last node of the word */
+        node-&gt;deleteEnd();
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System.Collections.Generic;
+
+public class Trie
+{
+    private Dictionary&lt;char, Trie&gt; children;
+    private int wordCount;
+    private int prefixCount;
+
+    public Trie()
+    {
+        children = new Dictionary&lt;char, Trie&gt;();
+        wordCount = 0;
+        prefixCount = 0;
+    }
+
+    public void insert(string word)
+    {
+        Trie node = this;
+        foreach (char c in word)
+        {
+            if (!node.children.ContainsKey(c))
+            {
+                node.children[c] = new Trie();
+            }
+            node = node.children[c];
+            node.prefixCount++;
+        }
+        node.wordCount++;
+    }
+
+    public int countWordsEqualTo(string word)
+    {
+        Trie node = this;
+        foreach (char c in word)
+        {
+            if (!node.children.ContainsKey(c))
+            {
+                return 0;
+            }
+            node = node.children[c];
+        }
+        return node.wordCount;
+    }
+
+    public int countWordsStartingWith(string prefix)
+    {
+        Trie node = this;
+        foreach (char c in prefix)
+        {
+            if (!node.children.ContainsKey(c))
+            {
+                return 0;
+            }
+            node = node.children[c];
+        }
+        return node.prefixCount;
+    }
+
+    public void erase(string word)
+    {
+        Trie node = this;
+        if (word == null || word.Length == 0)
+        {
+            return;
+        }
+        foreach (char c in word)
+        {
+            if (!node.children.ContainsKey(c))
+            {
+                return;
+            }
+            node = node.children[c];
+            node.prefixCount--;
+        }
+        node.wordCount--;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Define a struct for each node in the trie
+type Node struct {
+	// Array to store links to child nodes
+	links [26]*Node
+	// Counter for number of words that end at this node
+	cntEndWith int
+	// Counter for number of words that have this node as a prefix
+	cntPrefix int
+}
+
+// Function to check if the node contains a specific key
+func (n *Node) containsKey(ch byte) bool {
+	// Check if the link corresponding to the character exists
+	return n.links[ch-&#x27;a&#x27;] != nil
+}
+
+// Function to get the child node corresponding to a key
+func (n *Node) get(ch byte) *Node {
+	// Return the link corresponding to the character
+	return n.links[ch-&#x27;a&#x27;]
+}
+
+// Function to insert a child node with a specific key
+func (n *Node) put(ch byte, node *Node) {
+	// Set the link corresponding to the character to the provided node
+	n.links[ch-&#x27;a&#x27;] = node
+}
+
+// Function to increment the count of words that end at this node
+func (n *Node) increaseEnd() {
+	// Increment the counter
+	n.cntEndWith++
+}
+
+// Function to increment the count of words that have this node as a prefix
+func (n *Node) increasePrefix() {
+	// Increment the counter
+	n.cntPrefix++
+}
+
+// Function to decrement the count of words that end at this node
+func (n *Node) deleteEnd() {
+	// Decrement the counter
+	n.cntEndWith--
+}
+
+// Function to decrement the count of words that have this node as a prefix
+func (n *Node) reducePrefix() {
+	// Decrement the counter
+	n.cntPrefix--
+}
+
+// Define a class for the trie data structure
+type Trie struct {
+	// Pointer to the root node of the trie
+	root *Node
+}
+
+// Constructor to initialize the trie with an empty root node
+func NewTrie() *Trie {
+	// Create a new root node
+	root := &amp;Node{}
+	return &amp;Trie{root: root}
+}
+
+// Function to insert a word into the trie
+func (t *Trie) Insert(word string) {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the word
+	for i := 0; i &lt; len(word); i++ {
+		// If the character is not already in the trie
+		if !node.containsKey(word[i]) {
+			// Create a new node for the character
+			node.put(word[i], &amp;Node{})
+		}
+		// Move to the child node corresponding to the character
+		node = node.get(word[i])
+		// Increment the prefix count for the node
+		node.increasePrefix()
+	}
+	// Increment the end count for the last node of the word
+	node.increaseEnd()
+}
+
+// Function to count the number of words equal to a given word
+func (t *Trie) CountWordsEqualTo(word string) int {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the word
+	for i := 0; i &lt; len(word); i++ {
+		// If the character is found in the trie
+		if node.containsKey(word[i]) {
+			// Move to the child node corresponding to the character
+			node = node.get(word[i])
+		} else {
+			// Return 0 if the character is not found
+			return 0
+		}
+	}
+	// Return the count of words ending at the node
+	return node.cntEndWith
+}
+
+// Function to count the number of words starting with a given prefix
+func (t *Trie) CountWordsStartingWith(word string) int {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the prefix
+	for i := 0; i &lt; len(word); i++ {
+		// If the character is found in the trie
+		if node.containsKey(word[i]) {
+			// Move to the child node corresponding to the character
+			node = node.get(word[i])
+		} else {
+			// Return 0 if the character is not found
+			return 0
+		}
+	}
+	// Return the count of words with the prefix
+	return node.cntPrefix
+}
+
+// Function to erase a word from the trie
+func (t *Trie) Erase(word string) {
+	// Start from the root node
+	node := t.root
+	// Iterate over each character in the word
+	for i := 0; i &lt; len(word); i++ {
+		// If the character is found in the trie
+		if node.containsKey(word[i]) {
+			// Move to the child node corresponding to the character
+			node = node.get(word[i])
+			// Decrement the prefix count for the node
+			node.reducePrefix()
+		} else {
+			// Return if the character is not found
+			return
+		}
+	}
+	// Decrement the end count for the last node of the word
+	node.deleteEnd()
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Node {
+    /* Array to store links to child nodes,
+    each index represents a letter */
+    private Node[] links;
+    /* Counter for number of words
+    that end at this node */
+    private int cntEndWith;
+    /* Counter for number of words
+    that have this node as a prefix */
+    private int cntPrefix;
+
+    // Constructor
+    public Node() {
+        links = new Node[26];
+        cntEndWith = 0;
+        cntPrefix = 0;
+    }
+
+    /* Check if the node contains
+    a specific key (letter) */
+    public boolean containsKey(char ch) {
+        /* Check if the link corresponding
+        to the character exists */
+        return links[ch - &#x27;a&#x27;] != null;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    public Node get(char ch) {
+        /* Return the link
+        corresponding to the character */
+        return links[ch - &#x27;a&#x27;];
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    public void put(char ch, Node node) {
+        /* Set the link corresponding to
+        the character to the provided node */
+        links[ch - &#x27;a&#x27;] = node;
+    }
+
+    /* Increment the count of words
+    that end at this node */
+    public void increaseEnd() {
+        /* Increment the counter */
+        cntEndWith++;
+    }
+
+    /* Increment the count of words
+    that have this node as a prefix */
+    public void increasePrefix() {
+        /* Increment the counter */
+        cntPrefix++;
+    }
+
+    /* Decrement the count of words
+    that end at this node */
+    public void deleteEnd() {
+        /* Decrement the counter */
+        cntEndWith--;
+    }
+
+    /* Decrement the count of words
+    that have this node as a prefix */
+    public void reducePrefix() {
+        /* Decrement the counter */
+        cntPrefix--;
+    }
+
+    public int getEnd() {
+        return cntEndWith;
+    }
+
+    public int getPrefix() {
+        return cntPrefix;
+    }
+}
+
+// Trie class
+class Trie {
+    private Node root;
+
+    /* Constructor to initialize the
+    Trie with an empty root node */
+    public Trie() {
+        root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    public void insert(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each
+        character in the word */
+        for (int i = 0; i &lt; word.length(); i++) {
+            if (!node.containsKey(word.charAt(i))) {
+                /* Create a new node
+                for the character */
+                node.put(word.charAt(i), new Node());
+            }
+            /* Move to the child node
+            corresponding to the character */
+            node = node.get(word.charAt(i));
+            /* Increment the prefix
+            count for the node */
+            node.increasePrefix();
+        }
+        /* Increment the end count
+        for the last node of the word */
+        node.increaseEnd();
+    }
+
+    /* Returns the number of words
+    equal to a given word */
+    public int countWordsEqualTo(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the word */
+        for (int i = 0; i &lt; word.length(); i++) {
+            if (node.containsKey(word.charAt(i))) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word.charAt(i));
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words ending at the node */
+        return node.getEnd();
+    }
+
+    /* Returns the number of words
+    starting with a given prefix */
+    public int countWordsStartingWith(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the prefix */
+        for (int i = 0; i &lt; word.length(); i++) {
+            if (node.containsKey(word.charAt(i))) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word.charAt(i));
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words with the prefix */
+        return node.getPrefix();
+    }
+
+    /* Erases a word from the Trie */
+    public void erase(String word) {
+        /* Start from the root node */
+        Node node = root;
+        /* Iterate over each character in the word */
+        for (int i = 0; i &lt; word.length(); i++) {
+            if (node.containsKey(word.charAt(i))) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word.charAt(i));
+                /* Decrement the prefix
+                count for the node */
+                node.reducePrefix();
+            } else {
+                /* Return if the
+                character is not found */
+                return;
+            }
+        }
+        /* Decrement the end count
+        for the last node of the word */
+        node.deleteEnd();
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Node {
+    constructor() {
+        /* Array to store links to child nodes,
+        each index represents a letter */
+        this.links = new Array(26).fill(null);
+        /* Counter for number of words
+        that end at this node */
+        this.cntEndWith = 0;
+        /* Counter for number of words
+        that have this node as a prefix */
+        this.cntPrefix = 0;
+    }
+
+    /* Check if the node contains
+    a specific key (letter) */
+    containsKey(ch) {
+        /* Check if the link corresponding
+        to the character exists */
+        return this.links[ch.charCodeAt(0) - &#x27;a&#x27;.charCodeAt(0)] !== null;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    get(ch) {
+        /* Return the link
+        corresponding to the character */
+        return this.links[ch.charCodeAt(0) - &#x27;a&#x27;.charCodeAt(0)];
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    put(ch, node) {
+        /* Set the link corresponding to
+        the character to the provided node */
+        this.links[ch.charCodeAt(0) - &#x27;a&#x27;.charCodeAt(0)] = node;
+    }
+
+    /* Increment the count of words
+    that end at this node */
+    increaseEnd() {
+        /* Increment the counter */
+        this.cntEndWith++;
+    }
+
+    /* Increment the count of words
+    that have this node as a prefix */
+    increasePrefix() {
+        /* Increment the counter */
+        this.cntPrefix++;
+    }
+
+    /* Decrement the count of words
+    that end at this node */
+    deleteEnd() {
+        /* Decrement the counter */
+        this.cntEndWith--;
+    }
+
+    /* Decrement the count of words
+    that have this node as a prefix */
+    reducePrefix() {
+        /* Decrement the counter */
+        this.cntPrefix--;
+    }
+}
+
+// Trie class
+class Trie {
+    constructor() {
+        /* Constructor to initialize the
+        Trie with an empty root node */
+        this.root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    insert(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each
+        character in the word */
+        for (let i = 0; i &lt; word.length; i++) {
+            if (!node.containsKey(word[i])) {
+                /* Create a new node
+                for the character */
+                node.put(word[i], new Node());
+            }
+            /* Move to the child node
+            corresponding to the character */
+            node = node.get(word[i]);
+            /* Increment the prefix
+            count for the node */
+            node.increasePrefix();
+        }
+        /* Increment the end count
+        for the last node of the word */
+        node.increaseEnd();
+    }
+
+    /* Returns the number of words
+    equal to a given word */
+    countWordsEqualTo(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each character in the word */
+        for (let i = 0; i &lt; word.length; i++) {
+            if (node.containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words ending at the node */
+        return node.cntEndWith;
+    }
+
+    /* Returns the number of words
+    starting with a given prefix */
+    countWordsStartingWith(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each character in the prefix */
+        for (let i = 0; i &lt; word.length; i++) {
+            if (node.containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word[i]);
+            } else {
+                /* Return 0 if the
+                character is not found */
+                return 0;
+            }
+        }
+        /* Return the count of
+        words with the prefix */
+        return node.cntPrefix;
+    }
+
+    /* Erases a word from the Trie */
+    erase(word) {
+        /* Start from the root node */
+        let node = this.root;
+        /* Iterate over each character in the word */
+        for (let i = 0; i &lt; word.length; i++) {
+            if (node.containsKey(word[i])) {
+                /* Move to the child node
+                corresponding to the character */
+                node = node.get(word[i]);
+                /* Decrement the prefix
+                count for the node */
+                node.reducePrefix();
+            } else {
+                /* Return if the
+                character is not found */
+                return;
+            }
+        }
+        /* Decrement the end count
+        for the last node of the word */
+        node.deleteEnd();
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Node:
+    def __init__(self):
+        # Array to store links to child nodes,
+        # each index represents a letter
+        self.links = [None] * 26
+        # Counter for number of words
+        # that end at this node
+        self.cntEndWith = 0
+        # Counter for number of words
+        # that have this node as a prefix
+        self.cntPrefix = 0
+
+    # Check if the node contains
+    # a specific key (letter)
+    def containsKey(self, ch):
+        # Check if the link corresponding
+        # to the character exists
+        return self.links[ord(ch) - ord(&#x27;a&#x27;)] is not None
+
+    # Get the node with a specific
+    # key (letter) from the Trie
+    def get(self, ch):
+        # Return the link
+        # corresponding to the character
+        return self.links[ord(ch) - ord(&#x27;a&#x27;)]
+
+    # Insert a new node with a specific
+    # key (letter) into the Trie
+    def put(self, ch, node):
+        # Set the link corresponding to
+        # the character to the provided node
+        self.links[ord(ch) - ord(&#x27;a&#x27;)] = node
+
+    # Increment the count of words
+    # that end at this node
+    def increaseEnd(self):
+        # Increment the counter
+        self.cntEndWith += 1
+
+    # Increment the count of words
+    # that have this node as a prefix
+    def increasePrefix(self):
+        # Increment the counter
+        self.cntPrefix += 1
+
+    # Decrement the count of words
+    # that end at this node
+    def deleteEnd(self):
+        # Decrement the counter
+        self.cntEndWith -= 1
+
+    # Decrement the count of words
+    # that have this node as a prefix
+    def reducePrefix(self):
+        # Decrement the counter
+        self.cntPrefix -= 1
+
+class Trie:
+    def __init__(self):
+        # Constructor to initialize the
+        # Trie with an empty root node
+        self.root = Node()
+
+    # Inserts a word into the Trie
+    # Time Complexity O(len), where len
+    # is the length of the word
+    def insert(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each
+        # character in the word
+        for ch in word:
+            if not node.containsKey(ch):
+                # Create a new node
+                # for the character
+                node.put(ch, Node())
+            # Move to the child node
+            # corresponding to the character
+            node = node.get(ch)
+            # Increment the prefix
+            # count for the node
+            node.increasePrefix()
+        # Increment the end count
+        # for the last node of the word
+        node.increaseEnd()
+
+    # Returns the number of words
+    # equal to a given word
+    def countWordsEqualTo(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each character in the word
+        for ch in word:
+            if node.containsKey(ch):
+                # Move to the child node
+                # corresponding to the character
+                node = node.get(ch)
+            else:
+                # Return 0 if the
+                # character is not found
+                return 0
+        # Return the count of
+        # words ending at the node
+        return node.cntEndWith
+
+    # Returns the number of words
+    # starting with a given prefix
+    def countWordsStartingWith(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each character in the prefix
+        for ch in word:
+            if node.containsKey(ch):
+                # Move to the child node
+                # corresponding to the character
+                node = node.get(ch)
+            else:
+                # Return 0 if the
+                # character is not found
+                return 0
+        # Return the count of
+        # words with the prefix
+        return node.cntPrefix
+
+    # Erases a word from the Trie
+    def erase(self, word):
+        # Start from the root node
+        node = self.root
+        # Iterate over each character in the word
+        for ch in word:
+            if node.containsKey(ch):
+                # Move to the child node
+                # corresponding to the character
+                node = node.get(ch)
+                # Decrement the prefix
+                # count for the node
+                node.reducePrefix()
+            else:
+                # Return if the
+                # character is not found
+                return
+        # Decrement the end count
+        # for the last node of the word
+        node.deleteEnd()</code></pre></div>
+</body>
+</html>

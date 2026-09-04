@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asteroid Collision</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Asteroid Collision</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Simulation</span><span>Stack</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>You are given an integer array <strong>asteroids </strong>representing asteroids in a row. <strong>Each asteroid moves at the</strong> <strong>same speed.</strong></p><p><br></p><p>The <strong>absolute value </strong>of an asteroid represents its <strong>size</strong>. The sign of an asteroid represents its direction: <strong>positive (+) means moving right, negative (-) means moving left.</strong></p><p><br></p><p><strong>Collision rules:</strong></p><ul><li>Asteroids moving in the same direction never collide.</li><li>When two asteroids moving in opposite directions collide, the smaller asteroid explodes and the larger asteroid continues moving in the same direction.</li><li>If both asteroids are equal in size, both explode.</li><li>Collisions are resolved one at a time, from left to right. If an asteroid survives a collision, it continues moving and may collide immediately with the next asteroid in its path.</li></ul><p><br></p><p>Return the <strong>state </strong>of the <strong>asteroids </strong>after all collisions as an array in the <strong>same order.</strong></p>
+</div>
+<div class="section"><h2>Constraints</h2><p>·  2 <= asteroids.length <= 10<sup>5</sup></p><p>·  -10<sup>6</sup> <= asteroids[i] <= 10<sup>6</sup></p><p>·  asteroids[i] != 0</p></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input: </strong>asteroids = [1, 2, 3, -4, -2]</p><p><strong>Output:</strong> [-4, -2]</p><p><img src="https://static.takeuforward.org/content/1772683291_WBVuSUjz.png"></p><p><strong>Explanation:</strong></p><ul><li>Asteroid 3 and -4 collide → 3 explodes, -4 survives.</li><li>Asteroid -4 continues and collides with 2 → 2 explodes, -4 continues.</li><li>Asteroid -4 collides with 1 → 1 explodes, -4 continues.</li><li>Next asteroid -2 is moving left → no collision.</li></ul><p><strong>Final state: [-4, -2].</strong></p><h3>Example 2</h3><p><strong>Input:</strong> asteroids = [5, 10, -5, -10, 8, -8, -3, 12]</p><p><strong>Output:</strong> [5, 12]</p><p><strong>Explanation:</strong></p><ul><li>Asteroid 10 and -5 collide → -5 explodes, 10 survives.</li><li>Asteroid 10 and -10 collide → both explode.</li><li>Asteroid 8 and -8 collide → both explode.</li><li>Asteroid -3 moves left → collides with 5 (right-moving) → 5 > 3 → -3 explodes, 5 survives.</li><li>Asteroid 12 moves right → no collision with 5 because it is behind → 12 survives.</li></ul><p><strong>Final state: [5, 12]</strong></p><h3>Example 3</h3><p>Input: asteroids = [10, 2, -5]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>One real-world application of the "asteroid collision" problem is in video game development. This resembles concepts utilized in physics engines, which simulate and predict the interactions between objects in a game world, such as asteroids colliding and exploding in a space-themed game. If two in-game entities collide, their size (or health points), direction, and velocity are factors that decide the outcome - similar to the asteroid collision problem. Handling these interactions correctly is crucial in developing games with realistic and enjoyable gameplay mechanics.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    The first thing to understand is the condition for two asteroids to collide. <br>
+    </p><h6>When does two asteroids collide?</h6>
+    We know that when two asteroids are moving in opposite direction, they collide. Now, there can be two cases of opposite moving asteroids: 
+    <ul>
+        <li>Moving apart from each other.</li>
+        <li>Moving towards each other.</li>
+    </ul> <br>
+    It is clear that the collision will only happen in the second case, i.e., when the asteroids are moving towards each other. This will happen when the first asteriod is moving towards right and later asteroid is moving towards left. <br><br>
+
+    Now, in order to perform the collisions, only the left moving asteroids must be observed as all the earlier asteroids will be moving towards the right direction. <br>
+    For every left moving asteroid, we must <strong>first</strong> consider the asteroid that was found <strong>last </strong>moving towards the right (because it will be the asteroid undergoing collision first). This gives an idea of using Stack data structure because it stores elements in LIFO fashion. <br><br>
+    
+    Now there can three scenarios that can arise during the collision: 
+    <ul>
+        <li><strong>The size of the right moving asteroid is more than the size of the left moving asteroid:</strong> In this case, the left moving asteroid will be destroyed leaving the right moving asteroird moving in the same direction.</li>
+        <li><strong>The size of the right moving asteroid is less than the size of the left moving asteroid:</strong> In this case, the right moving asteroid will be destroyed leaving the left moving asteroird moving in the same direction which may potentially collide with more asteroids.</li>
+        <li><strong>The sizes of the right moving asteroid and left moving asteroid are identical:</strong> In this case, both the asteroids will be destroyed leaving no asteroid from this collision.</li>
+    </ul> <br>
+
+    Thus, all the right moving asteroids can be stored in the stack and for every right moving asteroid, collisions can be performed. Once the collision are done, any right or left moving asteroid will be left in the stack. 
+    
+    <h6>Modification:</h6>
+    Consider the following example: <br>
+    <img src="" alt=""> (img yet to be inserted) <br>
+    Here, once all the collisions happen, the answer is stored in the stack. But retrieving the elements from stack will return the elements in a reverse order. Hence, the elements must be reversed before returning the answer which takes extra time. <br> <br>
+
+    This can be avoided by <b>implementing</b> the stack <strong>using a list</strong>.
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Create a stack (using list implementation) to keep track of the asteroids that are still in motion after potential collisions.  Loop through each asteroid in the input array.</li>
+   <li><strong>Handling right moving asteroids:</strong> If the current asteroid is moving to the right (positive value), push it onto the stack.</li>
+   <li><strong>Handling left moving asteroids:</strong>
+    <ul>
+        <li>If the current asteroid is moving to the left (negative value), compare it with the asteroids on the stack. </li>
+        <li>Continue to compare and remove right-moving asteroids (positive values) from the stack if they are smaller in size than the current left-moving asteroid.</li>
+        <li>If an asteroid on the stack has the same size as the current left-moving asteroid, remove both asteroids.</li>
+        <li>If the stack becomes empty or the top of the stack is a left-moving asteroid (negative value), there will be no collision happening with the current left-moving asteroid. Hence, push the current left-moving asteroid onto the stack.</li>
+    </ul>
+    </li>
+   <li>After processing all asteroids, the stack will contain the state of the asteroids after all collisions. Return this as the final result.</li>
+</ol>
+
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/1.png-yW6A8Q0e" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/2.png-p8Hp3ePZ" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/3.png-DvdULhdI" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/4.png-mVMC5ax9" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/5.png-Y93yCtuv" alt="Image 5"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/1.png-yW6A8Q0e" alt="Image 1"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/2.png-p8Hp3ePZ" alt="Image 2"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/3.png-DvdULhdI" alt="Image 3"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/4.png-mVMC5ax9" alt="Image 4"><img src="https://static.takeuforward.org/premium/Stack and Queues/Monotonic Stack/Asteroid Collision/5.png-Y93yCtuv" alt="Image 5"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+
+    /* Function to determine the state of 
+    asteroids after all collisions */
+    vector<int> asteroidCollision(vector<int> &asteroids){
+        
+        // Size of the array
+        int n = asteroids.size();
+        
+        // List implementation of stack
+        vector<int> st;  
+        
+        // Traverse all the asteroids
+        for(int i=0; i < n; i++) {
+            
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if(asteroids[i] > 0) {
+                st.push_back(asteroids[i]);
+            }
+            
+            /* Else if the asteroid is moving 
+            right, perform the collisions */
+            else {
+                
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while(!st.empty() && st.back() > 0 && 
+                      st.back() < abs(asteroids[i])) {
+                    
+                    // Destroy the asteroid
+                    st.pop_back();
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if(!st.empty() && 
+                    st.back() == abs(asteroids[i])) {
+                    
+                    // Destroy both the asteroids
+                    st.pop_back();
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if(st.empty() ||
+                        st.back() < 0){
+                    
+                    // Storing the array in final state
+                    st.push_back(asteroids[i]);
+                }
+            }
+        }
+        
+        // Return the final state of asteroids
+        return st;
+    }
+};
+
+int main() {
+    vector<int> arr = {10, 20, -10};
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine the state of 
+    asteroids after all collisions */
+    vector<int> ans = sol.asteroidCollision(arr);
+    
+    cout << "The state of asteroids after collisions is: ";
+    for(int i=0; i < ans.size(); i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    /* Function to determine the state of 
+    asteroids after all collisions */
+    public int[] asteroidCollision(int[] asteroids) {
+        
+        // Size of the array
+        int n = asteroids.length;
+        
+        // List implementation of stack
+        List<Integer> st = new ArrayList<>();  
+        
+        // Traverse all the asteroids
+        for(int i = 0; i < n; i++) {
+            
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if(asteroids[i] > 0) {
+                st.add(asteroids[i]);
+            }
+            
+            /* Else if the asteroid is moving 
+            left, perform the collisions */
+            else {
+                
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while(!st.isEmpty() && st.get(st.size() - 1) > 0 && 
+                      st.get(st.size() - 1) < Math.abs(asteroids[i])) {
+                    
+                    // Destroy the asteroid
+                    st.remove(st.size() - 1);
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if(!st.isEmpty() && 
+                    st.get(st.size() - 1) == Math.abs(asteroids[i])) {
+                    
+                    // Destroy both the asteroids
+                    st.remove(st.size() - 1);
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if(st.isEmpty() ||
+                        st.get(st.size() - 1) < 0){
+                    
+                    // Storing the array in final state
+                    st.add(asteroids[i]);
+                }
+            }
+        }
+        
+        // Convert list to array
+        int[] result = new int[st.size()];
+        for(int i = 0; i < st.size(); i++) {
+            result[i] = st.get(i);
+        }
+        
+        // Return the final state of asteroids
+        return result;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {10, 20, -10};
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution(); 
+        
+        /* Function call to determine the state of 
+        asteroids after all collisions */
+        int[] ans = sol.asteroidCollision(arr);
+        
+        System.out.print("The state of asteroids after collisions is: ");
+        for(int i = 0; i < ans.length; i++) {
+            System.out.print(ans[i] + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def asteroidCollision(self, asteroids):
+        
+        # Size of the array
+        n = len(asteroids)
+        
+        # List implementation of stack
+        st = []
+        
+        # Traverse all the asteroids
+        for i in range(n):
+            
+            # Push the asteroid in stack if a 
+            # right moving asteroid is seen
+            if asteroids[i] > 0:
+                st.append(asteroids[i])
+            
+            # Else if the asteroid is moving 
+            # left, perform the collisions
+            else:
+                
+                # Until the right moving asteroids are 
+                # smaller in size, keep on destroying them 
+                while (st and st[-1] > 0 and 
+                       st[-1] < abs(asteroids[i])):
+                    
+                    # Destroy the asteroid
+                    st.pop()
+                
+                # If there is right moving asteroid 
+                # which is of same size
+                if st and st[-1] == abs(asteroids[i]):
+                    
+                    # Destroy both the asteroids
+                    st.pop()
+                
+                # Otherwise, if there is no left
+                # moving asteroid, the right moving 
+                # asteroid will not be destroyed
+                elif not st or st[-1] < 0:
+                    
+                    # Storing the array in final state
+                    st.append(asteroids[i])
+        
+        # Return the final state of asteroids
+        return st
+
+# Main function to test the solution
+if __name__ == "__main__":
+    arr = [10, 20, -10]
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to determine the state of 
+    # asteroids after all collisions
+    ans = sol.asteroidCollision(arr)
+    
+    print("The state of asteroids after collisions is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+
+    /* Function to determine the state of 
+    asteroids after all collisions */
+    asteroidCollision(asteroids) {
+        
+        // Size of the array
+        let n = asteroids.length;
+        
+        // List implementation of stack
+        let st = [];
+        
+        // Traverse all the asteroids
+        for (let i = 0; i < n; i++) {
+            
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if (asteroids[i] > 0) {
+                st.push(asteroids[i]);
+            }
+            
+            /* Else if the asteroid is moving 
+            left, perform the collisions */
+            else {
+                
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while (st.length > 0 && st[st.length - 1] > 0 && 
+                       st[st.length - 1] < Math.abs(asteroids[i])) {
+                    
+                    // Destroy the asteroid
+                    st.pop();
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if (st.length > 0 && 
+                    st[st.length - 1] == Math.abs(asteroids[i])) {
+                    
+                    // Destroy both the asteroids
+                    st.pop();
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if (st.length == 0 ||
+                         st[st.length - 1] < 0){
+                    
+                    // Storing the array in final state
+                    st.push(asteroids[i]);
+                }
+            }
+        }
+        
+        // Return the final state of asteroids
+        return st;
+    }
+}
+
+// Main function to test the solution
+const arr = [10, 20, -10];
+
+/* Creating an instance of 
+Solution class */
+const sol = new Solution(); 
+
+/* Function call to determine the state of 
+asteroids after all collisions */
+const ans = sol.asteroidCollision(arr);
+
+console.log("The state of asteroids after collisions is:", ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    /* Function to determine the state of 
+    asteroids after all collisions */
+    public List<int> AsteroidCollision(List<int> asteroids)
+    {
+        // Size of the array
+        // int n = asteroids.Count;
+        
+        // List implementation of stack
+        Stack<int> st = new Stack<int>();
+        
+        // Traverse all the asteroids
+        foreach (int asteroid in asteroids)
+        {
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if (asteroid > 0)
+            {
+                st.Push(asteroid);
+            }
+            
+            /* Else if the asteroid is moving 
+            left, perform the collisions */
+            else
+            {   
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while (st.Count > 0 && st.Peek() > 0 && 
+                       st.Peek() < Math.Abs(asteroid))
+                {
+                    // Destroy the asteroid
+                    st.Pop();
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if (st.Count > 0 && 
+                    st.Peek() == Math.Abs(asteroid))
+                {
+                    // Destroy both the asteroids
+                    st.Pop();
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if (st.Count == 0 ||
+                         st.Peek() < 0)
+                {
+                    // Storing the array in final state
+                    st.Push(asteroid);
+                }
+            }
+        }
+        
+        // Return the final state of asteroids
+        List<int> result = st.ToList();
+        result.Reverse(); // Stack.ToList() returns elements in reverse order of push, so reverse to match original order
+        return result;
+    }
+}
+
+public class Program
+{
+    // Main function to test the solution
+    public static void Main(string[] args)
+    {
+        // Example input: 10 20 -10
+        Console.WriteLine("Enter asteroids (space-separated integers):");
+        string inputLine = Console.ReadLine();
+        List<int> arr = inputLine.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                                 .Select(int.Parse)
+                                 .ToList();
+
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution(); 
+
+        /* Function call to determine the state of 
+        asteroids after all collisions */
+        List<int> ans = sol.AsteroidCollision(arr);
+
+        Console.WriteLine("The state of asteroids after collisions is: " + string.Join(", ", ans));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Helper function to get absolute value of an integer
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+/* Function to determine the state of
+asteroids after all collisions */
+func asteroidCollision(asteroids []int) []int {
+
+	// Size of the array
+	n := len(asteroids)
+
+	// List implementation of stack
+	st := []int{}
+
+	// Traverse all the asteroids
+	for i := 0; i < n; i++ {
+
+		/* Push the asteroid in stack if a
+		right moving asteroid is seen */
+		if asteroids[i] > 0 {
+			st = append(st, asteroids[i])
+		} else {
+
+			/* Until the right moving asteroids are
+			smaller in size, keep on destroying them */
+			for len(st) > 0 && st[len(st)-1] > 0 &&
+				st[len(st)-1] < abs(asteroids[i]) {
+
+				// Destroy the asteroid
+				st = st[:len(st)-1]
+			}
+
+			/* If there is right moving asteroid
+			which is of same size */
+			if len(st) > 0 && st[len(st)-1] == abs(asteroids[i]) {
+
+				// Destroy both the asteroids
+				st = st[:len(st)-1]
+			} else if len(st) == 0 || st[len(st)-1] < 0 {
+
+				/* Otherwise, if there is no left
+				moving asteroid, the right moving
+				asteroid will not be destroyed */
+
+				// Storing the array in final state
+				st = append(st, asteroids[i])
+			}
+		}
+	}
+
+	// Return the final state of asteroids
+	return st
+}
+
+func main() {
+	arr := []int{10, 20, -10}
+
+	/* Function call to determine the state of
+	asteroids after all collisions */
+	ans := asteroidCollision(arr)
+
+	fmt.Print("The state of asteroids after collisions is: ")
+	for i := 0; i < len(ans); i++ {
+		fmt.Print(ans[i], " ")
+	}
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N)</strong> (where N is the size of the asteroids array) <br>
+    </p><ul>
+        <li>Traversing all the asteroids takes O(N) time.</li>
+        <li>Handling collisions: <br>
+            <ul>
+                <li>For each asteroid in the array, we may push or pop it from the stack at most once.</li>
+                <li>The while loop checks the top of the stack and can pop elements from it. In the worst case, every asteroid can be pushed and popped from the stack once taking overall O(N) time.</li>
+            </ul>
+        </li>
+    </ul>
+   
+<p></p>
+
+<p><strong>Space Complexity: O(N)</strong> <br>
+   In the worst case, all asteroids will be stored in the stack if there are no collisions, leading to a space requirement of O(N).
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+
+    /* Function to determine the state of 
+    asteroids after all collisions */
+    vector&lt;int&gt; asteroidCollision(vector&lt;int&gt; &amp;asteroids){
+        
+        // Size of the array
+        int n = asteroids.size();
+        
+        // List implementation of stack
+        vector&lt;int&gt; st;  
+        
+        // Traverse all the asteroids
+        for(int i=0; i &lt; n; i++) {
+            
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if(asteroids[i] &gt; 0) {
+                st.push_back(asteroids[i]);
+            }
+            
+            /* Else if the asteroid is moving 
+            right, perform the collisions */
+            else {
+                
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while(!st.empty() &amp;&amp; st.back() &gt; 0 &amp;&amp; 
+                      st.back() &lt; abs(asteroids[i])) {
+                    
+                    // Destroy the asteroid
+                    st.pop_back();
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if(!st.empty() &amp;&amp; 
+                    st.back() == abs(asteroids[i])) {
+                    
+                    // Destroy both the asteroids
+                    st.pop_back();
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if(st.empty() ||
+                        st.back() &lt; 0){
+                    
+                    // Storing the array in final state
+                    st.push_back(asteroids[i]);
+                }
+            }
+        }
+        
+        // Return the final state of asteroids
+        return st;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    public List&lt;int&gt; AsteroidCollision(List&lt;int&gt; asteroids)
+    {
+        // Size of the array
+        // int n = asteroids.Count;
+        
+        // List implementation of stack
+        System.Collections.Generic.Stack&lt;int&gt; st = new System.Collections.Generic.Stack&lt;int&gt;();
+        
+        // Traverse all the asteroids
+        foreach (int asteroid in asteroids)
+        {
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if (asteroid &gt; 0)
+            {   
+                st.Push(asteroid);
+            }
+            
+            /* Else if the asteroid is moving 
+            left, perform the collisions */
+            else
+            {   
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while (st.Count &gt; 0 &amp;&amp; st.Peek() &gt; 0 &amp;&amp; 
+                       st.Peek() &lt; System.Math.Abs(asteroid))
+                {
+                    // Destroy the asteroid
+                    st.Pop();
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if (st.Count &gt; 0 &amp;&amp; 
+                    st.Peek() == System.Math.Abs(asteroid))
+                {
+                    // Destroy both the asteroids
+                    st.Pop();
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if (st.Count == 0 ||
+                         st.Peek() &lt; 0)
+                {
+                    // Storing the array in final state
+                    st.Push(asteroid);
+                }
+            }
+        }
+        
+        // Return the final state of asteroids
+        System.Collections.Generic.List&lt;int&gt; result = st.ToList();
+        result.Reverse(); // Stack.ToList() returns elements in reverse order of push, so reverse to match original order
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to get absolute value of an integer
+func abs(x int) int {
+	if x &lt; 0 {
+		return -x
+	}
+	return x
+}
+
+/* Function to determine the state of
+asteroids after all collisions */
+func asteroidCollision(asteroids []int) []int {
+
+	// Size of the array
+	n := len(asteroids)
+
+	// List implementation of stack
+	st := []int{}
+
+	// Traverse all the asteroids
+	for i := 0; i &lt; n; i++ {
+
+		/* Push the asteroid in stack if a
+		right moving asteroid is seen */
+		if asteroids[i] &gt; 0 {
+			st = append(st, asteroids[i])
+		} else {
+
+			/* Until the right moving asteroids are
+			smaller in size, keep on destroying them */
+			for len(st) &gt; 0 &amp;&amp; st[len(st)-1] &gt; 0 &amp;&amp;
+				st[len(st)-1] &lt; abs(asteroids[i]) {
+
+				// Destroy the asteroid
+				st = st[:len(st)-1]
+			}
+
+			/* If there is right moving asteroid
+			which is of same size */
+			if len(st) &gt; 0 &amp;&amp; st[len(st)-1] == abs(asteroids[i]) {
+
+				// Destroy both the asteroids
+				st = st[:len(st)-1]
+			} else if len(st) == 0 || st[len(st)-1] &lt; 0 {
+
+				/* Otherwise, if there is no left
+				moving asteroid, the right moving
+				asteroid will not be destroyed */
+
+				// Storing the array in final state
+				st = append(st, asteroids[i])
+			}
+		}
+	}
+
+	// Return the final state of asteroids
+	return st
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to determine the state of 
+    asteroids after all collisions */
+    public int[] asteroidCollision(int[] asteroids) {
+        
+        // Size of the array
+        int n = asteroids.length;
+        
+        // List implementation of stack
+        List&lt;Integer&gt; st = new ArrayList&lt;&gt;();  
+        
+        // Traverse all the asteroids
+        for(int i = 0; i &lt; n; i++) {
+            
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if(asteroids[i] &gt; 0) {
+                st.add(asteroids[i]);
+            }
+            
+            /* Else if the asteroid is moving 
+            left, perform the collisions */
+            else {
+                
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while(!st.isEmpty() &amp;&amp; st.get(st.size() - 1) &gt; 0 &amp;&amp; 
+                      st.get(st.size() - 1) &lt; Math.abs(asteroids[i])) {
+                    
+                    // Destroy the asteroid
+                    st.remove(st.size() - 1);
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if(!st.isEmpty() &amp;&amp; 
+                    st.get(st.size() - 1) == Math.abs(asteroids[i])) {
+                    
+                    // Destroy both the asteroids
+                    st.remove(st.size() - 1);
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if(st.isEmpty() ||
+                        st.get(st.size() - 1) &lt; 0){
+                    
+                    // Storing the array in final state
+                    st.add(asteroids[i]);
+                }
+            }
+        }
+        
+        // Convert list to array
+        int[] result = new int[st.size()];
+        for(int i = 0; i &lt; st.size(); i++) {
+            result[i] = st.get(i);
+        }
+        
+        // Return the final state of asteroids
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+
+    /* Function to determine the state of 
+    asteroids after all collisions */
+    asteroidCollision(asteroids) {
+        
+        // Size of the array
+        let n = asteroids.length;
+        
+        // List implementation of stack
+        let st = [];
+        
+        // Traverse all the asteroids
+        for (let i = 0; i &lt; n; i++) {
+            
+            /* Push the asteroid in stack if a 
+            right moving asteroid is seen */
+            if (asteroids[i] &gt; 0) {
+                st.push(asteroids[i]);
+            }
+            
+            /* Else if the asteroid is moving 
+            left, perform the collisions */
+            else {
+                
+                /* Until the right moving asteroids are 
+                smaller in size, keep on destroying them */ 
+                while (st.length &gt; 0 &amp;&amp; st[st.length - 1] &gt; 0 &amp;&amp; 
+                       st[st.length - 1] &lt; Math.abs(asteroids[i])) {
+                    
+                    // Destroy the asteroid
+                    st.pop();
+                }
+                
+                /* If there is right moving asteroid 
+                which is of same size */
+                if (st.length &gt; 0 &amp;&amp; 
+                    st[st.length - 1] == Math.abs(asteroids[i])) {
+                    
+                    // Destroy both the asteroids
+                    st.pop();
+                }
+                
+                /* Otherwise, if there is no left
+                moving asteroid, the right moving 
+                asteroid will not be destroyed */
+                else if (st.length == 0 ||
+                         st[st.length - 1] &lt; 0){
+                    
+                    // Storing the array in final state
+                    st.push(asteroids[i]);
+                }
+            }
+        }
+        
+        // Return the final state of asteroids
+        return st;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def asteroidCollision(self, asteroids):
+        
+        # Size of the array
+        n = len(asteroids)
+        
+        # List implementation of stack
+        st = []
+        
+        # Traverse all the asteroids
+        for i in range(n):
+            
+            # Push the asteroid in stack if a 
+            # right moving asteroid is seen
+            if asteroids[i] &gt; 0:
+                st.append(asteroids[i])
+            
+            # Else if the asteroid is moving 
+            # left, perform the collisions
+            else:
+                
+                # Until the right moving asteroids are 
+                # smaller in size, keep on destroying them 
+                while (st and st[-1] &gt; 0 and 
+                       st[-1] &lt; abs(asteroids[i])):
+                    
+                    # Destroy the asteroid
+                    st.pop()
+                
+                # If there is right moving asteroid 
+                # which is of same size
+                if st and st[-1] == abs(asteroids[i]):
+                    
+                    # Destroy both the asteroids
+                    st.pop()
+                
+                # Otherwise, if there is no left
+                # moving asteroid, the right moving 
+                # asteroid will not be destroyed
+                elif not st or st[-1] &lt; 0:
+                    
+                    # Storing the array in final state
+                    st.append(asteroids[i])
+        
+        # Return the final state of asteroids
+        return st</code></pre></div>
+</body>
+</html>

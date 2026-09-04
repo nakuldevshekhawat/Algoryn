@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M Coloring Problem</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>M Coloring Problem</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Recursion</span><span>Backtracking</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an integer M and an <strong>undirected graph</strong> with N vertices (zero indexed) and E edges. The goal is to determine whether the graph can be coloured with a maximum of<strong> M colors</strong> so that no two of its adjacent vertices have the same colour applied to them.</p><p><br></p><p>In this context, colouring a graph refers to giving each vertex a different colour. If the colouring of vertices is possible then return true, otherwise return false.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= N <= 20</li><li>1 <= E <= (N*(N-1)/2)</li><li>1 <= M <= N</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> N = 4 , M = 3 , E = 5 , Edges = [ (0, 1) , (1, 2) , (2, 3) , (3, 0) , (0, 2) ]</p><p><strong>Output :</strong> true</p><p><strong>Explanation :</strong> Consider the three colors to be red, green, blue.</p><p>We can color the vertex 0 with red, vertex 1 with blue, vertex 2 with green, vertex 3 with blue.</p><p>In this way we can color graph using 3 colors at most.</p><p><img src="https://static.takeuforward.org/content/ProblemSetter-_ztgCPdg"></p><h3>Example 2</h3><p><strong>Input :</strong> N = 3 , M = 2 , E = 3 , Edges = [ (0, 1) , (1, 2) , (0, 2) ]</p><p><strong>Output :</strong> false</p><p><strong>Explanation :</strong> Consider the three colors to be red, green.</p><p>We can color the vertex 0 with red, vertex 1 with green.</p><p>As the vertex 2 is adjacent to both vertex 1 and 0 , so we cannot color with red and green.</p><p>Hence as we could not color all vertex of graph we return false.</p><p><img src="https://static.takeuforward.org/content/ProblemSetter-VJ4WwBU_"></p><h3>Example 3</h3><p><strong>Input :</strong> N = 5 , M = 3 , E = 6 , Edges = [ (0, 1) , (1, 2) , (0, 2) , (2,3) , (2,4) , (3,4) ]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The graph coloring problem is a critical concept in many real-world applications, such as register allocation in compilers, mobile radio frequency assignment, task scheduling and in Sudoku puzzles. For example, in register allocation during the compiling process, each register can be viewed as a color. The goal is to allocate the most efficiently without using the same register for intersecting live ranges of variables, similar to not coloring adjacent vertices with the same color in a graph. This graph-coloring method helps in writing efficient programs.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h2>Real-Life Problem Solving</h2>
+    <p>
+        Consider a scenario where several tasks need to be scheduled, each task requiring a specific resource. The objective is to assign resources to tasks such that no two tasks requiring the same resource are scheduled simultaneously. This is akin to assigning colors to nodes in a graph, where no two adjacent nodes (tasks) share the same color (resource). The challenge is to determine if it's possible to schedule all tasks using a limited number of resources.
+    </p>
+
+    <h2>Recursion Process Intuition</h2>
+    <p>
+        Imagine attempting to assign a color to a node in a graph, starting from the first node and moving sequentially. For each node, every possible color is tried, ensuring it does not conflict with already colored adjacent nodes. If a valid color is found, the process moves to the next node. If a conflict arises, the current assignment is undone (backtracked), and the next color is attempted. This recursive process continues until all nodes are successfully colored or all possibilities are exhausted, indicating no valid coloring exists.
+    </p>
+
+    <h2>Approach</h2>
+    <ul>
+        <li>Represent the graph using an adjacency list for efficient traversal and initialize a colors array to keep track of the assigned colors for each node, starting with no colors assigned.</li>
+        <li>Define a function to check if it's safe to assign a specific color to a node by ensuring no adjacent node has the same color.</li>
+        <li>Implement a recursive function to attempt to color each node:
+            <ul>
+                <li>If all nodes are successfully colored, return true.</li>
+                <li>For the current node, try all possible colors from 1 to m.</li>
+                <li>Check if assigning a color is safe using the helper function.</li>
+                <li>If safe, assign the color and recursively attempt to color the next node.</li>
+                <li>If coloring the next node fails, reset the current node's color and try the next color.</li>
+                <li>If no valid color is found, return false.</li>
+            </ul>
+        </li>
+        <li>Start the coloring process from the first node and continue recursively until all nodes are processed. The result of the recursive function indicates whether the graph can be colored with the given number of colors.</li>
+    </ul>
+
+<h3> Dry Run </h3>
+<img src="https://static.takeuforward.org/premium/Recursion/FAQs Hard/M Coloring Problem/-9c_h-LpA">
+
+<h3> Solution </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+
+    // Function to check if it's safe to color the node with a given color
+    bool isSafe(int col, int node, vector<int>& colors, vector<int> adj[]) {
+        // Check adjacent nodes
+        for (int i = 0; i < adj[node].size(); i++) {
+            // If an adjacent node has the same color
+            if (colors[adj[node][i]] == col) return false;
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    bool solve(int node, int m, int n, vector<int>& colors, vector<int> adj[]) {
+        // If all nodes are colored
+        if (n == node) return true;
+        // Try all colors from 1 to m
+        for (int i = 1; i <= m; i++) {
+            // Check if it is safe to color the node with color i
+            if (isSafe(i, node, colors, adj)) {
+             // Assign color i to node
+                colors[node] = i;
+                // Recursively try to color the next node
+                if (solve(node + 1, m, n, colors, adj)) return true;
+                // Reset color if it doesn't lead to a solution
+                colors[node] = 0; 
+            }
+        }
+        // No color can be assigned
+        return false; 
+    }
+
+    // Function to check if the graph can be colored with m colors
+    bool graphColoring(vector<vector<int>>& edges, int m, int n) {
+     // Adjacency list representation of the graph 
+        vector<int> adj[n];
+
+        // Build the graph from edges
+        for (int i = 0; i < edges.size(); i++) {
+            adj[edges[i][0]].push_back(edges[i][1]);
+            adj[edges[i][1]].push_back(edges[i][0]);
+        }
+        // Initialize all colors to 0 (uncolored)
+        vector<int> colors(n, 0);
+        // Start solving from the first node
+        return solve(0, m, n, colors, adj);
+    }
+};
+
+int main() {
+    Solution sol;
+    vector<vector<int>> edges = {
+        {0, 1}, {0, 2}, {1, 2}, {1, 3}
+    };
+    int m = 3; // Number of colors
+    int n = 4; // Number of nodes
+
+    // Check if the graph can be colored with m colors
+    if (sol.graphColoring(edges, m, n)) {
+        cout << "The graph can be colored with " << m << " colors." << endl;
+    } else {
+        cout << "The graph cannot be colored with " << m << " colors." << endl;
+    }
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    // Function to check if it's safe to color the node with a given color
+    private boolean isSafe(int col, int node, int[] colors, List<List<Integer>> adj) {
+        // Check adjacent nodes
+        for (int neighbor : adj.get(node)) {
+            // If an adjacent node has the same color
+            if (colors[neighbor] == col) return false;
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    private boolean solve(int node, int m, int n, int[] colors, List<List<Integer>> adj) {
+        // If all nodes are colored
+        if (n == node) return true;
+        // Try all colors from 1 to m
+        for (int i = 1; i <= m; i++) {
+            // Check if it is safe to color the node with color i
+            if (isSafe(i, node, colors, adj)) {
+                colors[node] = i; // Assign color i to node
+                // Recursively try to color the next node
+                if (solve(node + 1, m, n, colors, adj)) return true;
+                colors[node] = 0; // Reset color if it doesn't lead to a solution
+            }
+        }
+        return false; // No color can be assigned
+    }
+
+    // Function to check if the graph can be colored with m colors
+    public boolean graphColoring(int[][] edges, int m, int n) {
+        // Create adjacency list representation of the graph
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            adj.add(new ArrayList<>());
+        }
+        // Build the graph from edges
+        for (int[] edge : edges) {
+            adj.get(edge[0]).add(edge[1]);
+            adj.get(edge[1]).add(edge[0]);
+        }
+        
+        int[] colors = new int[n]; // Initialize all colors to 0 (uncolored)
+        // Start solving from the first node
+        return solve(0, m, n, colors, adj);
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[][] edges = {
+            {0, 1}, {0, 2}, {1, 2}, {1, 3}
+        };
+        int m = 3; // Number of colors
+        int n = 4; // Number of nodes
+
+        // Check if the graph can be colored with m colors
+        if (sol.graphColoring(edges, m, n)) {
+            System.out.println("The graph can be colored with " + m + " colors.");
+        } else {
+            System.out.println("The graph cannot be colored with " + m + " colors.");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def isSafe(self, col, node, colors, adj):
+        # Function to check if it's safe to color the node with a given color
+        # Check adjacent nodes
+        for neighbor in adj[node]:
+            # If an adjacent node has the same color
+            if colors[neighbor] == col:
+                return False
+        return True # Safe to color
+
+    def solve(self, node, m, n, colors, adj):
+        # Recursive function to solve graph coloring problem
+        # If all nodes are colored
+        if n == node:
+            return True
+        # Try all colors from 1 to m
+        for i in range(1, m + 1):
+            # Check if it is safe to color the node with color i
+            if self.isSafe(i, node, colors, adj):
+                colors[node] = i # Assign color i to node
+                # Recursively try to color the next node
+                if self.solve(node + 1, m, n, colors, adj):
+                    return True
+                colors[node] = 0 # Reset color if it doesn't lead to a solution
+        return False # No color can be assigned
+
+    def graphColoring(self, edges, m, n):
+        # Function to check if the graph can be colored with m colors
+        adj = [[] for _ in range(n)] # Create adjacency list representation of the graph
+        # Build the graph from edges
+        for edge in edges:
+            adj[edge[0]].append(edge[1])
+            adj[edge[1]].append(edge[0])
+        
+        colors = [0] * n # Initialize all colors to 0 (uncolored)
+        # Start solving from the first node
+        return self.solve(0, m, n, colors, adj)
+
+# Example usage
+if __name__ == "__main__":
+    sol = Solution()
+    edges = [
+        [0, 1], [0, 2], [1, 2], [1, 3]
+    ]
+    m = 3 # Number of colors
+    n = 4 # Number of nodes
+
+    # Check if the graph can be colored with m colors
+    if sol.graphColoring(edges, m, n):
+        print("The graph can be colored with", m, "colors.")
+    else:
+        print("The graph cannot be colored with", m, "colors.")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to check if it's safe to color the node with a given color
+    isSafe(col, node, colors, adj) {
+        // Check adjacent nodes
+        for (let neighbor of adj[node]) {
+            // If an adjacent node has the same color
+            if (colors[neighbor] === col) return false;
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    solve(node, m, n, colors, adj) {
+        // If all nodes are colored
+        if (n === node) return true;
+        // Try all colors from 1 to m
+        for (let i = 1; i <= m; i++) {
+            // Check if it is safe to color the node with color i
+            if (this.isSafe(i, node, colors, adj)) {
+                colors[node] = i; // Assign color i to node
+                // Recursively try to color the next node
+                if (this.solve(node + 1, m, n, colors, adj)) return true;
+                colors[node] = 0; // Reset color if it doesn't lead to a solution
+            }
+        }
+        return false; // No color can be assigned
+    }
+
+    // Function to check if the graph can be colored with m colors
+    graphColoring(edges, m, n) {
+        // Create adjacency list representation of the graph
+        let adj = Array.from({ length: n }, () => []);
+        // Build the graph from edges
+        for (let edge of edges) {
+            adj[edge[0]].push(edge[1]);
+            adj[edge[1]].push(edge[0]);
+        }
+
+        let colors = new Array(n).fill(0); // Initialize all colors to 0 (uncolored)
+        // Start solving from the first node
+        return this.solve(0, m, n, colors, adj);
+    }
+}
+
+// Example usage
+const sol = new Solution();
+const edges = [
+    [0, 1], [0, 2], [1, 2], [1, 3]
+];
+const m = 3; // Number of colors
+const n = 4; // Number of nodes
+
+// Check if the graph can be colored with m colors
+if (sol.graphColoring(edges, m, n)) {
+    console.log("The graph can be colored with " + m + " colors.");
+} else {
+    console.log("The graph cannot be colored with " + m + " colors.");
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // Function to check if it's safe to color the node with a given color
+    private bool isSafe(int col, int node, int[] colors, List<List<int>> adj)
+    {
+        // Check adjacent nodes
+        foreach (int neighbor in adj[node])
+        {
+            // If an adjacent node has the same color
+            if (colors[neighbor] == col)
+            {
+                return false;
+            }
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    private bool solve(int node, int m, int n, int[] colors, List<List<int>> adj)
+    {
+        // If all nodes are colored
+        if (node == n)
+        {
+            return true;
+        }
+        // Try all colors from 1 to m
+        for (int i = 1; i <= m; i++)
+        {
+            // Check if it is safe to color the node with color i
+            if (isSafe(i, node, colors, adj))
+            {
+                colors[node] = i; // Assign color i to node
+                // Recursively try to color the next node
+                if (solve(node + 1, m, n, colors, adj))
+                {
+                    return true;
+                }
+                colors[node] = 0; // Reset color if it doesn't lead to a solution
+            }
+        }
+        return false; // No color can be assigned
+    }
+
+    // Function to check if the graph can be colored with m colors
+    public bool graphColoring(List<List<int>> edges, int m, int n)
+    {
+        // Create adjacency list representation of the graph
+        List<List<int>> adj = new List<List<int>>();
+        for (int i = 0; i < n; i++)
+        {
+            adj.Add(new List<int>());
+        }
+
+        // Build the graph from edges
+        foreach (List<int> edge in edges)
+        {
+            adj[edge[0]].Add(edge[1]);
+            adj[edge[1]].Add(edge[0]);
+        }
+
+        int[] colors = new int[n]; // Initialize all colors to 0 (uncolored)
+        // Start solving from the first node
+        return solve(0, m, n, colors, adj);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Solution sol = new Solution();
+
+        // Example usage
+        List<List<int>> edges = new List<List<int>>
+        {
+            new List<int> {0, 1},
+            new List<int> {0, 2},
+            new List<int> {1, 2},
+            new List<int> {1, 3}
+        };
+        int m = 3; // Number of colors
+        int n = 4; // Number of nodes
+
+        // Check if the graph can be colored with m colors
+        if (sol.graphColoring(edges, m, n))
+        {
+            Console.WriteLine("The graph can be colored with " + m + " colors.");
+        }
+        else
+        {
+            Console.WriteLine("The graph cannot be colored with " + m + " colors.");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// isSafe checks if it's safe to color the node with a given color
+func isSafe(col, node int, colors []int, adj [][]int) bool {
+    for _, nei := range adj[node] {
+        if colors[nei] == col {
+            return false
+        }
+    }
+    return true
+}
+
+// solve recursively tries coloring nodes from index 0 to n-1
+func solve(node, m, n int, colors []int, adj [][]int) bool {
+    // If all nodes are colored
+    if node == n {
+        return true
+    }
+    // Try all colors from 1 to m
+    for c := 1; c <= m; c++ {
+        if isSafe(c, node, colors, adj) {
+            // Assign color c to node
+            colors[node] = c
+            // Recurse for next node
+            if solve(node+1, m, n, colors, adj) {
+                return true
+            }
+            // Backtrack: reset color
+            colors[node] = 0
+        }
+    }
+    // No valid color found
+    return false
+}
+
+// GraphColoring checks if the graph can be colored with m colors
+func GraphColoring(edges [][]int, m, n int) bool {
+    // Build adjacency list from edges
+    adj := make([][]int, n)
+    for _, e := range edges {
+        u, v := e[0], e[1]
+        adj[u] = append(adj[u], v)
+        adj[v] = append(adj[v], u)
+    }
+    // Initialize color assignments
+    colors := make([]int, n)
+    // Start coloring from node 0
+    return solve(0, m, n, colors, adj)
+}
+
+func main() {
+    edges := [][]int{{0, 1}, {0, 2}, {1, 2}, {1, 3}}
+    m := 3 // Number of colors
+    n := 4 // Number of nodes
+
+    if GraphColoring(edges, m, n) {
+        fmt.Printf("The graph can be colored with %d colors.\n", m)
+    } else {
+        fmt.Printf("The graph cannot be colored with %d colors.\n", m)
+    }
+}
+</code></pre></div></div></div>
+
+<h3> Complexity Analysis </h3>
+<p><strong>Time Complexity </strong>: O(M^N) where m is the number of colors and n is the number of nodes, since each node can be colored in m ways and there are n nodes to color. </p>
+<p><strong>Space Complexity </strong> :  O(N) for the colors array and O(n) for the adjacency list, resulting in O(N) total space complexity.</p></body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+
+    // Function to check if it&#x27;s safe to color the node with a given color
+    bool isSafe(int col, int node, vector&lt;int&gt;&amp; colors, vector&lt;int&gt; adj[]) {
+        // Check adjacent nodes
+        for (int i = 0; i &lt; adj[node].size(); i++) {
+            // If an adjacent node has the same color
+            if (colors[adj[node][i]] == col) return false;
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    bool solve(int node, int m, int n, vector&lt;int&gt;&amp; colors, vector&lt;int&gt; adj[]) {
+        // If all nodes are colored
+        if (n == node) return true;
+        // Try all colors from 1 to m
+        for (int i = 1; i &lt;= m; i++) {
+            // Check if it is safe to color the node with color i
+            if (isSafe(i, node, colors, adj)) {
+             // Assign color i to node
+                colors[node] = i;
+                // Recursively try to color the next node
+                if (solve(node + 1, m, n, colors, adj)) return true;
+                // Reset color if it doesn&#x27;t lead to a solution
+                colors[node] = 0; 
+            }
+        }
+        // No color can be assigned
+        return false; 
+    }
+
+    // Function to check if the graph can be colored with m colors
+    bool graphColoring(vector&lt;vector&lt;int&gt;&gt;&amp; edges, int m, int n) {
+     // Adjacency list representation of the graph 
+        vector&lt;int&gt; adj[n];
+
+        // Build the graph from edges
+        for (int i = 0; i &lt; edges.size(); i++) {
+            adj[edges[i][0]].push_back(edges[i][1]);
+            adj[edges[i][1]].push_back(edges[i][0]);
+        }
+        // Initialize all colors to 0 (uncolored)
+        vector&lt;int&gt; colors(n, 0);
+        // Start solving from the first node
+        return solve(0, m, n, colors, adj);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Function to check if it&#x27;s safe to color the node with a given color
+    private bool isSafe(int col, int node, int[] colors, System.Collections.Generic.List&lt;System.Collections.Generic.List&lt;int&gt;&gt; adj)
+    {
+        // Check adjacent nodes
+        foreach (int neighbor in adj[node])
+        {
+            // If an adjacent node has the same color
+            if (colors[neighbor] == col)
+            {
+                return false;
+            }
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    private bool solve(int node, int m, int n, int[] colors, System.Collections.Generic.List&lt;System.Collections.Generic.List&lt;int&gt;&gt; adj)
+    {
+        // If all nodes are colored
+        if (node == n)
+        {
+            return true;
+        }
+        // Try all colors from 1 to m
+        for (int i = 1; i &lt;= m; i++)
+        {
+            // Check if it is safe to color the node with color i
+            if (isSafe(i, node, colors, adj))
+            {
+                colors[node] = i; // Assign color i to node
+                // Recursively try to color the next node
+                if (solve(node + 1, m, n, colors, adj))
+                {
+                    return true;
+                }
+                colors[node] = 0; // Reset color if it doesn&#x27;t lead to a solution
+            }
+        }
+        return false; // No color can be assigned
+    }
+
+    public bool graphColoring(System.Collections.Generic.List&lt;System.Collections.Generic.List&lt;int&gt;&gt; edges, int m, int n)
+    {
+        // Create adjacency list representation of the graph
+        System.Collections.Generic.List&lt;System.Collections.Generic.List&lt;int&gt;&gt; adj = new System.Collections.Generic.List&lt;System.Collections.Generic.List&lt;int&gt;&gt;();
+        for (int i = 0; i &lt; n; i++)
+        {
+            adj.Add(new System.Collections.Generic.List&lt;int&gt;());
+        }
+
+        // Build the graph from edges
+        foreach (System.Collections.Generic.List&lt;int&gt; edge in edges)
+        {
+            adj[edge[0]].Add(edge[1]);
+            adj[edge[1]].Add(edge[0]);
+        }
+
+        int[] colors = new int[n]; // Initialize all colors to 0 (uncolored)
+        // Start solving from the first node
+        return solve(0, m, n, colors, adj);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>func isSafe(col, node int, colors []int, adj [][]int) bool {
+    for _, nei := range adj[node] {
+        if colors[nei] == col {
+            return false
+        }
+    }
+    return true
+}
+
+// solve recursively tries coloring nodes from index 0 to n-1
+func solve(node, m, n int, colors []int, adj [][]int) bool {
+    // If all nodes are colored
+    if node == n {
+        return true
+    }
+    // Try all colors from 1 to m
+    for c := 1; c &lt;= m; c++ {
+        if isSafe(c, node, colors, adj) {
+            // Assign color c to node
+            colors[node] = c
+            // Recurse for next node
+            if solve(node+1, m, n, colors, adj) {
+                return true
+            }
+            // Backtrack: reset color
+            colors[node] = 0
+        }
+    }
+    // No valid color found
+    return false
+}
+
+// GraphColoring checks if the graph can be colored with m colors
+func GraphColoring(edges [][]int, m, n int) bool {
+    // Build adjacency list from edges
+    adj := make([][]int, n)
+    for _, e := range edges {
+        u, v := e[0], e[1]
+        adj[u] = append(adj[u], v)
+        adj[v] = append(adj[v], u)
+    }
+    // Initialize color assignments
+    colors := make([]int, n)
+    // Start coloring from node 0
+    return solve(0, m, n, colors, adj)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code> class Solution {
+
+   // Function to check if it&#x27;s safe to color the node with a given color
+    private boolean isSafe(int col, int node, int[] colors, List&lt;List&lt;Integer&gt;&gt; adj) {
+        // Check adjacent nodes
+        for (int neighbor : adj.get(node)) {
+            // If an adjacent node has the same color
+            if (colors[neighbor] == col) return false;
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    private boolean solve(int node, int m, int n, int[] colors, List&lt;List&lt;Integer&gt;&gt; adj) {
+        // If all nodes are colored
+        if (n == node) return true;
+        // Try all colors from 1 to m
+        for (int i = 1; i &lt;= m; i++) {
+            // Check if it is safe to color the node with color i
+            if (isSafe(i, node, colors, adj)) {
+                colors[node] = i; // Assign color i to node
+                // Recursively try to color the next node
+                if (solve(node + 1, m, n, colors, adj)) return true;
+                colors[node] = 0; // Reset color if it doesn&#x27;t lead to a solution
+            }
+        }
+        return false; // No color can be assigned
+    }
+
+    // Function to check if the graph can be colored with m colors
+    public boolean graphColoring(int[][] edges, int m, int n) {
+        // Create adjacency list representation of the graph
+        List&lt;List&lt;Integer&gt;&gt; adj = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; n; i++) {
+            adj.add(new ArrayList&lt;&gt;());
+        }
+        // Build the graph from edges
+        for (int[] edge : edges) {
+            adj.get(edge[0]).add(edge[1]);
+            adj.get(edge[1]).add(edge[0]);
+        }
+        
+        int[] colors = new int[n]; // Initialize all colors to 0 (uncolored)
+        // Start solving from the first node
+        return solve(0, m, n, colors, adj);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to check if it&#x27;s safe to color the node with a given color
+    isSafe(col, node, colors, adj) {
+        // Check adjacent nodes
+        for (let neighbor of adj[node]) {
+            // If an adjacent node has the same color
+            if (colors[neighbor] === col) return false;
+        }
+        return true; // Safe to color
+    }
+
+    // Recursive function to solve graph coloring problem
+    solve(node, m, n, colors, adj) {
+        // If all nodes are colored
+        if (n === node) return true;
+        // Try all colors from 1 to m
+        for (let i = 1; i &lt;= m; i++) {
+            // Check if it is safe to color the node with color i
+            if (this.isSafe(i, node, colors, adj)) {
+                colors[node] = i; // Assign color i to node
+                // Recursively try to color the next node
+                if (this.solve(node + 1, m, n, colors, adj)) return true;
+                colors[node] = 0; // Reset color if it doesn&#x27;t lead to a solution
+            }
+        }
+        return false; // No color can be assigned
+    }
+
+    // Function to check if the graph can be colored with m colors
+    graphColoring(edges, m, n) {
+        // Create adjacency list representation of the graph
+        let adj = Array.from({ length: n }, () =&gt; []);
+        // Build the graph from edges
+        for (let edge of edges) {
+            adj[edge[0]].push(edge[1]);
+            adj[edge[1]].push(edge[0]);
+        }
+
+        let colors = new Array(n).fill(0); // Initialize all colors to 0 (uncolored)
+        // Start solving from the first node
+        return this.solve(0, m, n, colors, adj);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def isSafe(self, col, node, colors, adj):
+        # Function to check if it&#x27;s safe to color the node with a given color
+        # Check adjacent nodes
+        for neighbor in adj[node]:
+            # If an adjacent node has the same color
+            if colors[neighbor] == col:
+                return False
+        return True # Safe to color
+
+    def solve(self, node, m, n, colors, adj):
+        # Recursive function to solve graph coloring problem
+        # If all nodes are colored
+        if n == node:
+            return True
+        # Try all colors from 1 to m
+        for i in range(1, m + 1):
+            # Check if it is safe to color the node with color i
+            if self.isSafe(i, node, colors, adj):
+                colors[node] = i # Assign color i to node
+                # Recursively try to color the next node
+                if self.solve(node + 1, m, n, colors, adj):
+                    return True
+                colors[node] = 0 # Reset color if it doesn&#x27;t lead to a solution
+        return False # No color can be assigned
+
+    def graphColoring(self, edges, m, n):
+        # Function to check if the graph can be colored with m colors
+        adj = [[] for _ in range(n)] # Create adjacency list representation of the graph
+        # Build the graph from edges
+        for edge in edges:
+            adj[edge[0]].append(edge[1])
+            adj[edge[1]].append(edge[0])
+        
+        colors = [0] * n # Initialize all colors to 0 (uncolored)
+        # Start solving from the first node
+        return self.solve(0, m, n, colors, adj)</code></pre></div>
+</body>
+</html>

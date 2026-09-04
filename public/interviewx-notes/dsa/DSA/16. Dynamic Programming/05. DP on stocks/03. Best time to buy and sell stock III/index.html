@@ -1,0 +1,2658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Best time to buy and sell stock III</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Best time to buy and sell stock III</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array, arr, of n integers, where arr[i] represents the price of the stock on an ith day, determine the<strong> maximum profit</strong> achievable by completing at most two transactions in total.</p><p><br></p><p>Holding <strong>at most</strong> one share of the stock at any time is allowed, meaning buying and selling the stock twice is permitted, but the stock must be sold before buying it again. Buying and selling the stock on the same day is allowed.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n<= 10<sup>5</sup></li><li>0 <= arr[i] <= 10<sup>6</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> arr = [4, 2, 7, 1, 11, 5]</p><p><strong>Output:</strong> 15</p><p><strong>Explanation:</strong> Buy on day 2 (price = 2) and sell on day 3 (price = 7), profit = 7 - 2 = 5. Then buy on day 4 (price = 1) and sell on day 5 (price = 11), profit = 11 - 1 = 10. Total profit is 5 + 10 = 15.</p><h3>Example 2</h3><p><strong>Input:</strong> arr = [1, 3, 2, 8, 4, 9]</p><p><strong>Output:</strong> 12</p><p><strong>Explanation:</strong> Buy on day 1 (price = 1) and sell on day 4 (price = 8), profit = 8 - 1 = 7. Then buy on day 5 (price = 4) and sell on day 6 (price = 9), profit = 9 - 4 = 5. Total profit is 7 + 5 = 12.</p><h3>Example 3</h3><p><strong>Input:</strong> arr = [5, 7, 2, 10, 6, 9]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This programming problem is helpful in simulating the decision-making process of trading algorithms used in fintech applications and robo-advisers. By answering this problem, developers can enhance their understanding of dynamic programming, which is useful in creating algorithms that can analyze historical market data, trace multiple trading scenarios, and devise optimal selling & buying strategy to maximize profits. This forms the backbone of several stock market forecasting software and automated trading systems, which aim to provide the most profitable trades by considering the frequency and timing of transactions.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<p>Upon observation, we find that every day, there will be two choices, either to do nothing and move to the next day or to buy/sell (based on the last transaction and the number of transactions left) and find out the profit. Therefore we need to generate all the choices in order to compare the profit. As all possible choices needs to be generated, we will use recursion.</p>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<li><b>Express the problem in terms of indexes: </b>We need to think in the terms of the number of days, therefore one variable will be the array index( say ind). Next, we need to consider the condition that a stock can't be bought again, that is we need to first sell a stock, and then we can buy that again. Therefore a second variable ‘buy’  is needed, which tells, on a particular day whether we can buy or sell the stock. Next, there is a limit on the number of transactions that can be made. Here the initial cap is 2.  So in order to keep track of this constraint, one more variable will be needed (say 'cap').</li>
+
+<p>f(ind, buy, cap) will give the maximum profit that can be generated from day 'ind' to day (n-1), where 'buy' tells that whether we need to buy or sell the stock at day 'ind' and 'cap' tells the number of transactions left.</p>
+
+<li><b>Try out all possible choices at a given index: </b>Every day, there will be two choices, either to buy/sell the stock(based on the buy variable’s value) or to do nothing and move on to the next day. As we need to generate all the choices, use the pick/non-pick technique  to the same.</li>
+<ol>
+<li><b>Case 1: </b>When buy == 0, the stock can be bought. If we can buy the stock on a particular day, there will be two options:</li>
+
+<p>Option 1: To do no transaction and move to the next day. In this case, the net profit earned will be 0 from the current transaction, and to calculate the maximum profit starting from the next day, we will recursively call f(ind+1, 0,  cap). As we have not bought the stock, the ‘buy’ variable value will still remain 0, indicating that stock can be bought on next day. And the ‘cap’ variable will remain the same as if no transaction took place.</p>
+
+<p>Option 2: The other option is to buy the stock on the current day. In this case, the net profit earned from the current transaction will be -Arr[i]. As we are buying the stock, we are giving money out of our pocket, therefore the profit we earn is negative. To calculate the maximum profit starting from the next day, recursively call f(ind+1,1, cap). As the stock has been bought, the ‘buy’ variable value will change to 1, indicating that we can’t buy and only sell the stock the next day. As we have only bought the stock and not sold it the transaction remains incomplete and the ‘cap’ variable value remains unchanged.</p>
+
+<li><b>Case 2:</b> When buy == 1, we can sell the stock. If we can sell the stock on a particular day, we will have two options:</li>
+
+<p>Option 1: To do no transaction and move to the next day. In this case, the net profit earned will be 0 from the current transaction, and to calculate the maximum profit starting from the next day, we will recursively call f(ind+1,1, cap). As we have not bought the stock, the ‘buy’ variable value will still remain at 1, indicating that we can’t buy and only sell the stock the next day. And the ‘cap’ variable will remain the same as if no transaction took place.</p>
+
+<p>Option 2: The other option is to sell the stock on the current day. In this case, the net profit earned from the current transaction will be +Arr[i]. As we are selling the stock, we are putting the money into our pocket, therefore the profit we earn is positive. To calculate the maximum profit starting from the next day, we will recursively call f(ind+1,0,cap-1). As we have sold the stock, the ‘buy’ variable value will change to 0, indicating that we can buy the stock the next day. As we have sold the earlier bought stock, we make one complete transaction, therefore now we update the ‘cap’ variable’s value to cap-1.</p>
+<p><Strong>Note: </strong>Buying and selling a stock together counts as one complete transaction.</p>
+</ol>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on stocks/Best time to buy and sell stock III/-BEqI8hLV"><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, buy, cap){
+    //Base case
+    if(buy == 0){
+        op1 = 0 + f(ind + 1, 0, cap)
+        op2 = -arr[ind] + f(ind + 1, 1, cap)
+    }
+    if(buy == 1){
+        op1 = 0 + f(ind + 1, 1, cap)
+        op2 = arr[ind] + f(ind + 1, 0, cap-1)
+    }
+           
+}</code></pre></div></div></div><br>
+
+<li><b>Take the maximum of all choices: </b>As we are looking to maximize the profit earned, return the maximum value in both cases.</li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, buy, cap){
+    //Base case
+    if(buy == 0){
+        op1 = 0 + f(ind + 1, 0, cap)
+        op2 = -arr[ind] + f(ind + 1, 1, cap)
+    }
+    if(buy == 1){
+        op1 = 0 + f(ind + 1, 1, cap)
+        op2 = arr[ind] + f(ind + 1, 0, cap-1)
+    }
+    return max(op1, op2)    
+}</code></pre></div></div></div><br>
+
+<li><b>Base cases: </b>There be will two base cases, when ind==n, it means we have finished trading on all days, and no more profit can be made, therefore simply return 0. Second base case is when cap==0, it means that we cannot make any more transactions. Therefore return 0.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    //Function to find the maximum profit earned using recursion
+    int func(int ind, int buy, int cap, int n, vector<int> &arr) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = max(0 + func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr));
+        }
+        
+        //We can sell the stock
+        if (buy == 1) { 
+            profit = max(0 + func(ind + 1, 1, cap, n, arr), arr[ind] + func(ind + 1, 0, cap-1, n, arr));
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+public:
+    //Function to calculate the maximum profit earned 
+    int stockBuySell(vector<int> &arr, int n) {
+        if (n == 0) 
+            return 0;
+
+        int ans = func(0, 0, 2, n, arr);
+        
+        //Return the maximum profit
+        return ans;
+    }
+};
+int main() {
+    int n = 8;
+    vector<int> arr = {3, 3, 5, 0, 0, 3, 1, 4};
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call the stockBuySell function and print the result
+    cout << "The maximum profit that can be generated is " << sol.stockBuySell(arr, n);
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the maximum profit earned using recursion
+    private int func(int ind, int buy, int cap, int n, int[] arr) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = Math.max(0 + func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr));
+        }
+        
+        // We can sell the stock
+        if (buy == 1) { 
+            profit = Math.max(0 + func(ind + 1, 1, cap, n, arr), arr[ind] + func(ind + 1, 0, cap-1, n, arr));
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int stockBuySell(int[]arr, int n) {
+        if (n == 0) 
+            return 0;
+
+        int ans = func(0, 0, 2, n, arr);
+        
+        // Return the maximum profit
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int n = 8;
+        int[] arr = {3, 3, 5, 0, 0, 3, 1, 4};
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the stockBuySell function and print the result
+        System.out.println("The maximum profit that can be generated is " + sol.stockBuySell(arr, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the maximum profit earned using recursion
+    def func(self, ind, buy, cap, n, arr):
+        # Base case 
+        if(ind == n or cap == 0):
+            return 0
+
+        profit = 0
+        
+        # We can buy the stock
+        if buy == 0:
+            profit = max(0 + self.func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + self.func(ind + 1, 1, cap, n, arr))
+        
+        # We can sell the stock
+        if buy == 1:
+            profit = max(0 + self.func(ind + 1, 1, cap, n, arr), arr[ind] + self.func(ind + 1, 0, cap-1, n, arr))
+
+        # Return the calculated profit
+        return profit
+
+    # Function to calculate the maximum profit earned 
+    def stockBuySell(self, arr, n):
+        if n == 0:
+            return 0
+
+        ans = self.func(0, 0, 2, n, arr)
+        
+        # Return the maximum profit
+        return ans
+
+if __name__ == "__main__":
+    n = 8
+    arr = [3, 3, 5, 0, 0, 3, 1, 4]
+    
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call the stockBuySell function and print the result
+    print("The maximum profit that can be generated is", sol.stockBuySell(arr, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the maximum profit earned using recursion
+    func(ind, buy, cap, n, arr) {
+        // Base case 
+        if (ind === n || cap === 0) {
+            return 0;
+        }
+
+        let profit = 0;
+        
+        // We can buy the stock
+        if (buy === 0) { 
+            profit = Math.max(0 + this.func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + this.func(ind + 1, 1, cap, n, arr));
+        }
+        
+        // We can sell the stock
+        if (buy === 1) { 
+            profit = Math.max(0 + this.func(ind + 1, 1, cap, n, arr), arr[ind] + this.func(ind + 1, 0, cap-1, n, arr));
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    stockBuySell(arr, n) {
+        if (n === 0) 
+            return 0;
+
+        let ans = this.func(0, 0, 2, n, arr);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}
+
+function main() {
+    const n = 8;
+    const arr = [3, 3, 5, 0, 0, 3, 1, 4];
+    
+    // Create an instance of Solution class
+    const sol = new Solution();
+
+    // Call the stockBuySell function and print the result
+    console.log("The maximum profit that can be generated is", sol.stockBuySell(arr, n));
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    // Function to find the maximum profit earned using recursion
+    private int Func(int ind, int buy, int cap, int n, int[] arr)
+    {
+        // Base case 
+        if (ind == n || cap == 0)
+        {
+            return 0;
+        }
+
+        int profit = 0;
+
+        // We can buy the stock
+        if (buy == 0)
+        {
+            profit = Math.Max(
+                0 + Func(ind + 1, 0, cap, n, arr),
+                -arr[ind] + Func(ind + 1, 1, cap, n, arr)
+            );
+        }
+
+        // We can sell the stock
+        if (buy == 1)
+        {
+            profit = Math.Max(
+                0 + Func(ind + 1, 1, cap, n, arr),
+                arr[ind] + Func(ind + 1, 0, cap - 1, n, arr)
+            );
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int StockBuySell(int[] arr, int n)
+    {
+        if (n == 0)
+            return 0;
+
+        int ans = Func(0, 0, 2, n, arr);
+
+        // Return the maximum profit
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int n = 8;
+        int[] arr = { 3, 3, 5, 0, 0, 3, 1, 4 };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the StockBuySell function and print the result
+        Console.WriteLine("The maximum profit that can be generated is " 
+            + sol.StockBuySell(arr, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+    "math"
+)
+
+// Function to find the maximum profit earned using recursion
+func funcRec(ind, buy, cap, n int, arr []int) int {
+    // Base case 
+    if ind == n || cap == 0 {
+        return 0
+    }
+
+    profit := 0
+
+    // We can buy the stock
+    if buy == 0 {
+        profit = int(math.Max(
+            float64(0+funcRec(ind+1, 0, cap, n, arr)),
+            float64(-arr[ind]+funcRec(ind+1, 1, cap, n, arr)),
+        ))
+    } else {
+        // We can sell the stock
+        profit = int(math.Max(
+            float64(0+funcRec(ind+1, 1, cap, n, arr)),
+            float64(arr[ind]+funcRec(ind+1, 0, cap-1, n, arr)),
+        ))
+    }
+
+    // Return the calculated profit
+    return profit
+}
+
+// Function to calculate the maximum profit earned 
+func stockBuySell(arr []int, n int) int {
+    if n == 0 {
+        return 0
+    }
+
+    ans := funcRec(0, 0, 2, n, arr)
+
+    // Return the maximum profit
+    return ans
+}
+
+func main() {
+    n := 8
+    arr := []int{3, 3, 5, 0, 0, 3, 1, 4}
+
+    // Call the stockBuySell function and print the result
+    fmt.Println("The maximum profit that can be generated is", stockBuySell(arr, n))
+}
+
+</code></pre></div></div></div>
+
+<strong>Time Complexity: </strong>O(2<sup>(N)</sup>), where N is the number of row. As, for each index, ther are two possible options.<br><br>
+<strong>Space Complexity:</strong>O(N), at maximum the depth of the recursive stack can go upto N.</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on stocks/Best time to buy and sell stock III/-nQAyiaLP"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<li><b>Declare a dp array of size [n][2][3]: </b>As there are three changing parameters in the recursive solution,  'ind',  'buy' and 'cap'.  The maximum value 'ind' can attain is (n), where n is the size of array, for 'buy'  only two values possible 0, 1 and lastly 'cap' can take three values 0, 1, 2 as transaction limit is given as 2 in this problem.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    //Function to find the maximum profit earned using memoization
+    int func(int ind, int buy, int cap, int n, vector<int> &arr, vector<vector<vector<int>>>& dp) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind][buy][cap] != -1) {
+            return dp[ind][buy][cap];
+        }
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = max(0 + func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        //We can sell the stock
+        if (buy == 1) { 
+            profit = max(0 + func(ind + 1, 1, cap, n, arr, dp), arr[ind] + func(ind + 1, 0, cap-1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        return dp[ind][buy][cap] = profit;
+    }
+public:
+    //Function to calculate the maximum profit earned 
+    int stockBuySell(vector<int> &arr, int n) {
+        if (n == 0) 
+            return 0;
+            
+        // Initialize a DP table to memoize results
+        vector<vector<vector<int>>> dp(n, vector<vector<int>>(2, vector<int>(3, -1)));
+
+        int ans = func(0, 0, 2, n, arr, dp);
+        
+        //Return the maximum profit
+        return ans;
+    }
+};
+int main() {
+    int n = 8;
+    vector<int> arr = {3, 3, 5, 0, 0, 3, 1, 4};
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call the stockBuySell function and print the result
+    cout << "The maximum profit that can be generated is " << sol.stockBuySell(arr, n);
+
+    return 0;
+}
+
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the maximum profit earned using memoization
+    private int func(int ind, int buy, int cap, int n, int[] arr, int[][][] dp) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind][buy][cap] != -1) {
+            return dp[ind][buy][cap];
+        }
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = Math.max(0 + func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        // We can sell the stock
+        if (buy == 1) { 
+            profit = Math.max(0 + func(ind + 1, 1, cap, n, arr, dp), arr[ind] + func(ind + 1, 0, cap-1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        return dp[ind][buy][cap] = profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int stockBuySell(int[] arr, int n) {
+        if (n == 0) 
+            return 0;
+            
+        // Declare a DP table to memoize results
+        int[][][] dp = new int[n][2][3];
+        
+        // Initialize the dp array with -1
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < 2; j++) {
+                Arrays.fill(dp[i][j], -1);
+            }
+        }
+
+        int ans = func(0, 0, 2, n, arr, dp);
+        
+        // Return the maximum profit
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int n = 8;
+        int[] arr = {3, 3, 5, 0, 0, 3, 1, 4};
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the stockBuySell function and print the result
+        System.out.println("The maximum profit that can be generated is " + sol.stockBuySell(arr, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find maximum profit earned using memoization
+    def func(self, ind, buy, cap, n, arr, dp):
+        # Base case 
+        if ind == n or cap == 0:
+            return 0
+            
+        """ If the result for this state has 
+        already been calculated, return it"""
+        if dp[ind][buy][cap] != -1:
+            return dp[ind][buy][cap]
+        
+        profit = 0
+        
+        # We can buy the stock
+        if buy == 0:
+            profit = max(0 + self.func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + self.func(ind + 1, 1, cap, n, arr, dp))
+        
+        # We can sell the stock
+        if buy == 1:
+            profit = max(0 + self.func(ind + 1, 1, cap, n, arr, dp), arr[ind] + self.func(ind + 1, 0, cap-1, n, arr, dp))
+        
+        """ Store the value in dp array and
+        return the calculated profit"""
+        dp[ind][buy][cap] = profit
+        return dp[ind][buy][cap]
+
+    # Function to calculate the maximum profit earned 
+    def stockBuySell(self, arr, n):
+        if n == 0:
+            return 0
+            
+        """ Declare a 3D DP table with dimensions 
+        (n) x 2 x 3 and initialize it with -1 """
+        dp = [[[-1 for _ in range(3)] for _ in range(2)] for _ in range(n)]
+
+        ans = self.func(0, 0, 2, n, arr, dp)
+        
+        # Return the maximum profit
+        return ans
+
+if __name__ == "__main__":
+    n = 8
+    arr = [3, 3, 5, 0, 0, 3, 1, 4]
+    
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call the stockBuySell function and print the result
+    print("The maximum profit that can be generated is", sol.stockBuySell(arr, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find maximum profit earned using memoization
+    func(ind, buy, cap, n, arr, dp) {
+        // Base case 
+        if (ind === n || cap === 0) {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind][buy][cap] !== -1) {
+            return dp[ind][buy][cap];
+        }
+        let profit = 0;
+        
+        // We can buy the stock
+        if (buy === 0) { 
+            profit = Math.max(0 + this.func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + this.func(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        // We can sell the stock
+        if (buy === 1) { 
+            profit = Math.max(0 + this.func(ind + 1, 1, cap, n, arr, dp), arr[ind] + this.func(ind + 1, 0, cap-1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        dp[ind][buy][cap] = profit;
+        return dp[ind][buy][cap];
+    }
+
+    // Function to calculate the maximum profit earned 
+    stockBuySell(arr, n) {
+        if (n === 0) 
+            return 0;
+            
+        // Initialize a DP table to memoize results
+        const dp = new Array(n).fill(null).map(() =>
+            new Array(2).fill(null).map(() =>
+                new Array(3).fill(-1)
+            )
+        );
+
+        let ans = this.func(0, 0, 2, n, arr, dp);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}
+    const n = 8;
+    const arr = [3, 3, 5, 0, 0, 3, 1, 4];
+    
+    // Create an instance of Solution class
+    const sol = new Solution();
+
+    // Call the stockBuySell function and print the result
+    console.log("The maximum profit that can be generated is", sol.stockBuySell(arr, n));
+
+
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Function to find maximum profit earned using memoization
+    private int Solve(int ind, int buy, int cap, int n, int[] arr, int[,,] dp)
+    {
+        // Base case 
+        if (ind == n || cap == 0)
+        {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind, buy, cap] != -1)
+        {
+            return dp[ind, buy, cap];
+        }
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) 
+        {
+            profit = Math.Max(0 + Solve(ind + 1, 0, cap, n, arr, dp), (-1) * arr[ind] + Solve(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        // We can sell the stock
+        else if (buy == 1) 
+        {
+            profit = Math.Max(0 + Solve(ind + 1, 1, cap, n, arr, dp), arr[ind] + Solve(ind + 1, 0, cap - 1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        dp[ind, buy, cap] = profit;
+        return dp[ind, buy, cap];
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int StockBuySell(int[] arr, int n)
+    {
+        if (n == 0) 
+            return 0;
+            
+        // Initialize a DP table to memoize results
+        int[,,] dp = new int[n, 2, 3];
+
+        // Fill with -1
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j < 2; j++)
+            {
+                for (int k = 0; k < 3; k++)
+                {
+                    dp[i, j, k] = -1;
+                }
+            }
+        }
+
+        int ans = Solve(0, 0, 2, n, arr, dp);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}
+
+public class GFG
+{
+    public static void Main(string[] args)
+    {
+        int n = 8;
+        int[] arr = { 3, 3, 5, 0, 0, 3, 1, 4 };
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the stockBuySell function and print the result
+        Console.WriteLine("The maximum profit that can be generated is " + sol.StockBuySell(arr, n));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Function to find the maximum profit earned using memoization
+func funcRec(ind int, buy int, cap int, n int, arr []int, dp [][][]int) int {
+	// Base case
+	if ind == n || cap == 0 {
+		return 0
+	}
+
+	// If already computed, return stored value
+	if dp[ind][buy][cap] != -1 {
+		return dp[ind][buy][cap]
+	}
+
+	profit := 0
+
+	// We can buy the stock
+	if buy == 0 {
+		profit = int(math.Max(
+			float64(0+funcRec(ind+1, 0, cap, n, arr, dp)),
+			float64(-arr[ind]+funcRec(ind+1, 1, cap, n, arr, dp)),
+		))
+	} else {
+		// We can sell the stock
+		profit = int(math.Max(
+			float64(0+funcRec(ind+1, 1, cap, n, arr, dp)),
+			float64(arr[ind]+funcRec(ind+1, 0, cap-1, n, arr, dp)),
+		))
+	}
+
+	dp[ind][buy][cap] = profit
+	return profit
+}
+
+// Function to calculate the maximum profit earned
+func stockBuySell(arr []int, n int) int {
+	if n == 0 {
+		return 0
+	}
+
+	// Initialize dp table with -1
+	dp := make([][][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([][]int, 2)
+		for j := 0; j < 2; j++ {
+			dp[i][j] = make([]int, 3)
+			for k := 0; k < 3; k++ {
+				dp[i][j][k] = -1
+			}
+		}
+	}
+
+	return funcRec(0, 0, 2, n, arr, dp)
+}
+
+func main() {
+	n := 8
+	arr := []int{3, 3, 5, 0, 0, 3, 1, 4}
+
+	// Call the stockBuySell function and print the result
+	fmt.Println("The maximum profit that can be generated is", stockBuySell(arr, n))
+}
+</code></pre></div></div></div>
+
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*2*3), There are N*2*3 states therefore at max ‘N*2*3’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*2*3) + O(N), As we are using a recursion stack space(O(N)) and a 3D array ( O(N*2*3)).</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<li><b>Declare a dp array of size [n+1][2][3]: </b>As there are three changing parameters in the recursive solution,  'ind', 'buy' and 'cap'.  The maximum value 'ind' can attain is (n) and including 0 its n+1, where n is the size of array, for 'buy' only two values possible 0, 1 and lastly 'cap' can attain three values 0, 1, 2 as only 2 transactions are possible as per the problem statement. So we need a 3D array and initialize the array as 0.</li>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when If ind == n, it means we have finished trading on all days, and there is no more money that we can get, therefore simply return 0. But here when n 'ind' = 0, 'cap' and 'buy' can take any value, therefore set two loops and initialize dp[n][buy][cap] = 0.</li><br>
+<p>When cap == 0, the other two variables,  'ind' and 'cap' can take any value, therefore we set dp[ind][buy][0] = 0 usnig nested loops.</p>
+
+<li><b>Iterative Computation Using Loops: </b>As we have initialized the array as 0, we have automatically set the base condition as explained above. Now, traverse the array in the opposite direction of that of the memoization technique. We will start from 'ind' = n-1 and traverse till 'ind' =0. In every iteration do the same step as it was done in the recursive code logic.</li><br>
+
+
+<li><b>Choosing the maximum: </b>As we are looking to maximize the profit earned, return the maximum value in all the cases as discussed in memoization  approach.</li>
+
+<li><b>Returning the answer: </b>At last dp[0][0][2] ( maximum profit generated on ith day, when we can buy the stock on 0th day and can have a total 2 transactions) gives us the final answer.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    //Function to find the maximum profit using tabulation
+    int func(vector<int>& arr, int n) {
+        
+        /* Creating a 3D DP array of size 
+        [n+1][2][3] initialized to 0*/
+        vector<vector<vector<int>>> dp(n + 1, vector<vector<int>>(2, vector<int>(3, 0)));
+
+        /* Base case: dp array is already initialized
+        to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind >= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy <= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap <= 2; cap++) {
+                    
+                    // We can buy the stock
+                    if (buy == 0) { 
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][0][cap],
+                                               (-1)*arr[ind] + dp[ind + 1][1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) { 
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][1][cap],
+                                               arr[ind] + dp[ind + 1][0][cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after final transaction.*/
+        return dp[0][0][2];
+    }
+public:
+    //Function to find the maximum profit
+    int stockBuySell(vector<int> &arr, int n){
+        //Return the answer
+        return func(arr, n);
+    }
+};
+
+int main() {
+    vector<int> prices = {3, 3, 5, 0, 0, 3, 1, 4};
+    int n = prices.size();
+
+    // Create an instance of the Solution class
+    Solution sol; 
+    
+    // Call the function and print the result
+    cout << "The maximum profit that can be generated is " << sol.stockBuySell(prices, n) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the maximum profit using tabulation
+    private int func(int[] arr, int n) {
+        /* Declaring a 3D DP array of 
+        size [n+1][2][3] initialized to 0*/
+        int[][][] dp = new int[n + 1][2][3];
+
+        /* Base case: dp array is already i
+        nitialized to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind >= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy <= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap <= 2; cap++) {
+                    // We can buy the stock
+                    if (buy == 0) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][0][cap],
+                                                     (-1)*arr[ind] + dp[ind + 1][1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][1][cap],
+                                                     arr[ind] + dp[ind + 1][0][cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after the final transaction.*/
+        return dp[0][0][2];
+    }
+
+    // Function to find the maximum profit
+    public int stockBuySell(int[] arr, int n) {
+        // Return the answer
+        return func(arr, n);
+    }
+
+    public static void main(String[] args) {
+        int[] prices = {3, 3, 5, 0, 0, 3, 1, 4};
+        int n = prices.length;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        System.out.println("The maximum profit that can be generated is " + sol.stockBuySell(prices, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the maximum profit using tabulation
+    def func(self, arr, n):
+        """ Declaring a 3D DP array of size 
+        [n+1][2][3] initialized to 0"""
+        dp = [[[0 for _ in range(3)] for _ in range(2)] for _ in range(n + 1)]
+
+        """ Base case: dp array is already 
+        initialized to 0, covering the base case."""
+
+        # Iterate backwards through the prices array
+        for ind in range(n - 1, -1, -1):
+            
+            # buy can be 0 (buying) or 1 (selling)
+            for buy in range(2):
+                
+                """ cap represents the number of 
+                transactions completed (can be 1 or 2)"""
+                for cap in range(1, 3):
+                    # We can buy the stock
+                    if buy == 0:
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][0][cap],
+                                                (-1)*arr[ind] + dp[ind + 1][1][cap])
+                    # We can sell the stock
+                    if buy == 1:
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][1][cap],
+                                                arr[ind] + dp[ind + 1][0][cap - 1])
+
+        """ The result is stored in dp[0][0][2] which 
+        represents maximum profit after the final transaction."""
+        return dp[0][0][2]
+
+    # Function to find the maximum profit
+    def stockBuySell(self, arr, n):
+        # Return the answer
+        return self.func(arr, n)
+
+if __name__ == "__main__":
+    prices = [3, 3, 5, 0, 0, 3, 1, 4]
+    n = len(prices)
+
+    # Create an instance of the Solution class
+    sol = Solution()
+
+    # Call the function and print the result
+    print("The maximum profit that can be generated is", sol.stockBuySell(prices, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the maximum profit using tabulation
+    func(arr, n) {
+        /* Declaring a 3D DP array of size
+        [n+1][2][3] initialized to 0*/
+        let dp = new Array(n + 1).fill().map(() => new Array(2).fill().map(() => new Array(3).fill(0)));
+
+        /* Base case: dp array is already 
+        initialized to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (let ind = n - 1; ind >= 0; ind--) {
+            // buy can be 0 (buying) or 1 (selling)
+            
+            for (let buy = 0; buy <= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (let cap = 1; cap <= 2; cap++) {
+                    // We can buy the stock
+                    if (buy === 0) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][0][cap],
+                                                     (-1)*arr[ind] + dp[ind + 1][1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy === 1) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][1][cap],
+                                                     arr[ind] + dp[ind + 1][0][cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after the final transaction.*/
+        return dp[0][0][2];
+    }
+
+    // Function to find the maximum profit
+    stockBuySell(arr, n) {
+        
+        // Return the answer
+        return this.func(arr, n);
+    }
+}
+
+let prices = [3, 3, 5, 0, 0, 3, 1, 4];
+let n = prices.length;
+
+// Create an instance of the Solution class
+let sol = new Solution();
+
+// Call the function and print the result
+console.log("The maximum profit that can be generated is " + sol.stockBuySell(prices, n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Linq;
+
+public class Solution
+{
+    // Function to find the maximum profit using tabulation
+    private int func(int[] arr, int n)
+    {
+        /* Declaring a 3D DP array of size
+        [n+1][2][3] initialized to 0*/
+        int[,,] dp = new int[n + 1, 2, 3];
+
+        /* Base case: dp array is already 
+        initialized to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind >= 0; ind--)
+        {
+            // buy can be 0 (buying) or 1 (selling)
+            
+            for (int buy = 0; buy <= 1; buy++)
+            {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap <= 2; cap++)
+                {
+                    // We can buy the stock
+                    if (buy == 0) 
+                    {
+                        dp[ind, buy, cap] = Math.Max(0 + dp[ind + 1, 0, cap],
+                                                     -arr[ind] + dp[ind + 1, 1, cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) 
+                    {
+                        dp[ind, buy, cap] = Math.Max(0 + dp[ind + 1, 1, cap],
+                                                     arr[ind] + dp[ind + 1, 0, cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after the final transaction.*/
+        return dp[0, 0, 2];
+    }
+
+    // Function to find the maximum profit
+    public int StockBuySell(int[] arr, int n)
+    {
+        
+        // Return the answer
+        return func(arr, n);
+    }
+
+    public static void Main(string[] args)
+    {
+        // Example input from the original JavaScript code:
+        // let prices = [3, 3, 5, 0, 0, 3, 1, 4];
+        // For Console.ReadLine, assume space-separated integers.
+        string line = Console.ReadLine();
+        int[] prices = line.Split(' ').Select(int.Parse).ToArray();
+        int n = prices.Length;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        Console.WriteLine("The maximum profit that can be generated is " + sol.StockBuySell(prices, n));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Function to find the maximum profit using tabulation
+func funcTab(arr []int, n int) int {
+	/* Creating a 3D DP array of size 
+	[n+1][2][3] initialized to 0 */
+	dp := make([][][]int, n+1)
+	for i := range dp {
+		dp[i] = make([][]int, 2)
+		for j := range dp[i] {
+			dp[i][j] = make([]int, 3)
+		}
+	}
+
+	/* Base case: dp array is already initialized
+	to 0, covering the base case. */
+
+	// Iterate backwards through the prices array
+	for ind := n - 1; ind >= 0; ind-- {
+
+		// buy can be 0 (buying) or 1 (selling)
+		for buy := 0; buy <= 1; buy++ {
+
+			/* cap represents the number of 
+			   transactions completed (can be 1 or 2) */
+			for cap := 1; cap <= 2; cap++ {
+
+				// We can buy the stock
+				if buy == 0 {
+					dp[ind][buy][cap] = int(math.Max(
+						float64(0+dp[ind+1][0][cap]),
+						float64(-arr[ind]+dp[ind+1][1][cap]),
+					))
+				}
+
+				// We can sell the stock
+				if buy == 1 {
+					dp[ind][buy][cap] = int(math.Max(
+						float64(0+dp[ind+1][1][cap]),
+						float64(arr[ind]+dp[ind+1][0][cap-1]),
+					))
+				}
+			}
+		}
+	}
+
+	/* The result is stored in dp[0][0][2] which
+	represents maximum profit after final transaction. */
+	return dp[0][0][2]
+}
+
+// Function to find the maximum profit
+func stockBuySell(arr []int, n int) int {
+	// Return the answer
+	return funcTab(arr, n)
+}
+
+func main() {
+	prices := []int{3, 3, 5, 0, 0, 3, 1, 4}
+	n := len(prices)
+
+	// Call the function and print the result
+	fmt.Println("The maximum profit that can be generated is", stockBuySell(prices, n))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*2*3),  As, here are three nested loops that account for O(N*2*3) complexity.<br><br>
+<strong>Space Complexity:</strong>O(N*2*3),  As a 3D array  of size N*2*3 is used.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we observe the relation obtained in the tabulation, dp[ind][buy][cap] = max( dp[ind+1][buy][cap] , max( dp[ind+1][!buy][cap]), We see that to calculate a value of a cell of the dp array, we need only the next row values(say ahead of ind+1). So, we don’t need to store an entire 2-D array. Hence we can space optimize it.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on stocks/Best time to buy and sell stock III/-mhmdLVKQ"><br>
+
+<h5><strong>The Steps to space optimize the tabulation approach are as follows: </strong></h5>
+<li>Declare a 2D vector 'ahead' initialized to 0 (base condition) and another 2D vector 'cur' also set to 0. 
+</li><li>Then initialize three nested loops to calculate the 'cur' array’s values. Replace dp[ind] with 'cur' and dp[ind+1] with ahead in our tabulation code.
+</li><li>After the inner loop execution, set 'ahead' as 'cur' for the next outer loop iteration. At last, return ahead[0][2] as our answer.</li>
+<br>
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /*Function to find our maximum 
+    profit using space optimization*/
+    int func(vector<int>& arr, int n) {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        vector<vector<int>> ahead(2, vector<int>(3, 0));
+        vector<vector<int>> cur(2, vector<int>(3, 0));
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind >= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy <= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap <= 2; cap++) {
+                    // We can buy the stock
+                    if (buy == 0) { 
+                        cur[buy][cap] = max(0 + ahead[0][cap], 
+                                            -arr[ind] + ahead[1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) { 
+                        cur[buy][cap] = max(0 + ahead[1][cap],
+                                            arr[ind] + ahead[0][cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0.*/
+        return ahead[0][2];
+    }
+public:
+    //Function to find out maximum profit
+    int stockBuySell(vector<int> &arr, int n){
+        //Return the answer
+        return func(arr, n);
+    }
+};
+
+int main() {
+    vector<int> prices = {3, 3, 5, 0, 0, 3, 1, 4};
+    int n = prices.size();
+
+    // Create an instance of the Solution class
+    Solution sol;
+
+    // Call the funntion and print the result
+    cout << "The maximum profit that can be generated is " << sol.stockBuySell(prices, n) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find our maximum 
+    profit using space optimization*/
+    private int func(int[] arr, int n) {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        int[][] ahead = new int[2][3];
+        int[][] cur = new int[2][3];
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind >= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy <= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap <= 2; cap++) {
+                    // We can buy the stock
+                    if (buy == 0) {
+                        cur[buy][cap] = Math.max(0 + ahead[0][cap],
+                                                 (-1)*arr[ind] + ahead[1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) {
+                        cur[buy][cap] = Math.max(0 + ahead[1][cap],
+                                                 arr[ind] + ahead[0][cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the 
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0*/
+        return ahead[0][2];
+    }
+
+    // Function to find out maximum profit
+    public int stockBuySell(int[] arr, int n) {
+        // Return the answer
+        return func(arr, n);
+    }
+
+    public static void main(String[] args) {
+        int[] prices = {3, 3, 5, 0, 0, 3, 1, 4};
+        int n = prices.length;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        System.out.println("The maximum profit that can be generated is " + sol.stockBuySell(prices, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find our maximum 
+    profit using space optimization"""
+    def func(self, arr, n):
+        """ Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state."""
+        ahead = [[0] * 3 for _ in range(2)]
+        cur = [[0] * 3 for _ in range(2)]
+
+        # Iterate backwards through the prices array
+        for ind in range(n - 1, -1, -1):
+            
+            # buy can be 0 (buying) or 1 (selling)
+            for buy in range(2):
+                
+                """ cap represents the number of 
+                transactions completed (can be 1 or 2)"""
+                for cap in range(1, 3):
+                    # We can buy the stock
+                    if buy == 0:
+                        cur[buy][cap] = max(0 + ahead[0][cap],
+                                            -arr[ind] + ahead[1][cap])
+                    # We can sell the stock
+                    if buy == 1:
+                        cur[buy][cap] = max(0 + ahead[1][cap],
+                                            arr[ind] + ahead[0][cap - 1])
+            """ Update the ahead state with the 
+            current state for the next iteration"""
+            ahead = [row[:] for row in cur]
+
+        """ Return the maximum profit after completing 
+        2 transactions starting from index 0"""
+        return ahead[0][2]
+
+    # Function to find out maximum profit
+    def stockBuySell(self, arr, n):
+        # Return the answer
+        return self.func(arr, n)
+
+if __name__ == "__main__":
+    prices = [3, 3, 5, 0, 0, 3, 1, 4]
+    n = len(prices)
+
+    # Create an instance of the Solution class
+    sol = Solution()
+
+    # Call the function and print the result
+    print("The maximum profit that can be generated is", sol.stockBuySell(prices, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find our maximum 
+    profit using space optimization*/
+    func(arr, n) {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        let ahead = Array.from({ length: 2 }, () => Array(3).fill(0));
+        let cur = Array.from({ length: 2 }, () => Array(3).fill(0));
+
+        // Iterate backwards through the prices array
+        for (let ind = n - 1; ind >= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (let buy = 0; buy <= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (let cap = 1; cap <= 2; cap++) {
+                    // We can buy the stock
+                    if (buy === 0) {
+                        cur[buy][cap] = Math.max(0 + ahead[0][cap],
+                                                 -arr[ind] + ahead[1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) {
+                        cur[buy][cap] = Math.max(0 + ahead[1][cap],
+                                                 arr[ind] + ahead[0][cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the 
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0*/
+        return ahead[0][2];
+    }
+
+    // Function to find out maximum profit
+    stockBuySell(arr, n) {
+        // Return the answer
+        return this.func(arr, n);
+    }
+}
+let prices = [3, 3, 5, 0, 0, 3, 1, 4];
+let n = prices.length;
+
+// Create an instance of the Solution class
+let sol = new Solution();
+
+// Call the function and print the result
+console.log("The maximum profit that can be generated is " + sol.stockBuySell(prices, n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find our maximum 
+    profit using space optimization*/
+    private int func(int[] arr, int n)
+    {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        int[,] ahead = new int[2, 3]; // Initialized to all zeros by default
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind >= 0; ind--)
+        {
+            int[,] cur = new int[2, 3]; // Initialize cur for each iteration
+
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy <= 1; buy++)
+            {
+                /* cap represents the number 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap <= 2; cap++)
+                {
+                    // We can buy the stock
+                    if (buy == 0)
+                    {
+                        cur[buy, cap] = Math.Max(0 + ahead[0, cap],
+                                                 -arr[ind] + ahead[1, cap]);
+                    }
+                    // We can sell the stock
+                    else // if (buy == 1)
+                    {
+                        cur[buy, cap] = Math.Max(0 + ahead[1, cap],
+                                                 arr[ind] + ahead[0, cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the 
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0*/
+        return ahead[0, 2];
+    }
+
+    // Function to find out maximum profit
+    public int StockBuySell(int[] arr, int n)
+    {
+        // Return the answer
+        return this.func(arr, n);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] prices = { 3, 3, 5, 0, 0, 3, 1, 4 };
+        int n = prices.Length;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        Console.WriteLine("The maximum profit that can be generated is " + sol.StockBuySell(prices, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Function to find our maximum profit using space optimization
+func funcTab(arr []int, n int) int {
+	/* Create two 2D arrays to store profit information,
+	one for current state and one for the ahead state. */
+	ahead := make([][]int, 2)
+	cur := make([][]int, 2)
+	for i := 0; i < 2; i++ {
+		ahead[i] = make([]int, 3)
+		cur[i] = make([]int, 3)
+	}
+
+	// Iterate backwards through the prices array
+	for ind := n - 1; ind >= 0; ind-- {
+
+		// buy can be 0 (buying) or 1 (selling)
+		for buy := 0; buy <= 1; buy++ {
+
+			/* cap represents the number of
+			   transactions completed (can be 1 or 2) */
+			for cap := 1; cap <= 2; cap++ {
+				// We can buy the stock
+				if buy == 0 {
+					cur[buy][cap] = int(math.Max(
+						float64(0+ahead[0][cap]),
+						float64(-arr[ind]+ahead[1][cap]),
+					))
+				}
+				// We can sell the stock
+				if buy == 1 {
+					cur[buy][cap] = int(math.Max(
+						float64(0+ahead[1][cap]),
+						float64(arr[ind]+ahead[0][cap-1]),
+					))
+				}
+			}
+		}
+		/* Update the ahead state with the
+		current state for the next iteration */
+		for i := 0; i < 2; i++ {
+			for j := 0; j < 3; j++ {
+				ahead[i][j] = cur[i][j]
+			}
+		}
+	}
+
+	/* Return the maximum profit after completing
+	   2 transactions starting from index 0. */
+	return ahead[0][2]
+}
+
+// Function to find out maximum profit
+func stockBuySell(arr []int, n int) int {
+	// Return the answer
+	return funcTab(arr, n)
+}
+
+func main() {
+	prices := []int{3, 3, 5, 0, 0, 3, 1, 4}
+	n := len(prices)
+
+	// Call the function and print the result
+	fmt.Println("The maximum profit that can be generated is", stockBuySell(prices, n))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*2*3),  As, here are three nested loops that account for O(N*2*3) complexity.<br><br>
+<strong>Space Complexity:</strong>O(1), As we are using two external arrays of size ‘2*3’.
+
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    //Function to find the maximum profit earned using recursion
+    int func(int ind, int buy, int cap, int n, vector&lt;int&gt; &amp;arr) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = max(0 + func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr));
+        }
+        
+        //We can sell the stock
+        if (buy == 1) { 
+            profit = max(0 + func(ind + 1, 1, cap, n, arr), arr[ind] + func(ind + 1, 0, cap-1, n, arr));
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+public:
+    //Function to calculate the maximum profit earned 
+    int stockBuySell(vector&lt;int&gt; &amp;arr, int n) {
+        if (n == 0) 
+            return 0;
+
+        int ans = func(0, 0, 2, n, arr);
+        
+        //Return the maximum profit
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to find the maximum profit earned using recursion
+    private int Func(int ind, int buy, int cap, int n, int[] arr)
+    {
+        // Base case 
+        if (ind == n || cap == 0)
+        {
+            return 0;
+        }
+
+        int profit = 0;
+
+        // We can buy the stock
+        if (buy == 0)
+        {
+            profit = Math.Max(
+                0 + Func(ind + 1, 0, cap, n, arr),
+                -arr[ind] + Func(ind + 1, 1, cap, n, arr)
+            );
+        }
+
+        // We can sell the stock
+        if (buy == 1)
+        {
+            profit = Math.Max(
+                0 + Func(ind + 1, 1, cap, n, arr),
+                arr[ind] + Func(ind + 1, 0, cap - 1, n, arr)
+            );
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int StockBuySell(int[] arr, int n)
+    {
+        if (n == 0)
+            return 0;
+
+        int ans = Func(0, 0, 2, n, arr);
+
+        // Return the maximum profit
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+// Function to find the maximum profit earned using recursion
+func funcRec(ind, buy, cap, n int, arr []int) int {
+    // Base case 
+    if ind == n || cap == 0 {
+        return 0
+    }
+
+    profit := 0
+
+    // We can buy the stock
+    if buy == 0 {
+        profit = int(math.Max(
+            float64(0+funcRec(ind+1, 0, cap, n, arr)),
+            float64(-arr[ind]+funcRec(ind+1, 1, cap, n, arr)),
+        ))
+    } else {
+        // We can sell the stock
+        profit = int(math.Max(
+            float64(0+funcRec(ind+1, 1, cap, n, arr)),
+            float64(arr[ind]+funcRec(ind+1, 0, cap-1, n, arr)),
+        ))
+    }
+
+    // Return the calculated profit
+    return profit
+}
+
+// Function to calculate the maximum profit earned 
+func stockBuySell(arr []int, n int) int {
+    if n == 0 {
+        return 0
+    }
+
+    ans := funcRec(0, 0, 2, n, arr)
+
+    // Return the maximum profit
+    return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    // Function to find the maximum profit earned using recursion
+    private int func(int ind, int buy, int cap, int n, int[] arr) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = Math.max(0 + func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr));
+        }
+        
+        // We can sell the stock
+        if (buy == 1) { 
+            profit = Math.max(0 + func(ind + 1, 1, cap, n, arr), arr[ind] + func(ind + 1, 0, cap-1, n, arr));
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int stockBuySell(int[] arr, int n) {
+        if (n == 0) 
+            return 0;
+
+        int ans = func(0, 0, 2, n, arr);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the maximum profit earned using recursion
+    func(ind, buy, cap, n, arr) {
+        // Base case 
+        if (ind === n || cap === 0) {
+            return 0;
+        }
+
+        let profit = 0;
+        
+        // We can buy the stock
+        if (buy === 0) { 
+            profit = Math.max(0 + this.func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + this.func(ind + 1, 1, cap, n, arr));
+        }
+        
+        // We can sell the stock
+        if (buy === 1) { 
+            profit = Math.max(0 + this.func(ind + 1, 1, cap, n, arr), arr[ind] + this.func(ind + 1, 0, cap-1, n, arr));
+        }
+
+        // Return the calculated profit
+        return profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    stockBuySell(arr, n) {
+        if (n === 0) 
+            return 0;
+
+        let ans = this.func(0, 0, 2, n, arr);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the maximum profit earned using recursion
+    def func(self, ind, buy, cap, n, arr):
+        # Base case 
+        if(ind == n or cap == 0):
+            return 0
+
+        profit = 0
+        
+        # We can buy the stock
+        if buy == 0:
+            profit = max(0 + self.func(ind + 1, 0, cap, n, arr), (-1)*arr[ind] + self.func(ind + 1, 1, cap, n, arr))
+        
+        # We can sell the stock
+        if buy == 1:
+            profit = max(0 + self.func(ind + 1, 1, cap, n, arr), arr[ind] + self.func(ind + 1, 0, cap-1, n, arr))
+
+        # Return the calculated profit
+        return profit
+
+    # Function to calculate the maximum profit earned 
+    def stockBuySell(self, arr, n):
+        if n == 0:
+            return 0
+
+        ans = self.func(0, 0, 2, n, arr)
+        
+        # Return the maximum profit
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    //Function to find the maximum profit earned using memoization
+    int func(int ind, int buy, int cap, int n, vector&lt;int&gt; &amp;arr, vector&lt;vector&lt;vector&lt;int&gt;&gt;&gt;&amp; dp) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind][buy][cap] != -1) {
+            return dp[ind][buy][cap];
+        }
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = max(0 + func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        //We can sell the stock
+        if (buy == 1) { 
+            profit = max(0 + func(ind + 1, 1, cap, n, arr, dp), arr[ind] + func(ind + 1, 0, cap-1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        return dp[ind][buy][cap] = profit;
+    }
+public:
+    //Function to calculate the maximum profit earned 
+    int stockBuySell(vector&lt;int&gt; &amp;arr, int n) {
+        if (n == 0) 
+            return 0;
+            
+        // Initialize a DP table to memoize results
+        vector&lt;vector&lt;vector&lt;int&gt;&gt;&gt; dp(n, vector&lt;vector&lt;int&gt;&gt;(2, vector&lt;int&gt;(3, -1)));
+
+        int ans = func(0, 0, 2, n, arr, dp);
+        
+        //Return the maximum profit
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    // Function to find maximum profit earned using memoization
+    private int Solve(int ind, int buy, int cap, int n, int[] arr, int[,,] dp)
+    {
+        // Base case 
+        if (ind == n || cap == 0)
+        {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind, buy, cap] != -1)
+        {
+            return dp[ind, buy, cap];
+        }
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) 
+        {
+            profit = System.Math.Max(0 + Solve(ind + 1, 0, cap, n, arr, dp), (-1) * arr[ind] + Solve(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        // We can sell the stock
+        else if (buy == 1) 
+        {
+            profit = System.Math.Max(0 + Solve(ind + 1, 1, cap, n, arr, dp), arr[ind] + Solve(ind + 1, 0, cap - 1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        dp[ind, buy, cap] = profit;
+        return dp[ind, buy, cap];
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int StockBuySell(int[] arr, int n)
+    {
+        if (n == 0) 
+            return 0;
+            
+        // Initialize a DP table to memoize results
+        int[,,] dp = new int[n, 2, 3];
+
+        // Fill with -1
+        for (int i = 0; i &lt; n; i++)
+        {
+            for (int j = 0; j &lt; 2; j++)
+            {
+                for (int k = 0; k &lt; 3; k++)
+                {
+                    dp[i, j, k] = -1;
+                }
+            }
+        }
+
+        int ans = Solve(0, 0, 2, n, arr, dp);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+// Function to find the maximum profit earned using memoization
+func funcRec(ind int, buy int, cap int, n int, arr []int, dp [][][]int) int {
+	// Base case
+	if ind == n || cap == 0 {
+		return 0
+	}
+
+	// If already computed, return stored value
+	if dp[ind][buy][cap] != -1 {
+		return dp[ind][buy][cap]
+	}
+
+	profit := 0
+
+	// We can buy the stock
+	if buy == 0 {
+		profit = int(math.Max(
+			float64(0+funcRec(ind+1, 0, cap, n, arr, dp)),
+			float64(-arr[ind]+funcRec(ind+1, 1, cap, n, arr, dp)),
+		))
+	} else {
+		// We can sell the stock
+		profit = int(math.Max(
+			float64(0+funcRec(ind+1, 1, cap, n, arr, dp)),
+			float64(arr[ind]+funcRec(ind+1, 0, cap-1, n, arr, dp)),
+		))
+	}
+
+	dp[ind][buy][cap] = profit
+	return profit
+}
+
+// Function to calculate the maximum profit earned
+func stockBuySell(arr []int, n int) int {
+	if n == 0 {
+		return 0
+	}
+
+	// Initialize dp table with -1
+	dp := make([][][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([][]int, 2)
+		for j := 0; j &lt; 2; j++ {
+			dp[i][j] = make([]int, 3)
+			for k := 0; k &lt; 3; k++ {
+				dp[i][j][k] = -1
+			}
+		}
+	}
+
+	return funcRec(0, 0, 2, n, arr, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to find the maximum profit earned using memoization
+    private int func(int ind, int buy, int cap, int n, int[] arr, int[][][] dp) {
+        // Base case 
+        if (ind == n || cap == 0) {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind][buy][cap] != -1) {
+            return dp[ind][buy][cap];
+        }
+        int profit = 0;
+        
+        // We can buy the stock
+        if (buy == 0) { 
+            profit = Math.max(0 + func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + func(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        // We can sell the stock
+        if (buy == 1) { 
+            profit = Math.max(0 + func(ind + 1, 1, cap, n, arr, dp), arr[ind] + func(ind + 1, 0, cap-1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        return dp[ind][buy][cap] = profit;
+    }
+
+    // Function to calculate the maximum profit earned 
+    public int stockBuySell(int[] arr, int n) {
+        if (n == 0) 
+            return 0;
+            
+        // Declare a DP table to memoize results
+        int[][][] dp = new int[n][2][3];
+        
+        // Initialize the dp array with -1
+        for (int i = 0; i &lt; n; i++) {
+            for (int j = 0; j &lt; 2; j++) {
+                Arrays.fill(dp[i][j], -1);
+            }
+        }
+
+        int ans = func(0, 0, 2, n, arr, dp);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find maximum profit earned using memoization
+    func(ind, buy, cap, n, arr, dp) {
+        // Base case 
+        if (ind === n || cap === 0) {
+            return 0;
+        }
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[ind][buy][cap] !== -1) {
+            return dp[ind][buy][cap];
+        }
+        let profit = 0;
+        
+        // We can buy the stock
+        if (buy === 0) { 
+            profit = Math.max(0 + this.func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + this.func(ind + 1, 1, cap, n, arr, dp));
+        }
+        
+        // We can sell the stock
+        if (buy === 1) { 
+            profit = Math.max(0 + this.func(ind + 1, 1, cap, n, arr, dp), arr[ind] + this.func(ind + 1, 0, cap-1, n, arr, dp));
+        }
+
+        /* Store the value in dp array and
+        return the calculated profit */
+        dp[ind][buy][cap] = profit;
+        return dp[ind][buy][cap];
+    }
+
+    // Function to calculate the maximum profit earned 
+    stockBuySell(arr, n) {
+        if (n === 0) 
+            return 0;
+            
+        // Initialize a DP table to memoize results
+        const dp = new Array(n).fill(null).map(() =&gt;
+            new Array(2).fill(null).map(() =&gt;
+                new Array(3).fill(-1)
+            )
+        );
+
+        let ans = this.func(0, 0, 2, n, arr, dp);
+        
+        // Return the maximum profit
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find maximum profit earned using memoization
+    def func(self, ind, buy, cap, n, arr, dp):
+        # Base case 
+        if ind == n or cap == 0:
+            return 0
+            
+        &quot;&quot;&quot; If the result for this state has 
+        already been calculated, return it&quot;&quot;&quot;
+        if dp[ind][buy][cap] != -1:
+            return dp[ind][buy][cap]
+        
+        profit = 0
+        
+        # We can buy the stock
+        if buy == 0:
+            profit = max(0 + self.func(ind + 1, 0, cap, n, arr, dp), (-1)*arr[ind] + self.func(ind + 1, 1, cap, n, arr, dp))
+        
+        # We can sell the stock
+        if buy == 1:
+            profit = max(0 + self.func(ind + 1, 1, cap, n, arr, dp), arr[ind] + self.func(ind + 1, 0, cap-1, n, arr, dp))
+        
+        &quot;&quot;&quot; Store the value in dp array and
+        return the calculated profit&quot;&quot;&quot;
+        dp[ind][buy][cap] = profit
+        return dp[ind][buy][cap]
+
+    # Function to calculate the maximum profit earned 
+    def stockBuySell(self, arr, n):
+        if n == 0:
+            return 0
+            
+        &quot;&quot;&quot; Declare a 3D DP table with dimensions 
+        (n) x 2 x 3 and initialize it with -1 &quot;&quot;&quot;
+        dp = [[[-1 for _ in range(3)] for _ in range(2)] for _ in range(n)]
+
+        ans = self.func(0, 0, 2, n, arr, dp)
+        
+        # Return the maximum profit
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    //Function to find the maximum profit using tabulation
+    int func(vector&lt;int&gt;&amp; arr, int n) {
+        
+        /* Creating a 3D DP array of size 
+        [n+1][2][3] initialized to 0*/
+        vector&lt;vector&lt;vector&lt;int&gt;&gt;&gt; dp(n + 1, vector&lt;vector&lt;int&gt;&gt;(2, vector&lt;int&gt;(3, 0)));
+
+        /* Base case: dp array is already initialized
+        to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind &gt;= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy &lt;= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap &lt;= 2; cap++) {
+                    
+                    // We can buy the stock
+                    if (buy == 0) { 
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][0][cap],
+                                               (-1)*arr[ind] + dp[ind + 1][1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) { 
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][1][cap],
+                                               arr[ind] + dp[ind + 1][0][cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after final transaction.*/
+        return dp[0][0][2];
+    }
+public:
+    //Function to find the maximum profit
+    int stockBuySell(vector&lt;int&gt; &amp;arr, int n){
+        //Return the answer
+        return func(arr, n);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    // Function to find the maximum profit using tabulation
+    private int func(int[] arr, int n)
+    {
+        /* Declaring a 3D DP array of size
+        [n+1][2][3] initialized to 0*/
+        int[,,] dp = new int[n + 1, 2, 3];
+
+        /* Base case: dp array is already 
+        initialized to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind &gt;= 0; ind--)
+        {
+            // buy can be 0 (buying) or 1 (selling)
+            
+            for (int buy = 0; buy &lt;= 1; buy++)
+            {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap &lt;= 2; cap++)
+                {
+                    // We can buy the stock
+                    if (buy == 0) 
+                    {
+                        dp[ind, buy, cap] = System.Math.Max(0 + dp[ind + 1, 0, cap],
+                                                     -arr[ind] + dp[ind + 1, 1, cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) 
+                    {
+                        dp[ind, buy, cap] = System.Math.Max(0 + dp[ind + 1, 1, cap],
+                                                     arr[ind] + dp[ind + 1, 0, cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after the final transaction.*/
+        return dp[0, 0, 2];
+    }
+
+    public int StockBuySell(int[] arr, int n)
+    {
+        // Return the answer
+        return func(arr, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+// Function to find the maximum profit using tabulation
+func funcTab(arr []int, n int) int {
+	/* Creating a 3D DP array of size 
+	[n+1][2][3] initialized to 0 */
+	dp := make([][][]int, n+1)
+	for i := range dp {
+		dp[i] = make([][]int, 2)
+		for j := range dp[i] {
+			dp[i][j] = make([]int, 3)
+		}
+	}
+
+	/* Base case: dp array is already initialized
+	to 0, covering the base case. */
+
+	// Iterate backwards through the prices array
+	for ind := n - 1; ind &gt;= 0; ind-- {
+
+		// buy can be 0 (buying) or 1 (selling)
+		for buy := 0; buy &lt;= 1; buy++ {
+
+			/* cap represents the number of 
+			   transactions completed (can be 1 or 2) */
+			for cap := 1; cap &lt;= 2; cap++ {
+
+				// We can buy the stock
+				if buy == 0 {
+					dp[ind][buy][cap] = int(math.Max(
+						float64(0+dp[ind+1][0][cap]),
+						float64(-arr[ind]+dp[ind+1][1][cap]),
+					))
+				}
+
+				// We can sell the stock
+				if buy == 1 {
+					dp[ind][buy][cap] = int(math.Max(
+						float64(0+dp[ind+1][1][cap]),
+						float64(arr[ind]+dp[ind+1][0][cap-1]),
+					))
+				}
+			}
+		}
+	}
+
+	/* The result is stored in dp[0][0][2] which
+	represents maximum profit after final transaction. */
+	return dp[0][0][2]
+}
+
+// Function to find the maximum profit
+func stockBuySell(arr []int, n int) int {
+	// Return the answer
+	return funcTab(arr, n)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to find the maximum profit using tabulation
+    private int func(int[] arr, int n) {
+        /* Declaring a 3D DP array of 
+        size [n+1][2][3] initialized to 0*/
+        int[][][] dp = new int[n + 1][2][3];
+
+        /* Base case: dp array is already i
+        nitialized to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind &gt;= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy &lt;= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap &lt;= 2; cap++) {
+                    // We can buy the stock
+                    if (buy == 0) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][0][cap],
+                                                     (-1)*arr[ind] + dp[ind + 1][1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][1][cap],
+                                                     arr[ind] + dp[ind + 1][0][cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after the final transaction.*/
+        return dp[0][0][2];
+    }
+
+    // Function to find the maximum profit
+    public int stockBuySell(int[] arr, int n) {
+        // Return the answer
+        return func(arr, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the maximum profit using tabulation
+    func(arr, n) {
+        /* Declaring a 3D DP array of size
+        [n+1][2][3] initialized to 0*/
+        let dp = new Array(n + 1).fill().map(() =&gt; new Array(2).fill().map(() =&gt; new Array(3).fill(0)));
+
+        /* Base case: dp array is already 
+        initialized to 0, covering the base case.*/
+
+        // Iterate backwards through the prices array
+        for (let ind = n - 1; ind &gt;= 0; ind--) {
+            // buy can be 0 (buying) or 1 (selling)
+            
+            for (let buy = 0; buy &lt;= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (let cap = 1; cap &lt;= 2; cap++) {
+                    // We can buy the stock
+                    if (buy === 0) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][0][cap],
+                                                     (-1)*arr[ind] + dp[ind + 1][1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy === 1) { 
+                        dp[ind][buy][cap] = Math.max(0 + dp[ind + 1][1][cap],
+                                                     arr[ind] + dp[ind + 1][0][cap - 1]);
+                    }
+                }
+            }
+        }
+
+        /* The result is stored in dp[0][0][2] which
+        represents maximum profit after the final transaction.*/
+        return dp[0][0][2];
+    }
+
+    // Function to find the maximum profit
+    stockBuySell(arr, n) {
+        
+        // Return the answer
+        return this.func(arr, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the maximum profit using tabulation
+    def func(self, arr, n):
+        &quot;&quot;&quot; Declaring a 3D DP array of size 
+        [n+1][2][3] initialized to 0&quot;&quot;&quot;
+        dp = [[[0 for _ in range(3)] for _ in range(2)] for _ in range(n + 1)]
+
+        &quot;&quot;&quot; Base case: dp array is already 
+        initialized to 0, covering the base case.&quot;&quot;&quot;
+
+        # Iterate backwards through the prices array
+        for ind in range(n - 1, -1, -1):
+            
+            # buy can be 0 (buying) or 1 (selling)
+            for buy in range(2):
+                
+                &quot;&quot;&quot; cap represents the number of 
+                transactions completed (can be 1 or 2)&quot;&quot;&quot;
+                for cap in range(1, 3):
+                    # We can buy the stock
+                    if buy == 0:
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][0][cap],
+                                                (-1)*arr[ind] + dp[ind + 1][1][cap])
+                    # We can sell the stock
+                    if buy == 1:
+                        dp[ind][buy][cap] = max(0 + dp[ind + 1][1][cap],
+                                                arr[ind] + dp[ind + 1][0][cap - 1])
+
+        &quot;&quot;&quot; The result is stored in dp[0][0][2] which 
+        represents maximum profit after the final transaction.&quot;&quot;&quot;
+        return dp[0][0][2]
+
+    # Function to find the maximum profit
+    def stockBuySell(self, arr, n):
+        # Return the answer
+        return self.func(arr, n)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /*Function to find our maximum 
+    profit using space optimization*/
+    int func(vector&lt;int&gt;&amp; arr, int n) {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        vector&lt;vector&lt;int&gt;&gt; ahead(2, vector&lt;int&gt;(3, 0));
+        vector&lt;vector&lt;int&gt;&gt; cur(2, vector&lt;int&gt;(3, 0));
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind &gt;= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy &lt;= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap &lt;= 2; cap++) {
+                    // We can buy the stock
+                    if (buy == 0) { 
+                        cur[buy][cap] = max(0 + ahead[0][cap], 
+                                            -arr[ind] + ahead[1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) { 
+                        cur[buy][cap] = max(0 + ahead[1][cap],
+                                            arr[ind] + ahead[0][cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0.*/
+        return ahead[0][2];
+    }
+public:
+    //Function to find out maximum profit
+    int stockBuySell(vector&lt;int&gt; &amp;arr, int n){
+        //Return the answer
+        return func(arr, n);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    public int StockBuySell(int[] arr, int n)
+    {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        int[,] ahead = new int[2, 3]; // Initialized to all zeros by default
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind &gt;= 0; ind--)
+        {
+            int[,] cur = new int[2, 3]; // Initialize cur for each iteration
+
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy &lt;= 1; buy++)
+            {
+                /* cap represents the number 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap &lt;= 2; cap++)
+                {
+                    // We can buy the stock
+                    if (buy == 0)
+                    {
+                        cur[buy, cap] = System.Math.Max(0 + ahead[0, cap],
+                                                 -arr[ind] + ahead[1, cap]);
+                    }
+                    // We can sell the stock
+                    else // if (buy == 1)
+                    {
+                        cur[buy, cap] = System.Math.Max(0 + ahead[1, cap],
+                                                 arr[ind] + ahead[0, cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the 
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0*/
+        return ahead[0, 2];
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+
+// Function to find our maximum profit using space optimization
+func funcTab(arr []int, n int) int {
+	/* Create two 2D arrays to store profit information,
+	one for current state and one for the ahead state. */
+	ahead := make([][]int, 2)
+	cur := make([][]int, 2)
+	for i := 0; i &lt; 2; i++ {
+		ahead[i] = make([]int, 3)
+		cur[i] = make([]int, 3)
+	}
+
+	// Iterate backwards through the prices array
+	for ind := n - 1; ind &gt;= 0; ind-- {
+
+		// buy can be 0 (buying) or 1 (selling)
+		for buy := 0; buy &lt;= 1; buy++ {
+
+			/* cap represents the number of
+			   transactions completed (can be 1 or 2) */
+			for cap := 1; cap &lt;= 2; cap++ {
+				// We can buy the stock
+				if buy == 0 {
+					cur[buy][cap] = int(math.Max(
+						float64(0+ahead[0][cap]),
+						float64(-arr[ind]+ahead[1][cap]),
+					))
+				}
+				// We can sell the stock
+				if buy == 1 {
+					cur[buy][cap] = int(math.Max(
+						float64(0+ahead[1][cap]),
+						float64(arr[ind]+ahead[0][cap-1]),
+					))
+				}
+			}
+		}
+		/* Update the ahead state with the
+		current state for the next iteration */
+		for i := 0; i &lt; 2; i++ {
+			for j := 0; j &lt; 3; j++ {
+				ahead[i][j] = cur[i][j]
+			}
+		}
+	}
+
+	/* Return the maximum profit after completing
+	   2 transactions starting from index 0. */
+	return ahead[0][2]
+}
+
+// Function to find out maximum profit
+func stockBuySell(arr []int, n int) int {
+	// Return the answer
+	return funcTab(arr, n)
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    /* Function to find our maximum 
+    profit using space optimization*/
+    private int func(int[] arr, int n) {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        int[][] ahead = new int[2][3];
+        int[][] cur = new int[2][3];
+
+        // Iterate backwards through the prices array
+        for (int ind = n - 1; ind &gt;= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (int buy = 0; buy &lt;= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (int cap = 1; cap &lt;= 2; cap++) {
+                    // We can buy the stock
+                    if (buy == 0) {
+                        cur[buy][cap] = Math.max(0 + ahead[0][cap],
+                                                 (-1)*arr[ind] + ahead[1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) {
+                        cur[buy][cap] = Math.max(0 + ahead[1][cap],
+                                                 arr[ind] + ahead[0][cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the 
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0*/
+        return ahead[0][2];
+    }
+
+    // Function to find out maximum profit
+    public int stockBuySell(int[] arr, int n) {
+        // Return the answer
+        return func(arr, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find our maximum 
+    profit using space optimization*/
+    func(arr, n) {
+        /* Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.*/
+        let ahead = Array.from({ length: 2 }, () =&gt; Array(3).fill(0));
+        let cur = Array.from({ length: 2 }, () =&gt; Array(3).fill(0));
+
+        // Iterate backwards through the prices array
+        for (let ind = n - 1; ind &gt;= 0; ind--) {
+            
+            // buy can be 0 (buying) or 1 (selling)
+            for (let buy = 0; buy &lt;= 1; buy++) {
+                
+                /* cap represents the number of 
+                transactions completed (can be 1 or 2)*/
+                for (let cap = 1; cap &lt;= 2; cap++) {
+                    // We can buy the stock
+                    if (buy === 0) {
+                        cur[buy][cap] = Math.max(0 + ahead[0][cap],
+                                                 -arr[ind] + ahead[1][cap]);
+                    }
+                    // We can sell the stock
+                    if (buy == 1) {
+                        cur[buy][cap] = Math.max(0 + ahead[1][cap],
+                                                 arr[ind] + ahead[0][cap - 1]);
+                    }
+                }
+            }
+            /* Update the ahead state with the 
+            current state for the next iteration*/
+            ahead = cur;
+        }
+
+        /* Return the maximum profit after completing
+        2 transactions starting from index 0*/
+        return ahead[0][2];
+    }
+
+    // Function to find out maximum profit
+    stockBuySell(arr, n) {
+        // Return the answer
+        return this.func(arr, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find our maximum 
+    profit using space optimization&quot;&quot;&quot;
+    def func(self, arr, n):
+        &quot;&quot;&quot; Create two 2D arrays to store profit information,
+        one for current state and one for the ahead state.&quot;&quot;&quot;
+        ahead = [[0] * 3 for _ in range(2)]
+        cur = [[0] * 3 for _ in range(2)]
+
+        # Iterate backwards through the prices array
+        for ind in range(n - 1, -1, -1):
+            
+            # buy can be 0 (buying) or 1 (selling)
+            for buy in range(2):
+                
+                &quot;&quot;&quot; cap represents the number of 
+                transactions completed (can be 1 or 2)&quot;&quot;&quot;
+                for cap in range(1, 3):
+                    # We can buy the stock
+                    if buy == 0:
+                        cur[buy][cap] = max(0 + ahead[0][cap],
+                                            -arr[ind] + ahead[1][cap])
+                    # We can sell the stock
+                    if buy == 1:
+                        cur[buy][cap] = max(0 + ahead[1][cap],
+                                            arr[ind] + ahead[0][cap - 1])
+            &quot;&quot;&quot; Update the ahead state with the 
+            current state for the next iteration&quot;&quot;&quot;
+            ahead = [row[:] for row in cur]
+
+        &quot;&quot;&quot; Return the maximum profit after completing 
+        2 transactions starting from index 0&quot;&quot;&quot;
+        return ahead[0][2]
+
+    # Function to find out maximum profit
+    def stockBuySell(self, arr, n):
+        # Return the answer
+        return self.func(arr, n)</code></pre></div>
+</body>
+</html>

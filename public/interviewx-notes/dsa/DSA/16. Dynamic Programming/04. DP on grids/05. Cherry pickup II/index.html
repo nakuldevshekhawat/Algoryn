@@ -1,0 +1,3537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cherry pickup II</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Cherry pickup II</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span><span>Matrix</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a n x m 2d integer array called matrix where matrix[i][j] represents the number of cherries you can pick up from the (i, j) cell.Given two robots that can collect cherries, one is located at the <strong>top-leftmost (0, 0)</strong> cell and the other at the <strong>top-rightmost (0, m-1)</strong> cell.</p><p><br></p><p>Return the<strong> maximum</strong> number of cherries that can be picked by the two robots in total, following these rules:</p><p><br></p><ul><li>Robots that are standing on (i, j) cell can only move to cell (i + 1, j - 1), (i + 1, j), or (i + 1, j + 1), if it exists in the matrix.</li></ul><p><br></p><ul><li>A robot will pick up all the cherries in a given cell when it passes through that cell.</li></ul><p><br></p><ul><li>If both robots come to the same cell at the same time, only one robot takes the cherries.</li></ul><p><br></p><ul><li>Both robots must reach the bottom row in matrix.</li></ul>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>n == number of rows in matrix</li><li>m == number of columns in matrix</li><li>2 <= n, m <= 70</li><li>0 <= matrix[i][j] <= 1000</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: matrix = [[2, 1, 3], [4, 2, 5], [1, 6, 2], [7, 2, 8]]</p><p><strong>Output</strong>: 37</p><p><strong>Explanation</strong>: </p><p>Possible left robot path:-</p><p>Start at 0th cell (2) -> down (4) -> down-right (6) ->down-left (7)</p><p>Possible right robot path:-</p><p>Start at 2nd cell (3) -> down (5) -> down (2) -> down (8)</p><h3>Example 2</h3><p><strong>Input</strong>: matrix = [[1, 4, 4, 1], [1, 2, 2, 1], [5, 6, 10, 11], [8, 1, 1, 1]]</p><p><strong>Output</strong>: 32</p><p><strong>Explanation</strong>: </p><p>Possible left robot path:-</p><p>Start at 0th cell (1) -> down-right (2) -> down (6) ->down-left (8)</p><p>Possible right robot path:-</p><p>Start at 3rd cell (1) -> down-left (2) -> down-right (11) -> down (1)</p><h3>Example 3</h3><p><strong>Input</strong>: matrix = [[1, 2, 3], [5, 4, 6], [4, 4, 1]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem and its underlying algorithm concepts can find use in real-world applications like video games and robotics. In a gaming scenario, this problem can be used to program artificial intelligence for characters in grid-based turn strategy games, ensuring each character gathers the most resources or points while avoiding collision. In robotics, this might be a real scenario where two robots are tasked to collect items from a given space and the optimized path needs to be calculated to collect maximum items without both robots reaching the same point at the same time. This coordination and optimization problem requires advanced algorithms for efficiency and is a fundamental challenge in multi-robot systems.</p></div>
+<div class="section"><h2>Editorial: Recursion </h2>
+
+<h5><strong>Why Greedy Approach will not work: </strong></h5>
+
+<p>As we have to return the maximum cherries collected, the first approach that comes to our mind is to take a greedy approach and always form a path by locally choosing the option that gives us more cherries. But there is no ‘uniformity’ in the values of the matrix.Therefore, it can happen that whenever we make a local choice that gives us a better path, we actually take a path that, in later stages, yields fewer cherries.</p>
+<p>As a greedy solution doesn’t work, our next choice will be to try out all the possible paths. To generate all possible paths we will use recursion. </p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Cherry pickup II/-JgRXKaOH">
+<p>In this question, there are fixed starting points but variable ending points, but as per the movements of robots, we know that they will end in the last row. They have to move together at a time to the next row because if we seperately find the maximum cherries picked up by each robot, it can happen that the same cell cherries gets counted twice for each of the robots.</p>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<li><b>Express the problem in terms of indexes: </b>This question is slightly different from all the previous questions, here we are given two starting points from where the two robots can move. We are given an ‘N*M’ matrix. Therefore, four parameters  i1,j1,i2, and j2 needs to be defined, to describe the positions of both of the robots. Each pair(i, j) wil describe the present cell of each of the robots.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Cherry pickup II/-tKaF4PTi" width="350">
+<p>If we observe, initially the two robots are at the first row, and they always move to the row below them every time, so they will always be in the same row. Therefore two different variables i1 and i2, to describe their positions are redundant. We can just use single parameter i, which tells us in which row of the grid both of them are.</p>
+
+<p>Hence the function can be modified to take 3 parameters only. 'i', 'j1' and 'j2'.  f(i, j1, j2) will give the maximum number of cherries collected by 1st robot from cell[i, j1] till last row and 2nd robot from cell[i, j2] till last row combined.</p>
+<li><b>Try out all possible choices at a given index: </b>At every cell, there are 3 choices for each robot, to the bottom cell, to the bottom-right cell or to the bottom-left cell.
+Now, we need to understand that both of the robots needs to move together. Both of them can individually take three moves but say one of them moves to bottom-left, then the other one can have three different choices for each move taken by the first robot. </p>
+
+<p>Hence there are total of 9 different options at every f(i, j1, j2) to move both the robots together. Now we can manually write these 9 options or we can observe a pattern in them, first  ont of the robots moves to one side and the other one takes tries all three choices, then again the first robot moves, then the second one, and so on. This pattern can be easily captured by using two nested loops that change the column numbers(j1 and j2).</li>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Cherry pickup II/-tXs3ykXT">
+<p><strong>Note:</strong>If (j1===j2), as discussed in the base case, only consider cherries collected by one of them otherwise consider cherries collected by both of them.</p>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(i,j1, j2){
+    //Base case
+    for(di = -1; di <= 1; di++){
+        for(dj = -1; dj <=1; dj++){
+            ans = 0;
+            if(j1 == j2){
+                ans = mat[i][j1] + f(i + 1, j1 + di, j2 + dj)
+            else
+                ans = mat[i][j1] + mat[i][j2] + f(i + 1, j1 + di, j2 + dj)
+            }
+        }
+    }
+}</code></pre></div></div></div><br>
+
+<li><b>Take the maximum of all choices: </b>As we need to find the maximum cherries picked, return the maximum of the choices. </li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(i,j1, j2){
+    //Base case
+    maxi = INT_MIN
+    for(di = -1; di <= 1; di++){
+        for(dj = -1; dj <=1; dj++){
+            ans = 0;
+            if(j1 == j2)
+                ans = mat[i][j1] + f(i + 1, j1 + di, j2 + dj)
+            else
+                ans = mat[i][j1] + mat[i][j2] + f(i + 1, j1 + di, j2 + dj)
+            maxi = max(maxi, ans)
+        }
+    }
+    return maxi
+}</code></pre></div></div></div><br>
+
+<li><b>Base cases: </b>When i == N-1, it means we are at the last row, so we need to return from here. Now it can happen that in the last row, both the robots are at the same cell, in this condition return cherries collected by one of them only, mat[i][j1], otherwise return sum of cherries collected by both, mat[i][j1] + mat[i][j1][j2].</li>
+<p>At every cell, there are 3 choices individually, to the bottom cell, to the bottom-right cell or to the bottom-left cell. As the robots are moving to the bottom row, at max they will reach the last row, from where they return, so they will never go out of the bounding index.</p>
+
+<p>To move to the bottom-right cell or to the bottom-left cell, it can happen that robots may go out of bound. So we need to handle that case, return -1e9, whenever robots go out of bound, in this way this path will not be selected by the calling function as we have to return the maximum cherries.</p>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(i,j1, j2){
+    if(j1 < 0 || j1>= m || j2 < 0 || j2 >= m)   return -1e9
+    if(i == n-1) {
+        if(j1 == j2)
+            return mat[i][j1]
+        else
+            return mat[i][j1] + mat[i][j2]
+    }  
+}</code></pre></div></div></div><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Function to find the maximum cherries
+    that can be collected recursively*/
+    int func(int i, int j1, int j2, int n, int m, vector<vector<int>> &matrix) {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+        return -1e9; 
+
+        if (i == n - 1) {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        int maxi = INT_MIN;
+    
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                int ans;
+            
+                if (j1 == j2)
+                    ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+            
+                // Update the maximum result
+                maxi = max(maxi, ans);
+            }
+        }
+    
+        //Return the maximum cherries collected
+        return maxi;
+    }
+public:
+    // Function to find maximum cherries that can be collected
+    int cherryPickup(vector<vector<int>> &matrix) {
+        int n = matrix.size();
+        int m = matrix[0].size();
+
+        //Return the maximum cherries collected
+        return func(0, 0, m - 1, n, m, matrix);
+    }
+};
+
+int main() {
+    vector<vector<int>> matrix{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    };
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call the function and print the result
+    cout << sol.cherryPickup(matrix);
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the maximum cherries
+    that can be collected recursively*/
+    private int func(int i, int j1, int j2, int n, int m, int[][] matrix) {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+            return (int)(-1e9);
+
+        if (i == n - 1) {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        int maxi = Integer.MIN_VALUE;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                int ans;
+
+                if (j1 == j2)
+                    ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+
+                // Update the maximum result
+                maxi = Math.max(maxi, ans);
+            }
+        }
+
+        // Return the maximum cherries collected
+        return maxi;
+    }
+    // Function to find maximum cherries that can be collected
+    public int cherryPickup(int[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+
+        // Return the maximum cherries collected
+        return func(0, 0, m - 1, n, m, matrix);
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = {
+                {2, 3, 1, 2},
+                {3, 4, 2, 2},
+                {5, 6, 3, 5}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        System.out.println(sol.cherryPickup(matrix));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find the maximum cherries
+    that can be collected recursively"""
+    def func(self, i, j1, j2, n, m, matrix):
+        # Base cases
+        if j1 < 0 or j1 >= m or j2 < 0 or j2 >= m:
+            return -1e9
+
+        if i == n - 1:
+            if j1 == j2:
+                return matrix[i][j1]
+            else:
+                return matrix[i][j1] + matrix[i][j2]
+
+        maxi = -float('inf')
+
+        # Try all possible moves for both positions (j1, j2)
+        for di in range(-1, 2):
+            for dj in range(-1, 2):
+                ans = 0
+
+                if j1 == j2:
+                    ans = matrix[i][j1] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix)
+                else:
+                    ans = matrix[i][j1] + matrix[i][j2] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix)
+
+                # Update the maximum result
+                maxi = max(maxi, ans)
+
+        # Return the maximum cherries collected
+        return maxi
+    # Function to find maximum cherries that can be collected
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+
+        # Return the maximum cherries collected
+        return self.func(0, 0, m - 1, n, m, matrix)
+
+if __name__ == "__main__":
+    matrix = [
+        [2, 3, 1, 2],
+        [3, 4, 2, 2],
+        [5, 6, 3, 5]
+    ]
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call the function and print the result
+    print(sol.cherryPickup(matrix))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the maximum cherries
+    that can be collected recursively*/
+    func(i, j1, j2, n, m, matrix) {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+            return -1e9;
+
+        if (i === n - 1) {
+            if (j1 === j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        let maxi = -Infinity;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (let di = -1; di <= 1; di++) {
+            for (let dj = -1; dj <= 1; dj++) {
+                let ans;
+
+                if (j1 === j2)
+                    ans = matrix[i][j1] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+
+                // Update the maximum result
+                maxi = Math.max(maxi, ans);
+            }
+        }
+
+        // Return the maximum cherries collected
+        return maxi;
+    }
+    // Function to find maximum cherries that can be collected
+    cherryPickup(matrix) {
+        const n = matrix.length;
+        const m = matrix[0].length;
+
+        // Return the maximum cherries collected
+        return this.func(0, 0, m - 1, n, m, matrix);
+    }
+}
+
+// Test case
+let matrix = [
+    [2, 3, 1, 2],
+    [3, 4, 2, 2],
+    [5, 6, 3, 5]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Call the function and print the result
+console.log(sol.cherryPickup(matrix));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the maximum cherries
+       that can be collected recursively */
+    private int Func(int i, int j1, int j2, int n, int m, int[][] matrix)
+    {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+            return -1000000000;
+
+        if (i == n - 1)
+        {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        int maxi = int.MinValue;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di <= 1; di++)
+        {
+            for (int dj = -1; dj <= 1; dj++)
+            {
+                int ans;
+
+                if (j1 == j2)
+                    ans = matrix[i][j1] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+
+                // Update the maximum result
+                maxi = Math.Max(maxi, ans);
+            }
+        }
+
+        // Return the maximum cherries collected
+        return maxi;
+    }
+
+    // Function to find maximum cherries that can be collected
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Return the maximum cherries collected
+        return Func(0, 0, m - 1, n, m, matrix);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[][] matrix = new int[][]
+        {
+            new[] { 2, 3, 1, 2 },
+            new[] { 3, 4, 2, 2 },
+            new[] { 5, 6, 3, 5 }
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        Console.WriteLine(sol.CherryPickup(matrix));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+const NEG_INF = -1000000000              // same sentinel as -1e9 
+const INT_MIN_32 = -1 << 31              // −2147483648 as in typical 32‑bit INT_MIN
+
+/* Function to find the maximum cherries
+    that can be collected recursively*/
+func funcRec(i, j1, j2, n, m int, matrix [][]int) int {
+    // Base cases
+    if j1 < 0 || j1 >= m || j2 < 0 || j2 >= m {
+        return NEG_INF
+    }
+
+    if i == n-1 {
+        if j1 == j2 {
+            return matrix[i][j1]
+        } else {
+            return matrix[i][j1] + matrix[i][j2]
+        }
+    }
+
+    maxi := INT_MIN_32
+
+    // Try all possible moves for both positions (j1, j2)
+    for di := -1; di <= 1; di++ {
+        for dj := -1; dj <= 1; dj++ {
+            var ans int
+
+            if j1 == j2 {
+                ans = matrix[i][j1] + funcRec(i+1, j1+di, j2+dj, n, m, matrix)
+            } else {
+                ans = matrix[i][j1] + matrix[i][j2] + funcRec(i+1, j1+di, j2+dj, n, m, matrix)
+            }
+
+            // Update the maximum result
+            if ans > maxi {
+                maxi = ans
+            }
+        }
+    }
+
+    //Return the maximum cherries collected
+    return maxi
+}
+
+// Function to find maximum cherries that can be collected
+func cherryPickup(matrix [][]int) int {
+    n := len(matrix)
+    m := len(matrix[0])
+
+    //Return the maximum cherries collected
+    return funcRec(0, 0, m-1, n, m, matrix)
+}
+
+func main() {
+    matrix := [][]int{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    }
+
+    //Create an instance of Solution class
+    //Call the function and print the result
+    result := cherryPickup(matrix)
+    fmt.Println(result)
+}
+</code></pre></div></div></div>
+
+
+<strong>Time Complexity: </strong>O(3<sup>(N)</sup>*3<sup>(N)</sup>), where N is the number of row. As, for each cell, each of the robots has 3 options and there are N rows to be considered.<br><br>
+<strong>Space Complexity:</strong>O(N), at maximum the depth of the recursive stack can go upto N.</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Cherry pickup II/-j7ZylSVa"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<li><b>Declare a dp array of size [n][m][m]: </b>As there are three changing parameters(i, j1 and j2) in the recursive solution, and the maximum value they can attain is (n-1) for 'i' as it detones the row and (m-1) for both 'j1' and 'j2' as it denotes the column. So we will require a dp matrix of n*m*m. </li>
+<p>The dp array stores the calculations of subproblems, dp[i][j1][j2] represents the maximum number of cherries collected by 1st robot from cell[i, j1] till last row and 2nd robot from cell[i, j2] till last row combined. Initially, fill the array with -1, to indicate that no subproblem has been solved yet.</p>
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Function to find the maximum cherries
+    that can be collected using memoization*/
+    int func(int i, int j1, int j2, int n, int m, vector<vector<int>> &matrix, vector<vector<vector<int>>> &dp) {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+        return -1e9; 
+
+        if (i == n - 1) {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+        
+        /* If the result for this state 
+        is already computed, return it*/
+        if (dp[i][j1][j2] != -1)
+            return dp[i][j1][j2];
+
+        int maxi = INT_MIN;
+    
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                int ans;
+            
+                if (j1 == j2)
+                    ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+            
+                // Update the maximum result
+                maxi = max(maxi, ans);
+            }
+        }
+    
+        // Store the maximum result for this state in dp
+        return dp[i][j1][j2] = maxi;
+    }
+public:
+    // Function to find maximum cherries that can be collected
+    int cherryPickup(vector<vector<int>> &matrix) {
+        int n = matrix.size();
+        int m = matrix[0].size();
+        
+        // Initialize a 3D DP array to store computed results
+        vector<vector<vector<int>>> dp(n, vector<vector<int>>(m, vector<int>(m, -1)));
+
+        //Return the maximum cherries collected
+        return func(0, 0, m - 1, n, m, matrix, dp);
+    }
+};
+
+int main() {
+    vector<vector<int>> matrix{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    };
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call the function and print the result
+    cout << sol.cherryPickup(matrix);
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the maximum cherries
+    that can be collected using memoization*/
+    private int func(int i, int j1, int j2, int n, int m, int[][] matrix, int[][][] dp) {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+            return (int)(-1e9);
+
+        if (i == n - 1) {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+        
+        /* If the result for this state 
+        is already computed, return it*/
+        if (dp[i][j1][j2] != -1)
+            return dp[i][j1][j2];
+
+        int maxi = Integer.MIN_VALUE;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di <= 1; di++) {
+            for (int dj = -1; dj <= 1; dj++) {
+                int ans;
+
+                if (j1 == j2)
+                    ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+
+                // Update the maximum result
+                maxi = Math.max(maxi, ans);
+            }
+        }
+
+        // Store the result in the dp array and return it
+        return dp[i][j1][j2] = maxi;
+    }
+    // Function to find maximum cherries that can be collected
+    public int cherryPickup(int[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+        
+        // Declare a 3D array to store computed results
+        int dp[][][] = new int[n][m][m];
+
+        // Initialize the dp array with -1
+        for (int row1[][] : dp) {
+            for (int row2[] : row1) {
+                Arrays.fill(row2, -1);
+            }
+        }
+   
+        // Return the maximum cherries collected
+        return func(0, 0, m - 1, n, m, matrix, dp);
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = {
+                {2, 3, 1, 2},
+                {3, 4, 2, 2},
+                {5, 6, 3, 5}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        System.out.println(sol.cherryPickup(matrix));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find the maximum cherries
+    that can be collected using memoization"""
+    def func(self, i, j1, j2, n, m, matrix, dp):
+        # Base cases
+        if j1 < 0 or j1 >= m or j2 < 0 or j2 >= m:
+            return int(-1e9)
+
+        if i == n - 1:
+            if j1 == j2:
+                return matrix[i][j1]
+            else:
+                return matrix[i][j1] + matrix[i][j2]
+        
+        """ If the result for these indices has
+        already been computed, return it"""
+        if dp[i][j1][j2] != -1:
+            return dp[i][j1][j2]
+
+        maxi = int(-1e9)
+
+        # Try all possible moves for both positions (j1, j2)
+        for di in range(-1, 2):
+            for dj in range(-1, 2):
+                ans = 0
+
+                if j1 == j2:
+                    ans = matrix[i][j1] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp)
+                else:
+                    ans = matrix[i][j1] + matrix[i][j2] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp)
+
+                # Update the maximum result
+                maxi = max(maxi, ans)
+
+        """ Store the maximum cherries 
+        collected in the memoization table"""
+        dp[i][j1][j2] = maxi
+        return maxi
+        
+    # Function to find maximum cherries that can be collected
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+        
+        
+        # Initialize a memoization table with -1 values
+        dp = [[[-1 for j in range(m)] for i in range(m)] for k in range(n)]
+
+        # Return the maximum cherries collected
+        return self.func(0, 0, m - 1, n, m, matrix, dp)
+
+if __name__ == "__main__":
+    matrix = [
+        [2, 3, 1, 2],
+        [3, 4, 2, 2],
+        [5, 6, 3, 5]
+    ]
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call the function and print the result
+    print(sol.cherryPickup(matrix))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the maximum cherries
+    that can be collected using memoization*/
+    func(i, j1, j2, n, m, matrix, dp) {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+            return -1e9;
+
+        if (i === n - 1) {
+            if (j1 === j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+        
+        /* If the result for this state 
+        is already computed, return it*/
+        if (dp[i][j1][j2] != -1)
+            return dp[i][j1][j2];
+            
+        let maxi = -Infinity;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (let di = -1; di <= 1; di++) {
+            for (let dj = -1; dj <= 1; dj++) {
+                let ans;
+
+                if (j1 === j2)
+                    ans = matrix[i][j1] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+
+                // Update the maximum result
+                maxi = Math.max(maxi, ans);
+            }
+        }
+
+        // Store the maximum result for this state in dp
+        dp[i][j1][j2] = maxi;
+        return dp[i][j1][j2];
+    }
+    // Function to find maximum cherries that can be collected
+    cherryPickup(matrix) {
+        const n = matrix.length;
+        const m = matrix[0].length;
+        
+        // Initialize a 3D dp array with -1 values
+        const dp = new Array(n).fill(null).map(() =>
+            new Array(m).fill(null).map(() =>
+                new Array(m).fill(-1)
+            )
+        );
+
+        // Return the maximum cherries collected
+        return this.func(0, 0, m - 1, n, m, matrix, dp);
+    }
+}
+
+// Test case
+let matrix = [
+    [2, 3, 1, 2],
+    [3, 4, 2, 2],
+    [5, 6, 3, 5]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Call the function and print the result
+console.log(sol.cherryPickup(matrix));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the maximum cherries
+    that can be collected using memoization*/
+    private int Func(int i, int j1, int j2, int n, int m, int[][] matrix, int[,,] dp)
+    {
+        // Base cases
+        if (j1 < 0 || j1 >= m || j2 < 0 || j2 >= m)
+            return int.MinValue; // Represents -1e9
+
+        if (i == n - 1)
+        {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        /* If the result for this state 
+        is already computed, return it*/
+        if (dp[i, j1, j2] != -1)
+            return dp[i, j1, j2];
+
+        int maxi = int.MinValue; // Represents -Infinity
+
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di <= 1; di++)
+        {
+            for (int dj = -1; dj <= 1; dj++)
+            {
+                int ans;
+
+                if (j1 == j2)
+                    ans = matrix[i][j1] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+
+                // Update the maximum result
+                maxi = Math.Max(maxi, ans);
+            }
+        }
+
+        // Store the maximum result for this state in dp
+        dp[i, j1, j2] = maxi;
+        return dp[i, j1, j2];
+    }
+
+    // Function to find maximum cherries that can be collected
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Initialize a 3D dp array with -1 values
+        int[,,] dp = new int[n, m, m];
+        for (int row = 0; row < n; row++)
+        {
+            for (int col1 = 0; col1 < m; col1++)
+            {
+                for (int col2 = 0; col2 < m; col2++)
+                {
+                    dp[row, col1, col2] = -1;
+                }
+            }
+        }
+
+        // Return the maximum cherries collected
+        return Func(0, 0, m - 1, n, m, matrix, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Test case
+        int[][] matrix = new int[][]
+        {
+            new int[] {2, 3, 1, 2},
+            new int[] {3, 4, 2, 2},
+            new int[] {5, 6, 3, 5}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function and print the result
+        Console.WriteLine(sol.CherryPickup(matrix));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// cherryPickup initializes memoization and calls the recursive helper.
+func cherryPickup(matrix [][]int) int {
+    // Function to find the maximum cherries using memoization
+    var funcHelper func(i, j1, j2, n, m int, matrix [][]int, dp [][][]int) int
+
+    funcHelper = func(i, j1, j2, n, m int, matrix [][]int, dp [][][]int) int {
+        // Base cases
+        if j1 < 0 || j1 >= m || j2 < 0 || j2 >= m {
+            return -1000000000 // Representing a very low value
+        }
+
+        if i == n-1 {
+            if j1 == j2 {
+                return matrix[i][j1]
+            }
+            return matrix[i][j1] + matrix[i][j2]
+        }
+
+        // If already computed
+        if dp[i][j1][j2] != -1 {
+            return dp[i][j1][j2]
+        }
+
+        maxi := -1000000000
+
+        // Try all possible moves for both robots
+        for di := -1; di <= 1; di++ {
+            for dj := -1; dj <= 1; dj++ {
+                var ans int
+                if j1 == j2 {
+                    ans = matrix[i][j1] + funcHelper(i+1, j1+di, j2+dj, n, m, matrix, dp)
+                } else {
+                    ans = matrix[i][j1] + matrix[i][j2] +
+                        funcHelper(i+1, j1+di, j2+dj, n, m, matrix, dp)
+                }
+                if ans > maxi {
+                    maxi = ans
+                }
+            }
+        }
+
+        dp[i][j1][j2] = maxi
+        return maxi
+    }
+
+    n := len(matrix)
+    m := len(matrix[0])
+
+    // Initialize the 3D dp array with -1
+    dp := make([][][]int, n)
+    for i := range dp {
+        dp[i] = make([][]int, m)
+        for j := range dp[i] {
+            dp[i][j] = make([]int, m)
+            for k := range dp[i][j] {
+                dp[i][j][k] = -1
+            }
+        }
+    }
+
+    return funcHelper(0, 0, m-1, n, m, matrix, dp)
+}
+
+func main() {
+    matrix := [][]int{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    }
+
+    ans := cherryPickup(matrix)
+    fmt.Println(ans)
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*M*M) * 9.  At max, there will be N*M*M calls of recursion to solve a new problem and in every call, two nested loops together run for 9 times.<br><br>
+<strong>Space Complexity:</strong>O(N) + O(N*M*M). We are using a recursion stack space of O(N), where N is the path length and an external DP Array of size ‘N*M*M’.</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2>
+
+<p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<li><b>Declare a dp array of size [n][m][m]: </b>As there are three changing parameters(i, j1 and j2) in the recursive solution, and the maximum value they can attain is (n-1) for 'i' as it detones the row and (m-1) for both 'j1' and 'j2' as it denotes the column. So we will require a dp matrix of n*m*m. </li>
+<p>The dp array stores the calculations of subproblems, dp[i][j1][j2] represents the maximum number of cherries collected by 1st robot from cell[i, j1] till last row and 2nd robot from cell[i, j2] till last row combined. Initially, fill the array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when we reach the last row, therefore in our dp array, we will also initialize dp[n-1][][], i.e (the last plane of 3D Array) as the base condition. Dp[n-1][j1][j2] means the first robot is at (n-1,j1) and the second robot is at (n-1,j2). As this is the last row, its value will be equal to mat[i][j1], if (j1==j2) and mat[i][j1] + mat[i][j2] otherwise.</li>
+
+<li><b>Iterative Computation Using Loops: </b>As the last row of the dp is already filled for base condition, now start moving from dp[n-2][][] to dp[0][][]. First set three nested loops to do this traversal.</li>
+<p>Inside the three nested loops( say i, j1, j2 as loop variables), use the recursive relations, i.e again set two nested loops to try all the nine options. The outer three loops are just for traversal, and the inner two loops that run for 9 times mainly decide, what should be the value of the cell.</p>
+<p>Inside the inner two nested loops, calculate an answer as we had done in the recursive relation, but this time using values from the next plane of the 3D DP Array( dp[i+1][x][y] instead of recursive calls, where x and y will vary according to inner 2 nested loops).</p>
+
+<li><b>Choosing the maximum: </b>As the question asks for maximum cherries that can be collected so, set dp[i][j1][j2] as the maximum of all the 9 options possible.</li>
+
+<li><b>Returning the answer: </b>The element dp[0][0][m-1] of the dp array is returned because it holds the optimal solution to the entire problem after the computation has been completed.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+   /* Function to find the maximum cherries 
+   that can be collected using tabulation */
+   int func(int n, int m, vector<vector<int>> &matrix) {
+        // Initialize a 3D DP array to store computed results
+        vector<vector<vector<int>>> dp(n, vector<vector<int>>(m, vector<int>(m, 0)));
+
+        // Initialize the DP array for the last row
+        for (int j1 = 0; j1 < m; j1++) {
+            for (int j2 = 0; j2 < m; j2++) {
+                if (j1 == j2)
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j1 = 0; j1 < m; j1++) {
+                for (int j2 = 0; j2 < m; j2++) {
+                    int maxi = INT_MIN;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di <= 1; di++) {
+                        for (int dj = -1; dj <= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            if ((j1 + di < 0 || j1 + di >= m) || (j2 + dj < 0 || j2 + dj >= m))
+                                /* A very large negative value 
+                                to represent an invalid move*/
+                                ans += -1e9; 
+                            else
+                                ans += dp[i + 1][j1 + di][j2 + dj]; 
+                                
+                            // Update the maximum result
+                            maxi = max(ans, maxi); 
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the DP array*/
+                    dp[i][j1][j2] = maxi; 
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected
+        is stored at the top-left corner of the DP array*/
+        return dp[0][0][m - 1];
+    }
+public:
+    //Function to find the maximum cherries picked
+    int cherryPickup(vector<vector<int>> &matrix){
+        int n = matrix.size(); 
+        int m = matrix[0].size(); 
+        
+        //Return the answer
+        return func(n, m, matrix);
+    }
+};
+int main() {
+    vector<vector<int>> matrix{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    };
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call the maximumChocolates function and print the result
+    cout << sol.cherryPickup(matrix);
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the maximum cherries 
+    that can be collected using tabulation*/
+    private int func(int n, int m, int[][] matrix) {
+        // Initialize a 3D DP array to store computed results
+        int[][][] dp = new int[n][m][m];
+
+        // Initialize the DP array for the last row
+        for (int j1 = 0; j1 < m; j1++) {
+            for (int j2 = 0; j2 < m; j2++) {
+                if (j1 == j2)
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j1 = 0; j1 < m; j1++) {
+                for (int j2 = 0; j2 < m; j2++) {
+                    int maxi = Integer.MIN_VALUE;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di <= 1; di++) {
+                        for (int dj = -1; dj <= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            if ((j1 + di < 0 || j1 + di >= m) || (j2 + dj < 0 || j2 + dj >= m))
+                                /* A very large negative value 
+                                to represent an invalid move*/
+                                ans += -1e9; 
+                            else
+                                ans += dp[i + 1][j1 + di][j2 + dj]; 
+                                
+                            // Update the maximum result
+                            maxi = Math.max(ans, maxi); 
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the DP array*/
+                    dp[i][j1][j2] = maxi; 
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the DP array*/
+        return dp[0][0][m - 1];
+    }
+
+    // Function to find the maximum cherries picked
+    public int cherryPickup(int[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+
+        // Return the answer
+        return func(n, m, matrix);
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = {
+            {2, 3, 1, 2},
+            {3, 4, 2, 2},
+            {5, 6, 3, 5}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call cherryPickup function and print the result
+        System.out.println(sol.cherryPickup(matrix));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find the maximum cherries 
+    that can be collected using tabulation"""
+    def func(self, n, m, matrix):
+        # Initialize a 3D DP array to store computed results
+        dp = [[[0] * m for _ in range(m)] for _ in range(n)]
+
+        # Initialize the DP array for the last row
+        for j1 in range(m):
+            for j2 in range(m):
+                if j1 == j2:
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1]
+                else:
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2]
+
+        """ Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row"""
+        for i in range(n - 2, -1, -1):
+            for j1 in range(m):
+                for j2 in range(m):
+                    maxi = float('-inf')
+
+                    # Inner nested loops to try out 9 options 
+                    for di in range(-1, 2):
+                        for dj in range(-1, 2):
+                            ans = 0
+
+                            if j1 == j2:
+                                ans = matrix[i][j1]
+                            else:
+                                ans = matrix[i][j1] + matrix[i][j2]
+
+                            # Check if the move is valid 
+                            if (j1 + di < 0 or j1 + di >= m) or (j2 + dj < 0 or j2 + dj >= m):
+                                """ A very large negative value 
+                                to represent an invalid move"""
+                                ans += -1e9
+                            else:
+                                ans += dp[i + 1][j1 + di][j2 + dj]
+
+                            # Update the maximum result
+                            maxi = max(ans, maxi)
+
+                    """ Store the maximum result for
+                    this state in the DP array"""
+                    dp[i][j1][j2] = maxi
+
+        """ The maximum cherries that can be collected is
+        stored at the top-left corner of the DP array"""
+        return dp[0][0][m - 1]
+
+    # Function to find the maximum cherries picked
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+
+        # Return the answer
+        return self.func(n, m, matrix)
+
+if __name__ == "__main__":
+    matrix = [
+        [2, 3, 1, 2],
+        [3, 4, 2, 2],
+        [5, 6, 3, 5]
+    ]
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call cherryPickup function and print the result
+    print(sol.cherryPickup(matrix))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the maximum cherries 
+    that can be collected using tabulation*/
+    func(n, m, matrix) {
+        // Initialize a 3D DP array to store computed results
+        let dp = new Array(n);
+        for (let i = 0; i < n; i++) {
+            dp[i] = new Array(m);
+            for (let j = 0; j < m; j++) {
+                dp[i][j] = new Array(m).fill(0);
+            }
+        }
+
+        // Initialize the DP array for the last row
+        for (let j1 = 0; j1 < m; j1++) {
+            for (let j2 = 0; j2 < m; j2++) {
+                if (j1 === j2)
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (let i = n - 2; i >= 0; i--) {
+            for (let j1 = 0; j1 < m; j1++) {
+                for (let j2 = 0; j2 < m; j2++) {
+                    let maxi = Number.MIN_SAFE_INTEGER;
+
+                    // Iterate through all possible move combinations
+                    for (let di = -1; di <= 1; di++) {
+                        for (let dj = -1; dj <= 1; dj++) {
+                            let ans;
+
+                            if (j1 === j2) {
+                                ans = matrix[i][j1];
+                            } else {
+                                ans = matrix[i][j1] + matrix[i][j2];
+                            }
+
+                            // Check if the move is valid
+                            if (
+                                j1 + di >= 0 && j1 + di < m &&
+                                j2 + dj >= 0 && j2 + dj < m
+                            ) {
+                                ans += dp[i + 1][j1 + di][j2 + dj];
+                            } else {
+                                // Very large negative value for invalid moves
+                                ans += -1e9; 
+                            }
+
+                            maxi = Math.max(ans, maxi);
+                        }
+                    }
+
+                    dp[i][j1][j2] = maxi;
+                }
+            }
+        }
+
+        // The maximum cherries will be stored in dp[0][0][m - 1]
+        return dp[0][0][m - 1];
+    }
+    //Function to find the maximum cherries collected
+    cherryPickup(matrix) {
+        let n = matrix.length;
+        let m = matrix[0].length;
+
+        return this.func(n, m, matrix);
+    }
+}
+
+const matrix = [
+    [2, 3, 1, 2],
+    [3, 4, 2, 2],
+    [5, 6, 3, 5]
+];
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call cherryPickup function and print the result
+console.log("The maximum cherries that can be collected is", sol.cherryPickup(matrix));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the maximum cherries 
+       that can be collected using tabulation */
+    private int Func(int n, int m, int[][] matrix)
+    {
+        // Initialize a 3D DP array to store computed results
+        int[,,] dp = new int[n, m, m];
+
+        // Initialize the DP array for the last row
+        for (int j1 = 0; j1 < m; j1++)
+        {
+            for (int j2 = 0; j2 < m; j2++)
+            {
+                if (j1 == j2)
+                    dp[n - 1, j1, j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1, j1, j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+           from the second-to-last row up to the first row */
+        for (int i = n - 2; i >= 0; i--)
+        {
+            for (int j1 = 0; j1 < m; j1++)
+            {
+                for (int j2 = 0; j2 < m; j2++)
+                {
+                    int maxi = int.MinValue;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di <= 1; di++)
+                    {
+                        for (int dj = -1; dj <= 1; dj++)
+                        {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            int nj1 = j1 + di, nj2 = j2 + dj;
+                            if (nj1 < 0 || nj1 >= m || nj2 < 0 || nj2 >= m)
+                                /* A very large negative value 
+                                   to represent an invalid move */
+                                ans += -1000000000;
+                            else
+                                ans += dp[i + 1, nj1, nj2];
+
+                            // Update the maximum result
+                            maxi = Math.Max(ans, maxi);
+                        }
+                    }
+                    /* Store the maximum result for 
+                       this state in the DP array */
+                    dp[i, j1, j2] = maxi;
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected
+           is stored at the top-left corner of the DP array */
+        return dp[0, 0, m - 1];
+    }
+
+    // Function to find the maximum cherries picked
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Return the answer
+        return Func(n, m, matrix);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[][] matrix = new int[][]
+        {
+            new[] { 2, 3, 1, 2 },
+            new[] { 3, 4, 2, 2 },
+            new[] { 5, 6, 3, 5 }
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the CherryPickup function and print the result
+        Console.WriteLine(sol.CherryPickup(matrix));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// cherryPickup collects the maximum cherries using bottom‑up tabulation.
+func cherryPickup(matrix [][]int) int {
+    n := len(matrix)
+    m := len(matrix[0])
+    const NEG_INF = -1000000000
+
+    // dp[i][j1][j2] = max cherries from row i to bottom when robot1 at j1 and robot2 at j2
+    dp := make([][][]int, n)
+    for i := range dp {
+        dp[i] = make([][]int, m)
+        for j1 := range dp[i] {
+            dp[i][j1] = make([]int, m)
+        }
+    }
+
+    // initialize DP for last row
+    for j1 := 0; j1 < m; j1++ {
+        for j2 := 0; j2 < m; j2++ {
+            if j1 == j2 {
+                dp[n-1][j1][j2] = matrix[n-1][j1]
+            } else {
+                dp[n-1][j1][j2] = matrix[n-1][j1] + matrix[n-1][j2]
+            }
+        }
+    }
+
+    // fill DP from bottom-2 up to row 0
+    for i := n - 2; i >= 0; i-- {
+        for j1 := 0; j1 < m; j1++ {
+            for j2 := 0; j2 < m; j2++ {
+                maxi := NEG_INF
+                for di := -1; di <= 1; di++ {
+                    for dj := -1; dj <= 1; dj++ {
+                        ans := matrix[i][j1]
+                        if j1 != j2 {
+                            ans += matrix[i][j2]
+                        }
+                        nj1, nj2 := j1+di, j2+dj
+                        if nj1 < 0 || nj1 >= m || nj2 < 0 || nj2 >= m {
+                            ans += NEG_INF
+                        } else {
+                            ans += dp[i+1][nj1][nj2]
+                        }
+                        if ans > maxi {
+                            maxi = ans
+                        }
+                    }
+                }
+                dp[i][j1][j2] = maxi
+            }
+        }
+    }
+
+    return dp[0][0][m-1]
+}
+
+func main() {
+    matrix := [][]int{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    }
+    fmt.Println(cherryPickup(matrix))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O((N*M*M)*9), The outer nested loops run for (N*M*M) times and the inner two nested loops run for 9 times<br><br>
+<strong>Space Complexity:</strong>O(N*M*M), As an external array of size ‘N*M*M’ is used. </div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we observe, we find that to compute dp[i][j1][j2], the value which is needed is from dp[i+1][][] only. Therefore it is not necessary to store a three-dimensional array. Instead, a two-dimensional array can do the same work and we can just update it upon moving from one plane to the other in the 3D Array.</p>
+
+<h5><strong>The Steps to space optimize the tabulation approach are as follows: </strong></h5>
+
+<li>Initially, take a dummy 2D Array ( say front), initialize this array  in the same way it was done in the Tabulation Approach also initialize a 2D Array( say cur), which will be needed in the traversal.</li>
+Now set three nested loops to traverse the 3D Array, from the second last plane. Following the same approach as tabulation, find the maximum number of cherries collected at each cell. To calculate it we have all the values in our ‘front’ 2D Array.
+<li>Previously, the value of dp[i][j1][j2] was assigned to maxi, now simply assign cur[j1][j2] to maxi. Then whenever the plane of the 3D DP(the first parameter) is going to change, assign the front to cur.</li>
+<li>At last, return front[0][m-1] as our answer as it will store the cumulative answer of maximum cherries.</li>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Function to find the maximum cherries 
+    that can be collected usnig space optimization*/
+    int func(int n, int m, vector<vector<int>> &matrix){
+        /* Declare two 2D vectors 'front' 
+        and 'cur' to store computed results*/
+        vector<vector<int>> front(m, vector<int>(m, 0));
+        vector<vector<int>> cur(m, vector<int>(m, 0));
+
+        // Initialize 'front' for the last row
+        for (int j1 = 0; j1 < m; j1++) {
+            for (int j2 = 0; j2 < m; j2++) {
+                if (j1 == j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j1 = 0; j1 < m; j1++) {
+                for (int j2 = 0; j2 < m; j2++) {
+                    int maxi = INT_MIN;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di <= 1; di++) {
+                        for (int dj = -1; dj <= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            if ((j1 + di < 0 || j1 + di >= m) || (j2 + dj < 0 || j2 + dj >= m))
+                                /* A very large negative value 
+                                to represent an invalid move*/
+                                ans += -1e9;
+                            else
+                            ans += front[j1 + di][j2 + dj]; 
+                            
+                            // Update the maximum result
+                            maxi = max(ans, maxi); 
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the 'cur' array*/
+                    cur[j1][j2] = maxi; 
+                }
+            }
+            /* Update 'front' with the values
+            from 'cur' for the next iteration*/
+            front = cur; 
+        }
+
+        /* The maximum cherries that can be collected
+        is stored at the top-left corner of the 'front'*/
+        return front[0][m - 1];
+    }
+public:
+    //Function to find the maximum cherries collected
+    int cherryPickup(vector<vector<int>> &matrix){
+        int n = matrix.size();
+        int m = matrix[0].size();
+        
+        //Return the answer
+        return func(n, m, matrix);
+    }
+};
+int main() {
+    vector<vector<int>> matrix{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    };
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call the maximumChocolates function and print the result
+    cout << sol.cherryPickup(matrix);
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the maximum cherries that
+    can be collected using space optimization*/
+    int func(int n, int m, int[][] matrix) {
+        /* Declare two 2D arrays 'front' and 
+        'cur' to store computed results*/
+        int[][] front = new int[m][m];
+        int[][] cur = new int[m][m];
+
+        // Initialize 'front' for the last row
+        for (int j1 = 0; j1 < m; j1++) {
+            for (int j2 = 0; j2 < m; j2++) {
+                if (j1 == j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j1 = 0; j1 < m; j1++) {
+                for (int j2 = 0; j2 < m; j2++) {
+                    int maxi = Integer.MIN_VALUE;
+
+                    // Inner nested loops to try out 9 options
+                    for (int di = -1; di <= 1; di++) {
+                        for (int dj = -1; dj <= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid
+                            if ((j1 + di < 0 || j1 + di >= m) || (j2 + dj < 0 || j2 + dj >= m))
+                                /* A very large negative value
+                                to represent an invalid move*/
+                                ans += -1e9;
+                            else
+                                ans += front[j1 + di][j2 + dj];
+
+                            // Update the maximum result
+                            maxi = Math.max(ans, maxi);
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the 'cur' array*/
+                    cur[j1][j2] = maxi;
+                }
+            }
+            /* Update 'front' with the values 
+            from 'cur' for the next iteration*/
+            for (int j1 = 0; j1 < m; j1++) {
+                for (int j2 = 0; j2 < m; j2++) {
+                    front[j1][j2] = cur[j1][j2];
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the 'front'*/
+        return front[0][m - 1];
+    }
+
+    // Function to find the maximum cherries collected
+    int cherryPickup(int[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+
+        // Return the answer
+        return func(n, m, matrix);
+    }
+
+    public static void main(String[] args) {
+        int[][] matrix = {{2, 3, 1, 2},
+                          {3, 4, 2, 2},
+                          {5, 6, 3, 5}};
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the cherryPickup function and print the result
+        System.out.println(sol.cherryPickup(matrix)); 
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import copy
+
+class Solution:
+    """ Function to find the maximum cherries that
+    can be collected using space optimization"""
+    def func(self, n, m, matrix):
+        """ Declare two 2D lists 'front' and
+        'cur' to store computed results"""
+        front = [[0]*m for _ in range(m)]
+        cur = [[0]*m for _ in range(m)]
+
+        # Initialize 'front' for the last row
+        for j1 in range(m):
+            for j2 in range(m):
+                if j1 == j2:
+                    front[j1][j2] = matrix[n - 1][j1]
+                else:
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2]
+
+        """ Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row"""
+        for i in range(n - 2, -1, -1):
+            for j1 in range(m):
+                for j2 in range(m):
+                    maxi = float('-inf')
+
+                    # Inner nested loops to try out 9 options
+                    for di in [-1, 0, 1]:
+                        for dj in [-1, 0, 1]:
+                            if 0 <= j1 + di < m and 0 <= j2 + dj < m:
+                                ans = matrix[i][j1]
+                                if j1 != j2:
+                                    ans += matrix[i][j2]
+                                ans += front[j1 + di][j2 + dj]
+                            else:
+                                """ A very large negative 
+                                value for invalid moves"""
+                                ans = -1e9  
+
+                            maxi = max(maxi, ans)
+
+                    """ Store the maximum result for
+                    this state in the 'cur' array"""
+                    cur[j1][j2] = maxi
+
+            """ Update 'front' with the values 
+            from 'cur' for the next iteration"""
+            front = copy.deepcopy(cur)
+
+        """ The maximum cherries that can be collected 
+        is stored at the top-left corner of the 'front'"""
+        return front[0][m - 1]
+
+    # Function to find the maximum cherries collected
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+
+        # Return the answer
+        return self.func(n, m, matrix)
+
+if __name__ == "__main__":
+    matrix = [
+        [2, 3, 1, 2],
+        [3, 4, 2, 2],
+        [5, 6, 3, 5]
+    ]
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call the cherryPickup function and print the result
+    print(sol.cherryPickup(matrix)) 
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the maximum cherries 
+    that can be collected using space optimization*/
+    func(n, m, matrix) {
+        /* Declare two 2D arrays 'front' and
+        'cur' to store computed results*/
+        let front = new Array(m);
+        let cur = new Array(m);
+        for (let i = 0; i < m; i++) {
+            front[i] = new Array(m).fill(0);
+            cur[i] = new Array(m).fill(0);
+        }
+
+        // Initialize 'front' for the last row
+        for (let j1 = 0; j1 < m; j1++) {
+            for (let j2 = 0; j2 < m; j2++) {
+                if (j1 === j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (let i = n - 2; i >= 0; i--) {
+            for (let j1 = 0; j1 < m; j1++) {
+                for (let j2 = 0; j2 < m; j2++) {
+                    let maxi = Number.MIN_SAFE_INTEGER;
+
+                    // Inner nested loops to try out 9 options
+                    for (let di = -1; di <= 1; di++) {
+                        for (let dj = -1; dj <= 1; dj++) {
+                            let ans;
+
+                            if (j1 === j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid
+                            if (
+                                j1 + di >= 0 && j1 + di < m &&
+                                j2 + dj >= 0 && j2 + dj < m
+                            ) {
+                                ans += front[j1 + di][j2 + dj];
+                            } else {
+                                /* A very large negative
+                                value for invalid moves*/
+                                ans += -1e9; 
+                            }
+
+                            // Update the maximum result
+                            maxi = Math.max(ans, maxi);
+                        }
+                    }
+
+                    /* Store the maximum result for
+                    this state in the 'cur' array*/
+                    cur[j1][j2] = maxi;
+                }
+            }
+
+            /* Update 'front' with the values 
+            from 'cur' for the next iteration*/
+            for (let j = 0; j < m; j++) {
+                front[j] = cur[j].slice();
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the 'front'*/
+        return front[0][m - 1];
+    }
+
+    // Function to find the maximum cherries collected
+    cherryPickup(matrix) {
+        let n = matrix.length;
+        let m = matrix[0].length;
+
+        // Return the answer
+        return this.func(n, m, matrix);
+    }
+}
+
+const matrix = [[2, 3, 1, 2],
+                [3, 4, 2, 2],
+                [5, 6, 3, 5]];
+
+    // Create an instance of Solution class
+    const sol = new Solution();
+
+    // Call the cherryPickup function and print the result
+    console.log(sol.cherryPickup(matrix));
+   
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the maximum cherries 
+    that can be collected using space optimization*/
+    private int Func(int n, int m, int[][] matrix)
+    {
+        /* Declare two 2D arrays 'front' and
+        'cur' to store computed results*/
+        int[][] front = new int[m][];
+        int[][] cur = new int[m][];
+        for (int i = 0; i < m; i++)
+        {
+            front[i] = new int[m];
+            cur[i] = new int[m];
+        }
+
+        // Initialize 'front' for the last row
+        for (int j1 = 0; j1 < m; j1++)
+        {
+            for (int j2 = 0; j2 < m; j2++)
+            {
+                if (j1 == j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i >= 0; i--)
+        {
+            for (int j1 = 0; j1 < m; j1++)
+            {
+                for (int j2 = 0; j2 < m; j2++)
+                {
+                    int maxi = int.MinValue;
+
+                    // Inner nested loops to try out 9 options
+                    for (int di = -1; di <= 1; di++)
+                    {
+                        for (int dj = -1; dj <= 1; dj++)
+                        {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid
+                            if (
+                                j1 + di >= 0 && j1 + di < m &&
+                                j2 + dj >= 0 && j2 + dj < m
+                            )
+                            {
+                                ans += front[j1 + di][j2 + dj];
+                            }
+                            else
+                            {
+                                /* A very large negative
+                                value for invalid moves*/
+                                ans += (int)-1e9; 
+                            }
+
+                            // Update the maximum result
+                            maxi = Math.Max(ans, maxi);
+                        }
+                    }
+
+                    /* Store the maximum result for
+                    this state in the 'cur' array*/
+                    cur[j1][j2] = maxi;
+                }
+            }
+
+            /* Update 'front' with the values 
+            from 'cur' for the next iteration*/
+            for (int j = 0; j < m; j++)
+            {
+                front[j] = (int[])cur[j].Clone();
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the 'front'*/
+        return front[0][m - 1];
+    }
+
+    // Function to find the maximum cherries collected
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Return the answer
+        return Func(n, m, matrix);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example matrix from the JS code
+        int[][] matrix = new int[][]
+        {
+            new int[] {2, 3, 1, 2},
+            new int[] {3, 4, 2, 2},
+            new int[] {5, 6, 3, 5}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the cherryPickup function and print the result
+        Console.WriteLine(sol.CherryPickup(matrix));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+/*cherryPickup computes the maximum cherries collectible using
+ space-optimized bottom-up DP — two 2D slices `front` and `cur`.*/
+func cherryPickup(matrix [][]int) int {
+    n := len(matrix)
+    m := len(matrix[0])
+    const NEG_INF = -1000000000
+
+    // Declare two 2D slices 'front' and 'cur' to store computed results
+    front := make([][]int, m)
+    cur := make([][]int, m)
+    for i := range front {
+        front[i] = make([]int, m)
+        cur[i] = make([]int, m)
+    }
+
+    // Initialize 'front' for the last row
+    for j1 := 0; j1 < m; j1++ {
+        for j2 := 0; j2 < m; j2++ {
+            if j1 == j2 {
+                front[j1][j2] = matrix[n-1][j1]
+            } else {
+                front[j1][j2] = matrix[n-1][j1] + matrix[n-1][j2]
+            }
+        }
+    }
+
+    // Traverse the DP array from the second-to-last row up to the first row
+    for i := n - 2; i >= 0; i-- {
+        for j1 := 0; j1 < m; j1++ {
+            for j2 := 0; j2 < m; j2++ {
+                maxi := NEG_INF
+
+                // Try all 9 move combinations for both robots
+                for di := -1; di <= 1; di++ {
+                    for dj := -1; dj <= 1; dj++ {
+                        ans := matrix[i][j1]
+                        if j1 != j2 {
+                            ans += matrix[i][j2]
+                        }
+                        nj1, nj2 := j1+di, j2+dj
+                        // Check if the move is valid
+                        if nj1 < 0 || nj1 >= m || nj2 < 0 || nj2 >= m {
+                            ans += NEG_INF
+                        } else {
+                            ans += front[nj1][nj2]
+                        }
+                        if ans > maxi {
+                            maxi = ans
+                        }
+                    }
+                }
+                // Store the maximum result for this state in 'cur' slice
+                cur[j1][j2] = maxi
+            }
+        }
+        // Update 'front' with the values from 'cur' for the next iteration
+        for j1 := 0; j1 < m; j1++ {
+            copy(front[j1], cur[j1])
+        }
+    }
+
+    // The result is stored at front[0][m-1]
+    return front[0][m-1]
+}
+
+func main() {
+    matrix := [][]int{
+        {2, 3, 1, 2},
+        {3, 4, 2, 2},
+        {5, 6, 3, 5},
+    }
+
+    // Call the cherryPickup function and print the result
+    fmt.Println(cherryPickup(matrix))
+}
+</code></pre></div></div></div>
+
+
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O((N*M*M)*9), The outer nested loops run for (N*M*M) times and the inner two nested loops run for 9 times<br><br>
+<strong>Space Complexity:</strong>O(M*M). As an external array of size ‘M*M’ is used.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Function to find the maximum cherries
+    that can be collected recursively*/
+    int func(int i, int j1, int j2, int n, int m, vector&lt;vector&lt;int&gt;&gt; &amp;matrix) {
+        // Base cases
+        if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+        return -1e9; 
+
+        if (i == n - 1) {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        int maxi = INT_MIN;
+    
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di &lt;= 1; di++) {
+            for (int dj = -1; dj &lt;= 1; dj++) {
+                int ans;
+            
+                if (j1 == j2)
+                    ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+            
+                // Update the maximum result
+                maxi = max(maxi, ans);
+            }
+        }
+    
+        //Return the maximum cherries collected
+        return maxi;
+    }
+public:
+    // Function to find maximum cherries that can be collected
+    int cherryPickup(vector&lt;vector&lt;int&gt;&gt; &amp;matrix) {
+        int n = matrix.size();
+        int m = matrix[0].size();
+
+        //Return the maximum cherries collected
+        return func(0, 0, m - 1, n, m, matrix);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the maximum cherries
+       that can be collected recursively */
+    private int Func(int i, int j1, int j2, int n, int m, int[][] matrix)
+    {
+        // Base cases
+        if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+            return -1000000000;
+
+        if (i == n - 1)
+        {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        int maxi = int.MinValue;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di &lt;= 1; di++)
+        {
+            for (int dj = -1; dj &lt;= 1; dj++)
+            {
+                int ans;
+
+                if (j1 == j2)
+                    ans = matrix[i][j1] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+
+                // Update the maximum result
+                maxi = Math.Max(maxi, ans);
+            }
+        }
+
+        // Return the maximum cherries collected
+        return maxi;
+    }
+
+    // Function to find maximum cherries that can be collected
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Return the maximum cherries collected
+        return Func(0, 0, m - 1, n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const NEG_INF = -1000000000              // same sentinel as -1e9 
+const INT_MIN_32 = -1 &lt;&lt; 31              // −2147483648 as in typical 32‑bit INT_MIN
+
+/* Function to find the maximum cherries
+    that can be collected recursively*/
+func funcRec(i, j1, j2, n, m int, matrix [][]int) int {
+    // Base cases
+    if j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m {
+        return NEG_INF
+    }
+
+    if i == n-1 {
+        if j1 == j2 {
+            return matrix[i][j1]
+        } else {
+            return matrix[i][j1] + matrix[i][j2]
+        }
+    }
+
+    maxi := INT_MIN_32
+
+    // Try all possible moves for both positions (j1, j2)
+    for di := -1; di &lt;= 1; di++ {
+        for dj := -1; dj &lt;= 1; dj++ {
+            var ans int
+
+            if j1 == j2 {
+                ans = matrix[i][j1] + funcRec(i+1, j1+di, j2+dj, n, m, matrix)
+            } else {
+                ans = matrix[i][j1] + matrix[i][j2] + funcRec(i+1, j1+di, j2+dj, n, m, matrix)
+            }
+
+            // Update the maximum result
+            if ans &gt; maxi {
+                maxi = ans
+            }
+        }
+    }
+
+    //Return the maximum cherries collected
+    return maxi
+}
+
+// Function to find maximum cherries that can be collected
+func cherryPickup(matrix [][]int) int {
+    n := len(matrix)
+    m := len(matrix[0])
+
+    //Return the maximum cherries collected
+    return funcRec(0, 0, m-1, n, m, matrix)
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the maximum cherries
+    that can be collected recursively*/
+    private int func(int i, int j1, int j2, int n, int m, int[][] matrix) {
+        // Base cases
+        if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+            return (int)(-1e9);
+
+        if (i == n - 1) {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        int maxi = Integer.MIN_VALUE;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di &lt;= 1; di++) {
+            for (int dj = -1; dj &lt;= 1; dj++) {
+                int ans;
+
+                if (j1 == j2)
+                    ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+
+                // Update the maximum result
+                maxi = Math.max(maxi, ans);
+            }
+        }
+
+        // Return the maximum cherries collected
+        return maxi;
+    }
+    // Function to find maximum cherries that can be collected
+    public int cherryPickup(int[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+
+        // Return the maximum cherries collected
+        return func(0, 0, m - 1, n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the maximum cherries
+    that can be collected recursively*/
+    func(i, j1, j2, n, m, matrix) {
+        // Base cases
+        if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+            return -1e9;
+
+        if (i === n - 1) {
+            if (j1 === j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        let maxi = -Infinity;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (let di = -1; di &lt;= 1; di++) {
+            for (let dj = -1; dj &lt;= 1; dj++) {
+                let ans;
+
+                if (j1 === j2)
+                    ans = matrix[i][j1] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix);
+
+                // Update the maximum result
+                maxi = Math.max(maxi, ans);
+            }
+        }
+
+        // Return the maximum cherries collected
+        return maxi;
+    }
+    // Function to find maximum cherries that can be collected
+    cherryPickup(matrix) {
+        const n = matrix.length;
+        const m = matrix[0].length;
+
+        // Return the maximum cherries collected
+        return this.func(0, 0, m - 1, n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find the maximum cherries
+    that can be collected recursively&quot;&quot;&quot;
+    def func(self, i, j1, j2, n, m, matrix):
+        # Base cases
+        if j1 &lt; 0 or j1 &gt;= m or j2 &lt; 0 or j2 &gt;= m:
+            return -1e9
+
+        if i == n - 1:
+            if j1 == j2:
+                return matrix[i][j1]
+            else:
+                return matrix[i][j1] + matrix[i][j2]
+
+        maxi = -float(&#x27;inf&#x27;)
+
+        # Try all possible moves for both positions (j1, j2)
+        for di in range(-1, 2):
+            for dj in range(-1, 2):
+                ans = 0
+
+                if j1 == j2:
+                    ans = matrix[i][j1] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix)
+                else:
+                    ans = matrix[i][j1] + matrix[i][j2] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix)
+
+                # Update the maximum result
+                maxi = max(maxi, ans)
+
+        # Return the maximum cherries collected
+        return maxi
+
+    # Function to find maximum cherries that can be collected
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+
+        # Return the maximum cherries collected
+        return self.func(0, 0, m - 1, n, m, matrix)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Function to find the maximum cherries
+    that can be collected using memoization*/
+    int func(int i, int j1, int j2, int n, int m, vector&lt;vector&lt;int&gt;&gt; &amp;matrix, vector&lt;vector&lt;vector&lt;int&gt;&gt;&gt; &amp;dp) {
+        // Base cases
+        if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+        return -1e9; 
+
+        if (i == n - 1) {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+        
+        /* If the result for this state 
+        is already computed, return it*/
+        if (dp[i][j1][j2] != -1)
+            return dp[i][j1][j2];
+
+        int maxi = INT_MIN;
+    
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di &lt;= 1; di++) {
+            for (int dj = -1; dj &lt;= 1; dj++) {
+                int ans;
+            
+                if (j1 == j2)
+                    ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+            
+                // Update the maximum result
+                maxi = max(maxi, ans);
+            }
+        }
+    
+        // Store the maximum result for this state in dp
+        return dp[i][j1][j2] = maxi;
+    }
+public:
+    // Function to find maximum cherries that can be collected
+    int cherryPickup(vector&lt;vector&lt;int&gt;&gt; &amp;matrix) {
+        int n = matrix.size();
+        int m = matrix[0].size();
+        
+        // Initialize a 3D DP array to store computed results
+        vector&lt;vector&lt;vector&lt;int&gt;&gt;&gt; dp(n, vector&lt;vector&lt;int&gt;&gt;(m, vector&lt;int&gt;(m, -1)));
+
+        //Return the maximum cherries collected
+        return func(0, 0, m - 1, n, m, matrix, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the maximum cherries
+    that can be collected using memoization*/
+    private int Func(int i, int j1, int j2, int n, int m, int[][] matrix, int[,,] dp)
+    {
+        // Base cases
+        if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+            return int.MinValue;
+
+        if (i == n - 1)
+        {
+            if (j1 == j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+
+        /* If the result for this state 
+        is already computed, return it*/
+        if (dp[i, j1, j2] != -1)
+            return dp[i, j1, j2];
+
+        int maxi = int.MinValue;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (int di = -1; di &lt;= 1; di++)
+        {
+            for (int dj = -1; dj &lt;= 1; dj++)
+            {
+                int ans;
+
+                if (j1 == j2)
+                    ans = matrix[i][j1] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + Func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+
+                // Update the maximum result
+                maxi = System.Math.Max(maxi, ans);
+            }
+        }
+
+        // Store the maximum result for this state in dp
+        dp[i, j1, j2] = maxi;
+        return dp[i, j1, j2];
+    }
+
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Initialize a 3D dp array with -1 values
+        int[,,] dp = new int[n, m, m];
+        for (int row = 0; row &lt; n; row++)
+        {
+            for (int col1 = 0; col1 &lt; m; col1++)
+            {
+                for (int col2 = 0; col2 &lt; m; col2++)
+                {
+                    dp[row, col1, col2] = -1;
+                }
+            }
+        }
+
+        // Return the maximum cherries collected
+        return Func(0, 0, m - 1, n, m, matrix, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// cherryPickup initializes memoization and calls the recursive helper.
+func cherryPickup(matrix [][]int) int {
+    // Function to find the maximum cherries using memoization
+    var funcHelper func(i, j1, j2, n, m int, matrix [][]int, dp [][][]int) int
+
+    funcHelper = func(i, j1, j2, n, m int, matrix [][]int, dp [][][]int) int {
+        // Base cases
+        if j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m {
+            return -1000000000 // Representing a very low value
+        }
+
+        if i == n-1 {
+            if j1 == j2 {
+                return matrix[i][j1]
+            }
+            return matrix[i][j1] + matrix[i][j2]
+        }
+
+        // If already computed
+        if dp[i][j1][j2] != -1 {
+            return dp[i][j1][j2]
+        }
+
+        maxi := -1000000000
+
+        // Try all possible moves for both robots
+        for di := -1; di &lt;= 1; di++ {
+            for dj := -1; dj &lt;= 1; dj++ {
+                var ans int
+                if j1 == j2 {
+                    ans = matrix[i][j1] + funcHelper(i+1, j1+di, j2+dj, n, m, matrix, dp)
+                } else {
+                    ans = matrix[i][j1] + matrix[i][j2] +
+                        funcHelper(i+1, j1+di, j2+dj, n, m, matrix, dp)
+                }
+                if ans &gt; maxi {
+                    maxi = ans
+                }
+            }
+        }
+
+        dp[i][j1][j2] = maxi
+        return maxi
+    }
+
+    n := len(matrix)
+    m := len(matrix[0])
+
+    // Initialize the 3D dp array with -1
+    dp := make([][][]int, n)
+    for i := range dp {
+        dp[i] = make([][]int, m)
+        for j := range dp[i] {
+            dp[i][j] = make([]int, m)
+            for k := range dp[i][j] {
+                dp[i][j][k] = -1
+            }
+        }
+    }
+
+    return funcHelper(0, 0, m-1, n, m, matrix, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+/* Function to find the maximum cherries
+that can be collected using memoization*/
+private int func(int i, int j1, int j2, int n, int m, int[][] matrix, int[][][] dp) {
+    // Base cases
+    if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+        return (int)(-1e9);
+
+    if (i == n - 1) {
+        if (j1 == j2)
+            return matrix[i][j1];
+        else
+            return matrix[i][j1] + matrix[i][j2];
+    }
+    
+    /* If the result for this state 
+    is already computed, return it*/
+    if (dp[i][j1][j2] != -1)
+        return dp[i][j1][j2];
+
+    int maxi = Integer.MIN_VALUE;
+
+    // Try all possible moves for both positions (j1, j2)
+    for (int di = -1; di &lt;= 1; di++) {
+        for (int dj = -1; dj &lt;= 1; dj++) {
+            int ans;
+
+            if (j1 == j2)
+                ans = matrix[i][j1] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+            else
+                ans = matrix[i][j1] + matrix[i][j2] + func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+
+            // Update the maximum result
+            maxi = Math.max(maxi, ans);
+        }
+    }
+
+    // Store the result in the dp array and return it
+    return dp[i][j1][j2] = maxi;
+}
+
+// Function to find maximum cherries that can be collected
+public int cherryPickup(int[][] matrix) {
+    int n = matrix.length;
+    int m = matrix[0].length;
+    
+    // Declare a 3D array to store computed results
+    int dp[][][] = new int[n][m][m];
+
+    // Initialize the dp array with -1
+    for (int row1[][] : dp) {
+        for (int row2[] : row1) {
+            Arrays.fill(row2, -1);
+        }
+    }
+
+    // Return the maximum cherries collected
+    return func(0, 0, m - 1, n, m, matrix, dp);
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the maximum cherries
+    that can be collected using memoization*/
+    func(i, j1, j2, n, m, matrix, dp) {
+        // Base cases
+        if (j1 &lt; 0 || j1 &gt;= m || j2 &lt; 0 || j2 &gt;= m)
+            return -1e9;
+
+        if (i === n - 1) {
+            if (j1 === j2)
+                return matrix[i][j1];
+            else
+                return matrix[i][j1] + matrix[i][j2];
+        }
+        
+        /* If the result for this state 
+        is already computed, return it*/
+        if (dp[i][j1][j2] != -1)
+            return dp[i][j1][j2];
+            
+        let maxi = -Infinity;
+
+        // Try all possible moves for both positions (j1, j2)
+        for (let di = -1; di &lt;= 1; di++) {
+            for (let dj = -1; dj &lt;= 1; dj++) {
+                let ans;
+
+                if (j1 === j2)
+                    ans = matrix[i][j1] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+                else
+                    ans = matrix[i][j1] + matrix[i][j2] + this.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp);
+
+                // Update the maximum result
+                maxi = Math.max(maxi, ans);
+            }
+        }
+
+        // Store the maximum result for this state in dp
+        dp[i][j1][j2] = maxi;
+        return dp[i][j1][j2];
+    }
+    // Function to find maximum cherries that can be collected
+    cherryPickup(matrix) {
+        const n = matrix.length;
+        const m = matrix[0].length;
+        
+        // Initialize a 3D dp array with -1 values
+        const dp = new Array(n).fill(null).map(() =&gt;
+            new Array(m).fill(null).map(() =&gt;
+                new Array(m).fill(-1)
+            )
+        );
+
+        // Return the maximum cherries collected
+        return this.func(0, 0, m - 1, n, m, matrix, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find the maximum cherries
+    that can be collected using memoization&quot;&quot;&quot;
+    def func(self, i, j1, j2, n, m, matrix, dp):
+        # Base cases
+        if j1 &lt; 0 or j1 &gt;= m or j2 &lt; 0 or j2 &gt;= m:
+            return int(-1e9)
+
+        if i == n - 1:
+            if j1 == j2:
+                return matrix[i][j1]
+            else:
+                return matrix[i][j1] + matrix[i][j2]
+        
+        &quot;&quot;&quot; If the result for these indices has
+        already been computed, return it&quot;&quot;&quot;
+        if dp[i][j1][j2] != -1:
+            return dp[i][j1][j2]
+
+        maxi = int(-1e9)
+
+        # Try all possible moves for both positions (j1, j2)
+        for di in range(-1, 2):
+            for dj in range(-1, 2):
+                ans = 0
+
+                if j1 == j2:
+                    ans = matrix[i][j1] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp)
+                else:
+                    ans = matrix[i][j1] + matrix[i][j2] + self.func(i + 1, j1 + di, j2 + dj, n, m, matrix, dp)
+
+                # Update the maximum result
+                maxi = max(maxi, ans)
+
+        &quot;&quot;&quot; Store the maximum cherries 
+        collected in the memoization table&quot;&quot;&quot;
+        dp[i][j1][j2] = maxi
+        return maxi
+        
+    # Function to find maximum cherries that can be collected
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+        
+        
+        # Initialize a memoization table with -1 values
+        dp = [[[-1 for j in range(m)] for i in range(m)] for k in range(n)]
+
+        # Return the maximum cherries collected
+        return self.func(0, 0, m - 1, n, m, matrix, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+   /* Function to find the maximum cherries 
+   that can be collected using tabulation */
+   int func(int n, int m, vector&lt;vector&lt;int&gt;&gt; &amp;matrix) {
+        // Initialize a 3D DP array to store computed results
+        vector&lt;vector&lt;vector&lt;int&gt;&gt;&gt; dp(n, vector&lt;vector&lt;int&gt;&gt;(m, vector&lt;int&gt;(m, 0)));
+
+        // Initialize the DP array for the last row
+        for (int j1 = 0; j1 &lt; m; j1++) {
+            for (int j2 = 0; j2 &lt; m; j2++) {
+                if (j1 == j2)
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j1 = 0; j1 &lt; m; j1++) {
+                for (int j2 = 0; j2 &lt; m; j2++) {
+                    int maxi = INT_MIN;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di &lt;= 1; di++) {
+                        for (int dj = -1; dj &lt;= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            if ((j1 + di &lt; 0 || j1 + di &gt;= m) || (j2 + dj &lt; 0 || j2 + dj &gt;= m))
+                                /* A very large negative value 
+                                to represent an invalid move*/
+                                ans += -1e9; 
+                            else
+                                ans += dp[i + 1][j1 + di][j2 + dj]; 
+                                
+                            // Update the maximum result
+                            maxi = max(ans, maxi); 
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the DP array*/
+                    dp[i][j1][j2] = maxi; 
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected
+        is stored at the top-left corner of the DP array*/
+        return dp[0][0][m - 1];
+    }
+public:
+    //Function to find the maximum cherries picked
+    int cherryPickup(vector&lt;vector&lt;int&gt;&gt; &amp;matrix){
+        int n = matrix.size(); 
+        int m = matrix[0].size(); 
+        
+        //Return the answer
+        return func(n, m, matrix);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the maximum cherries 
+       that can be collected using tabulation */
+    private int Func(int n, int m, int[][] matrix)
+    {
+        // Initialize a 3D DP array to store computed results
+        int[,,] dp = new int[n, m, m];
+
+        // Initialize the DP array for the last row
+        for (int j1 = 0; j1 &lt; m; j1++)
+        {
+            for (int j2 = 0; j2 &lt; m; j2++)
+            {
+                if (j1 == j2)
+                    dp[n - 1, j1, j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1, j1, j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+           from the second-to-last row up to the first row */
+        for (int i = n - 2; i &gt;= 0; i--)
+        {
+            for (int j1 = 0; j1 &lt; m; j1++)
+            {
+                for (int j2 = 0; j2 &lt; m; j2++)
+                {
+                    int maxi = int.MinValue;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di &lt;= 1; di++)
+                    {
+                        for (int dj = -1; dj &lt;= 1; dj++)
+                        {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            int nj1 = j1 + di, nj2 = j2 + dj;
+                            if (nj1 &lt; 0 || nj1 &gt;= m || nj2 &lt; 0 || nj2 &gt;= m)
+                                /* A very large negative value 
+                                   to represent an invalid move */
+                                ans += -1000000000;
+                            else
+                                ans += dp[i + 1, nj1, nj2];
+
+                            // Update the maximum result
+                            maxi = Math.Max(ans, maxi);
+                        }
+                    }
+                    /* Store the maximum result for 
+                       this state in the DP array */
+                    dp[i, j1, j2] = maxi;
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected
+           is stored at the top-left corner of the DP array */
+        return dp[0, 0, m - 1];
+    }
+
+    // Function to find the maximum cherries picked
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Return the answer
+        return Func(n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// cherryPickup collects the maximum cherries using bottom‑up tabulation.
+func cherryPickup(matrix [][]int) int {
+    n := len(matrix)
+    m := len(matrix[0])
+    const NEG_INF = -1000000000
+
+    // dp[i][j1][j2] = max cherries from row i to bottom when robot1 at j1 and robot2 at j2
+    dp := make([][][]int, n)
+    for i := range dp {
+        dp[i] = make([][]int, m)
+        for j1 := range dp[i] {
+            dp[i][j1] = make([]int, m)
+        }
+    }
+
+    // initialize DP for last row
+    for j1 := 0; j1 &lt; m; j1++ {
+        for j2 := 0; j2 &lt; m; j2++ {
+            if j1 == j2 {
+                dp[n-1][j1][j2] = matrix[n-1][j1]
+            } else {
+                dp[n-1][j1][j2] = matrix[n-1][j1] + matrix[n-1][j2]
+            }
+        }
+    }
+
+    // fill DP from bottom-2 up to row 0
+    for i := n - 2; i &gt;= 0; i-- {
+        for j1 := 0; j1 &lt; m; j1++ {
+            for j2 := 0; j2 &lt; m; j2++ {
+                maxi := NEG_INF
+                for di := -1; di &lt;= 1; di++ {
+                    for dj := -1; dj &lt;= 1; dj++ {
+                        ans := matrix[i][j1]
+                        if j1 != j2 {
+                            ans += matrix[i][j2]
+                        }
+                        nj1, nj2 := j1+di, j2+dj
+                        if nj1 &lt; 0 || nj1 &gt;= m || nj2 &lt; 0 || nj2 &gt;= m {
+                            ans += NEG_INF
+                        } else {
+                            ans += dp[i+1][nj1][nj2]
+                        }
+                        if ans &gt; maxi {
+                            maxi = ans
+                        }
+                    }
+                }
+                dp[i][j1][j2] = maxi
+            }
+        }
+    }
+
+    return dp[0][0][m-1]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the maximum cherries 
+    that can be collected using tabulation*/
+    private int func(int n, int m, int[][] matrix) {
+        // Initialize a 3D DP array to store computed results
+        int[][][] dp = new int[n][m][m];
+
+        // Initialize the DP array for the last row
+        for (int j1 = 0; j1 &lt; m; j1++) {
+            for (int j2 = 0; j2 &lt; m; j2++) {
+                if (j1 == j2)
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j1 = 0; j1 &lt; m; j1++) {
+                for (int j2 = 0; j2 &lt; m; j2++) {
+                    int maxi = Integer.MIN_VALUE;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di &lt;= 1; di++) {
+                        for (int dj = -1; dj &lt;= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            if ((j1 + di &lt; 0 || j1 + di &gt;= m) || (j2 + dj &lt; 0 || j2 + dj &gt;= m))
+                                /* A very large negative value 
+                                to represent an invalid move*/
+                                ans += -1e9; 
+                            else
+                                ans += dp[i + 1][j1 + di][j2 + dj]; 
+                                
+                            // Update the maximum result
+                            maxi = Math.max(ans, maxi); 
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the DP array*/
+                    dp[i][j1][j2] = maxi; 
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the DP array*/
+        return dp[0][0][m - 1];
+    }
+
+    // Function to find the maximum cherries picked
+    public int cherryPickup(int[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+
+        // Return the answer
+        return func(n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the maximum cherries 
+    that can be collected using tabulation*/
+    func(n, m, matrix) {
+        // Initialize a 3D DP array to store computed results
+        let dp = new Array(n);
+        for (let i = 0; i &lt; n; i++) {
+            dp[i] = new Array(m);
+            for (let j = 0; j &lt; m; j++) {
+                dp[i][j] = new Array(m).fill(0);
+            }
+        }
+
+        // Initialize the DP array for the last row
+        for (let j1 = 0; j1 &lt; m; j1++) {
+            for (let j2 = 0; j2 &lt; m; j2++) {
+                if (j1 === j2)
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1];
+                else
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (let i = n - 2; i &gt;= 0; i--) {
+            for (let j1 = 0; j1 &lt; m; j1++) {
+                for (let j2 = 0; j2 &lt; m; j2++) {
+                    let maxi = Number.MIN_SAFE_INTEGER;
+
+                    // Iterate through all possible move combinations
+                    for (let di = -1; di &lt;= 1; di++) {
+                        for (let dj = -1; dj &lt;= 1; dj++) {
+                            let ans;
+
+                            if (j1 === j2) {
+                                ans = matrix[i][j1];
+                            } else {
+                                ans = matrix[i][j1] + matrix[i][j2];
+                            }
+
+                            // Check if the move is valid
+                            if (
+                                j1 + di &gt;= 0 &amp;&amp; j1 + di &lt; m &amp;&amp;
+                                j2 + dj &gt;= 0 &amp;&amp; j2 + dj &lt; m
+                            ) {
+                                ans += dp[i + 1][j1 + di][j2 + dj];
+                            } else {
+                                // Very large negative value for invalid moves
+                                ans += -1e9; 
+                            }
+
+                            maxi = Math.max(ans, maxi);
+                        }
+                    }
+
+                    dp[i][j1][j2] = maxi;
+                }
+            }
+        }
+
+        // The maximum cherries will be stored in dp[0][0][m - 1]
+        return dp[0][0][m - 1];
+    }
+    //Function to find the maximum cherries collected
+    cherryPickup(matrix) {
+        let n = matrix.length;
+        let m = matrix[0].length;
+
+        return this.func(n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find the maximum cherries 
+    that can be collected using tabulation&quot;&quot;&quot;
+    def func(self, n, m, matrix):
+        # Initialize a 3D DP array to store computed results
+        dp = [[[0] * m for _ in range(m)] for _ in range(n)]
+
+        # Initialize the DP array for the last row
+        for j1 in range(m):
+            for j2 in range(m):
+                if j1 == j2:
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1]
+                else:
+                    dp[n - 1][j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2]
+
+        &quot;&quot;&quot; Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row&quot;&quot;&quot;
+        for i in range(n - 2, -1, -1):
+            for j1 in range(m):
+                for j2 in range(m):
+                    maxi = float(&#x27;-inf&#x27;)
+
+                    # Inner nested loops to try out 9 options 
+                    for di in range(-1, 2):
+                        for dj in range(-1, 2):
+                            ans = 0
+
+                            if j1 == j2:
+                                ans = matrix[i][j1]
+                            else:
+                                ans = matrix[i][j1] + matrix[i][j2]
+
+                            # Check if the move is valid 
+                            if (j1 + di &lt; 0 or j1 + di &gt;= m) or (j2 + dj &lt; 0 or j2 + dj &gt;= m):
+                                &quot;&quot;&quot; A very large negative value 
+                                to represent an invalid move&quot;&quot;&quot;
+                                ans += -1e9
+                            else:
+                                ans += dp[i + 1][j1 + di][j2 + dj]
+
+                            # Update the maximum result
+                            maxi = max(ans, maxi)
+
+                    &quot;&quot;&quot; Store the maximum result for
+                    this state in the DP array&quot;&quot;&quot;
+                    dp[i][j1][j2] = maxi
+
+        &quot;&quot;&quot; The maximum cherries that can be collected is
+        stored at the top-left corner of the DP array&quot;&quot;&quot;
+        return dp[0][0][m - 1]
+
+    # Function to find the maximum cherries picked
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+
+        # Return the answer
+        return self.func(n, m, matrix)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Function to find the maximum cherries 
+    that can be collected usnig space optimization*/
+    int func(int n, int m, vector&lt;vector&lt;int&gt;&gt; &amp;matrix){
+        /* Declare two 2D vectors &#x27;front&#x27; 
+        and &#x27;cur&#x27; to store computed results*/
+        vector&lt;vector&lt;int&gt;&gt; front(m, vector&lt;int&gt;(m, 0));
+        vector&lt;vector&lt;int&gt;&gt; cur(m, vector&lt;int&gt;(m, 0));
+
+        // Initialize &#x27;front&#x27; for the last row
+        for (int j1 = 0; j1 &lt; m; j1++) {
+            for (int j2 = 0; j2 &lt; m; j2++) {
+                if (j1 == j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j1 = 0; j1 &lt; m; j1++) {
+                for (int j2 = 0; j2 &lt; m; j2++) {
+                    int maxi = INT_MIN;
+
+                    // Inner nested loops to try out 9 options 
+                    for (int di = -1; di &lt;= 1; di++) {
+                        for (int dj = -1; dj &lt;= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid 
+                            if ((j1 + di &lt; 0 || j1 + di &gt;= m) || (j2 + dj &lt; 0 || j2 + dj &gt;= m))
+                                /* A very large negative value 
+                                to represent an invalid move*/
+                                ans += -1e9;
+                            else
+                            ans += front[j1 + di][j2 + dj]; 
+                            
+                            // Update the maximum result
+                            maxi = max(ans, maxi); 
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the &#x27;cur&#x27; array*/
+                    cur[j1][j2] = maxi; 
+                }
+            }
+            /* Update &#x27;front&#x27; with the values
+            from &#x27;cur&#x27; for the next iteration*/
+            front = cur; 
+        }
+
+        /* The maximum cherries that can be collected
+        is stored at the top-left corner of the &#x27;front&#x27;*/
+        return front[0][m - 1];
+    }
+public:
+    //Function to find the maximum cherries collected
+    int cherryPickup(vector&lt;vector&lt;int&gt;&gt; &amp;matrix){
+        int n = matrix.size();
+        int m = matrix[0].size();
+        
+        //Return the answer
+        return func(n, m, matrix);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the maximum cherries 
+    that can be collected using space optimization*/
+    private int Func(int n, int m, int[][] matrix)
+    {
+        /* Declare two 2D arrays &#x27;front&#x27; and
+        &#x27;cur&#x27; to store computed results*/
+        int[][] front = new int[m][];
+        int[][] cur = new int[m][];
+        for (int i = 0; i &lt; m; i++)
+        {
+            front[i] = new int[m];
+            cur[i] = new int[m];
+        }
+
+        // Initialize &#x27;front&#x27; for the last row
+        for (int j1 = 0; j1 &lt; m; j1++)
+        {
+            for (int j2 = 0; j2 &lt; m; j2++)
+            {
+                if (j1 == j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i &gt;= 0; i--)
+        {
+            for (int j1 = 0; j1 &lt; m; j1++)
+            {
+                for (int j2 = 0; j2 &lt; m; j2++)
+                {
+                    int maxi = int.MinValue;
+
+                    // Inner nested loops to try out 9 options
+                    for (int di = -1; di &lt;= 1; di++)
+                    {
+                        for (int dj = -1; dj &lt;= 1; dj++)
+                        {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid
+                            if (
+                                j1 + di &gt;= 0 &amp;&amp; j1 + di &lt; m &amp;&amp;
+                                j2 + dj &gt;= 0 &amp;&amp; j2 + dj &lt; m
+                            )
+                            {
+                                ans += front[j1 + di][j2 + dj];
+                            }
+                            else
+                            {
+                                /* A very large negative
+                                value for invalid moves*/
+                                ans += (int)-1e9; 
+                            }
+
+                            // Update the maximum result
+                            maxi = Math.Max(ans, maxi);
+                        }
+                    }
+
+                    /* Store the maximum result for
+                    this state in the &#x27;cur&#x27; array*/
+                    cur[j1][j2] = maxi;
+                }
+            }
+
+            /* Update &#x27;front&#x27; with the values 
+            from &#x27;cur&#x27; for the next iteration*/
+            for (int j = 0; j &lt; m; j++)
+            {
+                front[j] = (int[])cur[j].Clone();
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the &#x27;front&#x27;*/
+        return front[0][m - 1];
+    }
+
+    public int CherryPickup(int[][] matrix)
+    {
+        int n = matrix.Length;
+        int m = matrix[0].Length;
+
+        // Return the answer
+        return Func(n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/*cherryPickup computes the maximum cherries collectible using
+ space-optimized bottom-up DP — two 2D slices `front` and `cur`.*/
+func cherryPickup(matrix [][]int) int {
+    n := len(matrix)
+    m := len(matrix[0])
+    const NEG_INF = -1000000000
+
+    // Declare two 2D slices &#x27;front&#x27; and &#x27;cur&#x27; to store computed results
+    front := make([][]int, m)
+    cur := make([][]int, m)
+    for i := range front {
+        front[i] = make([]int, m)
+        cur[i] = make([]int, m)
+    }
+
+    // Initialize &#x27;front&#x27; for the last row
+    for j1 := 0; j1 &lt; m; j1++ {
+        for j2 := 0; j2 &lt; m; j2++ {
+            if j1 == j2 {
+                front[j1][j2] = matrix[n-1][j1]
+            } else {
+                front[j1][j2] = matrix[n-1][j1] + matrix[n-1][j2]
+            }
+        }
+    }
+
+    // Traverse the DP array from the second-to-last row up to the first row
+    for i := n - 2; i &gt;= 0; i-- {
+        for j1 := 0; j1 &lt; m; j1++ {
+            for j2 := 0; j2 &lt; m; j2++ {
+                maxi := NEG_INF
+
+                // Try all 9 move combinations for both robots
+                for di := -1; di &lt;= 1; di++ {
+                    for dj := -1; dj &lt;= 1; dj++ {
+                        ans := matrix[i][j1]
+                        if j1 != j2 {
+                            ans += matrix[i][j2]
+                        }
+                        nj1, nj2 := j1+di, j2+dj
+                        // Check if the move is valid
+                        if nj1 &lt; 0 || nj1 &gt;= m || nj2 &lt; 0 || nj2 &gt;= m {
+                            ans += NEG_INF
+                        } else {
+                            ans += front[nj1][nj2]
+                        }
+                        if ans &gt; maxi {
+                            maxi = ans
+                        }
+                    }
+                }
+                // Store the maximum result for this state in &#x27;cur&#x27; slice
+                cur[j1][j2] = maxi
+            }
+        }
+        // Update &#x27;front&#x27; with the values from &#x27;cur&#x27; for the next iteration
+        for j1 := 0; j1 &lt; m; j1++ {
+            copy(front[j1], cur[j1])
+        }
+    }
+
+    // The result is stored at front[0][m-1]
+    return front[0][m-1]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the maximum cherries that
+    can be collected using space optimization*/
+    int func(int n, int m, int[][] matrix) {
+        /* Declare two 2D arrays &#x27;front&#x27; and 
+        &#x27;cur&#x27; to store computed results*/
+        int[][] front = new int[m][m];
+        int[][] cur = new int[m][m];
+
+        // Initialize &#x27;front&#x27; for the last row
+        for (int j1 = 0; j1 &lt; m; j1++) {
+            for (int j2 = 0; j2 &lt; m; j2++) {
+                if (j1 == j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j1 = 0; j1 &lt; m; j1++) {
+                for (int j2 = 0; j2 &lt; m; j2++) {
+                    int maxi = Integer.MIN_VALUE;
+
+                    // Inner nested loops to try out 9 options
+                    for (int di = -1; di &lt;= 1; di++) {
+                        for (int dj = -1; dj &lt;= 1; dj++) {
+                            int ans;
+
+                            if (j1 == j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid
+                            if ((j1 + di &lt; 0 || j1 + di &gt;= m) || (j2 + dj &lt; 0 || j2 + dj &gt;= m))
+                                /* A very large negative value
+                                to represent an invalid move*/
+                                ans += -1e9;
+                            else
+                                ans += front[j1 + di][j2 + dj];
+
+                            // Update the maximum result
+                            maxi = Math.max(ans, maxi);
+                        }
+                    }
+                    /* Store the maximum result for 
+                    this state in the &#x27;cur&#x27; array*/
+                    cur[j1][j2] = maxi;
+                }
+            }
+            /* Update &#x27;front&#x27; with the values 
+            from &#x27;cur&#x27; for the next iteration*/
+            for (int j1 = 0; j1 &lt; m; j1++) {
+                for (int j2 = 0; j2 &lt; m; j2++) {
+                    front[j1][j2] = cur[j1][j2];
+                }
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the &#x27;front&#x27;*/
+        return front[0][m - 1];
+    }
+
+    // Function to find the maximum cherries collected
+    public int cherryPickup(int[][] matrix) {
+        int n = matrix.length;
+        int m = matrix[0].length;
+
+        // Return the answer
+        return func(n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the maximum cherries 
+    that can be collected using space optimization*/
+    func(n, m, matrix) {
+        /* Declare two 2D arrays &#x27;front&#x27; and
+        &#x27;cur&#x27; to store computed results*/
+        let front = new Array(m);
+        let cur = new Array(m);
+        for (let i = 0; i &lt; m; i++) {
+            front[i] = new Array(m).fill(0);
+            cur[i] = new Array(m).fill(0);
+        }
+
+        // Initialize &#x27;front&#x27; for the last row
+        for (let j1 = 0; j1 &lt; m; j1++) {
+            for (let j2 = 0; j2 &lt; m; j2++) {
+                if (j1 === j2)
+                    front[j1][j2] = matrix[n - 1][j1];
+                else
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2];
+            }
+        }
+
+        /* Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row*/
+        for (let i = n - 2; i &gt;= 0; i--) {
+            for (let j1 = 0; j1 &lt; m; j1++) {
+                for (let j2 = 0; j2 &lt; m; j2++) {
+                    let maxi = Number.MIN_SAFE_INTEGER;
+
+                    // Inner nested loops to try out 9 options
+                    for (let di = -1; di &lt;= 1; di++) {
+                        for (let dj = -1; dj &lt;= 1; dj++) {
+                            let ans;
+
+                            if (j1 === j2)
+                                ans = matrix[i][j1];
+                            else
+                                ans = matrix[i][j1] + matrix[i][j2];
+
+                            // Check if the move is valid
+                            if (
+                                j1 + di &gt;= 0 &amp;&amp; j1 + di &lt; m &amp;&amp;
+                                j2 + dj &gt;= 0 &amp;&amp; j2 + dj &lt; m
+                            ) {
+                                ans += front[j1 + di][j2 + dj];
+                            } else {
+                                /* A very large negative
+                                value for invalid moves*/
+                                ans += -1e9; 
+                            }
+
+                            // Update the maximum result
+                            maxi = Math.max(ans, maxi);
+                        }
+                    }
+
+                    /* Store the maximum result for
+                    this state in the &#x27;cur&#x27; array*/
+                    cur[j1][j2] = maxi;
+                }
+            }
+
+            /* Update &#x27;front&#x27; with the values 
+            from &#x27;cur&#x27; for the next iteration*/
+            for (let j = 0; j &lt; m; j++) {
+                front[j] = cur[j].slice();
+            }
+        }
+
+        /* The maximum cherries that can be collected is
+        stored at the top-left corner of the &#x27;front&#x27;*/
+        return front[0][m - 1];
+    }
+
+    // Function to find the maximum cherries collected
+    cherryPickup(matrix) {
+        let n = matrix.length;
+        let m = matrix[0].length;
+
+        // Return the answer
+        return this.func(n, m, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>import copy
+
+class Solution:
+    &quot;&quot;&quot; Function to find the maximum cherries that
+    can be collected using space optimization&quot;&quot;&quot;
+    def func(self, n, m, matrix):
+        &quot;&quot;&quot; Declare two 2D lists &#x27;front&#x27; and
+        &#x27;cur&#x27; to store computed results&quot;&quot;&quot;
+        front = [[0]*m for _ in range(m)]
+        cur = [[0]*m for _ in range(m)]
+
+        # Initialize &#x27;front&#x27; for the last row
+        for j1 in range(m):
+            for j2 in range(m):
+                if j1 == j2:
+                    front[j1][j2] = matrix[n - 1][j1]
+                else:
+                    front[j1][j2] = matrix[n - 1][j1] + matrix[n - 1][j2]
+
+        &quot;&quot;&quot; Outer nested loops for traversing the DP array
+        from the second-to-last row up to the first row&quot;&quot;&quot;
+        for i in range(n - 2, -1, -1):
+            for j1 in range(m):
+                for j2 in range(m):
+                    maxi = float(&#x27;-inf&#x27;)
+
+                    # Inner nested loops to try out 9 options
+                    for di in [-1, 0, 1]:
+                        for dj in [-1, 0, 1]:
+                            if 0 &lt;= j1 + di &lt; m and 0 &lt;= j2 + dj &lt; m:
+                                ans = matrix[i][j1]
+                                if j1 != j2:
+                                    ans += matrix[i][j2]
+                                ans += front[j1 + di][j2 + dj]
+                            else:
+                                &quot;&quot;&quot; A very large negative 
+                                value for invalid moves&quot;&quot;&quot;
+                                ans = -1e9  
+
+                            maxi = max(maxi, ans)
+
+                    &quot;&quot;&quot; Store the maximum result for
+                    this state in the &#x27;cur&#x27; array&quot;&quot;&quot;
+                    cur[j1][j2] = maxi
+
+            &quot;&quot;&quot; Update &#x27;front&#x27; with the values 
+            from &#x27;cur&#x27; for the next iteration&quot;&quot;&quot;
+            front = copy.deepcopy(cur)
+
+        &quot;&quot;&quot; The maximum cherries that can be collected 
+        is stored at the top-left corner of the &#x27;front&#x27;&quot;&quot;&quot;
+        return front[0][m - 1]
+
+    # Function to find the maximum cherries collected
+    def cherryPickup(self, matrix):
+        n = len(matrix)
+        m = len(matrix[0])
+
+        # Return the answer
+        return self.func(n, m, matrix)
+
+</code></pre></div>
+</body>
+</html>

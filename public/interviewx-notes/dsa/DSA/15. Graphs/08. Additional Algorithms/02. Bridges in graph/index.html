@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bridges in graph</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Bridges in graph</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Biconnected Component</span><span>Depth-First Search</span><span>Graph</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an undirected connected Graph with V vertices (Numbered from 0 to V-1) and E edges. An edge is represented [a<sub>i</sub>, b<sub>i</sub>] denoting that there is an edge from vertex a<sub>i</sub> to b<sub>i</sub> . An edge is called a bridge if its removal makes some vertex unable to reach another vertex.</p><p><br></p><p>Return all <strong>bridges</strong> in the graph in any order.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>2 <= V, E <= 10<sup>4</sup></li><li>0 <= a<sub>i</sub>, b<sub>i</sub> <= V - 1</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-R_WVxKam"></p><p><br></p><p><strong>Input:</strong> V = 4, E = [ [0,1],[1,2],[2,0],[1,3] ]</p><p><strong>Output:</strong> [ [1, 3] ]</p><p><strong>Explanation:</strong> The edge [1, 3] is the critical edge because if we remove the edge the graph will be divided into 2 components.</p><h3>Example 2</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-6UM08WAP"></p><p><br></p><p><strong>Input:</strong> V = 3, E = [[0,1],[1,2],[2,0]]</p><p><strong>Result:</strong> []</p><p><strong>Explanation:</strong> There no bridges in the graph.</p><h3>Example 3</h3><p><strong>Input:</strong> V = 2, E = [[0,1]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The concept of finding "bridges" in a graph is central to network reliability analysis in software-defined networking (SDN). In such networks, nodes represent devices and edges represent connections between them. A bridge node or edge is a critical point that, if failed, could interrupt the entire network communication. Identifying these bridges helps network engineers to design more reliable systems and take necessary precautions to prevent network failure. It's also used in power grid management and social network analysis to identify individuals or connections crucial to the network's overall cohesion.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><p>
+    <strong>Pre Requisite:</strong> <a href="/plus/dsa/problems/traversal-techniques?category=graph&subcategory=theory-and-traversals">DFS traversal technique</a>
+</p>
+
+<h3>Intuition:</h3> 
+<p>
+    Any edge in a component of a graph is called a <strong>bridge</strong> when the component is divided into 2 or more components if that particular edge is removed.
+    </p><h6>Example:</h6>
+    
+    <p><img width="481" height="457" src="https://static.takeuforward.org/content/1771447684_MC3izJlF.png"></p>
+
+    Consider the following graph:
+   
+    If in this graph, if the edge (5,6) is removed, the component gets divided into 2 components making this edge a bridge. But the edge (2,3) is removed, the component remains connected. So, this edge is not a bridge. In this graph, we have a total of 3 bridges i.e. (4,5), (5,6), and (10, 8). <br><br>
+
+    To solve this problem, the <strong>Tarjan's algorithm</strong> for finding bridges (or cut-edges) in a graph will come into picture. It is based on depth-first search (DFS) which uses the concept of <strong>discovery</strong> and <strong>low</strong> times for nodes. The core idea is to identify edges that, when removed, increase the number of connected components in the graph.
+
+    <h6>Understanding:</h6>
+    Before moving to the algorithm, it is important to know about the two arrays that play a crucial role in the algorithm:
+    <ul>
+        <li><strong>Discovery time / Time of insertion Array:</strong> During the DFS call, the time when a node is visited first (discovered first), is called its time of insertion or discovery time. This array will store the discovery times of the nodes.
+            <ul> 
+                <li><strong>Usage: </strong>It helps keep track of when each node was first visited. This value is unique and incremental, meaning it increases as the DFS progresses.</li>
+            </ul>
+
+        </li><li><strong>Lowest time of insertion Array:</strong> The lowest time of insertion for a node refers to The minimum discovery time that can be reached from a node, considering all its descendants and back edges to its ancestors. 
+            <ul>
+                <li><strong>Usage: </strong> It helps determine if there is a back edge that connects the node or its descendants to an ancestor, which is essential for identifying bridges.</li>
+            </ul>
+        </li>
+    </ul>
+
+    By tracking the discovery and lowest reachable times of nodes during DFS, it can identify edges that, when removed, increase the number of connected components, thus identifying bridges. 
+
+    <h6>How the two arrays help in identifying the bridges in a graph?</h6>
+    Consider two nodes, node u and node v, where v is the neighbor of u. Let us assume that tin[u] represents the discovery time of node u and low[v] represents the lowest discovery time reachable from node v. <br><br>
+    <strong>If low[v] > tin[u]: </strong><br>
+    It implies that v and its descendants cannot reach u or any of u's ancestors without the edge (u, v). Therefore, removing (u, v) would disconnect u and v, making (u, v) a bridge. <br><br>
+
+    Thus, when the DFS calls to the descendants are completed, this condition can be checked to identify all the edges that are a bridge.
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Create adjacency lists from the graph edges. Initialize two arrays to store discovery (insertion) and lowest times for each node. Initialize a visited array to keep track of visited nodes and a timer to keep track of discovery time. Create a list to store the bridges.</li>
+   <li>Begin DFS from an arbitrary node (node 0 or any other if the graph has multiple components). Set the parent of the starting node to -1 (indicating no parent).</li>
+   <li>For each node, mark it as visited and set its discovery and lowest time to the current timer value, then increment the timer.
+</li>
+   <li><strong>Process Neighbors:</strong> For each neighbor of the current node:
+    <ul>
+        <li>Skip the parent node to avoid backtracking.
+        </li>
+        <li>If the neighbor is not visited, recursively perform DFS on this neighbor:
+            <ul>
+                <li>After returning from the recursive call, update the lowest time of the current node.</li>
+                <li>If the lowest time of the neighbor is greater than the discovery time of the current node, it indicates a bridge.</li>
+            </ul>
+        </li>
+        <li>If the neighbor is already visited and not the parent, update the lowest time of the current node based on the neighbor's discovery time.</li>
+    </ul>
+</li>
+    <li>
+        During the DFS, check the condition <strong><code>low[neighbor] > tin[current_node]</code></strong> to determine if the edge is a bridge. Add the bridge to the list of bridges if the condition is met.
+    </li>
+    <li>After completing the DFS for all nodes, return the list of identified bridges.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+ <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Bridges in graph/-i3F60FGM">
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // To store the current time during traversal
+    int timer = 1;
+    
+    /* Helper function to make DFS calls while 
+    checking for bridges in the graph */
+    void dfs(int node, int parent, vector<int> &vis, vector<int> adj[], 
+             vector<int> &tin, vector<int> &low,
+             vector<vector<int>> &bridges) {
+        
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+        
+        // Increment the current time
+        timer++;
+        
+        // Traverse all its neighbors
+        for (auto it : adj[node]) {
+            
+            // Skip the parent
+            if (it == parent) continue;
+            
+            // If a neighbor is not visited
+            if (vis[it] == 0) {
+                
+                // Make a recursive DFS call
+                dfs(it, node, vis, adj, tin, low, bridges);
+                
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = min(low[it], low[node]);
+
+                /* If the lowest time of insertion of the 
+                neighbour is found to be greater than the 
+                time of insertion of the node*/
+                if (low[it] > tin[node]) {
+                    
+                    // The edge represents a bridge
+                    bridges.push_back({it, node});
+                }
+            }
+            
+            // Else if the neighbor is already visited
+            else {
+                // Update the lowest time of insertion of the node
+                low[node] = min(low[node], low[it]);
+            }
+        }
+    }
+public:
+
+    // Function to identify the bridges in a graph
+    vector<vector<int>> criticalConnections(int n,
+         vector<vector<int>>& connections) {
+
+        // Adjacency list
+        vector<int> adj[n];
+        
+        // Add all the edges to the adjacency list
+        for (auto it : connections) {
+            int u = it[0], v = it[1];
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        
+        // Visited array
+        vector<int> vis(n, 0);
+        
+        // To store the time of insertion (discovery time) of nodes
+        vector<int> tin(n);
+        
+        // To store the lowest time of insert of the nodes
+        vector<int> low(n);
+        
+        // To store the bridges of the graph
+        vector<vector<int>> bridges;
+        
+        // Start a DFS traversal from node 0 with its parent as -1
+        dfs(0, -1, vis, adj, tin, low, bridges);
+        
+        // Return the computed result
+        return bridges;
+    }
+};
+
+
+int main() {
+
+    int V = 4;
+    vector<vector<int>> E = {
+        {0,1},
+        {1,2},
+        {2,0},
+        {1,3} 
+    };
+    
+    // Creating an instance of Solution class
+    Solution obj;
+    
+    // Function call to identify the bridges in a graph
+    vector<vector<int>> ans = obj.criticalConnections(V, E);
+    
+    cout << "The critical connections in the given graph are:\n";
+    for(int i=0; i < ans.size(); i++) {
+        cout << ans[i][0] << " " << ans[i][1] << endl;
+    }
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private int timer = 1;
+    
+    /* Helper function to make DFS calls while 
+    checking for bridges in the graph */
+    private void dfs(int node, int parent, int[] vis, List<Integer>[] adj, 
+                     int[] tin, int[] low, List<List<Integer>> bridges) {
+        
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+        
+        // Increment the current time
+        timer++;
+        
+        // Traverse all its neighbors
+        for (int it : adj[node]) {
+            
+            // Skip the parent
+            if (it == parent) continue;
+            
+            // If a neighbor is not visited
+            if (vis[it] == 0) {
+                
+                // Make a recursive DFS call
+                dfs(it, node, vis, adj, tin, low, bridges);
+                
+                /* Once the recursive DFS call returns, update
+                the lowest time of insertion for the node */
+                low[node] = Math.min(low[it], low[node]);
+                
+                /* If the lowest time of insertion of the 
+                neighbor is found to be greater than the 
+                time of insertion of the node */
+                if (low[it] > tin[node]) {
+                    
+                    // The edge represents a bridge
+                    bridges.add(Arrays.asList(it, node));
+                }
+            }
+            
+            // Else if the neighbor is already visited
+            else {
+                // Update the lowest time of insertion of the node
+                low[node] = Math.min(low[node], tin[it]);
+            }
+        }
+    }
+
+    // Function to identify the bridges in a graph
+    public List<List<Integer>> criticalConnections(int n, 
+            List<List<Integer>> connections) {
+
+        // Adjacency list
+        List<Integer>[] adj = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<>();
+        }
+        
+        // Add all the edges to the adjacency list
+        for (List<Integer> it : connections) {
+            int u = it.get(0), v = it.get(1);
+            adj[u].add(v);
+            adj[v].add(u);
+        }
+        
+        // Visited array
+        int[] vis = new int[n];
+        
+        // To store the time of insertion (discovery time) of nodes
+        int[] tin = new int[n];
+        
+        // To store the lowest time of insert of the nodes
+        int[] low = new int[n];
+        
+        // To store the bridges of the graph
+        List<List<Integer>> bridges = new ArrayList<>();
+        
+        // Start a DFS traversal from node 0 with its parent as -1
+        dfs(0, -1, vis, adj, tin, low, bridges);
+        
+        // Return the computed result
+        return bridges;
+    }
+
+    public static void main(String[] args) {
+        int V = 4;
+        List<List<Integer>> E = Arrays.asList(
+            Arrays.asList(0, 1),
+            Arrays.asList(1, 2),
+            Arrays.asList(2, 0),
+            Arrays.asList(1, 3)
+        );
+        
+        // Creating an instance of Solution class
+        Solution obj = new Solution();
+        
+        // Function call to identify the bridges in a graph
+        List<List<Integer>> ans = obj.criticalConnections(V, E);
+        
+        System.out.println("The critical connections in the given graph are:");
+        for (List<Integer> bridge : ans) {
+            System.out.println(bridge.get(0) + " " + bridge.get(1));
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def __init__(self):
+        self.timer = 1
+    
+    def dfs(self, node, parent, vis, adj, tin, low, bridges):
+        # Mark the node as visited
+        vis[node] = 1
+        
+        # Time of insertion and the lowest time of 
+        # insert for node will be the current time
+        tin[node] = low[node] = self.timer
+        
+        # Increment the current time
+        self.timer += 1
+        
+        # Traverse all its neighbors
+        for it in adj[node]:
+            # Skip the parent
+            if it == parent:
+                continue
+            
+            # If a neighbor is not visited
+            if vis[it] == 0:
+                # Make a recursive DFS call
+                self.dfs(it, node, vis, adj, tin, low, bridges)
+                
+                # Once the recursive DFS call returns, update
+                # the lowest time of insertion for the node
+                low[node] = min(low[it], low[node])
+
+                # If the lowest time of insertion of the 
+                # neighbor is found to be greater than the 
+                # time of insertion of the node
+                if low[it] > tin[node]:
+                    # The edge represents a bridge
+                    bridges.append([it, node])
+            else:
+                # Update the lowest time of insertion of the node
+                low[node] = min(low[node], tin[it])
+
+    def criticalConnections(self, n, connections):
+        # Adjacency list
+        adj = [[] for _ in range(n)]
+        
+        # Add all the edges to the adjacency list
+        for u, v in connections:
+            adj[u].append(v)
+            adj[v].append(u)
+        
+        # Visited array
+        vis = [0] * n
+        
+        # To store the time of insertion (discovery time) of nodes
+        tin = [0] * n
+        
+        # To store the lowest time of insert of the nodes
+        low = [0] * n
+        
+        # To store the bridges of the graph
+        bridges = []
+        
+        # Start a DFS traversal from node 0 with its parent as -1
+        self.dfs(0, -1, vis, adj, tin, low, bridges)
+        
+        # Return the computed result
+        return bridges
+
+# Main function
+if __name__ == "__main__":
+    V = 4
+    E = [
+        [0, 1],
+        [1, 2],
+        [2, 0],
+        [1, 3]
+    ]
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to identify the bridges in a graph
+    ans = sol.criticalConnections(V, E)
+    
+    print("The critical connections in the given graph are:")
+    for bridge in ans:
+        print(bridge[0], bridge[1])
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.timer = 1;
+    }
+
+    /* Helper function to make DFS calls while 
+    checking for bridges in the graph */
+    dfs(node, parent, vis, adj, tin, low, bridges) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = this.timer;
+
+        // Increment the current time
+        this.timer++;
+
+        // Traverse all its neighbors
+        for (let it of adj[node]) {
+            // Skip the parent
+            if (it === parent) continue;
+
+            // If a neighbor is not visited
+            if (vis[it] === 0) {
+                // Make a recursive DFS call
+                this.dfs(it, node, vis, adj, tin, low, bridges);
+
+                /* Once the recursive DFS call returns, update 
+                the lowest time of insertion for the node */
+                low[node] = Math.min(low[it], low[node]);
+
+                /* If the lowest time of insertion of the 
+                neighbor is found to be greater than the time 
+                of insertion of the node */
+                if (low[it] > tin[node]) {
+                    // The edge represents a bridge
+                    bridges.push([it, node]);
+                }
+            } else {
+                // Update the lowest time of insertion of the node
+                low[node] = Math.min(low[node], tin[it]);
+            }
+        }
+    }
+
+    // Function to identify the bridges in a graph
+    criticalConnections(n, connections) {
+        // Adjacency list
+        const adj = new Array(n).fill(0).map(() => []);
+
+        // Add all the edges to the adjacency list
+        for (let [u, v] of connections) {
+            adj[u].push(v);
+            adj[v].push(u);
+        }
+
+        // Visited array
+        const vis = new Array(n).fill(0);
+
+        // To store the time of insertion (discovery time) of nodes
+        const tin = new Array(n).fill(0);
+
+        // To store the lowest time of insert of the nodes
+        const low = new Array(n).fill(0);
+
+        // To store the bridges of the graph
+        const bridges = [];
+
+        // Start a DFS traversal from node 0 with its parent as -1
+        this.dfs(0, -1, vis, adj, tin, low, bridges);
+
+        // Return the computed result
+        return bridges;
+    }
+}
+
+// Main function
+(() => {
+    const V = 4;
+    const E = [
+        [0, 1],
+        [1, 2],
+        [2, 0],
+        [1, 3]
+    ];
+
+    // Creating an instance of Solution class
+    const obj = new Solution();
+
+    // Function call to identify the bridges in a graph
+    const ans = obj.criticalConnections(V, E);
+
+    console.log("The critical connections in the given graph are:");
+    for (let [u, v] of ans) {
+        console.log(u, v);
+    }
+})();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+    public class Solution
+    {
+        private int timer = 1;
+
+        /* Helper function to make DFS calls while 
+        checking for bridges in the graph */
+        private void dfs(int node, int parent, int[] vis, List<List<int>> adj, int[] tin, int[] low, List<List<int>> bridges)
+        {
+            // Mark the node as visited
+            vis[node] = 1;
+
+            /* Time of insertion and the lowest time of 
+            insert for node will be the current time */
+            tin[node] = low[node] = timer;
+
+            // Increment the current time
+            timer++;
+
+            // Traverse all its neighbors
+            foreach (int it in adj[node])
+            {
+                // Skip the parent
+                if (it == parent) continue;
+
+                // If a neighbor is not visited
+                if (vis[it] == 0)
+                {
+                    // Make a recursive DFS call
+                    dfs(it, node, vis, adj, tin, low, bridges);
+
+                    /* Once the recursive DFS call returns, update 
+                    the lowest time of insertion for the node */
+                    low[node] = Math.Min(low[it], low[node]);
+
+                    /* If the lowest time of insertion of the 
+                    neighbor is found to be greater than the time 
+                    of insertion of the node */
+                    if (low[it] > tin[node])
+                    {
+                        // The edge represents a bridge
+                        bridges.Add(new List<int> { it, node });
+                    }
+                }
+                else
+                {
+                    // Update the lowest time of insertion of the node
+                    low[node] = Math.Min(low[node], tin[it]);
+                }
+            }
+        }
+
+        // Function to identify the bridges in a graph
+        public List<List<int>> CriticalConnections(int n, List<List<int>> connections)
+        {
+            // Adjacency list
+            List<List<int>> adj = new List<List<int>>();
+            for (int i = 0; i < n; i++)
+            {
+                adj.Add(new List<int>());
+            }
+
+            // Add all the edges to the adjacency list
+            foreach (var connection in connections)
+            {
+                int u = connection[0];
+                int v = connection[1];
+                adj[u].Add(v);
+                adj[v].Add(u);
+            }
+
+            // Visited array
+            int[] vis = new int[n];
+
+            // To store the time of insertion (discovery time) of nodes
+            int[] tin = new int[n];
+
+            // To store the lowest time of insert of the nodes
+            int[] low = new int[n];
+
+            // To store the bridges of the graph
+            List<List<int>> bridges = new List<List<int>>();
+
+            // Start a DFS traversal from node 0 with its parent as -1
+            // The problem statement implies a connected graph or handles multiple components implicitly.
+            // For a general graph, one would iterate through all nodes and call DFS if not visited.
+            // Based on the JS code, it starts from 0.
+            dfs(0, -1, vis, adj, tin, low, bridges);
+
+            // Return the computed result
+            return bridges;
+        }
+    }
+
+    public static void Main(string[] args)
+    {
+        // Read number of vertices
+        int V = int.Parse(Console.ReadLine());
+
+        // Read number of edges
+        int M = int.Parse(Console.ReadLine());
+
+        // Read connections
+        List<List<int>> connections = new List<List<int>>();
+        for (int i = 0; i < M; i++)
+        {
+            string[] edgeParts = Console.ReadLine().Split(' ');
+            connections.Add(new List<int> { int.Parse(edgeParts[0]), int.Parse(edgeParts[1]) });
+        }
+
+        // Creating an instance of Solution class
+        Solution obj = new Solution();
+
+        // Function call to identify the bridges in a graph
+        List<List<int>> ans = obj.CriticalConnections(V, connections);
+
+        Console.WriteLine("The critical connections in the given graph are:");
+        foreach (var bridge in ans)
+        {
+            Console.WriteLine($"{bridge[0]} {bridge[1]}");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+var timer = 1
+
+// Helper function to make DFS calls while checking for bridges in the graph
+func dfs(node, parent int, vis []int, adj [][]int, tin []int, low []int, bridges *[][]int) {
+	// Mark the node as visited
+	vis[node] = 1
+
+	// Time of insertion and the lowest time of insertion for node will be the current time
+	tin[node] = timer
+	low[node] = timer
+
+	// Increment the current time
+	timer++
+
+	// Traverse all its neighbors
+	for _, it := range adj[node] {
+
+		// Skip the parent
+		if it == parent {
+			continue
+		}
+
+		// If a neighbor is not visited
+		if vis[it] == 0 {
+
+			// Make a recursive DFS call
+			dfs(it, node, vis, adj, tin, low, bridges)
+
+			// Once the recursive DFS call returns, update the lowest time of insertion for the node
+			low[node] = int(math.Min(float64(low[it]), float64(low[node])))
+
+			// If the lowest time of insertion of the neighbour is found to be greater than the time of insertion of the node
+			if low[it] > tin[node] {
+
+				// The edge represents a bridge
+				*bridges = append(*bridges, []int{it, node})
+			}
+		} else {
+			// Else if the neighbor is already visited, update the lowest time of insertion of the node
+			low[node] = int(math.Min(float64(low[node]), float64(low[it])))
+		}
+	}
+}
+
+// Function to identify the bridges in a graph
+func criticalConnections(n int, connections [][]int) [][]int {
+	// Adjacency list
+	adj := make([][]int, n)
+
+	// Add all the edges to the adjacency list
+	for _, it := range connections {
+		u, v := it[0], it[1]
+		adj[u] = append(adj[u], v)
+		adj[v] = append(adj[v], u)
+	}
+
+	// Visited array
+	vis := make([]int, n)
+
+	// To store the time of insertion (discovery time) of nodes
+	tin := make([]int, n)
+
+	// To store the lowest time of insert of the nodes
+	low := make([]int, n)
+
+	// To store the bridges of the graph
+	var bridges [][]int
+
+	// Start a DFS traversal from node 0 with its parent as -1
+	dfs(0, -1, vis, adj, tin, low, &bridges)
+
+	// Return the computed result
+	return bridges
+}
+
+func main() {
+	V := 4
+	E := [][]int{
+		{0, 1},
+		{1, 2},
+		{2, 0},
+		{1, 3},
+	}
+
+	// Function call to identify the bridges in a graph
+	ans := criticalConnections(V, E)
+
+	// Output
+	fmt.Println("The critical connections in the given graph are:")
+	for _, bridge := range ans {
+		fmt.Println(bridge[0], bridge[1])
+	}
+}</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where E represents the number of edges in the graph) <br>
+    A DFS traversal is performed which takes O(V+E) time.   
+</p>
+
+<p><strong>Space Complexity: O(V)</strong> 
+   The algorithm uses two arrays to store the discovery time and lowest time of insertion taking O(V) space. The list of bridges returned will take O(E) space in worst-case when all the edges are bridges in the graph.
+</p>
+
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // To store the current time during traversal
+    int timer = 1;
+    
+    /* Helper function to make DFS calls while 
+    checking for bridges in the graph */
+    void dfs(int node, int parent, vector&lt;int&gt; &amp;vis, vector&lt;int&gt; adj[], 
+             vector&lt;int&gt; &amp;tin, vector&lt;int&gt; &amp;low,
+             vector&lt;vector&lt;int&gt;&gt; &amp;bridges) {
+        
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+        
+        // Increment the current time
+        timer++;
+        
+        // Traverse all its neighbors
+        for (auto it : adj[node]) {
+            
+            // Skip the parent
+            if (it == parent) continue;
+            
+            // If a neighbor is not visited
+            if (vis[it] == 0) {
+                
+                // Make a recursive DFS call
+                dfs(it, node, vis, adj, tin, low, bridges);
+                
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = min(low[it], low[node]);
+
+                /* If the lowest time of insertion of the 
+                node is found to be greater than the 
+                time of insertion of the neighbor */
+                if (low[it] &gt; tin[node]) {
+                    
+                    // The edge represents a bridge
+                    bridges.push_back({it, node});
+                }
+            }
+            
+            // Else if the neighbor is already visited
+            else {
+                // Update the lowest time of insertion of the node
+                low[node] = min(low[node], tin[it]);
+            }
+        }
+    }
+public:
+
+    // Function to identify the bridges in a graph
+    vector&lt;vector&lt;int&gt;&gt; criticalConnections(int n,
+         vector&lt;vector&lt;int&gt;&gt;&amp; connections) {
+
+        // Adjacency list
+        vector&lt;int&gt; adj[n];
+        
+        // Add all the edges to the adjacency list
+        for (auto it : connections) {
+            int u = it[0], v = it[1];
+            adj[u].push_back(v);
+            adj[v].push_back(u);
+        }
+        
+        // Visited array
+        vector&lt;int&gt; vis(n, 0);
+        
+        // To store the time of insertion (discovery time) of nodes
+        vector&lt;int&gt; tin(n);
+        
+        // To store the lowest time of insert of the nodes
+        vector&lt;int&gt; low(n);
+        
+        // To store the bridges of the graph
+        vector&lt;vector&lt;int&gt;&gt; bridges;
+        
+        // Start a DFS traversal from node 0 with its parent as -1
+        dfs(0, -1, vis, adj, tin, low, bridges);
+        
+        // Return the computed result
+        return bridges;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    private int timer = 1;
+
+    /* Helper function to make DFS calls while 
+    checking for bridges in the graph */
+    private void dfs(int node, int parent, int[] vis, List&lt;List&lt;int&gt;&gt; adj, int[] tin, int[] low, List&lt;List&lt;int&gt;&gt; bridges)
+    {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+
+        // Increment the current time
+        timer++;
+
+        // Traverse all its neighbors
+        foreach (int it in adj[node])
+        {
+            // Skip the parent
+            if (it == parent) continue;
+
+            // If a neighbor is not visited
+            if (vis[it] == 0)
+            {
+                // Make a recursive DFS call
+                dfs(it, node, vis, adj, tin, low, bridges);
+
+                /* Once the recursive DFS call returns, update 
+                the lowest time of insertion for the node */
+                low[node] = System.Math.Min(low[it], low[node]);
+
+                /* If the lowest time of insertion of the 
+                node is found to be greater than the time 
+                of insertion of the neighbor */
+                if (low[it] &gt; tin[node])
+                {
+                    // The edge represents a bridge
+                    bridges.Add(new List&lt;int&gt; { it, node });
+                }
+            }
+            else
+            {
+                // Update the lowest time of insertion of the node
+                low[node] = System.Math.Min(low[node], tin[it]);
+            }
+        }
+    }
+
+    public List&lt;List&lt;int&gt;&gt; CriticalConnections(int V, List&lt;List&lt;int&gt;&gt; edges) {
+        // Adjacency list
+        List&lt;List&lt;int&gt;&gt; adj = new List&lt;List&lt;int&gt;&gt;();
+        for (int i = 0; i &lt; V; i++)
+        {
+            adj.Add(new List&lt;int&gt;());
+        }
+
+        // Add all the edges to the adjacency list
+        foreach (var edge in edges)
+        {
+            int u = edge[0];
+            int v = edge[1];
+            adj[u].Add(v);
+            adj[v].Add(u);
+        }
+
+        // Visited array
+        int[] vis = new int[V];
+
+        // To store the time of insertion (discovery time) of nodes
+        int[] tin = new int[V];
+
+        // To store the lowest time of insert of the nodes
+        int[] low = new int[V];
+
+        // To store the bridges of the graph
+        List&lt;List&lt;int&gt;&gt; bridges = new List&lt;List&lt;int&gt;&gt;();
+
+        // Start a DFS traversal from node 0 with its parent as -1
+        dfs(0, -1, vis, adj, tin, low, bridges);
+
+        // Return the computed result
+        return bridges;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;math&quot;)
+var timer = 1
+
+// Helper function to make DFS calls while checking for bridges in the graph
+func dfs(node, parent int, vis []int, adj [][]int, tin []int, low []int, bridges *[][]int) {
+	// Mark the node as visited
+	vis[node] = 1
+
+	// Time of insertion and the lowest time of insertion for node will be the current time
+	tin[node] = timer
+	low[node] = timer
+
+	// Increment the current time
+	timer++
+
+	// Traverse all its neighbors
+	for _, it := range adj[node] {
+
+		// Skip the parent
+		if it == parent {
+			continue
+		}
+
+		// If a neighbor is not visited
+		if vis[it] == 0 {
+
+			// Make a recursive DFS call
+			dfs(it, node, vis, adj, tin, low, bridges)
+
+			// Once the recursive DFS call returns, update the lowest time of insertion for the node
+			low[node] = int(math.Min(float64(low[it]), float64(low[node])))
+
+			// If the lowest time of insertion of the node is found to be greater than the time of insertion of the neighbor
+			if low[it] &gt; tin[node] {
+
+				// The edge represents a bridge
+				*bridges = append(*bridges, []int{it, node})
+			}
+		} else {
+			// Else if the neighbor is already visited, update the lowest time of insertion of the node
+			low[node] = int(math.Min(float64(low[node]), float64(low[it])))
+		}
+	}
+}
+
+// Function to identify the bridges in a graph
+func criticalConnections(n int, connections [][]int) [][]int {
+	// Adjacency list
+	adj := make([][]int, n)
+
+	// Add all the edges to the adjacency list
+	for _, it := range connections {
+		u, v := it[0], it[1]
+		adj[u] = append(adj[u], v)
+		adj[v] = append(adj[v], u)
+	}
+
+	// Visited array
+	vis := make([]int, n)
+
+	// To store the time of insertion (discovery time) of nodes
+	tin := make([]int, n)
+
+	// To store the lowest time of insert of the nodes
+	low := make([]int, n)
+
+	// To store the bridges of the graph
+	var bridges [][]int
+
+	// Start a DFS traversal from node 0 with its parent as -1
+	dfs(0, -1, vis, adj, tin, low, &amp;bridges)
+
+	// Return the computed result
+	return bridges
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+private int timer = 1;
+
+/* Helper function to make DFS calls while 
+checking for bridges in the graph */
+private void dfs(int node, int parent, int[] vis, List&lt;Integer&gt;[] adj, 
+                 int[] tin, int[] low, List&lt;List&lt;Integer&gt;&gt; bridges) {
+    
+    // Mark the node as visited
+    vis[node] = 1;
+    
+    /* Time of insertion and the lowest time of 
+    insert for node will be the current time */
+    tin[node] = low[node] = timer;
+    
+    // Increment the current time
+    timer++;
+    
+    // Traverse all its neighbors
+    for (int it : adj[node]) {
+        
+        // Skip the parent
+        if (it == parent) continue;
+        
+        // If a neighbor is not visited
+        if (vis[it] == 0) {
+            
+            // Make a recursive DFS call
+            dfs(it, node, vis, adj, tin, low, bridges);
+            
+            /* Once the recursive DFS call returns, update
+            the lowest time of insertion for the node */
+            low[node] = Math.min(low[it], low[node]);
+            
+            /* If the lowest time of insertion of the 
+            node is found to be greater than the 
+            time of insertion of the neighbor */
+            if (low[it] &gt; tin[node]) {
+                
+                // The edge represents a bridge
+                bridges.add(Arrays.asList(it, node));
+            }
+        }
+        
+        // Else if the neighbor is already visited
+        else {
+            // Update the lowest time of insertion of the node
+            low[node] = Math.min(low[node], low[it]);
+        }
+    }
+}
+
+// Function to identify the bridges in a graph
+public List&lt;List&lt;Integer&gt;&gt; criticalConnections(int n, 
+        List&lt;List&lt;Integer&gt;&gt; connections) {
+
+    // Adjacency list
+    List&lt;Integer&gt;[] adj = new ArrayList[n];
+    for (int i = 0; i &lt; n; i++) {
+        adj[i] = new ArrayList&lt;&gt;();
+    }
+    
+    // Add all the edges to the adjacency list
+    for (List&lt;Integer&gt; it : connections) {
+        int u = it.get(0), v = it.get(1);
+        adj[u].add(v);
+        adj[v].add(u);
+    }
+    
+    // Visited array
+    int[] vis = new int[n];
+    
+    // To store the time of insertion (discovery time) of nodes
+    int[] tin = new int[n];
+    
+    // To store the lowest time of insert of the nodes
+    int[] low = new int[n];
+    
+    // To store the bridges of the graph
+    List&lt;List&lt;Integer&gt;&gt; bridges = new ArrayList&lt;&gt;();
+    
+    // Start a DFS traversal from node 0 with its parent as -1
+    dfs(0, -1, vis, adj, tin, low, bridges);
+    
+    // Return the computed result
+    return bridges;
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.timer = 1;
+    }
+
+    /* Helper function to make DFS calls while 
+    checking for bridges in the graph */
+    dfs(node, parent, vis, adj, tin, low, bridges) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = this.timer;
+
+        // Increment the current time
+        this.timer++;
+
+        // Traverse all its neighbors
+        for (let it of adj[node]) {
+            // Skip the parent
+            if (it === parent) continue;
+
+            // If a neighbor is not visited
+            if (vis[it] === 0) {
+                // Make a recursive DFS call
+                this.dfs(it, node, vis, adj, tin, low, bridges);
+
+                /* Once the recursive DFS call returns, update 
+                the lowest time of insertion for the node */
+                low[node] = Math.min(low[it], low[node]);
+
+                /* If the lowest time of insertion of the 
+                node is found to be greater than the time 
+                of insertion of the neighbor */
+                if (low[it] &gt; tin[node]) {
+                    // The edge represents a bridge
+                    bridges.push([it, node]);
+                }
+            } else {
+                // Update the lowest time of insertion of the node
+                low[node] = Math.min(low[node], tin[it]);
+            }
+        }
+    }
+
+    // Function to identify the bridges in a graph
+    criticalConnections(n, connections) {
+        // Adjacency list
+        const adj = new Array(n).fill(0).map(() =&gt; []);
+
+        // Add all the edges to the adjacency list
+        for (let [u, v] of connections) {
+            adj[u].push(v);
+            adj[v].push(u);
+        }
+
+        // Visited array
+        const vis = new Array(n).fill(0);
+
+        // To store the time of insertion (discovery time) of nodes
+        const tin = new Array(n).fill(0);
+
+        // To store the lowest time of insert of the nodes
+        const low = new Array(n).fill(0);
+
+        // To store the bridges of the graph
+        const bridges = [];
+
+        // Start a DFS traversal from node 0 with its parent as -1
+        this.dfs(0, -1, vis, adj, tin, low, bridges);
+
+        // Return the computed result
+        return bridges;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def __init__(self):
+        self.timer = 1
+    
+    def dfs(self, node, parent, vis, adj, tin, low, bridges):
+        # Mark the node as visited
+        vis[node] = 1
+        
+        # Time of insertion and the lowest time of 
+        # insert for node will be the current time
+        tin[node] = low[node] = self.timer
+        
+        # Increment the current time
+        self.timer += 1
+        
+        # Traverse all its neighbors
+        for it in adj[node]:
+            # Skip the parent
+            if it == parent:
+                continue
+            
+            # If a neighbor is not visited
+            if vis[it] == 0:
+                # Make a recursive DFS call
+                self.dfs(it, node, vis, adj, tin, low, bridges)
+                
+                # Once the recursive DFS call returns, update
+                # the lowest time of insertion for the node
+                low[node] = min(low[it], low[node])
+
+                # If the lowest time of insertion of the 
+                # node is found to be greater than the 
+                # time of insertion of the neighbor
+                if low[it] &gt; tin[node]:
+                    # The edge represents a bridge
+                    bridges.append([it, node])
+            else:
+                # Update the lowest time of insertion of the node
+                low[node] = min(low[node], tin[it])
+
+    def criticalConnections(self, n, connections):
+        # Adjacency list
+        adj = [[] for _ in range(n)]
+        
+        # Add all the edges to the adjacency list
+        for u, v in connections:
+            adj[u].append(v)
+            adj[v].append(u)
+        
+        # Visited array
+        vis = [0] * n
+        
+        # To store the time of insertion (discovery time) of nodes
+        tin = [0] * n
+        
+        # To store the lowest time of insert of the nodes
+        low = [0] * n
+        
+        # To store the bridges of the graph
+        bridges = []
+        
+        # Start a DFS traversal from node 0 with its parent as -1
+        self.dfs(0, -1, vis, adj, tin, low, bridges)
+        
+        # Return the computed result
+        return bridges</code></pre></div>
+</body>
+</html>

@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Split array - largest sum</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Split array - largest sum</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Binary Search</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an integer array a of size n and an integer k. Split the array a into k non-empty subarrays such that the largest sum of any subarray is minimized. Return the <strong>minimized largest sum</strong> of the split.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li> 1 ≤ n ≤ 10<sup>4</sup></li><li> 1 ≤ k ≤ n</li><li> 1 ≤ a[i] ≤ 10<sup>4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: a = [1, 2, 3, 4, 5], k = 3</p><p>Output:6</p><p>Explanation: There are many ways to split the array a[] into k consecutive subarrays. The best way to do this is to split the array a[] into [1, 2, 3], [4], and [5], where the largest sum among the three subarrays is only 6.</p><h3>Example 2</h3><p>Input: a = [3,5,1], k = 3</p><p>Output: 5</p><p>Explanation: There is only one way to split the array a[] into 3 subarrays, i.e., [3], [5], and [1]. The largest sum among these subarrays is 5.</p><h3>Example 3</h3><p>Input: a = [1, 2, 3, 4, 5], k = 2</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem reflects a practical problem in load balancing concept in distributed computing. A common task in managing a distributed system is distributing workload evenly across machines. This is a form of the problem where each machine is a subarray and the load is represented by the sum of the elements in the subarray. For optimum load balancing, the goal is to minimize the largest sum across all machines. This is necessary to ensure no single machine is overwhelmed with too much work while others are idle, thereby maximizing system efficiency and performance.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3><strong>Intuition: </strong></h3>
+<li>The idea is to utilize the Binary Search algorithm to find the optimal solution for this problem. The search range for the problem is [max, sum], where max represents the maximum element of the array, and sum denotes the total sum of all elements in the array. This range is inherently sorted, allowing binary search to efficiently determine the appropriate half to explore in each iteration, thereby reducing the search space by half.</li>
+
+<li>In this specific problem, the condition for eliminating one half of the search space is based on whether the number of partitions exceeds the given limit. If it does, it indicates that the current value of 'mid' is too small, so the left half is eliminated. Otherwise, the current 'mid' value is a potential answer, which is stored, and the search continues in the right half.</li>
+
+<h3><strong>Approach: </strong></h3>
+<strong>Working of largestSubarraySumMinimized(arr,k):</strong>
+<ol>
+<li>Initialize two pointers <code>low</code> and <code>high</code>: Initially, low will point to maximum element of the array and high will point to the sum of all the elements of the array.</li>
+<li>Intialize a while loop which will run till low is less than or equal to high. Calculate <code>mid</code> using the following formula: mid = (low+high) // 2 ( ‘//’ refers to integer division).</li>
+<li>Use the countPartition() function to count the the number of partitions that can be made based on the potential value of ‘maxSum’, represented by the variable 'mid'.</li>
+<li>If partitions is greater than k,  it can be concluded that the number ‘mid’ is smaller than our answer. So, eliminate the left half and consider the right half(i.e. low = mid+1).
+Otherwise, the value mid is one of the possible answers. But the minimum value is needed, so, eliminate the right half and consider the left half(i.e. high = mid-1).</li>
+<li>Finally, when the loop terminates, return the value of low as the pointer will be pointing to the answer.</li></ol><br>
+<strong>Working of countPartitions(arr, maxSum):</strong>
+<ol>
+<li>Start with n = a.size(), which gives the number of elements in the vector a. Initialize partitions to 1, assuming at least one partition is required to cover all elements and also initialize subarraySum to 0, which will keep track of the sum of elements in the current subarray being considered.</li>
+<li>Iterate in the array and check if adding the current element to subarraySum will keep the sum within the maxSum limit.
+If true, add it to the current. If adding current element would exceed maxSum, it indicates that current element should start a new subarray (partition).
+Increment the partitions counter to start a new partition. Reset subarraySum to a[i] to begin the new subarray with the current element.</li>
+<li>After iterating through all elements in the array, return partitions, which represents the count of partitions needed.</li>
+</ol><br>
+
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Split array - largest sum/1.png-YQHMl-gi" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Split array - largest sum/2.png-OawwTzbl" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Split array - largest sum/3.png-zQBvj9u_" alt="Image 3"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Split array - largest sum/1.png-YQHMl-gi" alt="Image 1"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Split array - largest sum/2.png-OawwTzbl" alt="Image 2"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Split array - largest sum/3.png-zQBvj9u_" alt="Image 3"></div></div><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to count partitions such 
+    that each partition has sum <= maxSum*/
+    int countPartitions(vector<int> &a, int maxSum) {
+        int n = a.size();
+        int partitions = 1;
+        long long subarraySum = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (subarraySum + a[i] <= maxSum) {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            } else {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+public:
+    /* Function to find the largest minimum
+    subarray sum with at most k partitions*/
+    int largestSubarraySumMinimized(vector<int> &a, int k) {
+        
+        // Initialize binary search boundaries
+        int low = *max_element(a.begin(), a.end()); 
+        int high = accumulate(a.begin(), a.end(), 0);
+
+        // Apply binary search
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            int partitions = countPartitions(a, mid);
+
+            if (partitions > k) {
+                /*If partitions exceed k, increase 
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            } 
+            else {
+                /*If partitions are within k, try to
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, 'low' will 
+        be the largest minimum subarray sum
+        with at most k partitions*/
+        return low;
+    }
+};
+
+int main() {
+    vector<int> a = {10, 20, 30, 40};
+    int k = 2;
+
+    // Create an instance of the Solution class
+    Solution sol;
+
+    int ans = sol.largestSubarraySumMinimized(a, k);
+    cout << "The answer is: " << ans << "\n";
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to count partitions such 
+    that each partition has sum <= maxSum*/
+    private int countPartitions(int[] a, int maxSum) {
+        int n = a.length;
+        int partitions = 1;
+        long subarraySum = 0;
+
+        for (int i = 0; i < n; i++) {
+            if (subarraySum + a[i] <= maxSum) {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            } else {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+    /* Function to find the largest minimum
+    subarray sum with at most k partitions*/
+    public int largestSubarraySumMinimized(int[] a, int k) {
+        
+        // Initialize binary search boundaries
+        int low = a[0];
+        int high = 0;
+        
+        //Find maximum and summation
+        for (int i = 0; i < a.length; i++) {
+            low = Math.max(low, a[i]);
+            high += a[i];
+        }
+        // Apply binary search
+        while (low <= high) {
+            int mid = (low + high) / 2;
+            int partitions = countPartitions(a, mid);
+
+            if (partitions > k) {
+                /* If partitions exceed k, increase
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            } 
+            else {
+                /* If partitions are within k, try to
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, 'low' will 
+        be the largest minimum subarray sum
+        with at most k partitions*/
+        return low;
+    }
+
+    public static void main(String[] args) {
+        int[] a = {10, 20, 30, 40};
+        int k = 2;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        int ans = sol.largestSubarraySumMinimized(a, k);
+
+        // Print the answer
+        System.out.println("The answer is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to count partitions such 
+    that each partition has sum <= maxSum"""
+    def countPartitions(self, a, maxSum):
+        n = len(a)
+        partitions = 1
+        subarraySum = 0
+
+        for i in range(n):
+            if subarraySum + a[i] <= maxSum:
+                # Add element to the current subarray
+                subarraySum += a[i]
+            else:
+                # Start a new subarray with current element
+                partitions += 1
+                subarraySum = a[i]
+
+        return partitions
+
+    """ Function to find the largest minimum 
+    subarray sum with at most k partitions"""
+    def largestSubarraySumMinimized(self, a, k):
+        # Initialize binary search boundaries
+        low = max(a)  
+        high = sum(a) 
+
+        # Apply binary search
+        while low <= high:
+            mid = (low + high) // 2
+            partitions = self.countPartitions(a, mid)
+
+            if partitions > k:
+                """ If partitions exceed k, increase 
+                the minimum possible subarray sum"""
+                low = mid + 1
+            else:
+                """ If partitions are within k, try to 
+                minimize the subarray sum further"""
+                high = mid - 1
+
+        """ After binary search, 'low' will be
+        the largest minimum subarray sum with
+        at most k partitions"""
+        return low
+
+if __name__ == "__main__":
+    a = [10, 20, 30, 40]
+    k = 2
+    
+    # Create an instance of the Solution class
+    sol = Solution()
+    
+    # Print the answer
+    print("The answer is:", sol.largestSubarraySumMinimized(a, k))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to count partitions such 
+    that each partition has sum <= maxSum*/
+    countPartitions(a, maxSum) {
+        let n = a.length;
+        let partitions = 1;
+        let subarraySum = 0;
+
+        for (let i = 0; i < n; i++) {
+            if (subarraySum + a[i] <= maxSum) {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            } else {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+    /* Function to find the largest minimum 
+    subarray sum with at most k partitions*/
+    largestSubarraySumMinimized(a, k) {
+        
+        // Initialize binary search boundaries
+        let low = Math.max(...a); 
+        let high = a.reduce((acc, curr) => acc + curr, 0); 
+
+        // Apply binary search
+        while (low <= high) {
+            let mid = Math.floor((low + high) / 2);
+            let partitions = this.countPartitions(a, mid);
+
+            if (partitions > k) {
+                /* If partitions exceed k, increase 
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            } else {
+                /* If partitions are within k, try to 
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, 'low' will be
+        the largest minimum subarray sum with
+        at most k partitions*/
+        return low;
+    }
+}
+
+const a = [10, 20, 30, 40];
+const k = 2;
+
+//Create an instance of Solution class
+const sol = new Solution();
+
+// Print the answer
+console.log("The answer is:", sol.largestSubarraySumMinimized(a, k));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Linq;
+
+public class Solution
+{
+    /* Function to count partitions such 
+    that each partition has sum <= maxSum*/
+    private int CountPartitions(int[] a, long maxSum)
+    {
+        int n = a.Length;
+        int partitions = 1;
+        long subarraySum = 0;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (subarraySum + a[i] <= maxSum)
+            {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            }
+            else
+            {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+    /* Function to find the largest minimum 
+    subarray sum with at most k partitions*/
+    public int LargestSubarraySumMinimized(int[] a, int k)
+    {
+        if (a == null || a.Length == 0)
+        {
+            return 0;
+        }
+
+        // Initialize binary search boundaries
+        long low = a.Max();
+        long high = a.Sum(x => (long)x); // Sum as long to prevent overflow
+
+        // Apply binary search
+        while (low <= high)
+        {
+            long mid = low + (high - low) / 2;
+            int partitions = this.CountPartitions(a, mid);
+
+            if (partitions > k)
+            {
+                /* If partitions exceed k, increase 
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            }
+            else
+            {
+                /* If partitions are within k, try to 
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, 'low' will be
+        the largest minimum subarray sum with
+        at most k partitions*/
+        return (int)low;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] a = { 10, 20, 30, 40 };
+        int k = 2;
+
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the answer
+        Console.WriteLine("The answer is: " + sol.LargestSubarraySumMinimized(a, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+)
+
+// countPartitions counts how many subarrays are formed such that each has sum ≤ maxSum
+func countPartitions(a []int, maxSum int) int {
+    partitions := 1
+    var subarraySum int64 = 0
+
+    for _, v := range a {
+        if subarraySum+int64(v) <= int64(maxSum) {
+            // Add element to the current subarray
+            subarraySum += int64(v)
+        } else {
+            // Start a new subarray with current element
+            partitions++
+            subarraySum = int64(v)
+        }
+    }
+    return partitions
+}
+
+// largestSubarraySumMinimized finds the largest minimum subarray sum when splitting into at most k parts
+func largestSubarraySumMinimized(a []int, k int) int {
+    // Initialize binary search boundaries
+    low, high := a[0], 0
+    for _, v := range a {
+        if v > low {
+            low = v
+        }
+        high += v
+    }
+
+    // Apply binary search
+    for low <= high {
+        mid := (low + high) / 2
+        partitions := countPartitions(a, mid)
+
+        if partitions > k {
+            // Too many partitions → need larger minimum sum
+            low = mid + 1
+        } else {
+            // Fewer/equal partitions → try smaller minimum sum
+            high = mid - 1
+        }
+    }
+
+    // 'low' is the largest minimum subarray sum with at most k partitions
+    return low
+}
+
+func main() {
+    a := []int{10, 20, 30, 40}
+    k := 2
+
+    sol := largestSubarraySumMinimized(a, k)
+    fmt.Printf("The answer is: %d\n", sol)
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N * (log(sum - max) + 1)), where N is the size of the array, 'sum' is the sum of all array elements, and 'max' is the maximum element in the array. This complexity arises because binary search is applied within the range [max, sum], and the countPartitions() function is invoked for each value of 'mid'. Inside the countPartitions() function, a loop iterates N times for each call.<br><br>
+<strong>Space Complexity:</strong> As no additional space is used, so the Space Complexity is O(1).</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to count partitions such 
+    that each partition has sum &lt;= maxSum*/
+    int countPartitions(vector&lt;int&gt; &amp;a, int maxSum) {
+        int n = a.size();
+        int partitions = 1;
+        long long subarraySum = 0;
+
+        for (int i = 0; i &lt; n; i++) {
+            if (subarraySum + a[i] &lt;= maxSum) {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            } else {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+public:
+    /* Function to find the largest minimum
+    subarray sum with at most k partitions*/
+    int largestSubarraySumMinimized(vector&lt;int&gt; &amp;a, int k) {
+        
+        // Initialize binary search boundaries
+        int low = *max_element(a.begin(), a.end()); 
+        int high = accumulate(a.begin(), a.end(), 0);
+
+        // Apply binary search
+        while (low &lt;= high) {
+            int mid = (low + high) / 2;
+            int partitions = countPartitions(a, mid);
+
+            if (partitions &gt; k) {
+                /*If partitions exceed k, increase 
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            } 
+            else {
+                /*If partitions are within k, try to
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, &#x27;low&#x27; will 
+        be the largest minimum subarray sum
+        with at most k partitions*/
+        return low;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to count partitions such 
+    that each partition has sum &lt;= maxSum*/
+    private int CountPartitions(int[] a, long maxSum)
+    {
+        int n = a.Length;
+        int partitions = 1;
+        long subarraySum = 0;
+
+        for (int i = 0; i &lt; n; i++)
+        {
+            if (subarraySum + a[i] &lt;= maxSum)
+            {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            }
+            else
+            {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+    /* Function to find the largest minimum 
+    subarray sum with at most k partitions*/
+    public int LargestSubarraySumMinimized(int[] a, int k)
+    {
+        if (a == null || a.Length == 0)
+        {
+            return 0;
+        }
+
+        // Initialize binary search boundaries
+        long low = 0;
+        long high = 0;
+        foreach (int num in a)
+        {
+            if (num &gt; low)
+            {
+                low = num;
+            }
+            high += num;
+        }
+
+        // Apply binary search
+        while (low &lt;= high)
+        {
+            long mid = low + (high - low) / 2;
+            int partitions = this.CountPartitions(a, mid);
+
+            if (partitions &gt; k)
+            {
+                /* If partitions exceed k, increase 
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            }
+            else
+            {
+                /* If partitions are within k, try to 
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, &#x27;low&#x27; will be
+        the largest minimum subarray sum with
+        at most k partitions*/
+        return (int)low;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>func countPartitions(a []int, maxSum int) int {
+    partitions := 1
+    var subarraySum int64 = 0
+
+    for _, v := range a {
+        if subarraySum+int64(v) &lt;= int64(maxSum) {
+            // Add element to the current subarray
+            subarraySum += int64(v)
+        } else {
+            // Start a new subarray with current element
+            partitions++
+            subarraySum = int64(v)
+        }
+    }
+    return partitions
+}
+
+// largestSubarraySumMinimized finds the largest minimum subarray sum when splitting into at most k parts
+func largestSubarraySumMinimized(a []int, k int) int {
+    // Initialize binary search boundaries
+    low, high := a[0], 0
+    for _, v := range a {
+        if v &gt; low {
+            low = v
+        }
+        high += v
+    }
+
+    // Apply binary search
+    for low &lt;= high {
+        mid := (low + high) / 2
+        partitions := countPartitions(a, mid)
+
+        if partitions &gt; k {
+            // Too many partitions → need larger minimum sum
+            low = mid + 1
+        } else {
+            // Fewer/equal partitions → try smaller minimum sum
+            high = mid - 1
+        }
+    }
+
+    // &#x27;low&#x27; is the largest minimum subarray sum with at most k partitions
+    return low
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to count partitions such 
+    that each partition has sum &lt;= maxSum*/
+    private int countPartitions(int[] a, int maxSum) {
+        int n = a.length;
+        int partitions = 1;
+        long subarraySum = 0;
+
+        for (int i = 0; i &lt; n; i++) {
+            if (subarraySum + a[i] &lt;= maxSum) {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            } else {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+    /* Function to find the largest minimum
+    subarray sum with at most k partitions*/
+    public int largestSubarraySumMinimized(int[] a, int k) {
+        
+        // Initialize binary search boundaries
+        int low = a[0];
+        int high = 0;
+        
+        //Find maximum and summation
+        for (int i = 0; i &lt; a.length; i++) {
+            low = Math.max(low, a[i]);
+            high += a[i];
+        }
+        // Apply binary search
+        while (low &lt;= high) {
+            int mid = (low + high) / 2;
+            int partitions = countPartitions(a, mid);
+
+            if (partitions &gt; k) {
+                /* If partitions exceed k, increase
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            } 
+            else {
+                /* If partitions are within k, try to
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, &#x27;low&#x27; will 
+        be the largest minimum subarray sum
+        with at most k partitions*/
+        return low;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to count partitions such 
+    that each partition has sum &lt;= maxSum*/
+    countPartitions(a, maxSum) {
+        let n = a.length;
+        let partitions = 1;
+        let subarraySum = 0;
+
+        for (let i = 0; i &lt; n; i++) {
+            if (subarraySum + a[i] &lt;= maxSum) {
+                // Add element to the current subarray
+                subarraySum += a[i];
+            } else {
+                // Start a new subarray with current element
+                partitions++;
+                subarraySum = a[i];
+            }
+        }
+
+        return partitions;
+    }
+
+    /* Function to find the largest minimum 
+    subarray sum with at most k partitions*/
+    largestSubarraySumMinimized(a, k) {
+        
+        // Initialize binary search boundaries
+        let low = Math.max(...a); 
+        let high = a.reduce((acc, curr) =&gt; acc + curr, 0); 
+
+        // Apply binary search
+        while (low &lt;= high) {
+            let mid = Math.floor((low + high) / 2);
+            let partitions = this.countPartitions(a, mid);
+
+            if (partitions &gt; k) {
+                /* If partitions exceed k, increase 
+                the minimum possible subarray sum*/
+                low = mid + 1;
+            } else {
+                /* If partitions are within k, try to 
+                minimize the subarray sum further*/
+                high = mid - 1;
+            }
+        }
+
+        /* After binary search, &#x27;low&#x27; will be
+        the largest minimum subarray sum with
+        at most k partitions*/
+        return low;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to count partitions such 
+    that each partition has sum &lt;= maxSum&quot;&quot;&quot;
+    def countPartitions(self, a, maxSum):
+        n = len(a)
+        partitions = 1
+        subarraySum = 0
+
+        for i in range(n):
+            if subarraySum + a[i] &lt;= maxSum:
+                # Add element to the current subarray
+                subarraySum += a[i]
+            else:
+                # Start a new subarray with current element
+                partitions += 1
+                subarraySum = a[i]
+
+        return partitions
+
+    &quot;&quot;&quot; Function to find the largest minimum 
+    subarray sum with at most k partitions&quot;&quot;&quot;
+    def largestSubarraySumMinimized(self, a, k):
+        # Initialize binary search boundaries
+        low = max(a)  
+        high = sum(a) 
+
+        # Apply binary search
+        while low &lt;= high:
+            mid = (low + high) // 2
+            partitions = self.countPartitions(a, mid)
+
+            if partitions &gt; k:
+                &quot;&quot;&quot; If partitions exceed k, increase 
+                the minimum possible subarray sum&quot;&quot;&quot;
+                low = mid + 1
+            else:
+                &quot;&quot;&quot; If partitions are within k, try to 
+                minimize the subarray sum further&quot;&quot;&quot;
+                high = mid - 1
+
+        &quot;&quot;&quot; After binary search, &#x27;low&#x27; will be
+        the largest minimum subarray sum with
+        at most k partitions&quot;&quot;&quot;
+        return low</code></pre></div>
+</body>
+</html>

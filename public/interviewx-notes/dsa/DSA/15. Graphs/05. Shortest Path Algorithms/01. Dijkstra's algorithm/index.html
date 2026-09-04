@@ -1,0 +1,2172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dijkstra's algorithm</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Dijkstra's algorithm</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Graph</span><span>Heap (Priority Queue)</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a weighted, undirected graph of V vertices, numbered from 0 to V-1, and an 2D vector/array which represents the edges:</p><p><br></p><p>Each entry in<strong> edges[i] i</strong>s of the form<strong> [u, v, weight]</strong>, where:</p><ul><li><strong>u, v </strong>→ represents the vertex having undirected edge between them</li><li><strong>weight →</strong> the weight of the edge between u and v</li></ul><p><br></p><p>Given a source node S. Find the shortest distance of all the vertex from the source vertex S. Return a list of integers denoting <strong>shortest distance </strong>between each node and source vertex S. If a vertex is not reachable from source then its distance will be 10<sup>9</sup>.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ V ≤ 10000</li><li>0 ≤ edges[i][j] ≤ 10000</li><li>1 ≤ edges.size() ≤ [ (V*(V - 1)) / 2 ]</li><li>0 ≤ S < V</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-_DG48OHc"></p><p><br></p><p><strong>Input:</strong> V = 2, edges = [[0,1,9]] , S=0</p><p><strong>Output:</strong> [0, 9]</p><p><strong>Explanation: </strong></p><p>The shortest distance from node 0(source) to node 0 is 0 and the shortest distance from node 0 to node 1 is 9.</p><h3>Example 2</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-GlKv5O6L"></p><p><br></p><p><strong>Input:</strong> V = 3, edges = [[0, 1, 1], [0, 2, 6], [1, 2, 3]] , S=2</p><p><strong>Output:</strong> [4, 3, 0]</p><p><strong>Explanation: </strong></p><p>For node 0, the shortest path is 2->1->0 (distance=4)</p><p>For node 1, the shortest path is 2->1 (distance=3)</p><h3>Example 3</h3><p><strong>Input:</strong> V=4, edges = [[0,1,1],[0,3,2],[1,2,4],[2,3,3]] , S=0</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The concept underlying this programming problem is used in the implementation of various routing algorithms in major navigation applications like Google Maps or Waze. For example, Dijkstra’s algorithm, which also finds the shortest path given a source node in a graph (which could represent cities, intersections etc.) with associated weights (distances, time or cost), enables these apps to provide users with the quickest or shortest route to their destination. This problem is fundamental to the field of Graph Theory that lays the foundation for network analysis and optimization in various domains including computer networks, operations research, and transportation.</p></div>
+<div class="section"><h2>Editorial: Using Min-Heap</h2>
+<h3>Dijkstra's Algorithm:</h3> 
+<p>
+    Dijkstra's Algorithm is used in connected graphs (undirected as well as directed) whenever it is required to find out the shortest distance from the <strong>source node</strong> to every <strong>other node</strong>.  
+    <h6>Conditions for Dijkstra's Algorithm to work?</h6>
+    The graph must <b>only</b> have non-negative edge weights.
+
+    <h6>Algorithm:</h6>
+    <ul>
+        <li>Set the distance to the starting node as 0 and to all other nodes as infinity. Add all nodes to an unvisited set. Begin with the starting node.
+        </li>
+        <li>Perform <strong>Edge Relaxation</strong>, i.e., for each unvisited neighbor of the current node, calculate the tentative distance from the start node. If this tentative distance is less than the known distance, update it.
+        </li>
+        <li>Mark the current node as visited once all its neighbors have been evaluated. It won't be checked again. Choose the unvisited node with the smallest tentative distance as the new current node.
+        </li>
+        <li>Repeat steps 2-3 untill all the nodes are visited. Once all nodes are visited, the shortest path to all the nodes is now known.</li>
+    </ul>
+</p>
+
+<h3>Implementation: Using Min-Heap</h3>
+<p>
+    To implement the Dijkstra's Algorithm, a minimum heap data structure (Priority Queue) can be used. The priority queue will store the pair {dist, node} storing the tentative distance required to reach the <strong>node</strong> from the <strong>source node</strong>. If this distance is found to be smaller than the known distance, we update the distance to reach <strong>node</strong> and push to newly found pair of {dist, node} in the priority queue. 
+
+    <h6>Significance of using a Min-Heap data structure:</h6>
+    Storing the pair {dist, node} in min-heap ensures that out of all the pairs, the node with the minimum distance (from source node) is taken into consideration first. This helps the algorithm to explore the shortest path first improving efficiency.
+</p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Use a priority queue to process nodes by their shortest known distance.</li>
+    <li>Initialize an array to store shortest distances, with the source node set to 0 and all others to infinity.</li>
+    <li>Add the source node to the priority queue with a distance of 0.</li>
+    <li>Extract the node with the smallest distance from the queue and perfom edge relaxation (update the distances to its neighbors if a shorter path is found). Add the updated neighbors back to the queue.</li>
+    <li>The distance array contains the shortest distances from the source to all node.</li>
+</ol>
+
+<h4>Solution:</h4>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* Define P as a shorthand 
+for the pair<int, int> type */
+#define P pair<int,int>
+
+class Solution {
+public:
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    vector <int> dijkstra(int V, vector<vector<int>> adj[], 
+                          int S) {
+                                
+        // Priority queue 
+        priority_queue <P, vector<P>, greater<P>> pq;
+        
+        // Distance array
+        vector<int> dist(V, 1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Add the source node to the priority queue
+        pq.push({0, S});
+        
+        // Until the priority queue is empty
+        while(!pq.empty()) {
+            
+            // Get the tentative distance
+            int dis = pq.top().first;
+            
+            // Get the node
+            int node = pq.top().second;
+            pq.pop();
+            
+            // Traverse all its neighbors
+            for(auto it : adj[node]) {
+                
+                int adjNode = it[0]; // node
+                int edgeWt = it[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if(dis + edgeWt < dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Push the new pair in priority queue
+                    pq.push({dist[adjNode], adjNode});
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+};
+
+int main() {
+    
+    int V = 2, S = 0;
+    vector<vector<int>> adj[V] = {
+        {{1, 9}}, 
+        {{0, 9}}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to find the shortest distance 
+    of each node from the source node */
+    vector<int> ans = sol.dijkstra(V, adj, S);
+    
+    // Output
+    cout << "The shortest distance of nodes from the source node is: ";
+    for(int i=0; i < V; i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    public int[] dijkstra(int V, 
+        ArrayList<ArrayList<ArrayList<Integer>>> adj, int S) {
+        
+        // Priority queue
+        PriorityQueue<int[]> pq = new PriorityQueue<>(
+            Comparator.comparingInt(a -> a[0])
+        );
+        
+        // Distance array
+        int[] dist = new int[V];
+        Arrays.fill(dist, (int) 1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Add the source node to the priority queue
+        pq.add(new int[]{0, S});
+        
+        // Until the priority queue is empty
+        while (!pq.isEmpty()) {
+            
+            // Get the tentative distance
+            int dis = pq.peek()[0];
+            
+            // Get the node
+            int node = pq.peek()[1];
+            pq.poll();
+            
+            // Traverse all its neighbors
+            for (ArrayList<Integer> it : adj.get(node)) {
+                
+                int adjNode = it.get(0); // node
+                int edgeWt = it.get(1); // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edgeWt < dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Push the new pair in priority queue
+                    pq.add(new int[]{dist[adjNode], adjNode});
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        
+        int V = 2, S = 0;
+        
+        // Create adjacency list
+        ArrayList<ArrayList<ArrayList<Integer>>> adj = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> node0 = new ArrayList<>();
+        node0.add(new ArrayList<>(Arrays.asList(1, 9)));
+        adj.add(node0);
+        
+        ArrayList<ArrayList<Integer>> node1 = new ArrayList<>();
+        node1.add(new ArrayList<>(Arrays.asList(0, 9)));
+        adj.add(node1);
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to find the shortest distance 
+        of each node from the source node */
+        int[] ans = sol.dijkstra(V, adj, S);
+        
+        // Output
+        System.out.print("The shortest distance of nodes from the source node is: ");
+        for (int i = 0; i < V; i++) {
+            System.out.print(ans[i] + " ");
+        }
+        System.out.println();
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import heapq
+
+class Solution:
+    # Function to find the shortest distance of all
+    # the vertices from the source vertex S.
+    def dijkstra(self, V, adj, S):
+        
+        # Priority queue
+        pq = []
+        
+        # Distance array
+        dist = [int(1e9)] * V
+        
+        # Distance of source node from itself is 0
+        dist[S] = 0
+        
+        # Add the source node to the priority queue
+        heapq.heappush(pq, (0, S))
+        
+        # Until the priority queue is empty
+        while pq:
+            
+            # Get the tentative distance
+            dis, node = heapq.heappop(pq)
+            
+            # Traverse all its neighbors
+            for adjNode, edgeWt in adj[node]:
+                
+                # If the tentative distance to reach adjacent node
+                # is smaller than the known distance
+                if dis + edgeWt < dist[adjNode]:
+                    
+                    # Update the known distance
+                    dist[adjNode] = dis + edgeWt
+                    
+                    # Push the new pair in priority queue
+                    heapq.heappush(pq, (dist[adjNode], adjNode))
+        
+        # Return the result
+        return dist
+
+
+# Main method
+if __name__ == "__main__":
+    V, S = 2, 0
+    
+    # Create adjacency list
+    adj = [
+        [(1, 9)], 
+        [(0, 9)]
+    ]
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to find the shortest distance
+    # of each node from the source node
+    ans = sol.dijkstra(V, adj, S)
+    
+    # Output
+    print("The shortest distance of nodes from the source node is:", end=" ")
+    for i in ans:
+        print(i, end=" ")
+    print()</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Minimum Priority Queue Implementation
+class MinPriorityQueue {
+    constructor() {
+        this.heap = [];
+    }
+
+    // Insert a new element in the priority queue
+    push(element) {
+        this.heap.push(element);
+        this.bubbleUp(this.heap.length - 1);
+    }
+
+    /* Remove and return the element with the 
+    highest priority (smallest element) */
+    pop() {
+        if (this.heap.length === 1) return this.heap.pop();
+
+        const min = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown(0);
+
+        return min;
+    }
+
+    // Get the element with the highest priority without removing it
+    peek() {
+        return this.heap[0];
+    }
+
+    // Return true if the priority queue is empty */
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+
+    // Restore heap order after adding a new element
+    bubbleUp(index) {
+        const element = this.heap[index];
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            const parent = this.heap[parentIndex];
+            if (element[0] >= parent[0]) break;
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+        this.heap[index] = element;
+    }
+
+    // Restore heap order after removing an element
+    bubbleDown(index) {
+        const length = this.heap.length;
+        const element = this.heap[index];
+
+        while (true) {
+            let leftIndex = 2 * index + 1;
+            let rightIndex = 2 * index + 2;
+            let swapIndex = null;
+
+            if (leftIndex < length) {
+                if (this.heap[leftIndex][0] < element[0]) {
+                    swapIndex = leftIndex;
+                }
+            }
+
+            if (rightIndex < length) {
+                if (
+                    (swapIndex === null && this.heap[rightIndex][0] < element[0]) ||
+                    (swapIndex !== null && this.heap[rightIndex][0] < this.heap[swapIndex][0])
+                ) {
+                    swapIndex = rightIndex;
+                }
+            }
+
+            if (swapIndex === null) break;
+            this.heap[index] = this.heap[swapIndex];
+            index = swapIndex;
+        }
+        this.heap[index] = element;
+    }
+}
+
+class Solution {
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    dijkstra(V, adj, S) {
+        // Custom min-priority queue
+        let pq = new MinPriorityQueue();
+        
+        // Distance array
+        let dist = new Array(V).fill(1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Add the source node to the priority queue
+        pq.push([0, S]);
+        
+        // Until the priority queue is empty
+        while (!pq.isEmpty()) {
+            // Get the tentative distance
+            let [dis, node] = pq.pop();
+            
+            // Traverse all its neighbors
+            for (let it of adj[node]) {
+                let adjNode = it[0]; // node
+                let edgeWt = it[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edgeWt < dist[adjNode]) {
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Push the new pair in priority queue
+                    pq.push([dist[adjNode], adjNode]);
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}
+
+let V = 2, S = 0;
+let adj = [
+    [[1, 9]], 
+    [[0, 9]]
+];
+
+/* Creating an instance of 
+Solution class */
+let sol = new Solution();
+
+/* Function call to find the shortest distance 
+of each node from the source node */
+let ans = sol.dijkstra(V, adj, S);
+
+// Output
+console.log("The shortest distance of nodes from the source node is: ");
+for (let i = 0; i < V; i++) {
+    console.log(ans[i] + " ");
+}</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+// Minimum Priority Queue Implementation
+public class MinPriorityQueue
+{
+    private struct Element
+    {
+        public int Dist;
+        public int Node;
+        public Element(int dist, int node)
+        {
+            Dist = dist;
+            Node = node;
+        }
+    }
+
+    private List<Element> heap = new List<Element>();
+
+    // Insert a new element in the priority queue
+    public void Push(int dist, int node)
+    {
+        heap.Add(new Element(dist, node));
+        BubbleUp(heap.Count - 1);
+    }
+
+    /* Remove and return the element with the 
+       highest priority (smallest element) */
+    public (int dist, int node) Pop()
+    {
+        if (heap.Count == 1)
+        {
+            var single = heap[0];
+            heap.Clear();
+            return (single.Dist, single.Node);
+        }
+
+        var min = heap[0];
+        heap[0] = heap[heap.Count - 1];
+        heap.RemoveAt(heap.Count - 1);
+        BubbleDown(0);
+        return (min.Dist, min.Node);
+    }
+
+    // Get the element with the highest priority without removing it
+    public (int dist, int node) Peek()
+    {
+        var top = heap[0];
+        return (top.Dist, top.Node);
+    }
+
+    // Return true if the priority queue is empty
+    public bool IsEmpty()
+    {
+        return heap.Count == 0;
+    }
+
+    // Restore heap order after adding a new element
+    private void BubbleUp(int index)
+    {
+        var element = heap[index];
+        while (index > 0)
+        {
+            int parentIndex = (index - 1) / 2;
+            var parent = heap[parentIndex];
+            if (element.Dist >= parent.Dist) break;
+            heap[index] = parent;
+            index = parentIndex;
+        }
+        heap[index] = element;
+    }
+
+    // Restore heap order after removing an element
+    private void BubbleDown(int index)
+    {
+        int length = heap.Count;
+        var element = heap[index];
+        while (true)
+        {
+            int leftIndex = 2 * index + 1;
+            int rightIndex = 2 * index + 2;
+            int swapIndex = -1;
+
+            if (leftIndex < length &&
+                heap[leftIndex].Dist < element.Dist)
+            {
+                swapIndex = leftIndex;
+            }
+
+            if (rightIndex < length &&
+                ((swapIndex == -1 && heap[rightIndex].Dist < element.Dist) ||
+                 (swapIndex != -1 && heap[rightIndex].Dist < heap[swapIndex].Dist)))
+            {
+                swapIndex = rightIndex;
+            }
+
+            if (swapIndex == -1) break;
+            heap[index] = heap[swapIndex];
+            index = swapIndex;
+        }
+        heap[index] = element;
+    }
+}
+
+public class Solution
+{
+    /* Function to find the shortest distance of all 
+       the vertices from the source vertex S. */
+    public int[] Dijkstra(int V, List<List<int[]>> adj, int S)
+    {
+        // Custom min-priority queue
+        var pq = new MinPriorityQueue();
+
+        // Distance array
+        const int INF = (int)1e9;
+        var dist = new int[V];
+        for (int i = 0; i < V; i++)
+            dist[i] = INF;
+
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+
+        // Add the source node to the priority queue
+        pq.Push(0, S);
+
+        // Until the priority queue is empty
+        while (!pq.IsEmpty())
+        {
+            // Get the tentative distance
+            var top = pq.Pop();
+            int dis = top.dist;
+            int node = top.node;
+
+            // Traverse all its neighbors
+            foreach (var it in adj[node])
+            {
+                int adjNode = it[0]; // node
+                int edgeWt = it[1];  // edge weight
+
+                /* If the tentative distance to 
+                   reach adjacent node is smaller 
+                   than the known distance */
+                if (dis + edgeWt < dist[adjNode])
+                {
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+
+                    // Push the new pair in priority queue
+                    pq.Push(dist[adjNode], adjNode);
+                }
+            }
+        }
+
+        // Return the result
+        return dist;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int V = 2, S = 0;
+        var adj = new List<List<int[]>>
+        {
+            new List<int[]> { new int[] { 1, 9 } },
+            new List<int[]> { new int[] { 0, 9 } }
+        };
+
+        /* Creating an instance of 
+           Solution class */
+        var sol = new Solution();
+
+        /* Function call to find the shortest distance 
+           of each node from the source node */
+        int[] ans = sol.Dijkstra(V, adj, S);
+
+        // Output
+        Console.WriteLine("The shortest distance of nodes from the source node is: ");
+        for (int i = 0; i < V; i++)
+        {
+            Console.WriteLine(ans[i] + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"container/heap"
+	"fmt"
+)
+
+// Edge represents a node and its distance for the priority queue
+type Edge struct {
+	dist int
+	node int
+}
+
+// PriorityQueue implements heap.Interface (min-heap based on distance)
+type PriorityQueue []Edge
+
+func (pq PriorityQueue) Len() int           { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool { return pq[i].dist < pq[j].dist }
+func (pq PriorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+
+func (pq *PriorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(Edge))
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[:n-1]
+	return item
+}
+
+// dijkstra function to find shortest distances from source S
+func dijkstra(V int, adj [][]struct{ to, weight int }, S int) []int {
+	dist := make([]int, V)
+	for i := range dist {
+		dist[i] = int(1e9) // same as C++ (1e9 represents infinity)
+	}
+	dist[S] = 0
+
+	pq := &PriorityQueue{}
+	heap.Init(pq)
+	heap.Push(pq, Edge{dist: 0, node: S})
+
+	for pq.Len() > 0 {
+		curr := heap.Pop(pq).(Edge)
+		d, u := curr.dist, curr.node
+
+		if d > dist[u] {
+			continue
+		}
+
+		for _, edge := range adj[u] {
+			v, weight := edge.to, edge.weight
+			if d+weight < dist[v] {
+				dist[v] = d + weight
+				heap.Push(pq, Edge{dist: dist[v], node: v})
+			}
+		}
+	}
+
+	return dist
+}
+
+func main() {
+	V, S := 2, 0
+	adj := make([][]struct{ to, weight int }, V)
+
+	adj[0] = append(adj[0], struct{ to, weight int }{to: 1, weight: 9})
+	adj[1] = append(adj[1], struct{ to, weight int }{to: 0, weight: 9})
+
+	ans := dijkstra(V, adj, S)
+
+	fmt.Print("The shortest distance of nodes from the source node is: ")
+	for _, v := range ans {
+		fmt.Print(v, " ")
+	}
+	fmt.Println()
+}
+</code></pre></div></div></div>
+
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O((V+E)*logV)</strong> (where V and E represent the number of nodes and edges of the graph) <br>
+    <ul>
+        <li>Each node is processed once in the priority queue and deletion and insertion operation takes O(logV) time making it overall O(V*logV) in the worst case.</li>
+        <li>For each vertex, all its edges are relaxed. This operation involves updating the priority queue, which takes O(logV) making it overall O(E*logV) for E edges in the worst case.</li>
+    </ul>
+</p>
+
+<p><strong>Space Complexity: O(V)</strong>  <br>
+<ul>
+    <li>The priority queue will store distances to all nodes in worst case leading to O(V) space.</li>
+    <li>The distance array takes O(V) space.</li>
+</ul>
+</p>
+</div>
+<div class="section"><h2>Editorial: Using Set</h2><html><head></head><body><h3>Dijkstra's Algorithm:</h3> 
+<p>
+    Dijkstra's Algorithm is used in connected graphs (undirected as well as directed) whenever it is required to find out the shortest distance from the <strong>source node</strong> to every <strong>other node</strong>.  
+    </p><h6>Conditions for Dijkstra's Algorithm to work?</h6>
+    The graph must <b>only</b> have non-negative edge weights.
+
+    <h6>Algorithm:</h6>
+    <ul>
+        <li>Set the distance to the starting node as 0 and to all other nodes as infinity. Add all nodes to an unvisited set. Begin with the starting node.
+        </li>
+        <li>Perform <strong>Edge Relaxation</strong> i.e., for each unvisited neighbor of the current node, calculate the tentative distance from the start node. If this tentative distance is less than the known distance, update it.
+        </li>
+        <li>Mark the current node as visited once all its neighbors have been evaluated. It won't be checked again. Choose the unvisited node with the smallest tentative distance as the new current node.
+        </li>
+        <li>Repeat steps 2-3 untill all the nodes are visited. Once all nodes are visited, the shortest path to all the nodes is now known.</li>
+    </ul>
+<p></p>
+
+<h3>Implementation: Using Set</h3>
+<p>
+    To implement the Dijkstra's Algorithm, a set data structure can be used. The set will store the pair {dist, node} storing the tentative distance required to reach the <strong>node</strong> from the <strong>source node</strong>. If this distance is found to be smaller than the known distance, we update the distance to reach <strong>node</strong> and insert the newly found pair of {dist, node} in the set. 
+
+    </p><h6>Significance of using a Set data structure:</h6>
+    <ul>
+        <li>Storing the pair {dist, node} in set ensures that out of all the pairs, the node with the minimum distance (from source node) is taken into consideration first. This helps the algorithm to explore the shortest path first improving efficiency. </li>
+        <li>Another added advantage in the set is that it can perform deletion operations on pairs that are found to be unfruitful saving some iterations.</li>
+    </ul>
+    
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Create a distance array initialized to infinity (1e9), except for the source vertex which is set to 0.</li>
+    <li>Use a set to store pairs of (distance, node), starting with the source node with a distance of 0.</li>
+    <li>Continuously extract the node with the smallest distance from the set until the set is empty.</li>
+    <li>For the current node, iterate through all its adjacent nodes. Calculate the tentative distance to each neighbor. If this distance is smaller than the known distance, update the distance and adjust the set.</li>
+    <li>After processing all nodes, return the distance array containing the shortest distances from the source to all nodes.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/01.drawio.png-E-H4ahOI" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/02.drawio.png-hwrItjf_" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/03.drawio.png-GOur1sKp" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/04.drawio.png-jpXar3CW" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/01.drawio.png-E-H4ahOI" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/02.drawio.png-hwrItjf_" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/03.drawio.png-GOur1sKp" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/04.drawio.png-jpXar3CW" alt="Image 4"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    vector <int> dijkstra(int V, vector<vector<int>> adj[], 
+                         int S) {
+                             
+        // Set to store {dist, node}
+        set <pair<int,int>> st;
+        
+        // Distance array 
+        vector<int> dist(V, 1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Adding the source node to set
+        st.insert({0, S});
+        
+        // Until the set is empty
+        while(!st.empty()) {
+            
+            // Get the distance
+            int dis = st.begin()->first;
+            
+            // Get the node
+            int node = st.begin()->second;
+            st.erase(st.begin());
+            
+            // Traverse all its neighbors
+            for(auto it : adj[node]) {
+                int adjNode = it[0]; // node
+                int edgeWt = it[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if(dis + edgeWt < dist[adjNode]) {
+                    
+                    /* If another longer known distance 
+                    is found, erase it from the set */
+                    if(dist[adjNode] != 1e9) 
+                        st.erase({dist[adjNode] , adjNode});
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Add the new pair to the set
+                    st.insert({dist[adjNode] , adjNode});
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+};
+
+int main() {
+    
+    int V = 2, S = 0;
+    vector<vector<int>> adj[V] = 
+    {
+        {{1, 9}}, 
+        {{0, 9}}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to find the shortest distance 
+    of each node from the source node */
+    vector<int> ans = sol.dijkstra(V, adj, S);
+    
+    // Output
+    cout << "The shortest distance of nodes from the source node is: ";
+    for(int i=0; i < V; i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    public int[] dijkstra(int V, ArrayList<ArrayList<ArrayList<Integer>>> adj, int S) {
+        
+        // TreeSet to store {dist, node}
+        TreeSet<int[]> set = new TreeSet<>((a, b) -> {
+            if (a[0] != b[0]) return Integer.compare(a[0], b[0]); // Compare by distance
+            return Integer.compare(a[1], b[1]); // If distances are equal, compare by node
+        });
+        
+        // Distance array 
+        int[] dist = new int[V];
+        Arrays.fill(dist, (int)1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Adding the source node to the set
+        set.add(new int[]{0, S});
+        
+        // Until the set is empty
+        while (!set.isEmpty()) {
+            
+            // Get the pair with the smallest distance
+            int[] current = set.pollFirst();
+            int dis = current[0];
+            int node = current[1];
+            
+            // Traverse all its neighbors
+            for (ArrayList<Integer> neighbor : adj.get(node)) {
+                int adjNode = neighbor.get(0); // adjacent node
+                int edgeWt = neighbor.get(1); // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edgeWt < dist[adjNode]) {
+                    
+                    /* If another longer known distance 
+                    is found, erase it from the set */
+                    set.remove(new int[]{dist[adjNode], adjNode});
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Add the new pair to the set
+                    set.add(new int[]{dist[adjNode], adjNode});
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int V = 2, S = 0;
+        ArrayList<ArrayList<ArrayList<Integer>>> adj = new ArrayList<>();
+        
+        // Adjacency list for the graph
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+        adj.get(0).add(new ArrayList<>(Arrays.asList(1, 9)));
+        adj.get(1).add(new ArrayList<>(Arrays.asList(0, 9)));
+        
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+        
+        /* Function call to find the shortest distance 
+        of each node from the source node */
+        int[] ans = sol.dijkstra(V, adj, S);
+        
+        // Output
+        System.out.println("The shortest distance of nodes from the source node is: ");
+        for (int i : ans) {
+            System.out.print(i + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import heapq
+
+class Solution:
+    
+    # Function to find the shortest distance of all 
+    # the vertices from the source vertex S.
+    def dijkstra(self, V, adj, S):
+        
+        # Min-heap to store {dist, node}
+        st = []
+        
+        # Distance array 
+        dist = [int(1e9)] * V
+        
+        # Distance of source node from itself is 0
+        dist[S] = 0
+        
+        # Adding the source node to heap
+        heapq.heappush(st, (0, S))
+        
+        # Until the heap is empty
+        while st:
+            # Get the distance
+            dis, node = heapq.heappop(st)
+            
+            # Traverse all its neighbors
+            for it in adj[node]:
+                adjNode, edgeWt = it # node, edge weight
+                
+                # If the tentative distance to 
+                # reach adjacent node is smaller 
+                # than the known distance
+                if dis + edgeWt < dist[adjNode]:
+                    # Update the known distance
+                    dist[adjNode] = dis + edgeWt
+                    
+                    # Add the new pair to the heap
+                    heapq.heappush(st, (dist[adjNode], adjNode))
+        
+        # Return the result
+        return dist
+
+# Main function
+if __name__ == "__main__":
+    V = 2
+    S = 0
+    adj = [
+        [(1, 9)], 
+        [(0, 9)]
+    ]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to find the shortest distance 
+    # of each node from the source node
+    ans = sol.dijkstra(V, adj, S)
+    
+    # Output
+    print("The shortest distance of nodes from the source node is: ", end="")
+    for i in range(V):
+        print(ans[i], end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+
+    /* Function to find the shortest distance of all 
+     the vertices from the source vertex S. */
+    dijkstra(V, adj, S) {
+
+        // Set to store {dist, node}
+        let st = new Set();
+        
+        // Distance array 
+        let dist = Array(V).fill(1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Adding the source node to set
+        st.add([0, S]);
+        
+        // Until the set is empty
+        while (st.size) {
+            
+            // Get the distance
+            let [dis, node] = [...st][0];
+            st.delete([...st][0]);
+            
+            // Traverse all its neighbors
+            for (let it of adj[node]) {
+                let adjNode = it[0]; // node
+                let edgeWt = it[1]; // edge weight
+                
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edgeWt < dist[adjNode]) {
+                    
+                    // If another longer known distance 
+                    // is found, erase it from the set
+                    if (dist[adjNode] !== Infinity)
+                        st.delete([dist[adjNode], adjNode]);
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Add the new pair to the set
+                    st.add([dist[adjNode], adjNode]);
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}
+
+// Main function
+const main = () => {
+    let V = 2, S = 0;
+    let adj = [
+        [[1, 9]], 
+        [[0, 9]]
+    ];
+    
+    // Creating an instance of 
+    // Solution class
+    let sol = new Solution();
+    
+    // Function call to find the shortest distance 
+    // of each node from the source node
+    let ans = sol.dijkstra(V, adj, S);
+    
+    // Output
+    console.log("The shortest distance of nodes from the source node is: ", ans.join(" "));
+};
+
+main();
+
+# Test the Solution class
+sol = Solution()  # Create an object of the Solution class
+
+# Example input heights and available resources
+heights = [1, 3, 5, 7, 9]
+energyDrinks = 3
+climbingRopes = 1
+
+# Get the furthest reachable building
+result = sol.furthestReachableBuilding(heights, energyDrinks, climbingRopes)
+
+# Output the result
+print(f"Furthest reachable building index: {result}")</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    /* Function to find the shortest distance of all 
+     the vertices from the source vertex S. */
+    public int[] Dijkstra(int V, List<List<int[]>> adj, int S)
+    {
+        // Set to store {dist, node}
+        // Using SortedSet to mimic min-priority queue behavior
+        SortedSet<Tuple<int, int>> st = new SortedSet<Tuple<int, int>>();
+        
+        // Distance array 
+        const int INF = (int)1e9;
+        int[] dist = new int[V];
+        for (int i = 0; i < V; i++)
+        {
+            dist[i] = INF;
+        }
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Adding the source node to set
+        st.Add(Tuple.Create(0, S));
+        
+        // Until the set is empty
+        while (st.Any())
+        {
+            // Get the distance
+            Tuple<int, int> current = st.Min;
+            st.Remove(current);
+            
+            int dis = current.Item1;
+            int node = current.Item2;
+            
+            // Traverse all its neighbors
+            foreach (int[] it in adj[node])
+            {
+                int adjNode = it[0]; // node
+                int edgeWt = it[1]; // edge weight
+                
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edgeWt < dist[adjNode])
+                {
+                    // If another longer known distance 
+                    // is found, erase it from the set
+                    if (dist[adjNode] != int.MaxValue)
+                        st.Remove(Tuple.Create(dist[adjNode], adjNode));
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Add the new pair to the set
+                    st.Add(Tuple.Create(dist[adjNode], adjNode));
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Main function
+        int V = 2, S = 0;
+        List<List<int[]>> adj = new List<List<int[]>>(V);
+        for (int i = 0; i < V; i++)
+        {
+            adj.Add(new List<int[]>());
+        }
+        adj[0].Add(new int[] { 1, 9 });
+        adj[1].Add(new int[] { 0, 9 });
+        
+        // Creating an instance of 
+        // Solution class
+        Solution sol = new Solution();
+        
+        // Function call to find the shortest distance 
+        // of each node from the source node
+        int[] ans = sol.Dijkstra(V, adj, S);
+        
+        // Output
+        Console.Write("The shortest distance of nodes from the source node is: ");
+        Console.WriteLine(string.Join(" ", ans));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"container/heap"
+	"fmt"
+)
+
+const INF = 1_000_000_000 
+
+// Edge represents a node and its distance, used in the priority queue.
+type Edge struct {
+	dist int
+	node int
+}
+
+// PriorityQueue implements heap.Interface and holds Edges (Min-Heap).
+type PriorityQueue []Edge
+
+func (pq PriorityQueue) Len() int           { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool { return pq[i].dist < pq[j].dist }
+func (pq PriorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+
+func (pq *PriorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(Edge))
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[:n-1]
+	return item
+}
+
+/* Function to find the shortest distance of all
+the vertices from the source vertex S. */
+func dijkstra(V int, adj [][]struct{ to, weight int }, S int) []int {
+	// Distance array
+	dist := make([]int, V)
+	for i := range dist {
+		dist[i] = INF
+	}
+
+	// Distance of source node from itself is 0
+	dist[S] = 0
+
+	// Min-heap to mimic set behavior {dist, node}
+	pq := &PriorityQueue{}
+	heap.Init(pq)
+	heap.Push(pq, Edge{dist: 0, node: S})
+
+	// Until the priority queue is empty
+	for pq.Len() > 0 {
+		// Get the distance and node
+		curr := heap.Pop(pq).(Edge)
+		dis := curr.dist
+		node := curr.node
+
+		// Skip if already found a better distance
+		if dis > dist[node] {
+			continue
+		}
+
+		// Traverse all its neighbors
+		for _, edge := range adj[node] {
+			adjNode := edge.to
+			edgeWt := edge.weight
+
+			/* If the tentative distance to
+			reach adjacent node is smaller
+			than the known distance */
+			if dis+edgeWt < dist[adjNode] {
+				// Update the known distance
+				dist[adjNode] = dis + edgeWt
+
+				// Push the new pair to the priority queue
+				heap.Push(pq, Edge{dist: dist[adjNode], node: adjNode})
+			}
+		}
+	}
+
+	// Return the result
+	return dist
+}
+
+func main() {
+	// Number of vertices and source
+	V := 2
+	S := 0
+
+	// Adjacency list (same as C++ vector<vector<int>> adj[])
+	adj := make([][]struct {
+		to     int
+		weight int
+	}, V)
+
+	// Adding edges
+	adj[0] = append(adj[0], struct {
+		to     int
+		weight int
+	}{1, 9})
+	adj[1] = append(adj[1], struct {
+		to     int
+		weight int
+	}{0, 9})
+
+	// Function call to find shortest distances
+	ans := dijkstra(V, adj, S)
+
+	// Output
+	fmt.Print("The shortest distance of nodes from the source node is: ")
+	for i := 0; i < V; i++ {
+		fmt.Print(ans[i], " ")
+	}
+}
+</code></pre></div></div></div>
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O((V+E)*logV)</strong> (where V and E represent the number of nodes and edges of the graph) <br>
+    </p><ul>
+        <li>Each node is processed once in the set and deletion and insertion operation takes O(logV) time making it overall O(V*logV) in the worst case.</li>
+        <li>For each node, all its edges are relaxed. This operation involves updating the set, which takes O(logV) making it overall O(E*logV) for E edges in the worst case.</li>
+    </ul>
+<p></p>
+
+<p><strong>Space Complexity: O(V)</strong>  <br>
+</p><ul>
+    <li>The set will store distances to all nodes in worst case leading to O(V) space.</li>
+    <li>The distance array takes O(V) space.</li>
+</ul>
+<p></p>
+</body></html></div>
+<div class="section"><h2>Editorial: Time Complexity and In-Depth theory</h2>
+<h4>Why Min Heap is used instead of Queue data structure?</h4>
+<p>
+    Even if a Queue data structure is used, the shortest path can be found, but it will act like a brute force solution as all paths are explored, and out of them the shortest one is picked. <br><br>
+    On the other hand, using the Minimum Heap data structure ensures that the shortest path among all the paths is always explored first so that unnecessary iterations can be saved.
+</p>
+
+<!--- <h4>Derivation of Time Complexity of Dijkstra's algorithm:</h4>
+<img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/Image_1-UvIsaBZv">
+<img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Dijkstra's algorithm/Image_2-4uI7E1fk"> ---!></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>/* Define P as a shorthand 
+for the pair&lt;int, int&gt; type */
+#define P pair&lt;int,int&gt;
+
+class Solution {
+public:
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    vector &lt;int&gt; dijkstra(int V, vector&lt;vector&lt;int&gt;&gt; adj[], 
+                          int S) {
+                                
+        // Priority queue 
+        priority_queue &lt;P, vector&lt;P&gt;, greater&lt;P&gt;&gt; pq;
+        
+        // Distance array
+        vector&lt;int&gt; dist(V, 1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Add the source node to the priority queue
+        pq.push({0, S});
+        
+        // Until the priority queue is empty
+        while(!pq.empty()) {
+            
+            // Get the tentative distance
+            int dis = pq.top().first;
+            
+            // Get the node
+            int node = pq.top().second;
+            pq.pop();
+            
+            // Traverse all its neighbors
+            for(auto it : adj[node]) {
+                
+                int adjNode = it[0]; // node
+                int edgeWt = it[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if(dis + edgeWt &lt; dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Push the new pair in priority queue
+                    pq.push({dist[adjNode], adjNode});
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>// Minimum Priority Queue Implementation
+public class MinPriorityQueue
+{
+    private struct Element
+    {
+        public int Dist;
+        public int Node;
+        public Element(int dist, int node)
+        {
+            Dist = dist;
+            Node = node;
+        }
+    }
+
+    private List&lt;Element&gt; heap = new List&lt;Element&gt;();
+
+    // Insert a new element in the priority queue
+    public void Push(int dist, int node)
+    {
+        heap.Add(new Element(dist, node));
+        BubbleUp(heap.Count - 1);
+    }
+
+    /* Remove and return the element with the 
+       highest priority (smallest element) */
+    public (int dist, int node) Pop()
+    {
+        if (heap.Count == 1)
+        {
+            var single = heap[0];
+            heap.Clear();
+            return (single.Dist, single.Node);
+        }
+
+        var min = heap[0];
+        heap[0] = heap[heap.Count - 1];
+        heap.RemoveAt(heap.Count - 1);
+        BubbleDown(0);
+        return (min.Dist, min.Node);
+    }
+
+    // Get the element with the highest priority without removing it
+    public (int dist, int node) Peek()
+    {
+        var top = heap[0];
+        return (top.Dist, top.Node);
+    }
+
+    // Return true if the priority queue is empty
+    public bool IsEmpty()
+    {
+        return heap.Count == 0;
+    }
+
+    // Restore heap order after adding a new element
+    private void BubbleUp(int index)
+    {
+        var element = heap[index];
+        while (index &gt; 0)
+        {
+            int parentIndex = (index - 1) / 2;
+            var parent = heap[parentIndex];
+            if (element.Dist &gt;= parent.Dist) break;
+            heap[index] = parent;
+            index = parentIndex;
+        }
+        heap[index] = element;
+    }
+
+    // Restore heap order after removing an element
+    private void BubbleDown(int index)
+    {
+        int length = heap.Count;
+        var element = heap[index];
+        while (true)
+        {
+            int leftIndex = 2 * index + 1;
+            int rightIndex = 2 * index + 2;
+            int swapIndex = -1;
+
+            if (leftIndex &lt; length &amp;&amp;
+                heap[leftIndex].Dist &lt; element.Dist)
+            {
+                swapIndex = leftIndex;
+            }
+
+            if (rightIndex &lt; length &amp;&amp;
+                ((swapIndex == -1 &amp;&amp; heap[rightIndex].Dist &lt; element.Dist) ||
+                 (swapIndex != -1 &amp;&amp; heap[rightIndex].Dist &lt; heap[swapIndex].Dist)))
+            {
+                swapIndex = rightIndex;
+            }
+
+            if (swapIndex == -1) break;
+            heap[index] = heap[swapIndex];
+            index = swapIndex;
+        }
+        heap[index] = element;
+    }
+}
+
+public class Solution
+{
+    /* Function to find the shortest distance of all 
+       the vertices from the source vertex S. */
+    public int[] Dijkstra(int V, List&lt;List&lt;int[]&gt;&gt; adj, int S)
+    {
+        // Custom min-priority queue
+        var pq = new MinPriorityQueue();
+
+        // Distance array
+        const int INF = (int)1e9;
+        var dist = new int[V];
+        for (int i = 0; i &lt; V; i++)
+            dist[i] = INF;
+
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+
+        // Add the source node to the priority queue
+        pq.Push(0, S);
+
+        // Until the priority queue is empty
+        while (!pq.IsEmpty())
+        {
+            // Get the tentative distance
+            var top = pq.Pop();
+            int dis = top.dist;
+            int node = top.node;
+
+            // Traverse all its neighbors
+            foreach (var it in adj[node])
+            {
+                int adjNode = it[0]; // node
+                int edgeWt = it[1];  // edge weight
+
+                /* If the tentative distance to 
+                   reach adjacent node is smaller 
+                   than the known distance */
+                if (dis + edgeWt &lt; dist[adjNode])
+                {
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+
+                    // Push the new pair in priority queue
+                    pq.Push(dist[adjNode], adjNode);
+                }
+            }
+        }
+
+        // Return the result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;container/heap&quot;
+
+// Edge represents a node and its distance for the priority queue
+type Edge struct {
+	dist int
+	node int
+}
+
+// PriorityQueue implements heap.Interface (min-heap based on distance)
+type PriorityQueue []Edge
+
+func (pq PriorityQueue) Len() int           { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool { return pq[i].dist &lt; pq[j].dist }
+func (pq PriorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+
+func (pq *PriorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(Edge))
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[:n-1]
+	return item
+}
+
+// dijkstra function to find shortest distances from source S
+func dijkstra(V int, adj [][]struct{ to, weight int }, S int) []int {
+	dist := make([]int, V)
+	for i := range dist {
+		dist[i] = int(1e9) // same as C++ (1e9 represents infinity)
+	}
+	dist[S] = 0
+
+	pq := &amp;PriorityQueue{}
+	heap.Init(pq)
+	heap.Push(pq, Edge{dist: 0, node: S})
+
+	for pq.Len() &gt; 0 {
+		curr := heap.Pop(pq).(Edge)
+		d, u := curr.dist, curr.node
+
+		if d &gt; dist[u] {
+			continue
+		}
+
+		for _, edge := range adj[u] {
+			v, weight := edge.to, edge.weight
+			if d+weight &lt; dist[v] {
+				dist[v] = d + weight
+				heap.Push(pq, Edge{dist: dist[v], node: v})
+			}
+		}
+	}
+
+	return dist
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    public int[] dijkstra(int V, 
+        ArrayList&lt;ArrayList&lt;ArrayList&lt;Integer&gt;&gt;&gt; adj, int S) {
+        
+        // Priority queue
+        PriorityQueue&lt;int[]&gt; pq = new PriorityQueue&lt;&gt;(
+            Comparator.comparingInt(a -&gt; a[0])
+        );
+        
+        // Distance array
+        int[] dist = new int[V];
+        Arrays.fill(dist, (int) 1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Add the source node to the priority queue
+        pq.add(new int[]{0, S});
+        
+        // Until the priority queue is empty
+        while (!pq.isEmpty()) {
+            
+            // Get the tentative distance
+            int dis = pq.peek()[0];
+            
+            // Get the node
+            int node = pq.peek()[1];
+            pq.poll();
+            
+            // Traverse all its neighbors
+            for (ArrayList&lt;Integer&gt; it : adj.get(node)) {
+                
+                int adjNode = it.get(0); // node
+                int edgeWt = it.get(1); // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edgeWt &lt; dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Push the new pair in priority queue
+                    pq.add(new int[]{dist[adjNode], adjNode});
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class MinPriorityQueue {
+    constructor() {
+        this.heap = [];
+    }
+
+    // Insert a new element in the priority queue
+    push(element) {
+        this.heap.push(element);
+        this.bubbleUp(this.heap.length - 1);
+    }
+
+    /* Remove and return the element with the 
+    highest priority (smallest element) */
+    pop() {
+        if (this.heap.length === 1) return this.heap.pop();
+
+        const min = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown(0);
+
+        return min;
+    }
+
+    // Get the element with the highest priority without removing it
+    peek() {
+        return this.heap[0];
+    }
+
+    // Return true if the priority queue is empty */
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+
+    // Restore heap order after adding a new element
+    bubbleUp(index) {
+        const element = this.heap[index];
+        while (index &gt; 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            const parent = this.heap[parentIndex];
+            if (element[0] &gt;= parent[0]) break;
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+        this.heap[index] = element;
+    }
+
+    // Restore heap order after removing an element
+    bubbleDown(index) {
+        const length = this.heap.length;
+        const element = this.heap[index];
+
+        while (true) {
+            let leftIndex = 2 * index + 1;
+            let rightIndex = 2 * index + 2;
+            let swapIndex = null;
+
+            if (leftIndex &lt; length) {
+                if (this.heap[leftIndex][0] &lt; element[0]) {
+                    swapIndex = leftIndex;
+                }
+            }
+
+            if (rightIndex &lt; length) {
+                if (
+                    (swapIndex === null &amp;&amp; this.heap[rightIndex][0] &lt; element[0]) ||
+                    (swapIndex !== null &amp;&amp; this.heap[rightIndex][0] &lt; this.heap[swapIndex][0])
+                ) {
+                    swapIndex = rightIndex;
+                }
+            }
+
+            if (swapIndex === null) break;
+            this.heap[index] = this.heap[swapIndex];
+            index = swapIndex;
+        }
+        this.heap[index] = element;
+    }
+}
+
+class Solution {
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    dijkstra(V, adj, S) {
+        // Custom min-priority queue
+        let pq = new MinPriorityQueue();
+        
+        // Distance array
+        let dist = new Array(V).fill(1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Add the source node to the priority queue
+        pq.push([0, S]);
+        
+        // Until the priority queue is empty
+        while (!pq.isEmpty()) {
+            // Get the tentative distance
+            let [dis, node] = pq.pop();
+            
+            // Traverse all its neighbors
+            for (let it of adj[node]) {
+                let adjNode = it[0]; // node
+                let edgeWt = it[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edgeWt &lt; dist[adjNode]) {
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Push the new pair in priority queue
+                    pq.push([dist[adjNode], adjNode]);
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the shortest distance of all
+    # the vertices from the source vertex S.
+    def dijkstra(self, V, adj, S):
+        
+        # Priority queue
+        pq = []
+        
+        # Distance array
+        dist = [int(1e9)] * V
+        
+        # Distance of source node from itself is 0
+        dist[S] = 0
+        
+        # Add the source node to the priority queue
+        heapq.heappush(pq, (0, S))
+        
+        # Until the priority queue is empty
+        while pq:
+            
+            # Get the tentative distance
+            dis, node = heapq.heappop(pq)
+            
+            # Traverse all its neighbors
+            for adjNode, edgeWt in adj[node]:
+                
+                # If the tentative distance to reach adjacent node
+                # is smaller than the known distance
+                if dis + edgeWt &lt; dist[adjNode]:
+                    
+                    # Update the known distance
+                    dist[adjNode] = dis + edgeWt
+                    
+                    # Push the new pair in priority queue
+                    heapq.heappush(pq, (dist[adjNode], adjNode))
+        
+        # Return the result
+        return dist</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to find the shortest distance of all 
+    the vertices from the source vertex S. */
+    vector &lt;int&gt; dijkstra(int V, vector&lt;vector&lt;int&gt;&gt; adj[], 
+                         int S) {
+                             
+        // Set to store {dist, node}
+        set &lt;pair&lt;int,int&gt;&gt; st;
+        
+        // Distance array 
+        vector&lt;int&gt; dist(V, 1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Adding the source node to set
+        st.insert({0, S});
+        
+        // Until the set is empty
+        while(!st.empty()) {
+            
+            // Get the distance
+            int dis = st.begin()-&gt;first;
+            
+            // Get the node
+            int node = st.begin()-&gt;second;
+            st.erase(st.begin());
+            
+            // Traverse all its neighbors
+            for(auto it : adj[node]) {
+                int adjNode = it[0]; // node
+                int edgeWt = it[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if(dis + edgeWt &lt; dist[adjNode]) {
+                    
+                    /* If another longer known distance 
+                    is found, erase it from the set */
+                    if(dist[adjNode] != 1e9) 
+                        st.erase({dist[adjNode] , adjNode});
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Add the new pair to the set
+                    st.insert({dist[adjNode] , adjNode});
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the shortest distance of all 
+     the vertices from the source vertex S. */
+    public int[] Dijkstra(int V, List&lt;List&lt;int[]&gt;&gt; adj, int S)
+    {
+        // Set to store {dist, node}
+        // Using SortedSet to mimic min-priority queue behavior
+        SortedSet&lt;Tuple&lt;int, int&gt;&gt; st = new SortedSet&lt;Tuple&lt;int, int&gt;&gt;();
+        
+        // Distance array 
+        const int INF = (int)1e9;
+        int[] dist = new int[V];
+        for (int i = 0; i &lt; V; i++)
+        {
+            dist[i] = INF;
+        }
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Adding the source node to set
+        st.Add(Tuple.Create(0, S));
+        
+        // Until the set is empty
+        while (st.Any())
+        {
+            // Get the distance
+            Tuple&lt;int, int&gt; current = st.Min;
+            st.Remove(current);
+            
+            int dis = current.Item1;
+            int node = current.Item2;
+            
+            // Traverse all its neighbors
+            foreach (int[] it in adj[node])
+            {
+                int adjNode = it[0]; // node
+                int edgeWt = it[1]; // edge weight
+                
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edgeWt &lt; dist[adjNode])
+                {
+                    // If another longer known distance 
+                    // is found, erase it from the set
+                    if (dist[adjNode] != int.MaxValue)
+                        st.Remove(Tuple.Create(dist[adjNode], adjNode));
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Add the new pair to the set
+                    st.Add(Tuple.Create(dist[adjNode], adjNode));
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;container/heap&quot;
+
+const INF = 1_000_000_000 
+
+// Edge represents a node and its distance, used in the priority queue.
+type Edge struct {
+	dist int
+	node int
+}
+
+// PriorityQueue implements heap.Interface and holds Edges (Min-Heap).
+type PriorityQueue []Edge
+
+func (pq PriorityQueue) Len() int           { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool { return pq[i].dist &lt; pq[j].dist }
+func (pq PriorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+
+func (pq *PriorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(Edge))
+}
+
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[:n-1]
+	return item
+}
+
+/* Function to find the shortest distance of all
+the vertices from the source vertex S. */
+func dijkstra(V int, adj [][]struct{ to, weight int }, S int) []int {
+	// Distance array
+	dist := make([]int, V)
+	for i := range dist {
+		dist[i] = INF
+	}
+
+	// Distance of source node from itself is 0
+	dist[S] = 0
+
+	// Min-heap to mimic set behavior {dist, node}
+	pq := &amp;PriorityQueue{}
+	heap.Init(pq)
+	heap.Push(pq, Edge{dist: 0, node: S})
+
+	// Until the priority queue is empty
+	for pq.Len() &gt; 0 {
+		// Get the distance and node
+		curr := heap.Pop(pq).(Edge)
+		dis := curr.dist
+		node := curr.node
+
+		// Skip if already found a better distance
+		if dis &gt; dist[node] {
+			continue
+		}
+
+		// Traverse all its neighbors
+		for _, edge := range adj[node] {
+			adjNode := edge.to
+			edgeWt := edge.weight
+
+			/* If the tentative distance to
+			reach adjacent node is smaller
+			than the known distance */
+			if dis+edgeWt &lt; dist[adjNode] {
+				// Update the known distance
+				dist[adjNode] = dis + edgeWt
+
+				// Push the new pair to the priority queue
+				heap.Push(pq, Edge{dist: dist[adjNode], node: adjNode})
+			}
+		}
+	}
+
+	// Return the result
+	return dist
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+public int[] dijkstra(int V, ArrayList&lt;ArrayList&lt;ArrayList&lt;Integer&gt;&gt;&gt; adj, int S) {
+        
+    // TreeSet to store {dist, node}
+    TreeSet&lt;int[]&gt; set = new TreeSet&lt;&gt;((a, b) -&gt; {
+        if (a[0] != b[0]) return Integer.compare(a[0], b[0]); // Compare by distance
+        return Integer.compare(a[1], b[1]); // If distances are equal, compare by node
+    });
+    
+    // Distance array 
+    int[] dist = new int[V];
+    Arrays.fill(dist, (int)1e9);
+    
+    // Distance of source node from itself is 0
+    dist[S] = 0;
+    
+    // Adding the source node to the set
+    set.add(new int[]{0, S});
+    
+    // Until the set is empty
+    while (!set.isEmpty()) {
+        
+        // Get the pair with the smallest distance
+        int[] current = set.pollFirst();
+        int dis = current[0];
+        int node = current[1];
+        
+        // Traverse all its neighbors
+        for (ArrayList&lt;Integer&gt; neighbor : adj.get(node)) {
+            int adjNode = neighbor.get(0); // adjacent node
+            int edgeWt = neighbor.get(1); // edge weight
+            
+            /* If the tentative distance to 
+            reach adjacent node is smaller 
+            than the known distance */
+            if (dis + edgeWt &lt; dist[adjNode]) {
+                
+                /* If another longer known distance 
+                is found, erase it from the set */
+                set.remove(new int[]{dist[adjNode], adjNode});
+                
+                // Update the known distance
+                dist[adjNode] = dis + edgeWt;
+                
+                // Add the new pair to the set
+                set.add(new int[]{dist[adjNode], adjNode});
+            }
+        }
+    }
+    
+    // Return the result
+    return dist;
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+
+    /* Function to find the shortest distance of all 
+     the vertices from the source vertex S. */
+    dijkstra(V, adj, S) {
+
+        // Set to store {dist, node}
+        let st = new Set();
+        
+        // Distance array 
+        let dist = Array(V).fill(1e9);
+        
+        // Distance of source node from itself is 0
+        dist[S] = 0;
+        
+        // Adding the source node to set
+        st.add([0, S]);
+        
+        // Until the set is empty
+        while (st.size) {
+            
+            // Get the distance
+            let [dis, node] = [...st][0];
+            st.delete([...st][0]);
+            
+            // Traverse all its neighbors
+            for (let it of adj[node]) {
+                let adjNode = it[0]; // node
+                let edgeWt = it[1]; // edge weight
+                
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edgeWt &lt; dist[adjNode]) {
+                    
+                    // If another longer known distance 
+                    // is found, erase it from the set
+                    if (dist[adjNode] !== Infinity)
+                        st.delete([dist[adjNode], adjNode]);
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edgeWt;
+                    
+                    // Add the new pair to the set
+                    st.add([dist[adjNode], adjNode]);
+                }
+            }
+        }
+        
+        // Return the result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    
+    # Function to find the shortest distance of all 
+    # the vertices from the source vertex S.
+    def dijkstra(self, V, adj, S):
+        
+        # Min-heap to store {dist, node}
+        st = []
+        
+        # Distance array 
+        dist = [int(1e9)] * V
+        
+        # Distance of source node from itself is 0
+        dist[S] = 0
+        
+        # Adding the source node to heap
+        heapq.heappush(st, (0, S))
+        
+        # Until the heap is empty
+        while st:
+            # Get the distance
+            dis, node = heapq.heappop(st)
+            
+            # Traverse all its neighbors
+            for it in adj[node]:
+                adjNode, edgeWt = it # node, edge weight
+                
+                # If the tentative distance to 
+                # reach adjacent node is smaller 
+                # than the known distance
+                if dis + edgeWt &lt; dist[adjNode]:
+                    # Update the known distance
+                    dist[adjNode] = dis + edgeWt
+                    
+                    # Add the new pair to the heap
+                    heapq.heappush(st, (dist[adjNode], adjNode))
+        
+        # Return the result
+        return dist</code></pre></div>
+</body>
+</html>

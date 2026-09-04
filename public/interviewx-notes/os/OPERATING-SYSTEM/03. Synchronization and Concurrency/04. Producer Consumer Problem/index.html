@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Producer Consumer Problem</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Producer Consumer Problem</h1>
+<div class="meta">
+  <span class="badge difficulty-"></span>
+  <span class="badge">theory</span>
+</div>
+
+<div class="section">
+<h2>Problem Statement</h2>
+
+</div>
+
+
+
+<div class="section"><h2>Editorial: C++</h2><h2>Introduction</h2>
+
+    In concurrent programming, one of the most classic problems used to explain synchronization is the <b>Producer-Consumer Problem</b>. It represents a scenario where two types of threads - producers and consumers - share a common, finite-size buffer. The producer's job is to generate data and place it into the buffer, while the consumer's job is to remove data from the buffer for processing. <br><br>
+    
+    This problem helps illustrate the challenges of coordinating threads, avoiding race conditions, and ensuring thread-safe communication between processes. <br><br>
+<hr>
+
+<h2>The Producer-Consumer Problem</h2>
+
+    The <b>Producer-Consumer Problem</b>, also known as the <b>Bounded Buffer Problem</b>, is a classic example of a <b>multi-process synchronization</b> issue. It revolves around coordinating two types of threads:
+    <ul>
+        <li><strong>Producers: </strong>which generate data and add it to a shared buffer.</li>
+        <li><strong>Consumers: </strong>which take data from the buffer and process it.</li>
+    </ul>
+
+    <h4>Challenge</h4>
+    The core challenge lies in ensuring that producers don't add data when the buffer is full, and consumers don't try to remove data when the buffer is empty - all while avoiding race conditions and ensuring mutual exclusion and proper coordination between threads. <br><br>
+
+    This problem is a <b>synchronization construct</b> that ensures:
+    <ul>
+        <li><strong>Mutual Exclusion:</strong> Only one thread can access the shared buffer (critical section) at a time.</li>
+        <li><strong>Wait-Notify Coordination:</strong> Producers wait when the buffer is full; consumers wait when it's empty. Threads notify each other when buffer states change.</li>
+    </ul>
+
+    <h4>Real-Life Analogies</h4>
+    <ul>
+        <li><strong>Washroom with One Key: </strong>Think of a washroom with a single key. Only one person can enter at a time (mutual exclusion). If it’s occupied, others must wait outside (wait-notify mechanism).
+        </li>
+        <li><strong>Coffee Machine: </strong>A <b>coffee machine</b> acts as a producer that brews coffee. The <b>customer</b> is the consumer who drinks it. The machine shouldn't brew more if the cup is already full, and the customer must wait if there's no coffee - a perfect reflection of the coordination needed. 
+        </li>
+    </ul>
+
+
+<br>
+<hr>
+
+<h2>Solution</h2>
+
+    In this <b>Producer-Consumer Problem</b>, the major challenge is coordination - ensuring the producer doesn't add items to a full buffer and the consumer doesn't try to consume from an empty one. This is where C++ condition variables and mutexes come into play. 
+
+    <h4><code>wait()</code> and <code>notify_one()</code> style coordination</h4>
+    These tools provide a <b>built-in signaling mechanism</b> to safely pause and resume threads based on the shared resource's state:
+    <ul>
+        <li><strong>wait(): </strong>Causes the current thread to pause <b>and release the lock</b> until another thread signals it using <strong>notify_one()</strong>.</li>
+        <li><strong>notify_one(): </strong>Wakes up one waiting thread so it can try to re-acquire the lock and proceed.</li>
+    </ul> <br>
+    Together, they eliminate the need for <b>busy waiting</b>, reduce CPU usage, and help implement the <b>wait-notify coordination</b> pattern - a fundamental synchronization requirement in the producer-consumer scenario.
+
+    <h4>Example Code</h4>
+    Let's now walk through a simple example where the buffer holds just one item: a cup of coffee. <br>
+
+    <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">C++</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Shared resource: CoffeeMachine acts as a buffer of size 1
+class CoffeeMachine {
+    // Flag to indicate buffer status: true -> coffee ready, false -> cup empty
+    bool isCoffeeReady = false;
+    mutex mtx;
+    condition_variable cv;
+
+public:
+    // Method to be run by the producer thread
+    void makeCoffee() {
+        unique_lock<mutex> lock(mtx);
+
+        // If coffee is already ready, producer must wait (buffer is full)
+        while (isCoffeeReady) {
+            cv.wait(lock);
+        }
+
+        // Simulate coffee preparation
+        cout << "Brewing coffee...\n";
+        lock.unlock();
+        this_thread::sleep_for(chrono::milliseconds(1000));
+        lock.lock();
+
+        // Set the buffer to full (coffee is now ready)
+        isCoffeeReady = true;
+        cout << "Coffee ready!\n";
+
+        // Notify the consumer thread that coffee is available
+        cv.notify_one();
+    }
+
+    // Method to be run by the consumer thread
+    void drinkCoffee() {
+        unique_lock<mutex> lock(mtx);
+
+        // If no coffee is available, consumer must wait (buffer is empty)
+        while (!isCoffeeReady) {
+            cv.wait(lock);
+        }
+
+        // Simulate coffee consumption
+        cout << "Drinking coffee...\n";
+        lock.unlock();
+        this_thread::sleep_for(chrono::milliseconds(1000));
+        lock.lock();
+
+        // Set the buffer to empty (coffee has been consumed)
+        isCoffeeReady = false;
+        cout << "Cup emptied - brew next!\n";
+
+        // Notify the producer thread that it can brew again
+        cv.notify_one();
+    }
+};
+
+// Driver class
+int main() {
+    // Shared CoffeeMachine object acts as the synchronized monitor
+    CoffeeMachine machine;
+
+    // Producer thread that continuously makes coffee
+    thread producer([&]() {
+        while (true) {
+            machine.makeCoffee();
+        }
+    });
+
+    // Consumer thread that continuously drinks coffee
+    thread consumer([&]() {
+        while (true) {
+            machine.drinkCoffee();
+        }
+    });
+
+    // Start both threads
+    producer.join();
+    consumer.join();
+
+    return 0;
+}
+</code></pre></div></div></div>
+
+    <h4>How <code>wait()</code> and <code>notify_one()</code> Work Together?</h4>
+    <ul>
+        <li><strong>Initial State:</strong>
+            <ul>
+                <li>The buffer (<b><code>isCoffeeReady</code></b>) is <b>false</b> - no coffee yet.</li>
+                <li>The <b>producer thread</b> enters <b><code>makeCoffee()</code></b> and proceeds to brew coffee.</li>
+                <li>The <b>consumer thread</b> enters <b><code>drinkCoffee()</code></b> but sees no coffee, so it goes to wait and sleeps</li>
+            </ul>
+        </li>
+        <li><strong>Producer Brews Coffee:</strong>
+            <ul>
+                <li>After brewing, it sets <b><code>isCoffeeReady = true</code></b>.</li>
+                <li>It then calls <b><code>notify_one()</code></b> to <b>wake up the waiting consumer</b>.</li>
+                <li>The producer thread loops back but now finds coffee still present, so it waits.</li>
+            </ul>
+        </li>
+        <li><strong>Consumer Wakes Up and Drinks Coffee:</strong>
+            <ul>
+                <li>The consumer, upon waking, sees that the coffee is ready.</li>
+                <li>It drinks the coffee and sets <b><code>isCoffeeReady = false</code></b>.</li>
+                <li>It then calls <b><code>notify_one()</code></b> to <b>wake up the producer</b>.</li>
+            </ul>
+        </li>
+        <li><strong>Cycle Repeats:</strong>
+            <ul>
+                <li>The producer wakes up and sees that coffee has been consumed.</li>
+                <li>It brews another cup, and the entire cycle continues.</li>
+            </ul>
+        </li>
+    </ul> <br>
+    Both methods use the same mutex, so only one thread can access the shared state at any time (mutual exclusion).
+
+
+    <h4>Key Methods Explained</h4>
+    <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>What Actually Happens</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td><b><code>cv.wait(lock)</code></b></td>
+        <td>Voluntarily releases the lock and suspends the current thread</td>
+        <td>
+            The thread goes into a waiting state.<br>
+            It pauses execution and releases the mutex.<br>
+            It will resume only when another thread calls <b><code>notify_one()</code></b> or <b><code>notify_all()</code></b> on the same condition variable.
+        </td>
+        </tr>
+        <tr>
+        <td><b><code>cv.notify_one()</code></b></td>
+        <td>Wakes one thread that is waiting on the same condition variable</td>
+        <td>
+            One waiting thread wakes up.<br>
+            It competes to reacquire the lock before it can continue executing.
+        </td>
+        </tr>
+    </tbody>
+    </table> <br>
+
+    Note that the <strong><code>while loop</code></strong> in the <b><code>makeCoffee()</code></b> and <b><code>drinkCoffee()</code></b> methods protects against spurious wake-ups and re-checks condition after every resume.
+
+
+    <h4>Key Takeaways</h4>
+    <ul>
+        <li><b>Single-slot buffer: </b>Setting <b><code>isCoffeeReady</code></b> acts as the entire queue; the flag prevents over-production or over-consumption.</li>
+        <li><b>Mutex + condition variable: </b>The shared state is protected by a mutex, giving us mutual exclusion.</li>
+        <li><b>Condition signalling: </b><b><code>wait()</code></b> + <b><code>notify_one()</code></b> form a lightweight condition-variable mechanism; they let threads sleep without busy-waiting.</li>
+        <li><b>Always loop around </b><b><code>wait()</code></b> to guard against spurious wake-ups and to re-validate the buffer’s state.</li>
+        <li><b>Scalable pattern: </b>Replace the boolean with a <b><code>queue<T></code></b> and size checks to move from tiny to bounded-buffer implementations.</li>
+    </ul>
+
+<br>
+<hr>
+
+<h2>Handling Fast Producer and Slow Consumer (TUF+ Judge Example)</h2>
+
+    Previously, we studied a solution with a <b>one-slot buffer</b>, where the producer (coffee machine) and the consumer (customer) worked in perfect alternation - one producing, the other consuming. But real-world systems often face <b>imbalance in processing speeds</b>. <br><br>
+
+    Imagine a scenario in <b>TUF+</b>, where the <b>submission judge</b> (consumer) takes longer to process each code submission than the time it takes for users (producers) to submit them. If we still used a single-slot buffer, submissions would frequently get blocked or lost due to the judge being busy.
+
+    <h4>The Problem</h4>
+    In this case:
+    <ul>
+        <li><b>Producers (users)</b> submit solutions rapidly.</li>
+        <li><b>Consumer (judge system)</b> takes time to compile, run, and verify each solution.</li>
+        <li>If the buffer can hold only one submission, the producer has to wait too frequently - leading to poor performance and wasted CPU cycles.</li>
+    </ul>
+
+    <h4>The Solution</h4>
+    To fix this, we use a <b>buffered queue</b> (like <b><code>queue<Submission> submissions;</code></b>) that can store <b>multiple submissions at once</b>. This allows:
+    <ul>
+        <li><b>Producers to keep submitting</b> even when the consumer is busy.</li>
+        <li><b>Consumers to process submissions at their own pace</b>, pulling from the buffer.</li>
+    </ul> <br>
+    This change models how real-world systems like TUF+ handle bursty traffic and slower backend processing.
+
+    <h4>Code</h4>
+    <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">C++</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Represents a code submission by a user
+class Submission {
+    static int idCounter;
+    int submissionId;
+    string userName;
+
+public:
+    Submission(const string& userName) {
+        this->userName = userName;
+        this->submissionId = idCounter++;
+    }
+
+    int getSubmissionId() const {
+        return submissionId;
+    }
+
+    string getUserName() const {
+        return userName;
+    }
+};
+
+int Submission::idCounter = 1;
+
+// Shared resource between producers (users) and consumers (judges)
+class SubmissionQueue {
+    queue<Submission> queueData;
+    const int MAX_CAPACITY = 5;
+    mutex mtx;
+    condition_variable cv;
+
+public:
+    // Producer logic: User submits a solution
+    void submit(const Submission& submission) {
+        unique_lock<mutex> lock(mtx);
+
+        // If queue is full, producer waits
+        while ((int)queueData.size() == MAX_CAPACITY) {
+            cout << "Queue full. " << submission.getUserName() << " is waiting to submit.\n";
+            cv.wait(lock);
+        }
+
+        // Add submission to the queue
+        queueData.push(submission);
+        cout << submission.getUserName() << " submitted code: #" << submission.getSubmissionId() << "\n";
+
+        cv.notify_all();
+    }
+
+    // Consumer logic: Judge processes a submission
+    Submission consume(const string& judgeName) {
+        unique_lock<mutex> lock(mtx);
+
+        // If queue is empty, consumer waits
+        while (queueData.empty()) {
+            cout << judgeName << " waiting for submissions...\n";
+            cv.wait(lock);
+        }
+
+        // Remove a submission from the queue
+        Submission sub = queueData.front();
+        queueData.pop();
+
+        cout << judgeName << " started evaluating submission #"
+             << sub.getSubmissionId() << " from " << sub.getUserName() << "\n";
+
+        cv.notify_all();
+        return sub;
+    }
+};
+</code></pre></div></div></div>
+
+    <h4>Understanding Key Methods</h4>
+    <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>Behavior</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td><b><code>cv.wait(lock)</code></b></td>
+        <td>Pause the current thread and release the lock</td>
+        <td>Thread enters a waiting state and resumes only when another thread calls <code>notify_one()</code> / <code>notify_all()</code> on the same condition variable</td>
+        </tr>
+        <tr>
+        <td><b><code>cv.notify_all()</code></b></td>
+        <td>Wake all threads waiting on the same condition variable</td>
+        <td>All waiting threads wake up; the first to reacquire the lock continues execution</td>
+        </tr>
+        <tr>
+        <td><b><code>queueData.push()</code></b></td>
+        <td>Add a submission to the buffer (if space exists)</td>
+        <td>Called by producers to enqueue a new task</td>
+        </tr>
+        <tr>
+        <td><b><code>queueData.pop()</code></b></td>
+        <td>Remove a submission from the front of the buffer</td>
+        <td>Called by consumers to dequeue and process a task</td>
+        </tr>
+    </tbody>
+    </table>
+
+
+    <h4>Key Takeaways</h4>
+    <ul>
+        <li><strong>Buffered Queue: </strong>We now use a queue of size 5 to hold multiple submissions - unlike the previous one-slot version.</li> 
+
+        <li><strong>Fast Producers, Slow Consumers: </strong>Producers don’t have to wait unless the buffer is full. These model systems like TUF+ where many users submit rapidly, but judges can evaluate only one at a time.</li>
+        
+        <li><strong><code>notify_all()</code> vs <code>notify_one()</code>: </strong><b><code>notify_all()</code></b> is used because multiple threads (many users or multiple judges) might be waiting - all should get a chance.</li>
+        
+        <li><strong>Thread Coordination: </strong>Both producer and consumer use <b><code>wait()</code></b>-<b><code>notify_all()</code></b> mechanism to signal when the buffer is full or empty.</li>
+        
+        <li><strong>Thread Safety: </strong>All shared state is accessed inside the critical section to maintain consistency.</li>
+    </ul>
+
+<br>
+<hr>
+
+<h2>Conclusion</h2>
+
+    The Producer-Consumer problem is a foundational concept in multithreading that teaches us how to manage coordination between threads effectively. By moving from a one-slot buffer to a bounded queue, we modeled a real-world scenario like the TUF+ judge system, where producers can be faster than consumers. Using condition variables and notifications ensures smooth synchronization, prevents data loss, and maintains thread safety - all essential for building reliable concurrent applications.</div>
+<div class="section"><h2>Editorial: Java</h2><h2>Introduction</h2>
+
+    In concurrent programming, one of the most classic problems used to explain synchronization is the <b>Producer-Consumer Problem</b>. It represents a scenario where two types of threads — producers and consumers — share a common, finite-size buffer. The producer's job is to generate data and place it into the buffer, while the consumer's job is to remove data from the buffer for processing. <br><br>
+    
+    This problem helps illustrate the challenges of coordinating threads, avoiding race conditions, and ensuring thread-safe communication between processes. <br><br>
+<hr>
+
+<h2>The Producer-Consumer Problem</h2>
+
+    The <b>Producer-Consumer Problem</b>, also known as the <b>Bounded Buffer Problem</b>, is a classic example of a <b>multi-process synchronization</b> issue. It revolves around coordinating two types of threads:
+    <ul>
+        <li><strong>Producers: </strong>which generate data and add it to a shared buffer.</li>
+        <li><strong>Consumers: </strong>which take data from the buffer and process it.</li>
+    </ul>
+
+    <h4>Challenge</h4>
+    The core challenge lies in ensuring that producers don't add data when the buffer is full, and consumers don't try to remove data when the buffer is empty — all while avoiding race conditions and ensuring mutual exclusion and proper coordination between threads. <br><br>
+
+    This problem is a <b>synchronization construct</b> that ensures:
+    <ul>
+        <li><strong>Mutual Exclusion:</strong> Only one thread can access the shared buffer (critical section) at a time.</li>
+        <li><strong>Wait-Notify Coordination:</strong> Producers wait when the buffer is full; consumers wait when it's empty. Threads notify each other when buffer states change.</li>
+    </ul>
+
+    <h4>Real-Life Analogies</h4>
+    <ul>
+        <li><strong>Washroom with One Key: </strong>Think of a washroom with a single key. Only one person can enter at a time (mutual exclusion). If it’s occupied, others must wait outside (wait-notify mechanism).
+        </li>
+        <li><strong>Coffee Machine: </strong>A <b>coffee machine</b> acts as a producer that brews coffee. The <b>customer</b> is the consumer who drinks it. The machine shouldn't brew more if the cup is already full, and the customer must wait if there's no coffee — a perfect reflection of the coordination needed. 
+        </li>
+    </ul>
+
+
+<br>
+<hr>
+
+<h2>Solution</h2>
+
+    In this <b>Producer-Consumer Problem</b>, the major challenge is coordination — ensuring the producer doesn't add items to a full buffer and the consumer doesn't try to consume from an empty one. This is where Java's <strong><code>wait()</code></strong> and <strong><code>notify()</code></strong> methods come into play. 
+
+    <h4><code>wait()</code> and <code>notify()</code> methods</h4>
+    These two methods provide a <b>built-in signaling mechanism</b> to safely pause and resume threads based on the shared resource's state:
+    <ul>
+        <li><strong>wait(): </strong>Causes the current thread to pause <b>and release the lock</b> until another thread signals it using <strong>notify()</strong>.</li>
+        <li><strong>notify(): </strong>Wakes up one waiting thread so it can try to re-acquire the lock and proceed.</li>
+    </ul> <br>
+    Together, they eliminate the need for <b>busy waiting</b>, reduce CPU usage, and help implement the <b>wait-notify coordination</b> pattern — a fundamental synchronization requirement in the producer-consumer scenario.
+
+    <h4>Example Code</h4>
+    Let's now walk through a simple example where the buffer holds just one item: a cup of coffee. <br>
+
+    <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="java">Java</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.LinkedList;
+import java.util.Queue;
+
+// Shared resource: CoffeeMachine acts as a buffer of size 1
+class CoffeeMachine {
+    // Flag to indicate buffer status: true → coffee ready, false → cup empty
+    private boolean isCoffeeReady = false;
+
+    // Method to be run by the producer thread
+    public synchronized void makeCoffee() throws InterruptedException {
+        // If coffee is already ready, producer must wait (buffer is full)
+        while (isCoffeeReady) {
+            // Releases lock and waits until notified by consumer
+            wait();
+        }
+
+        // Simulate coffee preparation
+        System.out.println("Brewing coffee…");
+        Thread.sleep(1000); // Simulate time to make coffee
+
+        // Set the buffer to full (coffee is now ready)
+        isCoffeeReady = true;
+        System.out.println("Coffee ready!");
+
+        // Notify the consumer thread that coffee is available
+        notify();
+    }
+
+    // Method to be run by the consumer thread
+    public synchronized void drinkCoffee() throws InterruptedException {
+        // If no coffee is available, consumer must wait (buffer is empty)
+        while (!isCoffeeReady) {
+            // Releases lock and waits until notified by producer
+            wait();
+        }
+
+        // Simulate coffee consumption
+        System.out.println("Drinking coffee…");
+        Thread.sleep(1000); // Simulate time to drink coffee
+
+        // Set the buffer to empty (coffee has been consumed)
+        isCoffeeReady = false;
+        System.out.println("Cup emptied - brew next!");
+
+        // Notify the producer thread that it can brew again
+        notify();
+    }
+}
+
+// Driver class
+class ProducerConsumerProblem {
+    public static void main(String[] args) {
+        // Shared CoffeeMachine object acts as the synchronized monitor
+        CoffeeMachine machine = new CoffeeMachine();
+
+        // Producer thread that continuously makes coffee
+        Thread producer = new Thread(() -> {
+            while (true) {
+                try {
+                    machine.makeCoffee(); // Try to produce coffee
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // Consumer thread that continuously drinks coffee
+        Thread consumer = new Thread(() -> {
+            while (true) {
+                try {
+                    machine.drinkCoffee(); // Try to consume coffee
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // Start both threads
+        producer.start();
+        consumer.start();
+    }
+}
+</code></pre></div></div></div>
+
+    <h4>How <code>wait()</code> and <code>notify()</code> Work Together?</h4>
+    <ul>
+        <li><strong>Initial State:</strong>
+            <ul>
+                <li>The buffer (<b><code>isCoffeeReady</code></b>) is <b>false</b> — no coffee yet.</li>
+                <li>The <b>producer thread</b> enters <b><code>makeCoffee()</code></b> and proceeds to brew coffee.</li>
+                <li>The <b>consumer thread</b> enters <b><code>drinkCoffee()</code></b> but sees no coffee, so it goes to <b><code>wait()</code></b> and sleeps</li>
+            </ul>
+        </li>
+        <li><strong>Producer Brews Coffee:</strong>
+            <ul>
+                <li>After brewing (<b><code>Thread.sleep(1000)</code></b>), it sets <b><code>isCoffeeReady = true</code></b>.</li>
+                <li>It then calls <b><code>notify()</code></b> to <b>wake up the waiting consumer</b>.</li>
+                <li>The producer thread loops back but now finds coffee still present, so it goes into <b><code>wait()</code></b>.</li>
+            </ul>
+        </li>
+        <li><strong>Consumer Wakes Up and Drinks Coffee:</strong>
+            <ul>
+                <li>The consumer, upon waking, sees that the coffee is ready.</li>
+                <li>It drinks the coffee and sets <b><code>isCoffeeReady = false</code></b>.</li>
+                <li>It then calls <b><code>notify()</code></b> to <b>wake up the producer</b>.</li>
+            </ul>
+        </li>
+        <li><strong>Cycle Repeats:</strong>
+            <ul>
+                <li>The producer wakes up and sees that coffee has been consumed.</li>
+                <li>It brews another cup, and the entire cycle continues.</li>
+            </ul>
+        </li>
+    </ul> <br>
+    Both methods are <b><code>synchronized</code></b>, so only one thread can run inside them at any time (mutual exclusion).
+
+
+    <h4>Key Methods Explained</h4>
+    <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>What Actually Happens</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td><b><code>wait()</code></b></td>
+        <td>Voluntarily releases the intrinsic lock and suspends the current thread</td>
+        <td>
+            The thread goes into the <strong>WAITING</strong> state.<br>
+            It pauses execution and releases the object's monitor.<br>
+            It will resume only when another thread calls <b><code>notify()</code></b> or <b><code>notifyAll()</code></b> on the same object.
+        </td>
+        </tr>
+        <tr>
+        <td><b><code>notify()</code></b></td>
+        <td>Wakes one thread that is waiting on the same object's monitor</td>
+        <td>
+            A random waiting thread moves from <strong>WAITING</strong> to <strong>BLOCKED</strong> state.<br>
+            It competes to reacquire the object's lock before it can continue executing.
+        </td>
+        </tr>
+    </tbody>
+    </table> <br>
+
+    Note that the <strong><code>while loop</code></strong> in the <b><code>makeCoffee()</code></b> and <b><code>drinkCoffee()</code></b> methods protects against spurious wake-ups and re-checks condition after every resume.
+
+
+    <h4>Key Takeaways</h4>
+    <ul>
+        <li><b>Single-slot buffer: </b>Setting <b><code>isCoffeeReady</code></b> acts as the entire queue; the flag prevents over-production or over-consumption.</li>
+        <li><b>Intrinsic lock: </b>Declaring both methods <b><code>synchronized</code></b> gives us mutual exclusion for free.</li>
+        <li><b>Condition signalling: </b><b><code>wait()</code></b> + <b><code>notify()</code></b> form a lightweight, built-in condition-variable mechanism; they let threads sleep without busy-waiting.</li>
+        <li><b>Always loop around </b><b><code>wait()</code></b> to guard against spurious wake-ups and to re-validate the buffer’s state.</li>
+        <li><b>Scalable pattern: </b>Replace the boolean with a <b><code>Queue<T></code></b> and size checks to move from “tiny” to “bounded-buffer” implementations.</li>
+    </ul>
+
+<br>
+<hr>
+
+<h2>Handling Fast Producer and Slow Consumer (TUF+ Judge Example)</h2>
+
+    Previously, we studied a solution with a <b>one-slot buffer</b>, where the producer (coffee machine) and the consumer (customer) worked in perfect alternation — one producing, the other consuming. But real-world systems often face <b>imbalance in processing speeds</b>. <br><br>
+
+    Imagine a scenario in <b>TUF+</b>, where the <b>submission judge</b> (consumer) takes longer to process each code submission than the time it takes for users (producers) to submit them. If we still used a single-slot buffer, submissions would frequently get blocked or lost due to the judge being busy.
+
+    <h4>The Problem</h4>
+    In this case:
+    <ul>
+        <li><b>Producers (users)</b> submit solutions rapidly.</li>
+        <li><b>Consumer (judge system)</b> takes time to compile, run, and verify each solution.</li>
+        <li>If the buffer can hold only one submission, the producer has to wait too frequently — leading to poor performance and wasted CPU cycles.</li>
+    </ul>
+
+    <h4>The Solution</h4>
+    To fix this, we use a <b>buffered queue</b> (like <b><code>Queue<String> submissions = new LinkedList<>();</code></b>) that can store <b>multiple submissions at once</b>. This allows:
+    <ul>
+        <li><b>Producers to keep submitting</b> even when the consumer is busy.</li>
+        <li><b>Consumers to process submissions at their own pace</b>, pulling from the buffer.</li>
+    </ul> <br>
+    This change models how real-world systems like TUF+ handle bursty traffic and slower backend processing.
+
+    <h4>Code</h4>
+    <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="java">Java</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.LinkedList;
+import java.util.Queue;
+
+// Represents a code submission by a user
+class Submission {
+    private static int idCounter = 1; // Used to generate unique submission IDs
+    private final int submissionId;
+    private final String userName;
+
+    public Submission(String userName) {
+        this.userName = userName;
+        this.submissionId = idCounter++; // Auto-incrementing ID
+    }
+
+    public int getSubmissionId() {
+        return submissionId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+}
+
+// Shared resource between producers (users) and consumers (judges)
+class SubmissionQueue {
+    private final Queue<Submission> queue = new LinkedList<>(); // Shared buffer
+    private final int MAX_CAPACITY = 5; // Bounded buffer size
+
+    // Producer logic: User submits a solution
+    public synchronized void submit(Submission submission) throws InterruptedException {
+        // If queue is full, producer waits
+        while (queue.size() == MAX_CAPACITY) {
+            System.out.println("⏳ Queue full. " + submission.getUserName() + " is waiting to submit.");
+            wait(); // Releases lock and waits for space
+        }
+
+        // Add submission to the queue
+        queue.offer(submission);
+        System.out.println("" + submission.getUserName() + " submitted code: #" + submission.getSubmissionId());
+
+        notifyAll(); // Notifies judges that a new task is available
+    }
+
+    // Consumer logic: Judge processes a submission
+    public synchronized Submission consume(String judgeName) throws InterruptedException {
+        // If queue is empty, consumer waits
+        while (queue.isEmpty()) {
+            System.out.println("△ " + judgeName + " waiting for submissions...");
+            wait(); // Releases lock and waits for submissions
+        }
+
+        // Remove a submission from the queue
+        Submission sub = queue.poll();
+        System.out.println("⚙️ " + judgeName + " started evaluating submission #" +
+                           sub.getSubmissionId() + " from " + sub.getUserName());
+
+        notifyAll(); // Notifies waiting producers if queue was full
+        return sub;
+    }
+}
+</code></pre></div></div></div>
+
+    <h4>Understanding Key Methods</h4>
+    <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>Behavior</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td><b><code>wait()</code></b></td>
+        <td>Pause the current thread and release the lock</td>
+        <td>Thread enters the <strong>WAITING</strong> state and resumes only when another thread calls <code>notify()</code> / <code>notifyAll()</code> on the same object</td>
+        </tr>
+        <tr>
+        <td><b><code>notifyAll()</code></b></td>
+        <td>Wake all threads waiting on the object's monitor</td>
+        <td>All waiting threads become <strong>BLOCKED</strong>; the first to reacquire the lock continues execution</td>
+        </tr>
+        <tr>
+        <td><b><code>queue.offer()</code></b></td>
+        <td>Add a submission to the buffer (if space exists)</td>
+        <td>Called by producers to enqueue a new task</td>
+        </tr>
+        <tr>
+        <td><b><code>queue.poll()</code></b></td>
+        <td>Remove a submission from the front of the buffer</td>
+        <td>Called by consumers to dequeue and process a task</td>
+        </tr>
+    </tbody>
+    </table>
+
+
+    <h4>Key Takeaways</h4>
+    <ul>
+        <li><strong>Buffered Queue: </strong>We now use a queue of size 5 to hold multiple submissions — unlike the previous one-slot version.</li> 
+
+        <li><strong>Fast Producers, Slow Consumers: </strong>Producers don’t have to wait unless the buffer is full. These model systems like TUF+ where many users submit rapidly, but judges can evaluate only one at a time.</li>
+        
+        <li><strong><code>notifyAll()</code> vs <code>notify()</code>: </strong><b><code>notifyAll()</code></b> is used because multiple threads (many users or multiple judges) might be waiting — all should get a chance.</li>
+        
+        <li><strong>Thread Coordination: </strong>Both producer and consumer use <b><code>wait()</code></b>-<b><code>notifyAll()</code></b> mechanism to signal when the buffer is full or empty.</li>
+        
+        <li><strong>Thread Safety: </strong>All shared state is accessed inside <b><code>synchronized</code></b> methods to maintain consistency.</li>
+    </ul>
+
+<br>
+<hr>
+
+<h2>Conclusion</h2>
+
+    The Producer-Consumer problem is a foundational concept in multithreading that teaches us how to manage coordination between threads effectively. By moving from a one-slot buffer to a bounded queue, we modeled a real-world scenario like the TUF+ judge system, where producers can be faster than consumers. Using <strong><code>wait()</code></strong> and <strong><code>notifyAll()</code></strong> ensures smooth synchronization, prevents data loss, and maintains thread safety — all essential for building reliable concurrent applications.
+</div>
+<div class="section"><h2>Editorial: Python</h2><h2>Introduction</h2>
+
+    In concurrent programming, one of the most classic problems used to explain synchronization is the <b>Producer-Consumer Problem</b>. It represents a scenario where two types of threads - producers and consumers - share a common, finite-size buffer. The producer's job is to generate data and place it into the buffer, while the consumer's job is to remove data from the buffer for processing. <br><br>
+    
+    This problem helps illustrate the challenges of coordinating threads, avoiding race conditions, and ensuring thread-safe communication between processes. <br><br>
+<hr>
+
+<h2>The Producer-Consumer Problem</h2>
+
+    The <b>Producer-Consumer Problem</b>, also known as the <b>Bounded Buffer Problem</b>, is a classic example of a <b>multi-process synchronization</b> issue. It revolves around coordinating two types of threads:
+    <ul>
+        <li><strong>Producers: </strong>which generate data and add it to a shared buffer.</li>
+        <li><strong>Consumers: </strong>which take data from the buffer and process it.</li>
+    </ul>
+
+    <h4>Challenge</h4>
+    The core challenge lies in ensuring that producers don't add data when the buffer is full, and consumers don't try to remove data when the buffer is empty - all while avoiding race conditions and ensuring mutual exclusion and proper coordination between threads. <br><br>
+
+    This problem is a <b>synchronization construct</b> that ensures:
+    <ul>
+        <li><strong>Mutual Exclusion:</strong> Only one thread can access the shared buffer (critical section) at a time.</li>
+        <li><strong>Wait-Notify Coordination:</strong> Producers wait when the buffer is full; consumers wait when it's empty. Threads notify each other when buffer states change.</li>
+    </ul>
+
+    <h4>Real-Life Analogies</h4>
+    <ul>
+        <li><strong>Washroom with One Key: </strong>Think of a washroom with a single key. Only one person can enter at a time (mutual exclusion). If it’s occupied, others must wait outside (wait-notify mechanism).
+        </li>
+        <li><strong>Coffee Machine: </strong>A <b>coffee machine</b> acts as a producer that brews coffee. The <b>customer</b> is the consumer who drinks it. The machine shouldn't brew more if the cup is already full, and the customer must wait if there's no coffee - a perfect reflection of the coordination needed. 
+        </li>
+    </ul>
+
+
+<br>
+<hr>
+
+<h2>Solution</h2>
+
+    In this <b>Producer-Consumer Problem</b>, the major challenge is coordination - ensuring the producer doesn't add items to a full buffer and the consumer doesn't try to consume from an empty one. This is where Python's <strong><code>wait()</code></strong> and <strong><code>notify()</code></strong> style condition methods come into play. 
+
+    <h4><code>wait()</code> and <code>notify()</code> methods</h4>
+    These two methods provide a <b>built-in signaling mechanism</b> to safely pause and resume threads based on the shared resource's state:
+    <ul>
+        <li><strong>wait(): </strong>Causes the current thread to pause <b>and release the lock</b> until another thread signals it using <strong>notify()</strong>.</li>
+        <li><strong>notify(): </strong>Wakes up one waiting thread so it can try to re-acquire the lock and proceed.</li>
+    </ul> <br>
+    Together, they eliminate the need for <b>busy waiting</b>, reduce CPU usage, and help implement the <b>wait-notify coordination</b> pattern - a fundamental synchronization requirement in the producer-consumer scenario.
+
+    <h4>Example Code</h4>
+    Let's now walk through a simple example where the buffer holds just one item: a cup of coffee. <br>
+
+    <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="python">Python</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import threading
+import time
+
+# Shared resource: CoffeeMachine acts as a buffer of size 1
+class CoffeeMachine:
+    def __init__(self):
+        # Flag to indicate buffer status: True -> coffee ready, False -> cup empty
+        self.is_coffee_ready = False
+        self.condition = threading.Condition()
+
+    # Method to be run by the producer thread
+    def make_coffee(self):
+        with self.condition:
+            # If coffee is already ready, producer must wait (buffer is full)
+            while self.is_coffee_ready:
+                self.condition.wait()
+
+            # Simulate coffee preparation
+            print("Brewing coffee...")
+            time.sleep(1)
+
+            # Set the buffer to full (coffee is now ready)
+            self.is_coffee_ready = True
+            print("Coffee ready!")
+
+            # Notify the consumer thread that coffee is available
+            self.condition.notify()
+
+    # Method to be run by the consumer thread
+    def drink_coffee(self):
+        with self.condition:
+            # If no coffee is available, consumer must wait (buffer is empty)
+            while not self.is_coffee_ready:
+                self.condition.wait()
+
+            # Simulate coffee consumption
+            print("Drinking coffee...")
+            time.sleep(1)
+
+            # Set the buffer to empty (coffee has been consumed)
+            self.is_coffee_ready = False
+            print("Cup emptied - brew next!")
+
+            # Notify the producer thread that it can brew again
+            self.condition.notify()
+
+
+# Driver class
+if __name__ == "__main__":
+    # Shared CoffeeMachine object acts as the synchronized monitor
+    machine = CoffeeMachine()
+
+    # Producer thread that continuously makes coffee
+    def producer_task():
+        while True:
+            machine.make_coffee()
+
+    # Consumer thread that continuously drinks coffee
+    def consumer_task():
+        while True:
+            machine.drink_coffee()
+
+    producer = threading.Thread(target=producer_task)
+    consumer = threading.Thread(target=consumer_task)
+
+    # Start both threads
+    producer.start()
+    consumer.start()
+
+    producer.join()
+    consumer.join()
+</code></pre></div></div></div>
+
+    <h4>How <code>wait()</code> and <code>notify()</code> Work Together?</h4>
+    <ul>
+        <li><strong>Initial State:</strong>
+            <ul>
+                <li>The buffer (<b><code>isCoffeeReady</code></b>) is <b>false</b> - no coffee yet.</li>
+                <li>The <b>producer thread</b> enters <b><code>makeCoffee()</code></b> and proceeds to brew coffee.</li>
+                <li>The <b>consumer thread</b> enters <b><code>drinkCoffee()</code></b> but sees no coffee, so it goes to <b><code>wait()</code></b> and sleeps</li>
+            </ul>
+        </li>
+        <li><strong>Producer Brews Coffee:</strong>
+            <ul>
+                <li>After brewing, it sets <b><code>isCoffeeReady = true</code></b>.</li>
+                <li>It then calls <b><code>notify()</code></b> to <b>wake up the waiting consumer</b>.</li>
+                <li>The producer thread loops back but now finds coffee still present, so it goes into <b><code>wait()</code></b>.</li>
+            </ul>
+        </li>
+        <li><strong>Consumer Wakes Up and Drinks Coffee:</strong>
+            <ul>
+                <li>The consumer, upon waking, sees that the coffee is ready.</li>
+                <li>It drinks the coffee and sets <b><code>isCoffeeReady = false</code></b>.</li>
+                <li>It then calls <b><code>notify()</code></b> to <b>wake up the producer</b>.</li>
+            </ul>
+        </li>
+        <li><strong>Cycle Repeats:</strong>
+            <ul>
+                <li>The producer wakes up and sees that coffee has been consumed.</li>
+                <li>It brews another cup, and the entire cycle continues.</li>
+            </ul>
+        </li>
+    </ul> <br>
+    Both methods are protected by the same condition lock, so only one thread can run inside the critical section at any time (mutual exclusion).
+
+
+    <h4>Key Methods Explained</h4>
+    <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>What Actually Happens</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td><b><code>condition.wait()</code></b></td>
+        <td>Voluntarily releases the lock and suspends the current thread</td>
+        <td>
+            The thread goes into a waiting state.<br>
+            It pauses execution and releases the condition's lock.<br>
+            It will resume only when another thread calls <b><code>notify()</code></b> or <b><code>notify_all()</code></b> on the same condition.
+        </td>
+        </tr>
+        <tr>
+        <td><b><code>condition.notify()</code></b></td>
+        <td>Wakes one thread that is waiting on the same condition</td>
+        <td>
+            One waiting thread wakes up.<br>
+            It competes to reacquire the lock before it can continue executing.
+        </td>
+        </tr>
+    </tbody>
+    </table> <br>
+
+    Note that the <strong><code>while loop</code></strong> in the <b><code>makeCoffee()</code></b> and <b><code>drinkCoffee()</code></b> methods protects against spurious wake-ups and re-checks condition after every resume.
+
+
+    <h4>Key Takeaways</h4>
+    <ul>
+        <li><b>Single-slot buffer: </b>Setting <b><code>isCoffeeReady</code></b> acts as the entire queue; the flag prevents over-production or over-consumption.</li>
+        <li><b>Intrinsic lock via Condition: </b>The shared state is protected by the condition's lock, giving us mutual exclusion.</li>
+        <li><b>Condition signalling: </b><b><code>wait()</code></b> + <b><code>notify()</code></b> form a lightweight, built-in condition-variable mechanism; they let threads sleep without busy-waiting.</li>
+        <li><b>Always loop around </b><b><code>wait()</code></b> to guard against spurious wake-ups and to re-validate the buffer’s state.</li>
+        <li><b>Scalable pattern: </b>Replace the boolean with a bounded queue and size checks to move from tiny to bounded-buffer implementations.</li>
+    </ul>
+
+<br>
+<hr>
+
+<h2>Handling Fast Producer and Slow Consumer (TUF+ Judge Example)</h2>
+
+    Previously, we studied a solution with a <b>one-slot buffer</b>, where the producer (coffee machine) and the consumer (customer) worked in perfect alternation - one producing, the other consuming. But real-world systems often face <b>imbalance in processing speeds</b>. <br><br>
+
+    Imagine a scenario in <b>TUF+</b>, where the <b>submission judge</b> (consumer) takes longer to process each code submission than the time it takes for users (producers) to submit them. If we still used a single-slot buffer, submissions would frequently get blocked or lost due to the judge being busy.
+
+    <h4>The Problem</h4>
+    In this case:
+    <ul>
+        <li><b>Producers (users)</b> submit solutions rapidly.</li>
+        <li><b>Consumer (judge system)</b> takes time to compile, run, and verify each solution.</li>
+        <li>If the buffer can hold only one submission, the producer has to wait too frequently - leading to poor performance and wasted CPU cycles.</li>
+    </ul>
+
+    <h4>The Solution</h4>
+    To fix this, we use a <b>buffered queue</b> (like <b><code>deque()</code></b>) that can store <b>multiple submissions at once</b>. This allows:
+    <ul>
+        <li><b>Producers to keep submitting</b> even when the consumer is busy.</li>
+        <li><b>Consumers to process submissions at their own pace</b>, pulling from the buffer.</li>
+    </ul> <br>
+    This change models how real-world systems like TUF+ handle bursty traffic and slower backend processing.
+
+    <h4>Code</h4>
+    <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="python">Python</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+import threading
+
+# Represents a code submission by a user
+class Submission:
+    id_counter = 1
+
+    def __init__(self, user_name):
+        self.user_name = user_name
+        self.submission_id = Submission.id_counter
+        Submission.id_counter += 1
+
+    def get_submission_id(self):
+        return self.submission_id
+
+    def get_user_name(self):
+        return self.user_name
+
+
+# Shared resource between producers (users) and consumers (judges)
+class SubmissionQueue:
+    def __init__(self):
+        self.queue = deque()
+        self.MAX_CAPACITY = 5
+        self.condition = threading.Condition()
+
+    # Producer logic: User submits a solution
+    def submit(self, submission):
+        with self.condition:
+            # If queue is full, producer waits
+            while len(self.queue) == self.MAX_CAPACITY:
+                print("Queue full. " + submission.get_user_name() + " is waiting to submit.")
+                self.condition.wait()
+
+            # Add submission to the queue
+            self.queue.append(submission)
+            print(submission.get_user_name() + " submitted code: #" + str(submission.get_submission_id()))
+
+            self.condition.notify_all()
+
+    # Consumer logic: Judge processes a submission
+    def consume(self, judge_name):
+        with self.condition:
+            # If queue is empty, consumer waits
+            while not self.queue:
+                print(judge_name + " waiting for submissions...")
+                self.condition.wait()
+
+            # Remove a submission from the queue
+            sub = self.queue.popleft()
+            print(judge_name + " started evaluating submission #" +
+                  str(sub.get_submission_id()) + " from " + sub.get_user_name())
+
+            self.condition.notify_all()
+            return sub
+</code></pre></div></div></div>
+
+    <h4>Understanding Key Methods</h4>
+    <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr>
+        <th>Method</th>
+        <th>Purpose</th>
+        <th>Behavior</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td><b><code>wait()</code></b></td>
+        <td>Pause the current thread and release the lock</td>
+        <td>Thread enters a waiting state and resumes only when another thread calls <code>notify()</code> / <code>notify_all()</code> on the same condition object</td>
+        </tr>
+        <tr>
+        <td><b><code>notify_all()</code></b></td>
+        <td>Wake all threads waiting on the condition's monitor</td>
+        <td>All waiting threads wake up; the first to reacquire the lock continues execution</td>
+        </tr>
+        <tr>
+        <td><b><code>queue.append()</code></b></td>
+        <td>Add a submission to the buffer (if space exists)</td>
+        <td>Called by producers to enqueue a new task</td>
+        </tr>
+        <tr>
+        <td><b><code>queue.popleft()</code></b></td>
+        <td>Remove a submission from the front of the buffer</td>
+        <td>Called by consumers to dequeue and process a task</td>
+        </tr>
+    </tbody>
+    </table>
+
+
+    <h4>Key Takeaways</h4>
+    <ul>
+        <li><strong>Buffered Queue: </strong>We now use a queue of size 5 to hold multiple submissions - unlike the previous one-slot version.</li> 
+
+        <li><strong>Fast Producers, Slow Consumers: </strong>Producers don’t have to wait unless the buffer is full. These model systems like TUF+ where many users submit rapidly, but judges can evaluate only one at a time.</li>
+        
+        <li><strong><code>notify_all()</code> vs <code>notify()</code>: </strong><b><code>notify_all()</code></b> is used because multiple threads (many users or multiple judges) might be waiting - all should get a chance.</li>
+        
+        <li><strong>Thread Coordination: </strong>Both producer and consumer use <b><code>wait()</code></b>-<b><code>notify_all()</code></b> mechanism to signal when the buffer is full or empty.</li>
+        
+        <li><strong>Thread Safety: </strong>All shared state is accessed inside the condition-protected block to maintain consistency.</li>
+    </ul>
+
+<br>
+<hr>
+
+<h2>Conclusion</h2>
+
+    The Producer-Consumer problem is a foundational concept in multithreading that teaches us how to manage coordination between threads effectively. By moving from a one-slot buffer to a bounded queue, we modeled a real-world scenario like the TUF+ judge system, where producers can be faster than consumers. Using <strong><code>wait()</code></strong> and <strong><code>notify_all()</code></strong> ensures smooth synchronization, prevents data loss, and maintains thread safety - all essential for building reliable concurrent applications.</div>
+
+</body>
+</html>

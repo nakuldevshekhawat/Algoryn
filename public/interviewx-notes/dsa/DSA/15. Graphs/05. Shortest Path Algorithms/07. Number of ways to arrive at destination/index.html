@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number of ways to arrive at destination</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Number of ways to arrive at destination</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span><span>Graph</span><span>Shortest Path</span><span>Topological Sort</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>A city consists of n intersections numbered from 0 to n - 1 with bi-directional roads between some intersections. The inputs are generated such that one can reach any intersection from any other intersection and that there is at most one road between any two intersections.</p><p><br></p><p>Given an integer n and a 2D integer array ‘roads’ where roads[i] = [u<sub>i</sub>, v<sub>i</sub>, time<sub>i</sub>] means that there is a road between intersections u<sub>i</sub> and v<sub>i</sub> that takes time<sub>i</sub> minutes to travel. Determine the <strong>number of ways</strong> to travel from intersection 0 to intersection n - 1 in the shortest amount of time.</p><p><br></p><p>Since the answer may be large, return it modulo 10<sup>9</sup> + 7.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 200</li><li>n - 1 <= roads.length <= n * (n - 1) / 2</li><li>roads[i].length == 3</li><li>0 <= u<sub>i</sub>, v<sub>i</sub> <= n - 1</li><li>1 <= time<sub>i</sub> <= 10<sup>9</sup></li><li>u<sub>i</sub> != v<sub>i</sub></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-n4bXXNh5"></p><p><br></p><p><strong>Input:</strong> n=7, m=10, roads= [[0,6,7],[0,1,2],[1,2,3],[1,3,3],[6,3,3],[3,5,1],[6,5,1],[2,5,1],[0,4,5],[4,6,2]]</p><p><strong>Output:</strong> 4</p><p><strong>Explanation: </strong></p><p>The four ways to get there in 7 minutes (which is the shortest calculated time) are:</p><p>- 0 6</p><p>- 0 4 6</p><p>- 0 1 2 5 6</p><p>- 0 1 3 5 6</p><h3>Example 2</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-vh3sQIWk"></p><p><br></p><p><strong>Input:</strong> n=6, m=8, roads= [[0,5,8],[0,2,2],[0,1,1],[1,3,3],[1,2,3],[2,5,6],[3,4,2],[4,5,2]]</p><p><strong>Output:</strong> 3</p><p><strong>Explanation: </strong></p><p>The three ways to get there in 8 minutes (which is the shortest calculated time) are:</p><p>- 0 5</p><p>- 0 2 5</p><p>- 0 1 3 4 5</p><h3>Example 3</h3><p><strong>Input:</strong> n = 4, m = 4, roads = [[0, 1, 10], [1, 2, 7], [2, 3, 4], [0, 3, 3]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: This programming problem resembles the widespread real life applications in route optimization, which is one of the key tasks handled by GPS and mapping services like Google Maps, Uber, and Lyft, etc. Their algorithms not only have to calculate the fastest route from point A to point B, but also provide alternatives in case the initial route is blocked or traffic conditions change. A high-level solution to this problem often involves the usage of Dijkstra's algorithm or Bellman Ford's algorithm for finding the shortest path in a graph, seen regularly in logistics, supply chain management and transport industries. The concept of finding the number of ways to reach a destination in the shortest time can be beneficial in providing multiple optimal route recommendations.</p></div>
+<div class="section"><h2>Editorial: Solution</h2>
+<p><strong>Pre Requisite: </strong><a href="/plus/dsa/problems/dijkstra's-algorithm?category=graph&subcategory=shortest-path-algorithms">Dijkstra's algorithm</a></p>
+
+<h3>Intuition:</h3> 
+<p>
+    Since there can be many paths to reach the destination node from the given source node, the problem requires us to find all those paths that are taking shortest time in order to reach our destination. 
+
+    <h6>Understanding: </h6>
+    Consider the following image: 
+<img src = "https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Number of ways to arrive at destination/Image_1-FU1wL1vl">
+  
+
+    which represents that there are three <strong>shortest</strong> paths to reach the destination node from the source node. <br> <br> Without the loss of generality, it can be said that the number of ways to reach the source node (in shortest time) is equal to sum of number of ways to reach the intermediate nodes (in shortest time) from the destination nodes<br> <br>
+    Mathematically, <br>
+    <code>ways[node] = ways[node1] = ways[node2] + ways[node3]</code> <br> (where ways[node x] represents the number of ways to reach <strong>node x</strong> from source node with the shortest possible time).
+
+    <br><br>
+    We are already aware of Dijkstra's algorithm which can help us find the shortest path (path taking shortest time) from source to destination node. The only change required to get to the answer will be to add up the number of ways to reach a node (in shortest time).
+
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>The city is modeled as a graph with intersections as nodes and roads as edges. Each edge has a weight representing the travel time. The graph is stored in an adjacency list for easy traversal.</li>
+   <li>Arrays are used to track the minimum time to reach each intersection and the number of ways to reach each intersection in that minimum time. A priority queue is initialized to implement Dijkstra's algorithm, starting from the initial intersection.</li>
+   <li>The priority queue processes intersections based on the shortest accumulated travel time. For each intersection, neighboring intersections are explored. If a shorter path to a neighbor is found, the minimum time and the number of ways to reach the neighbor are updated.</li>
+   <li>If an equally short path is found, the number of ways from the current intersection is added to the neighbor's count, ensuring large numbers are handled using modulo <code>10<sup>9</sup> + 7</code>.</li>
+   <li>After processing all intersections, return the number of ways to reach the destination in the shortest time, modulo <code>10<sup>9</sup> + 7</code>.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+ <div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (15).png-ynF212A3" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (16).png-qrtQewOg" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (17).png-urFpJ5Xb" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (18).png-w6wZhooE" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (15).png-ynF212A3" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (16).png-qrtQewOg" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (17).png-urFpJ5Xb" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms//K (18).png-w6wZhooE" alt="Image 4"></div></div>
+
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* Define P as a shorthand for
+the pair<long long,int> type */
+#define P pair<long long,int>
+
+class Solution {
+public:
+
+    /* Function to get the number of ways to arrive
+    at destinations in shortest possible time */
+    int countPaths(int n, vector<vector<int>>& roads) {
+        
+        int mod = 1e9 + 7; // Mod value
+        
+        // To store the graph
+        vector<pair<int,int>> adj[n];
+        
+        // Adding the edges to the graph
+        for(auto it : roads) {
+            adj[it[0]].push_back({it[1] , it[2]});
+            adj[it[1]].push_back({it[0] , it[2]});
+        }
+        
+        /* Array to store the minimum 
+        time to get to nodes */
+        vector<long long> minTime(n, LLONG_MAX);
+        
+        /* To store the number of 
+        ways to reach nodes */
+        vector<int> ways(n, 0);
+        
+        // Priority queue to store: {time, node}
+        priority_queue <P, vector<P>, greater<P>> pq;
+        
+        //Initial configuration
+        minTime[0] = 0;
+        ways[0] = 1;
+        pq.push({0, 0});
+        
+        // Until the priority queue is empty
+        while(!pq.empty()) {
+            
+            // Get the element
+            auto p = pq.top(); 
+            pq.pop();
+            
+            long long time = p.first; // time
+            int node = p.second; // node
+            
+            // Traverse its neighbors
+            for(auto it : adj[node]) {
+                
+                int adjNode = it.first; // adjacent node
+                int travelTime = it.second; // travel time
+                
+                /* If the current time taken is less than
+                earlier known time to reach adjacent node */
+                if(minTime[adjNode] > time + travelTime) {
+                    
+                    // Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime;
+                    
+                    // Update the number of ways
+                    ways[adjNode] = ways[node];
+                    
+                    // Add the new element in priority queue
+                    pq.push({minTime[adjNode] , adjNode});
+                }
+                
+                /* Else if the current time taken is same as
+                earlier known time to reach adjacent node */ 
+                else if(minTime[adjNode] == time + travelTime) {
+                    
+                    /* Update the number of ways 
+                    to reach adjacent nodes */
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod;
+                }
+            }
+        }
+        
+        // Return the result
+        return ways[n-1] % mod;
+    }
+};
+
+int main() {
+    int n = 7, m = 20;
+    vector<vector<int>> roads = {
+        {0,6,7},{0,1,2},{1,2,3},
+        {1,3,3},{6,3,3},{3,5,1},
+        {6,5,1},{2,5,1},{0,4,5},
+        {4,6,2}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to get the number of ways to 
+    arrive at destinations in shortest possible time */
+    int ans = sol.countPaths(n, roads);
+    
+    // Output
+    cout << "The number of ways to arrive at destinations in shortest possible time is: " << ans;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Function to get the number of ways to arrive
+    at destinations in shortest possible time */
+    public int countPaths(int n, List<List<Integer>> roads) {
+        
+        int mod = 1000000007; // Mod value
+        
+        // To store the graph
+        List<int[]>[] adj = new ArrayList[n];
+        for (int i = 0; i < n; i++) {
+            adj[i] = new ArrayList<>();
+        }
+        
+        // Adding the edges to the graph
+        for (List<Integer> it : roads) {
+            adj[it.get(0)].add(new int[]{it.get(1), it.get(2)});
+            adj[it.get(1)].add(new int[]{it.get(0), it.get(2)});
+        }
+        
+        /* Array to store the minimum 
+        time to get to nodes */
+        long[] minTime = new long[n];
+        Arrays.fill(minTime, Long.MAX_VALUE);
+        
+        /* To store the number of 
+        ways to reach nodes */
+        int[] ways = new int[n];
+        
+        // Priority queue to store: {time, node}
+        PriorityQueue<long[]> pq = 
+        new PriorityQueue<>(Comparator.comparingLong(a -> a[0]));
+        
+        // Initial configuration
+        minTime[0] = 0;
+        ways[0] = 1;
+        pq.add(new long[]{0, 0});
+        
+        // Until the priority queue is empty
+        while (!pq.isEmpty()) {
+            
+            // Get the element
+            long[] p = pq.poll();
+            long time = p[0]; // time
+            int node = (int) p[1]; // node
+            
+            // Traverse its neighbors
+            for (int[] it : adj[node]) {
+                
+                int adjNode = it[0]; // adjacent node
+                int travelTime = it[1]; // travel time
+                
+                /* If the current time taken is less than
+                earlier known time to reach adjacent node */
+                if (minTime[adjNode] > time + travelTime) {
+                    
+                    // Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime;
+                    
+                    // Update the number of ways
+                    ways[adjNode] = ways[node];
+                    
+                    // Add the new element in priority queue
+                    pq.add(new long[]{minTime[adjNode], adjNode});
+                }
+                
+                /* Else if the current time taken is same as
+                earlier known time to reach adjacent node */ 
+                else if (minTime[adjNode] == time + travelTime) {
+                    
+                    /* Update the number of ways 
+                    to reach adjacent nodes */
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod;
+                }
+            }
+        }
+        
+        // Return the result
+        return ways[n - 1] % mod;
+    }
+
+    public static void main(String[] args) {
+        int n = 7, m = 20;
+        List<List<Integer>> roads = Arrays.asList(
+            Arrays.asList(0, 6, 7), 
+            Arrays.asList(0, 1, 2), 
+            Arrays.asList(1, 2, 3),
+            Arrays.asList(1, 3, 3), 
+            Arrays.asList(6, 3, 3), 
+            Arrays.asList(3, 5, 1),
+            Arrays.asList(6, 5, 1), 
+            Arrays.asList(2, 5, 1), 
+            Arrays.asList(0, 4, 5),
+            Arrays.asList(4, 6, 2)
+        );
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to get the number of ways to 
+        arrive at destinations in shortest possible time */
+        int ans = sol.countPaths(n, roads);
+        
+        // Output
+        System.out.println("The number of ways to arrive at destinations in shortest possible time is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import heapq
+from collections import defaultdict
+from typing import List
+
+class Solution:
+    
+    # Function to get the number of ways to arrive
+    # at destinations in shortest possible time
+    def countPaths(self, n: int, roads: List[List[int]]) -> int:
+        
+        mod = 10**9 + 7 # Mod value
+        
+        # To store the graph
+        adj = defaultdict(list)
+        
+        # Adding the edges to the graph
+        for it in roads:
+            adj[it[0]].append((it[1], it[2]))
+            adj[it[1]].append((it[0], it[2]))
+        
+        # Array to store the minimum 
+        # time to get to nodes
+        minTime = [float('inf')] * n
+        
+        # To store the number of 
+        # ways to reach nodes
+        ways = [0] * n
+        
+        # Priority queue to store: {time, node}
+        pq = []
+        
+        # Initial configuration
+        minTime[0] = 0
+        ways[0] = 1
+        heapq.heappush(pq, (0, 0))
+        
+        # Until the priority queue is empty
+        while pq:
+            
+            # Get the element
+            time, node = heapq.heappop(pq)
+            
+            # Traverse its neighbors
+            for adjNode, travelTime in adj[node]:
+                
+                # If the current time taken is less than
+                # earlier known time to reach adjacent node
+                if minTime[adjNode] > time + travelTime:
+                    
+                    # Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime
+                    
+                    # Update the number of ways
+                    ways[adjNode] = ways[node]
+                    
+                    # Add the new element in priority queue
+                    heapq.heappush(pq, (minTime[adjNode], adjNode))
+                
+                # Else if the current time taken is same as
+                # earlier known time to reach adjacent node 
+                elif minTime[adjNode] == time + travelTime:
+                    
+                    # Update the number of ways 
+                    # to reach adjacent nodes
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod
+        
+        # Return the result
+        return ways[n - 1] % mod
+
+# Example usage
+if __name__ == "__main__":
+    n = 7
+    roads = [
+        [0, 6, 7], [0, 1, 2], [1, 2, 3],
+        [1, 3, 3], [6, 3, 3], [3, 5, 1],
+        [6, 5, 1], [2, 5, 1], [0, 4, 5],
+        [4, 6, 2]
+    ]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to get the number of ways to 
+    # arrive at destinations in shortest possible time
+    ans = sol.countPaths(n, roads)
+    
+    # Output
+    print("The number of ways to arrive at destinations in shortest possible time is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Class implementation Min heap
+class MinPriorityQueue {
+    constructor() {
+        this.heap = [];
+    }
+
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+
+    enqueue(element) {
+        this.heap.push(element);
+        this.bubbleUp();
+    }
+
+    dequeue() {
+        if (this.heap.length === 1) {
+            return this.heap.pop();
+        }
+        const top = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown();
+        return top;
+    }
+
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        const element = this.heap[index];
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            const parent = this.heap[parentIndex];
+            if (element[0] >= parent[0]) break;
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+        this.heap[index] = element;
+    }
+
+    bubbleDown() {
+        let index = 0;
+        const length = this.heap.length;
+        const element = this.heap[index];
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let leftChild, rightChild;
+            let swapIndex = null;
+
+            if (leftChildIndex < length) {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild[0] < element[0]) {
+                    swapIndex = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex < length) {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swapIndex === null && rightChild[0] < element[0]) ||
+                    (swapIndex !== null && rightChild[0] < leftChild[0])
+                ) {
+                    swapIndex = rightChildIndex;
+                }
+            }
+
+            if (swapIndex === null) break;
+            this.heap[index] = this.heap[swapIndex];
+            index = swapIndex;
+        }
+        this.heap[index] = element;
+    }
+}
+
+class Solution {
+
+    /* Function to get the number of ways to arrive
+    at destinations in shortest possible time */
+    countPaths(n, roads) {
+        
+        const mod = 1e9 + 7; // Mod value
+        
+        // To store the graph
+        const adj = Array.from({ length: n }, () => []);
+        
+        // Adding the edges to the graph
+        for (const it of roads) {
+            adj[it[0]].push([it[1], it[2]]);
+            adj[it[1]].push([it[0], it[2]]);
+        }
+        
+        /* Array to store the minimum 
+        time to get to nodes */
+        const minTime = Array(n).fill(Infinity);
+        
+        /* To store the number of 
+        ways to reach nodes */
+        const ways = Array(n).fill(0);
+        
+        // Priority queue to store: {time, node}
+        const pq = new MinPriorityQueue();
+        
+        // Initial configuration
+        minTime[0] = 0;
+        ways[0] = 1;
+        pq.enqueue([0, 0]);
+        
+        // Until the priority queue is empty
+        while (!pq.isEmpty()) {
+            
+            // Get the element
+            const [time, node] = pq.dequeue();
+            
+            // Traverse its neighbors
+            for (const [adjNode, travelTime] of adj[node]) {
+                
+                /* If the current time taken is less than
+                earlier known time to reach adjacent node */
+                if (minTime[adjNode] > time + travelTime) {
+                    
+                    // Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime;
+                    
+                    // Update the number of ways
+                    ways[adjNode] = ways[node];
+                    
+                    // Add the new element in priority queue
+                    pq.enqueue([minTime[adjNode], adjNode]);
+                }
+                
+                /* Else if the current time taken is same as
+                earlier known time to reach adjacent node */ 
+                else if (minTime[adjNode] === time + travelTime) {
+                    
+                    /* Update the number of ways 
+                    to reach adjacent nodes */
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod;
+                }
+            }
+        }
+        
+        // Return the result
+        return ways[n - 1] % mod;
+    }
+}
+
+// Example usage
+const n = 7;
+const roads = [
+    [0, 6, 7], [0, 1, 2], [1, 2, 3],
+    [1, 3, 3], [6, 3, 3], [3, 5, 1],
+    [6, 5, 1], [2, 5, 1], [0, 4, 5],
+    [4, 6, 2]
+];
+
+/* Creating an instance of 
+Solution class */
+const sol = new Solution();
+
+/* Function call to get the number of ways to 
+arrive at destinations in shortest possible time */
+const ans = sol.countPaths(n, roads);
+
+// Output
+console.log("The number of ways to arrive at destinations in shortest possible time is: " + ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+// Class implementation Min heap
+public class MinPriorityQueue
+{
+    private struct Element
+    {
+        public long Time;
+        public int Node;
+        public Element(long time, int node)
+        {
+            Time = time;
+            Node = node;
+        }
+    }
+
+    private List<Element> heap = new List<Element>();
+
+    public bool IsEmpty()
+    {
+        return heap.Count == 0;
+    }
+
+    public void Enqueue(long time, int node)
+    {
+        heap.Add(new Element(time, node));
+        BubbleUp();
+    }
+
+    public (long time, int node) Dequeue()
+    {
+        if (heap.Count == 1)
+        {
+            var e = heap[0];
+            heap.RemoveAt(0);
+            return (e.Time, e.Node);
+        }
+
+        var top = heap[0];
+        heap[0] = heap[heap.Count - 1];
+        heap.RemoveAt(heap.Count - 1);
+        BubbleDown();
+        return (top.Time, top.Node);
+    }
+
+    private void BubbleUp()
+    {
+        int index = heap.Count - 1;
+        var element = heap[index];
+        while (index > 0)
+        {
+            int parentIndex = (index - 1) / 2;
+            var parent = heap[parentIndex];
+            if (element.Time >= parent.Time) break;
+            heap[index] = parent;
+            index = parentIndex;
+        }
+        heap[index] = element;
+    }
+
+    private void BubbleDown()
+    {
+        int index = 0;
+        int length = heap.Count;
+        var element = heap[index];
+        while (true)
+        {
+            int leftChildIndex = 2 * index + 1;
+            int rightChildIndex = 2 * index + 2;
+            int swapIndex = -1;
+
+            if (leftChildIndex < length)
+            {
+                var leftChild = heap[leftChildIndex];
+                if (leftChild.Time < element.Time)
+                {
+                    swapIndex = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex < length)
+            {
+                var rightChild = heap[rightChildIndex];
+                if ((swapIndex == -1 && rightChild.Time < element.Time) ||
+                    (swapIndex != -1 && rightChild.Time < heap[swapIndex].Time))
+                {
+                    swapIndex = rightChildIndex;
+                }
+            }
+
+            if (swapIndex == -1) break;
+            heap[index] = heap[swapIndex];
+            index = swapIndex;
+        }
+        heap[index] = element;
+    }
+}
+
+public class Solution
+{
+    /* Function to get the number of ways to arrive
+    at destinations in shortest possible time */
+    public int CountPaths(int n, int[][] roads)
+    {
+        const int mod = 1000000007; // Mod value
+
+        // To store the graph
+        var adj = new List<(int to, int wt)>[n];
+        for (int i = 0; i < n; i++)
+            adj[i] = new List<(int, int)>();
+
+        // Adding the edges to the graph
+        foreach (var it in roads)
+        {
+            adj[it[0]].Add((it[1], it[2]));
+            adj[it[1]].Add((it[0], it[2]));
+        }
+
+        /* Array to store the minimum 
+        time to get to nodes */
+        long[] minTime = new long[n];
+        for (int i = 0; i < n; i++)
+            minTime[i] = long.MaxValue;
+
+        /* To store the number of 
+        ways to reach nodes */
+        int[] ways = new int[n];
+
+        // Priority queue to store: {time, node}
+        var pq = new MinPriorityQueue();
+
+        // Initial configuration
+        minTime[0] = 0;
+        ways[0] = 1;
+        pq.Enqueue(0, 0);
+
+        // Until the priority queue is empty
+        while (!pq.IsEmpty())
+        {
+            // Get the element
+            (long time, int node) = pq.Dequeue();
+
+            // Traverse its neighbors
+            foreach (var edge in adj[node])
+            {
+                int adjNode = edge.to;
+                int travelTime = edge.wt;
+
+                /* If the current time taken is less than
+                earlier known time to reach adjacent node */
+                if (minTime[adjNode] > time + travelTime)
+                {
+                    // Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime;
+
+                    // Update the number of ways
+                    ways[adjNode] = ways[node];
+
+                    // Add the new element in priority queue
+                    pq.Enqueue(minTime[adjNode], adjNode);
+                }
+                /* Else if the current time taken is same as
+                earlier known time to reach adjacent node */
+                else if (minTime[adjNode] == time + travelTime)
+                {
+                    /* Update the number of ways 
+                    to reach adjacent nodes */
+                    ways[adjNode] = (int)((ways[adjNode] + (long)ways[node]) % mod);
+                }
+            }
+        }
+
+        // Return the result
+        return ways[n - 1] % mod;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        const int n = 7;
+        int[][] roads = new int[][]
+        {
+            new[] {0, 6, 7}, new[] {0, 1, 2}, new[] {1, 2, 3},
+            new[] {1, 3, 3}, new[] {6, 3, 3}, new[] {3, 5, 1},
+            new[] {6, 5, 1}, new[] {2, 5, 1}, new[] {0, 4, 5},
+            new[] {4, 6, 2}
+        };
+
+        /* Creating an instance of 
+        Solution class */
+        var sol = new Solution();
+
+        /* Function call to get the number of ways to 
+        arrive at destinations in shortest possible time */
+        int ans = sol.CountPaths(n, roads);
+
+        // Output
+        Console.WriteLine("The number of ways to arrive at destinations in shortest possible time is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"container/heap"
+	"math"
+	"fmt"
+)
+
+type P struct {
+	first  int64 // time
+	second int   // node
+}
+
+// Min-Heap for P (time, node)
+type PriorityQueue []P
+
+func (pq PriorityQueue) Len() int            { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool  { return pq[i].first < pq[j].first }
+func (pq PriorityQueue) Swap(i, j int)       { pq[i], pq[j] = pq[j], pq[i] }
+func (pq *PriorityQueue) Push(x interface{}) { *pq = append(*pq, x.(P)) }
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	x := old[n-1]
+	*pq = old[:n-1]
+	return x
+}
+
+/* Function to get the number of ways to arrive
+at destinations in shortest possible time */
+func countPaths(n int, roads [][]int) int {
+
+	const mod int = 1000000007 // Mod value
+
+	// To store the graph
+	adj := make([][][2]int, n)
+
+	// Adding the edges to the graph
+	for _, it := range roads {
+		adj[it[0]] = append(adj[it[0]], [2]int{it[1], it[2]})
+		adj[it[1]] = append(adj[it[1]], [2]int{it[0], it[2]})
+	}
+
+	/* Array to store the minimum 
+	time to get to nodes */
+	minTime := make([]int64, n)
+	for i := 0; i < n; i++ {
+		minTime[i] = math.MaxInt64
+	}
+
+	/* To store the number of 
+	ways to reach nodes */
+	ways := make([]int, n)
+
+	// Priority queue to store: {time, node}
+	pq := &PriorityQueue{}
+	heap.Init(pq)
+
+	//Initial configuration
+	minTime[0] = 0
+	ways[0] = 1
+	heap.Push(pq, P{0, 0})
+
+	// Until the priority queue is empty
+	for pq.Len() > 0 {
+
+		// Get the element
+		p := heap.Pop(pq).(P)
+
+		time := p.first // time
+		node := p.second // node
+
+		// Traverse its neighbors
+		for _, it := range adj[node] {
+
+			adjNode := it[0]     // adjacent node
+			travelTime := it[1]  // travel time
+
+			/* If the current time taken is less than
+			earlier known time to reach adjacent node */
+			if minTime[adjNode] > time+int64(travelTime) {
+
+				// Update the time to reach adjacent node
+				minTime[adjNode] = time + int64(travelTime)
+
+				// Update the number of ways
+				ways[adjNode] = ways[node]
+
+				// Add the new element in priority queue
+				heap.Push(pq, P{minTime[adjNode], adjNode})
+
+			}	else if minTime[adjNode] == time+int64(travelTime) {
+				/* Else if the current time taken is same as
+				earlier known time to reach adjacent node */ 
+				/* Update the number of ways 
+				to reach adjacent nodes */
+				ways[adjNode] = (ways[adjNode] + ways[node]) % mod
+			}
+		}
+	}
+
+	// Return the result
+	return ways[n-1] % mod
+}
+func main() {
+	n := 7
+	roads := [][]int{
+		{0, 6, 7}, {0, 1, 2}, {1, 2, 3},
+		{1, 3, 3}, {6, 3, 3}, {3, 5, 1},
+		{6, 5, 1}, {2, 5, 1}, {0, 4, 5},
+		{4, 6, 2},
+	}
+
+	// Function call to get the number of ways to arrive at destinations in shortest possible time
+	ans := countPaths(n, roads)
+
+	// Output
+	fmt.Println("The number of ways to arrive at destinations in shortest possible time is:", ans)
+}</code></pre></div></div></div>
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(M*logN)</strong> 
+   A simple Dijkstra's algorithm is used which takes O(E*logV) time (where V and E represents the number of nodes and edges in the graph respectively).
+</p>
+
+<p><strong>Space Complexity: O(N)</strong> 
+   <ul>
+    <li>Dijkstra's Algorithm will take extra O(N) space due to priority queue and array to store minimum time to reach nodes.</li>
+    <li>The array to store the number of ways take O(N) space.</li>
+   </ul>
+</p>
+</div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>/* Define P as a shorthand for
+the pair&lt;long long,int&gt; type */
+#define P pair&lt;long long,int&gt;
+
+class Solution {
+public:
+
+    /* Function to get the number of ways to arrive
+    at destinations in shortest possible time */
+    int countPaths(int n, vector&lt;vector&lt;int&gt;&gt;&amp; roads) {
+        
+        int mod = 1e9 + 7; // Mod value
+        
+        // To store the graph
+        vector&lt;pair&lt;int,int&gt;&gt; adj[n];
+        
+        // Adding the edges to the graph
+        for(auto it : roads) {
+            adj[it[0]].push_back({it[1] , it[2]});
+            adj[it[1]].push_back({it[0] , it[2]});
+        }
+        
+        /* Array to store the minimum 
+        time to get to nodes */
+        vector&lt;long long&gt; minTime(n, LLONG_MAX);
+        
+        /* To store the number of 
+        ways to reach nodes */
+        vector&lt;int&gt; ways(n, 0);
+        
+        // Priority queue to store: {time, node}
+        priority_queue &lt;P, vector&lt;P&gt;, greater&lt;P&gt;&gt; pq;
+        
+        //Initial configuration
+        minTime[0] = 0;
+        ways[0] = 1;
+        pq.push({0, 0});
+        
+        // Until the priority queue is empty
+        while(!pq.empty()) {
+            
+            // Get the element
+            auto p = pq.top(); 
+            pq.pop();
+            
+            long long time = p.first; // time
+            int node = p.second; // node
+            
+            // Traverse its neighbors
+            for(auto it : adj[node]) {
+                
+                int adjNode = it.first; // adjacent node
+                int travelTime = it.second; // travel time
+                
+                /* If the current time taken is less than
+                earlier known time to reach adjacent node */
+                if(minTime[adjNode] &gt; time + travelTime) {
+                    
+                    // Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime;
+                    
+                    // Update the number of ways
+                    ways[adjNode] = ways[node];
+                    
+                    // Add the new element in priority queue
+                    pq.push({minTime[adjNode] , adjNode});
+                }
+                
+                /* Else if the current time taken is same as
+                earlier known time to reach adjacent node */ 
+                else if(minTime[adjNode] == time + travelTime) {
+                    
+                    /* Update the number of ways 
+                    to reach adjacent nodes */
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod;
+                }
+            }
+        }
+        
+        // Return the result
+        return ways[n-1] % mod;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>// Class implementation Min heap
+public class MinPriorityQueue
+{
+    private struct Element
+    {
+        public long Time;
+        public int Node;
+        public Element(long time, int node)
+        {
+            Time = time;
+            Node = node;
+        }
+    }
+
+    private List&lt;Element&gt; heap = new List&lt;Element&gt;();
+
+    public bool IsEmpty()
+    {
+        return heap.Count == 0;
+    }
+
+    public void Enqueue(long time, int node)
+    {
+        heap.Add(new Element(time, node));
+        BubbleUp();
+    }
+
+    public (long time, int node) Dequeue()
+    {
+        if (heap.Count == 1)
+        {
+            var e = heap[0];
+            heap.RemoveAt(0);
+            return (e.Time, e.Node);
+        }
+
+        var top = heap[0];
+        heap[0] = heap[heap.Count - 1];
+        heap.RemoveAt(heap.Count - 1);
+        BubbleDown();
+        return (top.Time, top.Node);
+    }
+
+    private void BubbleUp()
+    {
+        int index = heap.Count - 1;
+        var element = heap[index];
+        while (index &gt; 0)
+        {
+            int parentIndex = (index - 1) / 2;
+            var parent = heap[parentIndex];
+            if (element.Time &gt;= parent.Time) break;
+            heap[index] = parent;
+            index = parentIndex;
+        }
+        heap[index] = element;
+    }
+
+    private void BubbleDown()
+    {
+        int index = 0;
+        int length = heap.Count;
+        var element = heap[index];
+        while (true)
+        {
+            int leftChildIndex = 2 * index + 1;
+            int rightChildIndex = 2 * index + 2;
+            int swapIndex = -1;
+
+            if (leftChildIndex &lt; length)
+            {
+                var leftChild = heap[leftChildIndex];
+                if (leftChild.Time &lt; element.Time)
+                {
+                    swapIndex = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex &lt; length)
+            {
+                var rightChild = heap[rightChildIndex];
+                if ((swapIndex == -1 &amp;&amp; rightChild.Time &lt; element.Time) ||
+                    (swapIndex != -1 &amp;&amp; rightChild.Time &lt; heap[swapIndex].Time))
+                {
+                    swapIndex = rightChildIndex;
+                }
+            }
+
+            if (swapIndex == -1) break;
+            heap[index] = heap[swapIndex];
+            index = swapIndex;
+        }
+        heap[index] = element;
+    }
+}
+
+public class Solution
+{
+    /* Function to get the number of ways to arrive
+    at destinations in shortest possible time */
+    public int CountPaths(int n, int[][] roads)
+    {
+        const int mod = 1000000007; // Mod value
+
+        // To store the graph
+        var adj = new List&lt;(int to, int wt)&gt;[n];
+        for (int i = 0; i &lt; n; i++)
+            adj[i] = new List&lt;(int, int)&gt;();
+
+        // Adding the edges to the graph
+        foreach (var it in roads)
+        {
+            adj[it[0]].Add((it[1], it[2]));
+            adj[it[1]].Add((it[0], it[2]));
+        }
+
+        /* Array to store the minimum 
+        time to get to nodes */
+        long[] minTime = new long[n];
+        for (int i = 0; i &lt; n; i++)
+            minTime[i] = long.MaxValue;
+
+        /* To store the number of 
+        ways to reach nodes */
+        int[] ways = new int[n];
+
+        // Priority queue to store: {time, node}
+        var pq = new MinPriorityQueue();
+
+        // Initial configuration
+        minTime[0] = 0;
+        ways[0] = 1;
+        pq.Enqueue(0, 0);
+
+        // Until the priority queue is empty
+        while (!pq.IsEmpty())
+        {
+            // Get the element
+            (long time, int node) = pq.Dequeue();
+
+            // Traverse its neighbors
+            foreach (var edge in adj[node])
+            {
+                int adjNode = edge.to;
+                int travelTime = edge.wt;
+
+                /* If the current time taken is less than
+                earlier known time to reach adjacent node */
+                if (minTime[adjNode] &gt; time + travelTime)
+                {
+                    // Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime;
+
+                    // Update the number of ways
+                    ways[adjNode] = ways[node];
+
+                    // Add the new element in priority queue
+                    pq.Enqueue(minTime[adjNode], adjNode);
+                }
+                /* Else if the current time taken is same as
+                earlier known time to reach adjacent node */
+                else if (minTime[adjNode] == time + travelTime)
+                {
+                    /* Update the number of ways 
+                    to reach adjacent nodes */
+                    ways[adjNode] = (int)((ways[adjNode] + (long)ways[node]) % mod);
+                }
+            }
+        }
+
+        // Return the result
+        return ways[n - 1] % mod;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (
+	&quot;container/heap&quot;
+	&quot;math&quot;
+)
+
+type P struct {
+	first  int64 // time
+	second int   // node
+}
+
+// Min-Heap for P (time, node)
+type PriorityQueue []P
+
+func (pq PriorityQueue) Len() int            { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool  { return pq[i].first &lt; pq[j].first }
+func (pq PriorityQueue) Swap(i, j int)       { pq[i], pq[j] = pq[j], pq[i] }
+func (pq *PriorityQueue) Push(x interface{}) { *pq = append(*pq, x.(P)) }
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	x := old[n-1]
+	*pq = old[:n-1]
+	return x
+}
+
+/* Function to get the number of ways to arrive
+at destinations in shortest possible time */
+func countPaths(n int, roads [][]int) int {
+
+	const mod int = 1000000007 // Mod value
+
+	// To store the graph
+	adj := make([][][2]int, n)
+
+	// Adding the edges to the graph
+	for _, it := range roads {
+		adj[it[0]] = append(adj[it[0]], [2]int{it[1], it[2]})
+		adj[it[1]] = append(adj[it[1]], [2]int{it[0], it[2]})
+	}
+
+	/* Array to store the minimum 
+	time to get to nodes */
+	minTime := make([]int64, n)
+	for i := 0; i &lt; n; i++ {
+		minTime[i] = math.MaxInt64
+	}
+
+	/* To store the number of 
+	ways to reach nodes */
+	ways := make([]int, n)
+
+	// Priority queue to store: {time, node}
+	pq := &amp;PriorityQueue{}
+	heap.Init(pq)
+
+	//Initial configuration
+	minTime[0] = 0
+	ways[0] = 1
+	heap.Push(pq, P{0, 0})
+
+	// Until the priority queue is empty
+	for pq.Len() &gt; 0 {
+
+		// Get the element
+		p := heap.Pop(pq).(P)
+
+		time := p.first // time
+		node := p.second // node
+
+		// Traverse its neighbors
+		for _, it := range adj[node] {
+
+			adjNode := it[0]     // adjacent node
+			travelTime := it[1]  // travel time
+
+			/* If the current time taken is less than
+			earlier known time to reach adjacent node */
+			if minTime[adjNode] &gt; time+int64(travelTime) {
+
+				// Update the time to reach adjacent node
+				minTime[adjNode] = time + int64(travelTime)
+
+				// Update the number of ways
+				ways[adjNode] = ways[node]
+
+				// Add the new element in priority queue
+				heap.Push(pq, P{minTime[adjNode], adjNode})
+
+			}	else if minTime[adjNode] == time+int64(travelTime) {
+				/* Else if the current time taken is same as
+				earlier known time to reach adjacent node */ 
+				/* Update the number of ways 
+				to reach adjacent nodes */
+				ways[adjNode] = (ways[adjNode] + ways[node]) % mod
+			}
+		}
+	}
+
+	// Return the result
+	return ways[n-1] % mod
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+/* Function to get the number of ways to arrive
+at destinations in shortest possible time */
+public int countPaths(int n, List&lt;List&lt;Integer&gt;&gt; roads) {
+    
+    int mod = 1000000007; // Mod value
+    
+    // To store the graph
+    List&lt;int[]&gt;[] adj = new ArrayList[n];
+    for (int i = 0; i &lt; n; i++) {
+        adj[i] = new ArrayList&lt;&gt;();
+    }
+    
+    // Adding the edges to the graph
+    for (List&lt;Integer&gt; it : roads) {
+        adj[it.get(0)].add(new int[]{it.get(1), it.get(2)});
+        adj[it.get(1)].add(new int[]{it.get(0), it.get(2)});
+    }
+    
+    /* Array to store the minimum 
+    time to get to nodes */
+    long[] minTime = new long[n];
+    Arrays.fill(minTime, Long.MAX_VALUE);
+    
+    /* To store the number of 
+    ways to reach nodes */
+    int[] ways = new int[n];
+    
+    // Priority queue to store: {time, node}
+    PriorityQueue&lt;long[]&gt; pq = 
+    new PriorityQueue&lt;&gt;(Comparator.comparingLong(a -&gt; a[0]));
+    
+    // Initial configuration
+    minTime[0] = 0;
+    ways[0] = 1;
+    pq.add(new long[]{0, 0});
+    
+    // Until the priority queue is empty
+    while (!pq.isEmpty()) {
+        
+        // Get the element
+        long[] p = pq.poll();
+        long time = p[0]; // time
+        int node = (int) p[1]; // node
+        
+        // Traverse its neighbors
+        for (int[] it : adj[node]) {
+            
+            int adjNode = it[0]; // adjacent node
+            int travelTime = it[1]; // travel time
+            
+            /* If the current time taken is less than
+            earlier known time to reach adjacent node */
+            if (minTime[adjNode] &gt; time + travelTime) {
+                
+                // Update the time to reach adjacent node
+                minTime[adjNode] = time + travelTime;
+                
+                // Update the number of ways
+                ways[adjNode] = ways[node];
+                
+                // Add the new element in priority queue
+                pq.add(new long[]{minTime[adjNode], adjNode});
+            }
+            
+            /* Else if the current time taken is same as
+            earlier known time to reach adjacent node */ 
+            else if (minTime[adjNode] == time + travelTime) {
+                
+                /* Update the number of ways 
+                to reach adjacent nodes */
+                ways[adjNode] = (ways[adjNode] + ways[node]) % mod;
+            }
+        }
+    }
+    
+    // Return the result
+    return ways[n - 1] % mod;
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class MinPriorityQueue {
+    constructor() {
+        this.heap = [];
+    }
+
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+
+    enqueue(element) {
+        this.heap.push(element);
+        this.bubbleUp();
+    }
+
+    dequeue() {
+        if (this.heap.length === 1) {
+            return this.heap.pop();
+        }
+        const top = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown();
+        return top;
+    }
+
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        const element = this.heap[index];
+        while (index &gt; 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            const parent = this.heap[parentIndex];
+            if (element[0] &gt;= parent[0]) break;
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+        this.heap[index] = element;
+    }
+
+    bubbleDown() {
+        let index = 0;
+        const length = this.heap.length;
+        const element = this.heap[index];
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let leftChild, rightChild;
+            let swapIndex = null;
+
+            if (leftChildIndex &lt; length) {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild[0] &lt; element[0]) {
+                    swapIndex = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex &lt; length) {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swapIndex === null &amp;&amp; rightChild[0] &lt; element[0]) ||
+                    (swapIndex !== null &amp;&amp; rightChild[0] &lt; leftChild[0])
+                ) {
+                    swapIndex = rightChildIndex;
+                }
+            }
+
+            if (swapIndex === null) break;
+            this.heap[index] = this.heap[swapIndex];
+            index = swapIndex;
+        }
+        this.heap[index] = element;
+    }
+}
+
+class Solution {
+    /* Function to get the number of ways to arrive
+    at destinations in shortest possible time */
+    countPaths(n, roads) {
+        
+        const mod = 1e9 + 7; // Mod value
+        
+        // To store the graph
+        const adj = Array.from({ length: n }, () =&gt; []);
+        
+        // Adding the edges to the graph
+        for (const it of roads) {
+            adj[it[0]].push([it[1], it[2]]);
+            adj[it[1]].push([it[0], it[2]]);
+        }
+        
+        /* Array to store the minimum 
+        time to get to nodes */
+        const minTime = Array(n).fill(Infinity);
+        
+        /* To store the number of 
+        ways to reach nodes */
+        const ways = Array(n).fill(0);
+        
+        // Priority queue to store: {time, node}
+        const pq = new MinPriorityQueue();
+        
+        // Initial configuration
+        minTime[0] = 0;
+        ways[0] = 1;
+        pq.enqueue([0, 0]);
+        
+        // Until the priority queue is empty
+        while (!pq.isEmpty()) {
+            
+            // Get the element
+            const [time, node] = pq.dequeue();
+            
+            // Traverse its neighbors
+            for (const [adjNode, travelTime] of adj[node]) {
+                
+                /* If the current time taken is less than
+                earlier known time to reach adjacent node */
+                if (minTime[adjNode] &gt; time + travelTime) {
+                    
+                    // Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime;
+                    
+                    // Update the number of ways
+                    ways[adjNode] = ways[node];
+                    
+                    // Add the new element in priority queue
+                    pq.enqueue([minTime[adjNode], adjNode]);
+                }
+                
+                /* Else if the current time taken is same as
+                earlier known time to reach adjacent node */ 
+                else if (minTime[adjNode] === time + travelTime) {
+                    
+                    /* Update the number of ways 
+                    to reach adjacent nodes */
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod;
+                }
+            }
+        }
+        
+        // Return the result
+        return ways[n - 1] % mod;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>import heapq
+from collections import defaultdict
+from typing import List
+
+class Solution:
+    
+    # Function to get the number of ways to arrive
+    # at destinations in shortest possible time
+    def countPaths(self, n: int, roads: List[List[int]]) -&gt; int:
+        
+        mod = 10**9 + 7 # Mod value
+        
+        # To store the graph
+        adj = defaultdict(list)
+        
+        # Adding the edges to the graph
+        for it in roads:
+            adj[it[0]].append((it[1], it[2]))
+            adj[it[1]].append((it[0], it[2]))
+        
+        # Array to store the minimum 
+        # time to get to nodes
+        minTime = [float(&#x27;inf&#x27;)] * n
+        
+        # To store the number of 
+        # ways to reach nodes
+        ways = [0] * n
+        
+        # Priority queue to store: {time, node}
+        pq = []
+        
+        # Initial configuration
+        minTime[0] = 0
+        ways[0] = 1
+        heapq.heappush(pq, (0, 0))
+        
+        # Until the priority queue is empty
+        while pq:
+            
+            # Get the element
+            time, node = heapq.heappop(pq)
+            
+            # Traverse its neighbors
+            for adjNode, travelTime in adj[node]:
+                
+                # If the current time taken is less than
+                # earlier known time to reach adjacent node
+                if minTime[adjNode] &gt; time + travelTime:
+                    
+                    # Update the time to reach adjacent node
+                    minTime[adjNode] = time + travelTime
+                    
+                    # Update the number of ways
+                    ways[adjNode] = ways[node]
+                    
+                    # Add the new element in priority queue
+                    heapq.heappush(pq, (minTime[adjNode], adjNode))
+                
+                # Else if the current time taken is same as
+                # earlier known time to reach adjacent node 
+                elif minTime[adjNode] == time + travelTime:
+                    
+                    # Update the number of ways 
+                    # to reach adjacent nodes
+                    ways[adjNode] = (ways[adjNode] + ways[node]) % mod
+        
+        # Return the result
+        return ways[n - 1] % mod
+</code></pre></div>
+</body>
+</html>

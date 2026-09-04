@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LRU Cache</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>LRU Cache</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Design</span><span>Doubly-Linked List</span><span>Hash Table</span><span>Linked List</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Design a data structure that follows the constraints of <strong>Least Recently Used (LRU) </strong>cache.</p><p><br></p><p>Implement the LRUCache class:</p><p><br></p><p><strong>LRUCache(int capacity):</strong> We need to initialize the LRU cache with positive size capacity.</p><p><strong>int get(int key):</strong> Returns the value of the key if the key exists, otherwise return -1.</p><p><strong>void put(int key,int value):</strong> Update the value of the key if the key exists. Otherwise, add the key-value pair to the cache. If the number of keys exceeds the capacity from this operation, evict the least recently used key.</p><p><br></p><p>The functions get and put must each run in <strong>O(1)</strong> average time complexity.</p><p><br></p><p>Note : In Input is provided in 2D array format where the first number in each array denotes the operation (1-put, 2-get) to perform. The next integers are the values used for the operation.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= capacity <= 1000</li><li>0 <= key <= 10<sup>4</sup></li><li>0 <= value <= 10<sup>5</sup></li><li>At most 10<sup>5</sup> calls will be made to get and put.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: Capacity = 2, nums = [ [1, 1, 1], [1, 2, 2], [2, 1], [1, 3, 3], [2, 2], [1, 4, 4], [2, 1], [2, 3], [2, 4] ]</p><p>Output:</p><p> [null, null, null, 1, null, -1, null, -1, 3, 4]</p><p>Explanation:</p><p>LRUCache lRUCache = new LRUCache(2);</p><p>1<sup>st</sup> entry of nums is (<strong>1</strong>, 1, 1). 1 - represents put call. lRUCache.put(1, 1); // cache is {1=1}</p><p>2<sup>nd</sup> entry of nums is (<strong>1</strong>, 2, 2). 1 - represents put call. lRUCache.put(2, 2); // cache is {1=1, 2=2}</p><p>3<sup>rd</sup> entry of nums is (<strong>2</strong>, 1). 2 - represents get call. lRUCache.get(1);  // return 1</p><p>lRUCache.put(3, 3); // LRU key was 2, evicts key 2, cache is {1=1, 3=3}</p><p>lRUCache.get(2);  // returns -1 (not found)</p><p>lRUCache.put(4, 4); // LRU key was 1, evicts key 1, cache is {4=4, 3=3}</p><p>lRUCache.get(1);  // return -1 (not found)</p><p>lRUCache.get(3);  // return 3</p><p>lRUCache.get(4);  // return 4</p><h3>Example 2</h3><p>Input: Capacity = 1, nums = [[1, 1, 1], [1, 2, 2], [2, 1], [1, 3, 3], [2, 2], [1, 4, 4], [2, 3]]</p><p>Output:</p><p>[null, null, null, -1, null, -1, null, -1]</p><p>Explanation:</p><p>LRUCache lRUCache = new LRUCache(1);</p><p>lRUCache.put(1, 1); // cache is {1=1}</p><p>lRUCache.put(2, 2); // evicts key 1, cache is {2=2}</p><p>lRUCache.get(1);  // returns -1 (not found)</p><p>lRUCache.put(3, 3); // evicts key 2, cache is {3=3}</p><p>lRUCache.get(2);  // returns -1 (not found)</p><p>lRUCache.put(4, 4); // evicts key 3, cache is {4=4}</p><p>lRUCache.get(3);  // returns -1 (not found)</p><h3>Example 3</h3><p>Input: Capacity - 2, nums = [[1, 1, 1], [1, 2, 2], [2, 1], [1, 3, 3], [1, 4, 4], [2, 2], [2, 4]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The concept of a Least Recently Used (LRU) cache is widely used in operating systems, databases, and software applications. For instance, in a web browser, it's used to cache web pages. It holds the most recently accessed pages for a quick revisit, discarding the least recently viewed pages when the cache limit is exceeded. The LRU cache data structure, as highlighted in this problem, allows the system to maintain and manage such resources efficiently in O(1) time, improving the overall performance of the software application or system.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><p><strong>Pre Requisites:</strong> Knowledge of Hashmaps and Doubly Linked List data structure</p>
+
+<h3>Intuition:</h3> 
+<p>
+    As the name suggests, the data items (key-value pairs) that are <strong>least</strong> recently used will be staying in the cache memory. To mark the data items as recently used, a doubly linked list can be used. The most recently used data item will be placed in the front and the least recently used data item will be placed at the end of the doubly linked list. <br>
+    </p><h6>Why using a Doubly Linked List?</h6>
+    Because doubly linked list data structure makes the insertion and deletion operation on data items in constant time while making sure the order of data items remains. <br><br>
+
+    But in order to implement the <strong>get</strong> method for LRU cache, the searching operation will take linear time where each data-item needs to be checked. To improve the complexity of <strong>get</strong> method, a hashmap can be used to store the key and the address of node containing the key (if it exists). <br><br>
+
+    This way, the two methods can be implemented in constant time: 
+    <ul>
+        <li><strong>Get method:</strong> Using hashmap, it can be found whether a key exists in the doubly linked list. If it exists, the corresponding value can be returned using the address of node, otherwise, -1 can be returned.</li>
+        <li><strong>Put method:</strong> If the key exists in the doubly linked list, its value can be updated. Otherwise, the least recently used data-item can be removed and the current key-value pair can be inserted.</li>
+    </ul>
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>The cache is initialized with a given capacity. Two dummy nodes, head and tail, are created to mark the start and end of cache. The head's next points to the tail, and the tail's previous points to the head.</li>
+   <li><strong>Get operation:</strong>
+    <ul>
+        <li>Check if the key exists in the hash map.</li>
+        <li>If the key is present, retrieve the corresponding node, move it to the front (mark it as recently used), and return its value.</li>
+        <li>If the key is not present, return -1.</li>
+    </ul>
+</li>
+   <li><strong>Put operation:</strong>
+    <ul>
+        <li>Check if the key already exists in the hash map.</li>
+        <li>If the key is present, update the node's value, move it to the front (mark it as recently used). If the key is not present, check if the cache has reached its capacity.</li>
+        <li>If at capacity, remove the least recently used node (node right before the tail) from both the hash map and the doubly linked list.</li>
+        <li>Insert the new key-value pair as a new node at the front (mark it as recently used) and add it to the hash map.</li>
+    </ul>
+</li>
+   <li>There are two helper functions:
+    <ul>
+        <li><strong>DeleteNode:</strong> This function removes a given node from the doubly linked list by adjusting the pointers of its previous and next nodes.</li>
+        <li><strong>InsertAfterHead:</strong> This function inserts a given node right after the head, marking it as the most recently used.</li>
+    </ul>
+   </li>
+</ol>
+
+<h4> Dry Run: </h4>
+<img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LRU Cache/illustration-rXkj2Xye" style="margin: 0px auto;">
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* Class to implement Nodes
+of a doubly linked list */
+class Node {
+public:
+	int key, val;
+	Node* next;
+	Node* prev;
+    
+    // Constructors
+	Node() {
+		key = val = -1;
+		next = prev = NULL;
+	}
+
+	Node(int k, int value) {
+		key = k;
+		val = value;
+		next = prev = NULL;
+	}
+};
+
+// Class implementing LRU cache
+class LRUCache {
+private:
+
+	map <int, Node*> mpp; // Map data structure
+	int cap; // Capacity
+	Node* head; // Dummy head pointer
+	Node* tail; // Dummy tail pointer
+
+	/* Private method to delete node
+	from doubly linked list */
+	void deleteNode(Node* node) {
+
+		// Get the previous and next pointers
+		Node* prevNode = node-> prev;
+		Node* nextNode = node-> next;
+
+		// Remove pointers to node
+		prevNode-> next = nextNode;
+		nextNode-> prev = prevNode;
+	}
+
+	// Private method to insert node after head
+	void insertAfterHead(Node* node) {
+
+		Node* nextNode = head-> next;
+		head-> next = node;
+		nextNode-> prev = node;
+		node-> prev = head;
+		node-> next = nextNode;
+	}
+
+public:
+	// Method to initialise cache with given capacity
+	LRUCache(int capacity) {
+		cap = capacity; // Set the capacity
+		mpp.clear(); // Clear the cache
+
+		head = new Node();
+		tail = new Node();
+
+		// Make the connections
+		head-> next = tail;
+		tail-> prev = head;
+	}
+
+	// Method to get the key from cache
+	int get(int key_) {
+		// Return -1 if it is not present in cache
+		if(mpp.find(key_) == mpp.end())
+			return -1;
+
+		Node* node = mpp[key_]; // Get the node
+		int val = node->val; // Get the value
+
+		// Delete the node
+		deleteNode(node);
+		/* Insert this node to front
+		as it was recently used */
+		insertAfterHead(node);
+
+		// Return the stored value
+		return val;
+	}
+
+	/* Method to update value is key exists,
+	otherwise insert the key-value pair */
+	void put(int key_, int value) {
+
+		// Update the value if key is already present
+		if(mpp.find(key_) != mpp.end()) {
+		    
+			Node* node = mpp[key_]; // Get the node
+			node->val = value; // Update the value
+            
+			// Delete the node
+			deleteNode(node);
+			
+			/* Insert this node to front
+			as it was recently used */
+			insertAfterHead(node);
+			
+			return;
+		}
+
+		// Check if the capacity limit has reached
+		if(mpp.size() == cap) {
+
+			// Get the least recently used node
+			Node* node = tail->prev;
+
+			// Delete node from map
+			mpp.erase(node-> key);
+
+			// Delete node from doubly linked list
+			deleteNode(node);
+		}
+
+		// Create a new node
+		Node* newNode = new Node(key_, value);
+		
+		// Insert it in map
+		mpp[key_] = newNode;
+
+		// Insert in doubly linked list
+		insertAfterHead(newNode);
+	}
+};
+
+
+int main() {
+	// LRU Cache
+	LRUCache cache(2);
+
+	// Queries
+	cache.put(1, 1);
+	cache.put(2, 2);
+	cout << cache.get(1) << " ";
+	cache.put(3, 3);
+	cout << cache.get(2) << " ";
+	cache.put(4, 4);
+	cout << cache.get(1) << " ";
+	cout << cache.get(3) << " ";
+	cout << cache.get(4) << " ";
+
+	return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Node {
+    public int key, val;
+    public Node next, prev;
+    
+    // Constructors
+    Node() {
+        key = val = -1;
+        next = prev = null;
+    }
+
+    Node(int k, int value) {
+        key = k;
+        val = value;
+        next = prev = null;
+    }
+}
+
+// Class implementing LRU cache
+class LRUCache {
+    private Map<Integer, Node> mpp; // Map data structure
+    private int cap; // Capacity
+    private Node head; // Dummy head pointer
+    private Node tail; // Dummy tail pointer
+
+    /* Private method to delete node
+    from doubly linked list */
+    private void deleteNode(Node node) {
+
+        // Get the previous and next pointers
+        Node prevNode = node.prev;
+        Node nextNode = node.next;
+
+        // Remove pointers to node
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+    }
+
+    // Private method to insert node after head
+    private void insertAfterHead(Node node) {
+
+        Node nextNode = head.next;
+        head.next = node;
+        nextNode.prev = node;
+        node.prev = head;
+        node.next = nextNode;
+    }
+
+    // Method to initialise cache with given capacity
+    public LRUCache(int capacity) {
+        cap = capacity; // Set the capacity
+        mpp = new HashMap<>(); // Clear the cache
+
+        head = new Node();
+        tail = new Node();
+
+        // Make the connections
+        head.next = tail;
+        tail.prev = head;
+    }
+
+    // Method to get the key from cache
+    public int get(int key_) {
+        // Return -1 if it is not present in cache
+        if (!mpp.containsKey(key_))
+            return -1;
+
+        Node node = mpp.get(key_); // Get the node
+        int val = node.val; // Get the value
+
+        // Delete the node
+        deleteNode(node);
+        /* Insert this node to front
+        as it was recently used */
+        insertAfterHead(node);
+
+        // Return the stored value
+        return val;
+    }
+
+    /* Method to update value if key exists,
+    otherwise insert the key-value pair */
+    public void put(int key_, int value) {
+
+        // Update the value if key is already present
+        if (mpp.containsKey(key_)) {
+            
+            Node node = mpp.get(key_); // Get the node
+            node.val = value; // Update the value
+            
+            // Delete the node
+            deleteNode(node);
+            
+            /* Insert this node to front
+            as it was recently used */
+            insertAfterHead(node);
+            
+            return;
+        }
+
+        // Check if the capacity limit has reached
+        if (mpp.size() == cap) {
+
+            // Get the least recently used node
+            Node node = tail.prev;
+
+            // Delete node from map
+            mpp.remove(node.key);
+
+            // Delete node from doubly linked list
+            deleteNode(node);
+        }
+
+        // Create a new node
+        Node newNode = new Node(key_, value);
+        
+        // Insert it in map
+        mpp.put(key_, newNode);
+
+        // Insert in doubly linked list
+        insertAfterHead(newNode);
+    }
+
+    public static void main(String[] args) {
+        // LRU Cache
+        LRUCache cache = new LRUCache(2);
+
+        // Queries
+        cache.put(1, 1);
+        cache.put(2, 2);
+        System.out.print(cache.get(1) + " ");
+        cache.put(3, 3);
+        System.out.print(cache.get(2) + " ");
+        cache.put(4, 4);
+        System.out.print(cache.get(1) + " ");
+        System.out.print(cache.get(3) + " ");
+        System.out.print(cache.get(4) + " ");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span></div><pre class="wp-block-code"><code lang="python" class="language-python"># Class to implement Nodes of a doubly linked list
+class Node:
+    def __init__(self, key=-1, val=-1):
+        self.key = key
+        self.val = val
+        self.next = None
+        self.prev = None
+
+# Class implementing LRU cache
+class LRUCache:
+
+    def __init__(self, capacity):
+        self.mpp = {} # Map data structure
+        self.cap = capacity # Capacity
+        self.head = Node() # Dummy head pointer
+        self.tail = Node() # Dummy tail pointer
+
+        # Make the connections
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    # Private method to delete node from doubly linked list
+    def deleteNode(self, node):
+        # Get the previous and next pointers
+        prevNode = node.prev
+        nextNode = node.next
+
+        # Remove pointers to node
+        prevNode.next = nextNode
+        nextNode.prev = prevNode
+
+    # Private method to insert node after head
+    def insertAfterHead(self, node):
+        nextNode = self.head.next
+        self.head.next = node
+        nextNode.prev = node
+        node.prev = self.head
+        node.next = nextNode
+
+    # Method to get the key from cache
+    def get(self, key_):
+        # Return -1 if it is not present in cache
+        if key_ not in self.mpp:
+            return -1
+
+        node = self.mpp[key_] # Get the node
+        val = node.val # Get the value
+
+        # Delete the node
+        self.deleteNode(node)
+        # Insert this node to front as it was recently used
+        self.insertAfterHead(node)
+
+        # Return the stored value
+        return val
+
+    # Method to update value if key exists, otherwise insert the key-value pair
+    def put(self, key_, value):
+        # Update the value if key is already present
+        if key_ in self.mpp:
+            node = self.mpp[key_] # Get the node
+            node.val = value # Update the value
+
+            # Delete the node
+            self.deleteNode(node)
+            # Insert this node to front as it was recently used
+            self.insertAfterHead(node)
+
+            return
+
+        # Check if the capacity limit has reached
+        if len(self.mpp) == self.cap:
+            # Get the least recently used node
+            node = self.tail.prev
+
+            # Delete node from map
+            del self.mpp[node.key]
+
+            # Delete node from doubly linked list
+            self.deleteNode(node)
+
+        # Create a new node
+        newNode = Node(key_, value)
+
+        # Insert it in map
+        self.mpp[key_] = newNode
+
+        # Insert in doubly linked list
+        self.insertAfterHead(newNode)
+
+
+# LRU Cache
+cache = LRUCache(2)
+
+# Queries
+cache.put(1, 1)
+cache.put(2, 2)
+print(cache.get(1), end=" ")
+cache.put(3, 3)
+print(cache.get(2), end=" ")
+cache.put(4, 4)
+print(cache.get(1), end=" ")
+print(cache.get(3), end=" ")
+print(cache.get(4), end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Class to implement Nodes of a doubly linked list
+class Node {
+    constructor(key = -1, val = -1) {
+        this.key = key;
+        this.val = val;
+        this.next = null;
+        this.prev = null;
+    }
+}
+
+// Class implementing LRU cache
+class LRUCache {
+    constructor(capacity) {
+        this.mpp = new Map(); // Map data structure
+        this.cap = capacity; // Capacity
+        this.head = new Node(); // Dummy head pointer
+        this.tail = new Node(); // Dummy tail pointer
+
+        // Make the connections
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+
+    // Private method to delete node from doubly linked list
+    deleteNode(node) {
+        // Get the previous and next pointers
+        const prevNode = node.prev;
+        const nextNode = node.next;
+
+        // Remove pointers to node
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+    }
+
+    // Private method to insert node after head
+    insertAfterHead(node) {
+        const nextNode = this.head.next;
+        this.head.next = node;
+        nextNode.prev = node;
+        node.prev = this.head;
+        node.next = nextNode;
+    }
+
+    // Method to get the key from cache
+    get(key_) {
+        // Return -1 if it is not present in cache
+        if (!this.mpp.has(key_)) {
+            return -1;
+        }
+
+        const node = this.mpp.get(key_); // Get the node
+        const val = node.val; // Get the value
+
+        // Delete the node
+        this.deleteNode(node);
+        // Insert this node to front as it was recently used
+        this.insertAfterHead(node);
+
+        // Return the stored value
+        return val;
+    }
+
+    // Method to update value if key exists, otherwise insert the key-value pair
+    put(key_, value) {
+        // Update the value if key is already present
+        if (this.mpp.has(key_)) {
+            const node = this.mpp.get(key_);
+            node.val = value;
+
+            // Delete the node
+            this.deleteNode(node);
+            // Insert this node to front as it was recently used
+            this.insertAfterHead(node);
+
+            return;
+        }
+
+        // Check if the capacity limit has reached
+        if (this.mpp.size === this.cap) {
+            // Get the least recently used node
+            const node = this.tail.prev;
+
+            // Delete node from map
+            this.mpp.delete(node.key);
+
+            // Delete node from doubly linked list
+            this.deleteNode(node);
+        }
+
+        // Create a new node
+        const newNode = new Node(key_, value);
+
+        // Insert it in map
+        this.mpp.set(key_, newNode);
+
+        // Insert in doubly linked list
+        this.insertAfterHead(newNode);
+    }
+}
+
+// LRU Cache
+const cache = new LRUCache(2);
+
+// Queries
+cache.put(1, 1);
+cache.put(2, 2);
+console.log(cache.get(1) + " ");
+cache.put(3, 3);
+console.log(cache.get(2) + " ");
+cache.put(4, 4);
+console.log(cache.get(1) + " ");
+console.log(cache.get(3) + " ");
+console.log(cache.get(4) + " ");
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System; 
+using System.Collections.Generic;
+
+// Class to implement Nodes of a doubly linked list
+public class Node
+{
+    public int key;
+    public int val;
+    public Node next;
+    public Node prev;
+
+    public Node(int key = -1, int val = -1)
+    {
+        this.key = key;
+        this.val = val;
+        this.next = null;
+        this.prev = null;
+    }
+}
+
+public class LRUCache
+{
+    private Dictionary<int, Node> mpp; // Map data structure
+    private int cap; // Capacity
+    private Node head; // Dummy head pointer
+    private Node tail; // Dummy tail pointer
+
+    public LRUCache(int capacity)
+    {
+        this.mpp = new Dictionary<int, Node>();
+        this.cap = capacity;
+        this.head = new Node(); // Dummy head pointer
+        this.tail = new Node(); // Dummy tail pointer
+
+        // Make the connections
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+
+    // Private method to delete node from doubly linked list
+    private void DeleteNode(Node node)
+    {
+        // Get the previous and next pointers
+        Node prevNode = node.prev;
+        Node nextNode = node.next;
+
+        // Remove pointers to node
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+    }
+
+    // Private method to insert node after head
+    private void InsertAfterHead(Node node)
+    {
+        Node nextNode = this.head.next;
+        this.head.next = node;
+        nextNode.prev = node;
+        node.prev = this.head;
+        node.next = nextNode;
+    }
+
+    // Method to get the key from cache
+    public int Get(int key)
+    {
+        // Return -1 if it is not present in cache
+        if (!this.mpp.ContainsKey(key))
+        {
+            return -1;
+        }
+
+        Node node = this.mpp[key]; // Get the node
+        int val = node.val; // Get the value
+
+        // Delete the node
+        this.DeleteNode(node);
+        // Insert this node to front as it was recently used
+        this.InsertAfterHead(node);
+
+        // Return the stored value
+        return val;
+    }
+
+    // Method to update value if key exists, otherwise insert the key-value pair
+    public void Put(int key, int value)
+    {
+        // Update the value if key is already present
+        if (this.mpp.ContainsKey(key))
+        {
+            Node node = this.mpp[key];
+            node.val = value;
+
+            // Delete the node
+            this.DeleteNode(node);
+            // Insert this node to front as it was recently used
+            this.InsertAfterHead(node);
+
+            return;
+        }
+
+        // Check if the capacity limit has reached
+        if (this.mpp.Count == this.cap)
+        {
+            // Get the least recently used node
+            Node node = this.tail.prev;
+
+            // Delete node from map
+            this.mpp.Remove(node.key);
+
+            // Delete node from doubly linked list
+            this.DeleteNode(node);
+        }
+
+        // Create a new node
+        Node newNode = new Node(key, value);
+
+        // Insert it in map
+        this.mpp[key] = newNode;
+
+        // Insert in doubly linked list
+        this.InsertAfterHead(newNode);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // LRU Cache
+        LRUCache cache = new LRUCache(2);
+
+        // Queries
+        cache.Put(1, 1);
+        cache.Put(2, 2);
+        Console.Write(cache.Get(1) + " ");
+        cache.Put(3, 3);
+        Console.Write(cache.Get(2) + " ");
+        cache.Put(4, 4);
+        Console.Write(cache.Get(1) + " ");
+        Console.Write(cache.Get(3) + " ");
+        Console.Write(cache.Get(4) + " ");
+        Console.WriteLine();
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Node struct to implement nodes of a doubly linked list
+type Node struct {
+	key, val int
+	next     *Node
+	prev     *Node
+}
+
+// Constructors
+func NewNode() *Node {
+	return &Node{
+		key:  -1,
+		val:  -1,
+		next: nil,
+		prev: nil,
+	}
+}
+
+func NewNodeWithValue(k int, value int) *Node {
+	return &Node{
+		key:  k,
+		val:  value,
+		next: nil,
+		prev: nil,
+	}
+}
+
+// LRUCache struct
+type LRUCache struct {
+	mpp  map[int]*Node // Map data structure
+	cap  int           // Capacity
+	head *Node         // Dummy head pointer
+	tail *Node         // Dummy tail pointer
+}
+
+// Constructor
+func NewLRUCache(capacity int) *LRUCache {
+	cache := &LRUCache{
+		mpp: make(map[int]*Node),
+		cap: capacity,
+	}
+
+	cache.head = NewNode()
+	cache.tail = NewNode()
+
+	// Make the connections
+	cache.head.next = cache.tail
+	cache.tail.prev = cache.head
+
+	return cache
+}
+
+// Private method to delete node from doubly linked list
+func (lru *LRUCache) deleteNode(node *Node) {
+	// Get the previous and next pointers
+	prevNode := node.prev
+	nextNode := node.next
+
+	// Remove pointers to node
+	prevNode.next = nextNode
+	nextNode.prev = prevNode
+}
+
+// Private method to insert node after head
+func (lru *LRUCache) insertAfterHead(node *Node) {
+	nextNode := lru.head.next
+	lru.head.next = node
+	nextNode.prev = node
+	node.prev = lru.head
+	node.next = nextNode
+}
+
+// Method to get the key from cache
+func (lru *LRUCache) Get(key int) int {
+	// Return -1 if it is not present in cache
+	if _, ok := lru.mpp[key]; !ok {
+		return -1
+	}
+
+	node := lru.mpp[key] // Get the node
+	val := node.val      // Get the value
+
+	// Delete the node
+	lru.deleteNode(node)
+
+	/* Insert this node to front
+	as it was recently used */
+	lru.insertAfterHead(node)
+
+	// Return the stored value
+	return val
+}
+
+// Method to update value if key exists, otherwise insert the key-value pair
+func (lru *LRUCache) Put(key int, value int) {
+	// Update the value if key is already present
+	if node, ok := lru.mpp[key]; ok {
+		node.val = value // Update the value
+
+		// Delete the node
+		lru.deleteNode(node)
+
+		/* Insert this node to front
+		as it was recently used */
+		lru.insertAfterHead(node)
+		return
+	}
+
+	// Check if the capacity limit has reached
+	if len(lru.mpp) == lru.cap {
+		// Get the least recently used node
+		node := lru.tail.prev
+
+		// Delete node from map
+		delete(lru.mpp, node.key)
+
+		// Delete node from doubly linked list
+		lru.deleteNode(node)
+	}
+
+	// Create a new node
+	newNode := NewNodeWithValue(key, value)
+
+	// Insert it in map
+	lru.mpp[key] = newNode
+
+	// Insert in doubly linked list
+	lru.insertAfterHead(newNode)
+}
+
+func main() {
+	// LRU Cache
+	cache := NewLRUCache(2)
+
+	// Queries
+	cache.Put(1, 1)
+	cache.Put(2, 2)
+	fmt.Print(cache.Get(1), " ")
+	cache.Put(3, 3)
+	fmt.Print(cache.Get(2), " ")
+	cache.Put(4, 4)
+	fmt.Print(cache.Get(1), " ")
+	fmt.Print(cache.Get(3), " ")
+	fmt.Print(cache.Get(4), " ")
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N)</strong> (where N is the number of queries) <br>
+    Since the Put and Get method takes an average of constant time, the overall complexity to process all the queries is O(N) time.
+</p>
+
+<p><strong>Space Complexity: O(cap)</strong> (where cap is the capacity of the LRU cache) <br>
+    Since the doubly linked list can store at most of the capacity number of key-value pairs, this takes O(cap) space.
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Node {
+public:
+	int key, val;
+	Node* next;
+	Node* prev;
+    
+    // Constructors
+	Node() {
+		key = val = -1;
+		next = prev = NULL;
+	}
+
+	Node(int k, int value) {
+		key = k;
+		val = value;
+		next = prev = NULL;
+	}
+};
+
+// Class implementing LRU cache
+class LRUCache {
+private:
+
+	map &lt;int, Node*&gt; mpp; // Map data structure
+	int cap; // Capacity
+	Node* head; // Dummy head pointer
+	Node* tail; // Dummy tail pointer
+
+	/* Private method to delete node
+	from doubly linked list */
+	void deleteNode(Node* node) {
+
+		// Get the previous and next pointers
+		Node* prevNode = node-&gt; prev;
+		Node* nextNode = node-&gt; next;
+
+		// Remove pointers to node
+		prevNode-&gt; next = nextNode;
+		nextNode-&gt; prev = prevNode;
+	}
+
+	// Private method to insert node after head
+	void insertAfterHead(Node* node) {
+
+		Node* nextNode = head-&gt; next;
+		head-&gt; next = node;
+		nextNode-&gt; prev = node;
+		node-&gt; prev = head;
+		node-&gt; next = nextNode;
+	}
+
+public:
+	// Method to initialise cache with given capacity
+	LRUCache(int capacity) {
+		cap = capacity; // Set the capacity
+		mpp.clear(); // Clear the cache
+
+		head = new Node();
+		tail = new Node();
+
+		// Make the connections
+		head-&gt; next = tail;
+		tail-&gt; prev = head;
+	}
+
+	// Method to get the key from cache
+	int get(int key_) {
+		// Return -1 if it is not present in cache
+		if(mpp.find(key_) == mpp.end())
+			return -1;
+
+		Node* node = mpp[key_]; // Get the node
+		int val = node-&gt;val; // Get the value
+
+		// Delete the node
+		deleteNode(node);
+		/* Insert this node to front
+		as it was recently used */
+		insertAfterHead(node);
+
+		// Return the stored value
+		return val;
+	}
+
+	/* Method to update value is key exists,
+	otherwise insert the key-value pair */
+	void put(int key_, int value) {
+
+		// Update the value if key is already present
+		if(mpp.find(key_) != mpp.end()) {
+		    
+			Node* node = mpp[key_]; // Get the node
+			node-&gt;val = value; // Update the value
+            
+			// Delete the node
+			deleteNode(node);
+			
+			/* Insert this node to front
+			as it was recently used */
+			insertAfterHead(node);
+			
+			return;
+		}
+
+		// Check if the capacity limit has reached
+		if(mpp.size() == cap) {
+
+			// Get the least recently used node
+			Node* node = tail-&gt;prev;
+
+			// Delete node from map
+			mpp.erase(node-&gt; key);
+
+			// Delete node from doubly linked list
+			deleteNode(node);
+		}
+
+		// Create a new node
+		Node* newNode = new Node(key_, value);
+		
+		// Insert it in map
+		mpp[key_] = newNode;
+
+		// Insert in doubly linked list
+		insertAfterHead(newNode);
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>// Class to implement Nodes of a doubly linked list
+public class Node
+{
+    public int key;
+    public int val;
+    public Node next;
+    public Node prev;
+
+    public Node(int key = -1, int val = -1)
+    {
+        this.key = key;
+        this.val = val;
+        this.next = null;
+        this.prev = null;
+    }
+}
+
+public class LRUCache {
+  private Dictionary&lt;int, Node&gt; mpp; // Map data structure
+  private int cap; // Capacity
+  private Node head; // Dummy head pointer
+  private Node tail; // Dummy tail pointer
+
+  public LRUCache(int capacity) {
+    this.mpp = new Dictionary&lt;int, Node&gt;();
+    this.cap = capacity;
+    this.head = new Node(); // Dummy head pointer
+    this.tail = new Node(); // Dummy tail pointer
+
+    // Make the connections
+    this.head.next = this.tail;
+    this.tail.prev = this.head;
+  }
+
+  // Private method to delete node from doubly linked list
+  private void DeleteNode(Node node)
+  {
+      // Get the previous and next pointers
+      Node prevNode = node.prev;
+      Node nextNode = node.next;
+
+      // Remove pointers to node
+      prevNode.next = nextNode;
+      nextNode.prev = prevNode;
+  }
+
+  // Private method to insert node after head
+  private void InsertAfterHead(Node node)
+  {
+      Node nextNode = this.head.next;
+      this.head.next = node;
+      nextNode.prev = node;
+      node.prev = this.head;
+      node.next = nextNode;
+  }
+
+  public int Get(int key) {
+    // Return -1 if it is not present in cache
+    if (!this.mpp.ContainsKey(key))
+    {
+        return -1;
+    }
+
+    Node node = this.mpp[key]; // Get the node
+    int val = node.val; // Get the value
+
+    // Delete the node
+    this.DeleteNode(node);
+    // Insert this node to front as it was recently used
+    this.InsertAfterHead(node);
+
+    // Return the stored value
+    return val;
+  }
+
+  public void Put(int key, int value) {
+    // Update the value if key is already present
+    if (this.mpp.ContainsKey(key))
+    {
+        Node node = this.mpp[key];
+        node.val = value;
+
+        // Delete the node
+        this.DeleteNode(node);
+        // Insert this node to front as it was recently used
+        this.InsertAfterHead(node);
+
+        return;
+    }
+
+    // Check if the capacity limit has reached
+    if (this.mpp.Count == this.cap)
+    {
+        // Get the least recently used node
+        Node node = this.tail.prev;
+
+        // Delete node from map
+        this.mpp.Remove(node.key);
+
+        // Delete node from doubly linked list
+        this.DeleteNode(node);
+    }
+
+    // Create a new node
+    Node newNode = new Node(key, value);
+
+    // Insert it in map
+    this.mpp[key] = newNode;
+
+    // Insert in doubly linked list
+    this.InsertAfterHead(newNode);
+  }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Node struct to implement nodes of a doubly linked list
+type Node struct {
+	key, val int
+	next     *Node
+	prev     *Node
+}
+
+// Constructors
+func NewNode() *Node {
+	return &amp;Node{
+		key:  -1,
+		val:  -1,
+		next: nil,
+		prev: nil,
+	}
+}
+
+func NewNodeWithValue(k int, value int) *Node {
+	return &amp;Node{
+		key:  k,
+		val:  value,
+		next: nil,
+		prev: nil,
+	}
+}
+
+// LRUCache struct
+type LRUCache struct {
+	mpp  map[int]*Node // Map data structure
+	cap  int           // Capacity
+	head *Node         // Dummy head pointer
+	tail *Node         // Dummy tail pointer
+}
+
+// Constructor
+func NewLRUCache(capacity int) *LRUCache {
+	cache := &amp;LRUCache{
+		mpp: make(map[int]*Node),
+		cap: capacity,
+	}
+
+	cache.head = NewNode()
+	cache.tail = NewNode()
+
+	// Make the connections
+	cache.head.next = cache.tail
+	cache.tail.prev = cache.head
+
+	return cache
+}
+
+// Private method to delete node from doubly linked list
+func (lru *LRUCache) deleteNode(node *Node) {
+	// Get the previous and next pointers
+	prevNode := node.prev
+	nextNode := node.next
+
+	// Remove pointers to node
+	prevNode.next = nextNode
+	nextNode.prev = prevNode
+}
+
+// Private method to insert node after head
+func (lru *LRUCache) insertAfterHead(node *Node) {
+	nextNode := lru.head.next
+	lru.head.next = node
+	nextNode.prev = node
+	node.prev = lru.head
+	node.next = nextNode
+}
+
+// Method to get the key from cache
+func (lru *LRUCache) Get(key int) int {
+	// Return -1 if it is not present in cache
+	if _, ok := lru.mpp[key]; !ok {
+		return -1
+	}
+
+	node := lru.mpp[key] // Get the node
+	val := node.val      // Get the value
+
+	// Delete the node
+	lru.deleteNode(node)
+
+	/* Insert this node to front
+	as it was recently used */
+	lru.insertAfterHead(node)
+
+	// Return the stored value
+	return val
+}
+
+// Method to update value if key exists, otherwise insert the key-value pair
+func (lru *LRUCache) Put(key int, value int) {
+	// Update the value if key is already present
+	if node, ok := lru.mpp[key]; ok {
+		node.val = value // Update the value
+
+		// Delete the node
+		lru.deleteNode(node)
+
+		/* Insert this node to front
+		as it was recently used */
+		lru.insertAfterHead(node)
+		return
+	}
+
+	// Check if the capacity limit has reached
+	if len(lru.mpp) == lru.cap {
+		// Get the least recently used node
+		node := lru.tail.prev
+
+		// Delete node from map
+		delete(lru.mpp, node.key)
+
+		// Delete node from doubly linked list
+		lru.deleteNode(node)
+	}
+
+	// Create a new node
+	newNode := NewNodeWithValue(key, value)
+
+	// Insert it in map
+	lru.mpp[key] = newNode
+
+	// Insert in doubly linked list
+	lru.insertAfterHead(newNode)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Node {
+    public int key, val;
+    public Node next, prev;
+    
+    // Constructors
+    Node() {
+        key = val = -1;
+        next = prev = null;
+    }
+
+    Node(int k, int value) {
+        key = k;
+        val = value;
+        next = prev = null;
+    }
+}
+
+// Class implementing LRU cache
+class LRUCache {
+    private Map&lt;Integer, Node&gt; mpp; // Map data structure
+    private int cap; // Capacity
+    private Node head; // Dummy head pointer
+    private Node tail; // Dummy tail pointer
+
+    /* Private method to delete node
+    from doubly linked list */
+    private void deleteNode(Node node) {
+
+        // Get the previous and next pointers
+        Node prevNode = node.prev;
+        Node nextNode = node.next;
+
+        // Remove pointers to node
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+    }
+
+    // Private method to insert node after head
+    private void insertAfterHead(Node node) {
+
+        Node nextNode = head.next;
+        head.next = node;
+        nextNode.prev = node;
+        node.prev = head;
+        node.next = nextNode;
+    }
+
+    // Method to initialise cache with given capacity
+    public LRUCache(int capacity) {
+        cap = capacity; // Set the capacity
+        mpp = new HashMap&lt;&gt;(); // Clear the cache
+
+        head = new Node();
+        tail = new Node();
+
+        // Make the connections
+        head.next = tail;
+        tail.prev = head;
+    }
+
+    // Method to get the key from cache
+    public int get(int key_) {
+        // Return -1 if it is not present in cache
+        if (!mpp.containsKey(key_))
+            return -1;
+
+        Node node = mpp.get(key_); // Get the node
+        int val = node.val; // Get the value
+
+        // Delete the node
+        deleteNode(node);
+        /* Insert this node to front
+        as it was recently used */
+        insertAfterHead(node);
+
+        // Return the stored value
+        return val;
+    }
+
+    /* Method to update value if key exists,
+    otherwise insert the key-value pair */
+    public void put(int key_, int value) {
+
+        // Update the value if key is already present
+        if (mpp.containsKey(key_)) {
+            
+            Node node = mpp.get(key_); // Get the node
+            node.val = value; // Update the value
+            
+            // Delete the node
+            deleteNode(node);
+            
+            /* Insert this node to front
+            as it was recently used */
+            insertAfterHead(node);
+            
+            return;
+        }
+
+        // Check if the capacity limit has reached
+        if (mpp.size() == cap) {
+
+            // Get the least recently used node
+            Node node = tail.prev;
+
+            // Delete node from map
+            mpp.remove(node.key);
+
+            // Delete node from doubly linked list
+            deleteNode(node);
+        }
+
+        // Create a new node
+        Node newNode = new Node(key_, value);
+        
+        // Insert it in map
+        mpp.put(key_, newNode);
+
+        // Insert in doubly linked list
+        insertAfterHead(newNode);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Node {
+    constructor(key = -1, val = -1) {
+        this.key = key;
+        this.val = val;
+        this.next = null;
+        this.prev = null;
+    }
+}
+
+// Class implementing LRU cache
+class LRUCache {
+    constructor(capacity) {
+        this.mpp = new Map(); // Map data structure
+        this.cap = capacity; // Capacity
+        this.head = new Node(); // Dummy head pointer
+        this.tail = new Node(); // Dummy tail pointer
+
+        // Make the connections
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+
+    // Private method to delete node from doubly linked list
+    deleteNode(node) {
+        // Get the previous and next pointers
+        const prevNode = node.prev;
+        const nextNode = node.next;
+
+        // Remove pointers to node
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+    }
+
+    // Private method to insert node after head
+    insertAfterHead(node) {
+        const nextNode = this.head.next;
+        this.head.next = node;
+        nextNode.prev = node;
+        node.prev = this.head;
+        node.next = nextNode;
+    }
+
+    // Method to get the key from cache
+    get(key_) {
+        // Return -1 if it is not present in cache
+        if (!this.mpp.has(key_)) {
+            return -1;
+        }
+
+        const node = this.mpp.get(key_); // Get the node
+        const val = node.val; // Get the value
+
+        // Delete the node
+        this.deleteNode(node);
+        // Insert this node to front as it was recently used
+        this.insertAfterHead(node);
+
+        // Return the stored value
+        return val;
+    }
+
+    // Method to update value if key exists, otherwise insert the key-value pair
+    put(key_, value) {
+        // Update the value if key is already present
+        if (this.mpp.has(key_)) {
+            const node = this.mpp.get(key_);
+            node.val = value;
+
+            // Delete the node
+            this.deleteNode(node);
+            // Insert this node to front as it was recently used
+            this.insertAfterHead(node);
+
+            return;
+        }
+
+        // Check if the capacity limit has reached
+        if (this.mpp.size === this.cap) {
+            // Get the least recently used node
+            const node = this.tail.prev;
+
+            // Delete node from map
+            this.mpp.delete(node.key);
+
+            // Delete node from doubly linked list
+            this.deleteNode(node);
+        }
+
+        // Create a new node
+        const newNode = new Node(key_, value);
+
+        // Insert it in map
+        this.mpp.set(key_, newNode);
+
+        // Insert in doubly linked list
+        this.insertAfterHead(newNode);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Node:
+    def __init__(self, key=-1, val=-1):
+        self.key = key
+        self.val = val
+        self.next = None
+        self.prev = None
+
+class LRUCache:
+
+    def __init__(self, capacity):
+        self.mpp = {} # Map data structure
+        self.cap = capacity # Capacity
+        self.head = Node() # Dummy head pointer
+        self.tail = Node() # Dummy tail pointer
+
+        # Make the connections
+        self.head.next = self.tail
+        self.tail.prev = self.head
+
+    # Private method to delete node from doubly linked list
+    def deleteNode(self, node):
+        # Get the previous and next pointers
+        prevNode = node.prev
+        nextNode = node.next
+
+        # Remove pointers to node
+        prevNode.next = nextNode
+        nextNode.prev = prevNode
+
+    # Private method to insert node after head
+    def insertAfterHead(self, node):
+        nextNode = self.head.next
+        self.head.next = node
+        nextNode.prev = node
+        node.prev = self.head
+        node.next = nextNode
+
+    # Method to get the key from cache
+    def get(self, key_):
+        # Return -1 if it is not present in cache
+        if key_ not in self.mpp:
+            return -1
+
+        node = self.mpp[key_] # Get the node
+        val = node.val # Get the value
+
+        # Delete the node
+        self.deleteNode(node)
+        # Insert this node to front as it was recently used
+        self.insertAfterHead(node)
+
+        # Return the stored value
+        return val
+
+    # Method to update value if key exists, otherwise insert the key-value pair
+    def put(self, key_, value):
+        # Update the value if key is already present
+        if key_ in self.mpp:
+            node = self.mpp[key_] # Get the node
+            node.val = value # Update the value
+
+            # Delete the node
+            self.deleteNode(node)
+            # Insert this node to front as it was recently used
+            self.insertAfterHead(node)
+
+            return
+
+        # Check if the capacity limit has reached
+        if len(self.mpp) == self.cap:
+            # Get the least recently used node
+            node = self.tail.prev
+
+            # Delete node from map
+            del self.mpp[node.key]
+
+            # Delete node from doubly linked list
+            self.deleteNode(node)
+
+        # Create a new node
+        newNode = Node(key_, value)
+
+        # Insert it in map
+        self.mpp[key_] = newNode
+
+        # Insert in doubly linked list
+        self.insertAfterHead(newNode)</code></pre></div>
+</body>
+</html>

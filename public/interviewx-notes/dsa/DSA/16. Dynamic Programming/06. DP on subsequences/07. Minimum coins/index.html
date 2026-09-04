@@ -1,0 +1,3097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minimum coins</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Minimum coins</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an integer array of coins representing coins of different denominations and an integer amount representing a total amount of money. Return the <strong>fewest</strong> number of coins that are needed to make up that amount. If that amount of money cannot be made up by any combination of the coins, return -1. There are <strong>infinite</strong> numbers of coins of each type</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>n=<span style="color: rgb(245, 245, 245);">number of distinct denominations</span></li><li>1 <= n <= 100</li><li>1 <= coins[i], amount <= 10<sup>3</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input: </strong>coins = [1, 2, 5], amount = 11</p><p><strong>Output:</strong> 3</p><p><strong>Explanation: </strong>11 = 5 + 5 + 1. We need 3 coins to make up the amount 11.</p><h3>Example 2</h3><p><strong>Input:</strong> coins = [2, 5], amount = 3</p><p><strong>Output: </strong>-1</p><p><strong>Explanation:</strong> It's not possible to make amount 3 with coins 2 and 5. Since we can't combine the coin 2 and 5 to make the amount 3, the output is -1.</p><h3>Example 3</h3><p><strong>Input:</strong> coins = [10], amount = 5</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem concept forms the foundation of many optimization algorithms in software development, especially in fields like logistics and inventory management. A practical example is in Change-Making Machines, common in supermarkets or large businesses. These machines are basically designed to solve this problem: provide change using the fewest number of coins. Another area is in resource or budget allocation in cloud computing and finance. Software tools, such as those used for project management, utilize this kind of algorithm to distribute resources efficiently.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Why a Greedy Solution will not work:</strong></h5>
+
+<p>As the question asks for minimum number of coins, the first approach that comes to our mind is greedy. A greedy solution will fail in this problem because there is no ‘uniformity’ in data. While selecting a local better choice we may choose an item that will in the long term give less value.</p>
+
+<p>A Greedy solution will be to take the highest denomination coin first, so we will take an item on index 0, with a value of 9. Now the remaining target sum will be 2. Therefore we can only consider coins with a value of 1. We will take 2 coins of value 1 to meet the target. So a greedy solution gives us the answer 3 (9,1,1).</p>
+
+<p>Now we can clearly see that a non-greedy solution of taking 2 coins (6,5) gives a better option. So we can say that the greedy solution doesn’t work for this problem. </p>
+
+<p>As the greedy approach doesn’t work, try to generate all possible combinations using recursion and select the combination which gives the minimum number of coins.</p>
+
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes:</b>We are given ‘n’ distinct numbers, where n is the length of the array. Their denomination is represented by the ‘coins’ array. So clearly one parameter will be ‘ind’, i.e index up to which the array items are being considered. There is one more parameter “T”, to know the given target that we want to achieve.</li>
+
+<p>So, initially, we need to find f(n-1, T) where T is the initial target given. f(n-1, T) will give the minimum number of coins required to form the target sum by considering coins from index 0 to n-1.</p>
+
+<li><b>Try out all possible choices at a given index:</b>As all the subsets needs to be generated, use the pick/non-pick technique. There will be a slight change for this question which is discussed below.</li>
+<p>We have two choices:</p>
+
+<p><b>Exclude the current element in the subset:</b> First try to find a subset without considering the current index coin. If the current coin is excluded, the target sum will not be affected and the number of coins added to the solution will be 0. So call the recursive function f(ind-1, T).</p>
+
+<p><b>Include the current element in the subset:</b> Try to find a subset by considering the current icoin. As the current coin is included, the target sum will be updated to T-arr[ind], as we have considered 1 coin to be part of the solution.</p>
+<p>Now here is the catch, as there is an unlimited supply of coins, we want to again form a solution with the same coin value. So we will not recursively call for f(ind-1, T-arr[ind]) rather we will stay at that index only and call for f(ind, T-arr[ind]) to find the answer.</p>
+<p><b>Note:</b> Consider the current coin only when its denomination value (arr[ind]) is less than or equal to the target T.</p>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, T){
+    notTake = 0 + f(ind-1, T)
+    take = 1e9
+    if(arr[ind] <= T)
+         take = 1 + f(ind, T-arr[ind])
+}</code></pre></div></div></div>
+
+<li><b>Return the minimum of two choices:</b>As we have to return the minimum number of coins, we will return the minimum of take and notTake as our answer.</li><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, T){
+    notTake = 0 + f(ind-1, T)
+    take = 1e9
+    if(arr[ind] <= T)
+         take = 1 + f(ind, T-arr[ind])
+    return min(take, notTake)
+}</code></pre></div></div></div>
+
+<li><b>Base Case:</b>If ind==0, it means we are at the first item, so in that case, the following cases can arise:
+<p>In cases where the target is divisible by the coin element, return (T / arr[0]), as this will give the number of coins needed to make target.
+
+<p>In all other cases, where the target is not divisible by the coin, a solution can not be formed, so return a big number like 1e9.  This will prevent the coin from getting added to the final solution as we need to reutrn the minimum number of coins.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+    const int mod = (int)1e9 + 7;
+private:
+    /* Function to calculate the minimum number
+    of elements to form the target sum*/
+    int func(vector<int>& arr, int ind, int T){
+
+        // Base case: If we're at the first element
+        if(ind == 0){
+            /* Check if the target sum is
+            divisible by the first element*/
+            if(T % arr[0] == 0)
+                return T / arr[0]; 
+            else
+                /* Otherwise, return a very large
+                value to indicate it's not possible*/
+                return 1e9; 
+        }
+        
+        /* Calculate the minimum elements needed
+        without taking the current element*/
+        int notTaken = 0 + func(arr, ind - 1, T);
+    
+        /* Calculate the minimum elements
+        needed by taking the current element*/
+        int taken = 1e9; 
+        if(arr[ind] <= T)
+            taken = 1 + func(arr, ind, T - arr[ind]);
+        
+        // Return minimum of 'notTaken' and 'taken' 
+        return min(notTaken, taken);
+    }
+public:
+    /* Function to find the minimum number 
+    of coins needed to form the target sum*/
+    int minimumCoins(vector<int>& coins, int amount){
+    
+        int n = coins.size();
+    
+        // Call utility function to calculate the answer
+        int ans =  func(coins, n - 1, amount);
+    
+        /* If 'ans' is still very large, it means
+        mean it's not possible to form the target sum*/
+        if(ans >= 1e9)
+            return -1;
+            
+        // Return the minimum number of coins   
+        return ans; 
+    }
+};
+
+int main() {
+    vector<int> coins = {1, 2, 3};
+    int amount = 7;
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The total number of ways is " << sol.minimumCoins(coins, amount) << endl;
+
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    final int mod = (int)1e9 + 7;
+
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    private int func(int[] arr, int ind, int T) {
+        // Base case: If we're at the first element
+        if (ind == 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it's not possible */
+                return (int)1e9;
+        }
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        int notTaken = func(arr, ind - 1, T);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] <= T)
+            taken = 1 + func(arr, ind, T - arr[ind]);
+
+        // Return minimum of 'notTaken' and 'taken' 
+        return Math.min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    public int minimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        // Call utility function to calculate the answer
+        int ans = func(coins, n - 1, amount);
+
+        /* If 'ans' is still very large, it means
+        it's not possible to form the target sum */
+        if (ans >= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int[] coins = {1, 2, 3};
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The total number of ways is " + sol.minimumCoins(coins, amount));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    mod = int(1e9) + 7
+    
+    """ Function to calculate the minimum number
+    of elements to form the target sum """
+    def func(self, arr, ind, T):
+        # Base case: If we're at the first element
+        if ind == 0:
+            """ Check if the target sum is 
+            divisible by the first element"""
+            if T % arr[0] == 0:
+                return T // arr[0]
+            else:
+                """ Otherwise, return a very large 
+                value to indicate it's not possible"""
+                return int(1e9)
+        
+        """ Calculate the minimum elements needed 
+        without taking the current element"""
+        not_taken = self.func(arr, ind - 1, T)
+        
+        """ Calculate the minimum elements 
+        needed by taking the current element"""
+        taken = int(1e9)
+        if arr[ind] <= T:
+            taken = 1 + self.func(arr, ind, T - arr[ind])
+        
+        # Return minimum of 'notTaken' and 'taken' 
+        return min(not_taken, taken)
+    
+    """ Function to find the minimum number
+    of coins needed to form the target sum"""
+    def minimumCoins(self, coins, amount):
+        n = len(coins)
+
+        # Call utility function to calculate the answer
+        ans = self.func(coins, n - 1, amount)
+
+        """ If 'ans' is still very large, it means 
+        it's not possible to form the target sum"""
+        if ans >= int(1e9):
+            return -1
+        
+        # Return the minimum number of coins
+        return ans
+
+coins = [1, 2, 3]
+amount = 7
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the result
+print("The total number of ways is", sol.minimumCoins(coins, amount))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    func(arr, ind, T) {
+        // Base case: If we're at the first element
+        if (ind === 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] === 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it's not possible */
+                return 1e9;
+        }
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        let notTaken = this.func(arr, ind - 1, T);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        let taken = 1e9;
+        if (arr[ind] <= T)
+            taken = 1 + this.func(arr, ind, T - arr[ind]);
+
+        /* Store the minimum of 'notTaken' and
+        'taken' in the DP array and return it */
+        return Math.min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    minimumCoins(coins, amount) {
+        const n = coins.length;
+
+        // Call utility function to calculate the answer
+        const ans = this.func(coins, n - 1, amount);
+
+        /* If 'ans' is still very large, it means
+        it's not possible to form the target sum */
+        if (ans >= 1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}
+
+const coins = [1, 2, 3];
+const amount = 7;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log("The total number of ways is " + sol.minimumCoins(coins, amount));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    const int mod = (int)1e9 + 7;
+
+    /* Function to calculate the minimum number
+       of elements to form the target sum */
+    private int Func(int[] arr, int ind, int T)
+    {
+        // Base case: If we're at the first element
+        if (ind == 0)
+        {
+            /* Check if the target sum is
+               divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                   value to indicate it's not possible */
+                return (int)1e9;
+        }
+
+        /* Calculate the minimum elements needed
+           without taking the current element */
+        int notTaken = 0 + Func(arr, ind - 1, T);
+
+        /* Calculate the minimum elements
+           needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] <= T)
+            taken = 1 + Func(arr, ind, T - arr[ind]);
+
+        // Return minimum of 'notTaken' and 'taken'
+        return Math.Min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number 
+       of coins needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount)
+    {
+        int n = coins.Length;
+
+        // Call utility function to calculate the answer
+        int ans = Func(coins, n - 1, amount);
+
+        /* If 'ans' is still very large, it means
+           it's not possible to form the target sum */
+        if (ans >= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins   
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] coins = {1, 2, 3};
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The total number of ways is " + sol.MinimumCoins(coins, amount));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+)
+
+const mod = int(1e9 + 7) 
+
+/* Function to calculate the minimum number
+ of elements to form the target sum*/
+func minimumCoinsHelper(arr []int, ind, T int) int {
+ 
+    // Base case: If we're at the first element
+    if ind == 0 {
+        /* Check if the target sum is
+        divisible by the first element*/
+        if T%arr[0] == 0 {
+            return T / arr[0]
+        } else {
+            /* Otherwise, return a very large
+            value to indicate it's not possible*/
+            return int(1e9)
+        }
+    }
+
+    /* Calculate the minimum elements needed
+    without taking the current element*/
+    notTaken := minimumCoinsHelper(arr, ind-1, T)
+
+    /* Calculate the minimum elements
+    needed by taking the current element*/
+    taken := int(1e9)
+    if arr[ind] <= T {
+        taken = 1 + minimumCoinsHelper(arr, ind, T-arr[ind])
+    }
+
+    // Return minimum of 'notTaken' and 'taken'
+    if notTaken < taken {
+        return notTaken
+    }
+    return taken
+}
+
+ /* Function to find the minimum number 
+    of coins needed to form the target sum*/
+func MinimumCoins(coins []int, amount int) int {
+   
+    n := len(coins)
+
+    // Call utility function to calculate the answer
+    ans := minimumCoinsHelper(coins, n-1, amount)
+
+    /* If 'ans' is still very large, it means
+        mean it's not possible to form the target sum*/
+    if ans >= int(1e9) {
+        return -1
+    }
+
+    // Return the minimum number of coins
+    return ans
+}
+
+func main() {
+    coins := []int{1, 2, 3}
+    amount := 7
+
+    // Print the result
+    fmt.Printf("The total number of ways is %d\n", MinimumCoins(coins, amount))
+}
+
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(2<sup>N</sup>), as each element has 2 choices, and there are N elements in the array.<br><br>
+<strong>Space Complexity:</strong>O(N), the stack space will be O(N), the maximum depth of the stack.</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Minimum coins/-mjeP0RnF"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][target+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'target'. The maximum value 'ind' can attain is (n), where n is the size of array and for 'target'  only values between 0 to target. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+    const int mod = (int)1e9 + 7;
+private:
+    /* Function to calculate the minimum number
+    of elements to form the target sum*/
+    int func(vector<int>& arr, int ind, int T, vector<vector<int>>& dp){
+
+        // Base case: If we're at the first element
+        if(ind == 0){
+            /* Check if the target sum is
+            divisible by the first element*/
+            if(T % arr[0] == 0)
+                return T / arr[0]; 
+            else
+                /* Otherwise, return a very large
+                value to indicate it's not possible*/
+                return 1e9; 
+        }
+    
+        /* If the result for this index and target
+        sum is already calculated, return it*/
+        if(dp[ind][T] != -1)
+            return dp[ind][T];
+        
+        /* Calculate the minimum elements needed
+        without taking the current element*/
+        int notTaken = 0 + func(arr, ind - 1, T, dp);
+    
+        /* Calculate the minimum elements
+        needed by taking the current element*/
+        int taken = 1e9; 
+        if(arr[ind] <= T)
+            taken = 1 + func(arr, ind, T - arr[ind], dp);
+        
+        /* Store the minimum of 'notTaken' and 
+        'taken' in the DP array and return it*/
+        return dp[ind][T] = min(notTaken, taken);
+    }
+public:
+    /* Function to find the minimum number 
+    of coins needed to form the target sum*/
+    int minimumCoins(vector<int>& coins, int amount){
+    
+        int n = coins.size();
+    
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1*/
+        vector<vector<int>> dp(n, vector<int>(amount + 1, -1));
+    
+        // Call utility function to calculate the answer
+        int ans =  func(coins, n - 1, amount, dp);
+    
+        /* If 'ans' is still very large, it means
+        mean it's not possible to form the target sum*/
+        if(ans >= 1e9)
+            return -1;
+            
+        // Return the minimum number of coins   
+        return ans; 
+    }
+};
+
+int main() {
+    vector<int> coins = {1, 2, 3};
+    int amount = 7;
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The total number of ways is " << sol.minimumCoins(coins, amount) << endl;
+
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    final int mod = (int)1e9 + 7;
+
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    private int func(int[] arr, int ind, int T, int[][] dp) {
+        // Base case: If we're at the first element
+        if (ind == 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it's not possible */
+                return (int)1e9;
+        }
+
+        /* If the result for this index and target
+        sum is already calculated, return it */
+        if (dp[ind][T] != -1)
+            return dp[ind][T];
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        int notTaken = func(arr, ind - 1, T, dp);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] <= T)
+            taken = 1 + func(arr, ind, T - arr[ind], dp);
+
+        /* Store the minimum of 'notTaken' and
+        'taken' in the DP array and return it */
+        return dp[ind][T] = Math.min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    public int minimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1 */
+        int[][] dp = new int[n][amount + 1];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+
+        // Call utility function to calculate the answer
+        int ans = func(coins, n - 1, amount, dp);
+
+        /* If 'ans' is still very large, it means
+        it's not possible to form the target sum */
+        if (ans >= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int[] coins = {1, 2, 3};
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The total number of ways is " + sol.minimumCoins(coins, amount));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    mod = int(1e9) + 7
+    
+    """ Function to calculate the minimum number
+    of elements to form the target sum """
+    def func(self, arr, ind, T, dp):
+        # Base case: If we're at the first element
+        if ind == 0:
+            """ Check if the target sum is 
+            divisible by the first element"""
+            if T % arr[0] == 0:
+                return T // arr[0]
+            else:
+                """ Otherwise, return a very large 
+                value to indicate it's not possible"""
+                return int(1e9)
+        
+        """ If the result for this index and target
+        sum is already calculated, return it"""
+        if dp[ind][T] != -1:
+            return dp[ind][T]
+        
+        """ Calculate the minimum elements needed 
+        without taking the current element"""
+        not_taken = self.func(arr, ind - 1, T, dp)
+        
+        """ Calculate the minimum elements 
+        needed by taking the current element"""
+        taken = int(1e9)
+        if arr[ind] <= T:
+            taken = 1 + self.func(arr, ind, T - arr[ind], dp)
+        
+        """ Store the minimum of 'not_taken' and 
+        'taken' in the DP array and return it"""
+        dp[ind][T] = min(not_taken, taken)
+        return dp[ind][T]
+    
+    """ Function to find the minimum number
+    of coins needed to form the target sum"""
+    def minimumCoins(self, coins, amount):
+        n = len(coins)
+
+        """ Create a DP (Dynamic Programming) table with n 
+        rows and amount+1 columns and initialize it with -1"""
+        dp = [[-1] * (amount + 1) for _ in range(n)]
+
+        # Call utility function to calculate the answer
+        ans = self.func(coins, n - 1, amount, dp)
+
+        """ If 'ans' is still very large, it means 
+        it's not possible to form the target sum"""
+        if ans >= int(1e9):
+            return -1
+        
+        # Return the minimum number of coins
+        return ans
+
+coins = [1, 2, 3]
+amount = 7
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the result
+print("The total number of ways is", sol.minimumCoins(coins, amount))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    func(arr, ind, T, dp) {
+        // Base case: If we're at the first element
+        if (ind === 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] === 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it's not possible */
+                return 1e9;
+        }
+
+        /* If the result for this index and target
+        sum is already calculated, return it */
+        if (dp[ind][T] !== -1)
+            return dp[ind][T];
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        let notTaken = this.func(arr, ind - 1, T, dp);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        let taken = 1e9;
+        if (arr[ind] <= T)
+            taken = 1 + this.func(arr, ind, T - arr[ind], dp);
+
+        /* Store the minimum of 'notTaken' and
+        'taken' in the DP array and return it */
+        dp[ind][T] = Math.min(notTaken, taken);
+        return dp[ind][T];
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    minimumCoins(coins, amount) {
+        const n = coins.length;
+
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1 */
+        const dp = Array.from({ length: n }, () => Array(amount + 1).fill(-1));
+
+        // Call utility function to calculate the answer
+        const ans = this.func(coins, n - 1, amount, dp);
+
+        /* If 'ans' is still very large, it means
+        it's not possible to form the target sum */
+        if (ans >= 1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}
+
+const coins = [1, 2, 3];
+const amount = 7;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log("The total number of ways is " + sol.minimumCoins(coins, amount));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    private int Func(int[] arr, int ind, int T, int[][] dp)
+    {
+        // Base case: If we're at the first element
+        if (ind == 0)
+        {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it's not possible */
+                return (int)1e9;
+        }
+
+        /* If the result for this index and target
+        sum is already calculated, return it */
+        if (dp[ind][T] != -1)
+            return dp[ind][T];
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        int notTaken = Func(arr, ind - 1, T, dp);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] <= T)
+            taken = 1 + Func(arr, ind, T - arr[ind], dp);
+
+        /* Store the minimum of 'notTaken' and
+        'taken' in the DP array and return it */
+        dp[ind][T] = Math.Min(notTaken, taken);
+        return dp[ind][T];
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount)
+    {
+        int n = coins.Length;
+
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1 */
+        int[][] dp = new int[n][];
+        for (int i = 0; i < n; i++)
+        {
+            dp[i] = new int[amount + 1];
+            Array.Fill(dp[i], -1);
+        }
+
+        // Call utility function to calculate the answer
+        int ans = Func(coins, n - 1, amount, dp);
+
+        /* If 'ans' is still very large, it means
+        it's not possible to form the target sum */
+        if (ans >= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] coins = { 1, 2, 3 };
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The total number of ways is " + sol.MinimumCoins(coins, amount));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+const INF = 1000000000 // A large value to represent impossible cases
+
+// Recursive function with memoization
+func funcRec(arr []int, ind, T int, dp [][]int) int {
+	// Base case: If at the first element
+	if ind == 0 {
+		if T%arr[0] == 0 {
+			return T / arr[0]
+		}
+		return INF
+	}
+
+	// Return already computed result
+	if dp[ind][T] != -1 {
+		return dp[ind][T]
+	}
+
+	// Not taking the current coin
+	notTaken := funcRec(arr, ind-1, T, dp)
+
+	// Taking the current coin (if possible)
+	taken := INF
+	if arr[ind] <= T {
+		taken = 1 + funcRec(arr, ind, T-arr[ind], dp)
+	}
+
+	// Store and return minimum
+	dp[ind][T] = min(notTaken, taken)
+	return dp[ind][T]
+}
+
+// MinimumCoins finds the minimum number of coins to form the target sum
+func MinimumCoins(coins []int, amount int) int {
+	n := len(coins)
+
+	// Initialize dp table with -1
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, amount+1)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Call recursive function
+	ans := funcRec(coins, n-1, amount, dp)
+
+	// If not possible, return -1
+	if ans >= INF {
+		return -1
+	}
+	return ans
+}
+
+func main() {
+	coins := []int{1, 2, 3}
+	amount := 7
+
+	fmt.Println("The total number of ways is", MinimumCoins(coins, amount))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*Target), as there are N*Target states therefore at max ‘N*Target’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*Target) + O(N), the stack space will be O(N) and  a 2D array of size N*T is used.</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li><b>Declare a dp array of size [n][target+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'target'.  The maximum value 'ind' can attain is (n) and including 0 its n, where n is the size of array, for 'target' can have any values between 0 to 'target'.  So we need a 2D dp array. Set its type as int and initialize it as 0.</li>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when 'ind' == 0, it means we were considering the first element. So for 'ind' == 0, if T%arr[0] ==0, initialize the dp array to T/arr[0] else initialize it to 1e9.</li>
+
+<li><b>Iterative Computation Using Loops: </b>As we are done for the first row(ind = 0) in the base case, so ‘ind’ variable will move from 1 to n-1, whereas ‘target’ variable will move from 0 to 'T'(target). Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.</li>
+
+<li><b>Returning the answer: </b>At last dp[n-1][target] will hold the solution after the completion of whole process, as we are doing the calculations in bottom-up manner.</li></ol><br>
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    /* Function to find the minimum number 
+    of elements needed to form the target sum*/
+    int minimumCoins(vector<int>& coins, int amount) {
+        int n = coins.size();
+    
+        /* Create a 2D DP table with
+        n rows and amount+1 columns*/
+        vector<vector<int>> dp(n, vector<int>(amount + 1, 0));
+    
+        // Initialize the first row of the DP table
+        for (int i = 0; i <= amount; i++) {
+            if (i % coins[0] == 0)
+                dp[0][i] = i / coins[0];
+            else
+                dp[0][i] = 1e9; 
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 0; target <= amount; target++) {
+                
+                /* Calculate the minimum elements needed
+                without taking the current element*/
+                int notTake = dp[ind - 1][target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element*/
+                int take = 1e9; 
+                if (coins[ind] <= target)
+                    take = 1 + dp[ind][target - coins[ind]];
+                
+                /* Store the minimum of 'notTake'
+                and 'take' in the DP table*/
+                dp[ind][target] = min(notTake, take);
+            }
+        }
+    
+        // The answer is in the bottom-right cell 
+        int ans = dp[n - 1][amount];
+    
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum*/
+        if (ans >= 1e9)
+            return -1;
+        
+        // Return the minimum number of coins needed
+        return ans; 
+    }
+};
+
+int main() {
+    vector<int> coins = {1, 2, 3};
+    int amount = 7;
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    // Call the function to find the minimum coins
+    int result = sol.minimumCoins(coins, amount);
+    
+    // Output the result
+    cout << "The minimum number of coins required to form the target sum is " << result << endl;
+    
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    public int minimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        /* Create a 2D DP table with
+        n rows and amount+1 columns */
+        int[][] dp = new int[n][amount + 1];
+
+        // Initialize the first row of the DP table
+        for (int i = 0; i <= amount; i++) {
+            if (i % coins[0] == 0)
+                dp[0][i] = i / coins[0];
+            else
+                dp[0][i] = (int)1e9;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 0; target <= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = dp[ind - 1][target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = (int)1e9;
+                if (coins[ind] <= target)
+                    take = 1 + dp[ind][target - coins[ind]];
+
+                /* Store the minimum of 'notTake'
+                and 'take' in the DP table */
+                dp[ind][target] = Math.min(notTake, take);
+            }
+        }
+
+        // The answer is in the bottom-right cell 
+        int ans = dp[n - 1][amount];
+
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum */
+        if (ans >= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins needed
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int[] coins = {1, 2, 3};
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the minimum coins
+        int result = sol.minimumCoins(coins, amount);
+
+        // Output the result
+        System.out.println("The minimum number of coins required to form the target sum is " + result);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find the minimum number 
+    of elements needed to form the target sum """
+    def minimumCoins(self, coins, amount):
+        n = len(coins)
+
+        """ Create a 2D DP table with
+        n rows and amount+1 columns """
+        dp = [[0] * (amount + 1) for _ in range(n)]
+
+        # Initialize the first row of the DP table
+        for i in range(amount + 1):
+            if i % coins[0] == 0:
+                dp[0][i] = i // coins[0]
+            else:
+                dp[0][i] = int(1e9)
+
+        # Fill the DP table using a bottom-up approach
+        for ind in range(1, n):
+            for target in range(amount + 1):
+                """ Calculate the minimum elements needed
+                without taking the current element """
+                notTake = dp[ind - 1][target]
+
+                """ Calculate the minimum elements 
+                needed by taking the current element """
+                take = int(1e9)
+                if coins[ind] <= target:
+                    take = 1 + dp[ind][target - coins[ind]]
+
+                """ Store the minimum of 'notTake'
+                and 'take' in the DP table """
+                dp[ind][target] = min(notTake, take)
+
+        # The answer is in the bottom-right cell 
+        ans = dp[n - 1][amount]
+
+        """ If 'ans' is still very large, it means 
+        it's not possible to form the target sum """
+        if ans >= int(1e9):
+            return -1
+
+        # Return the minimum number of coins needed
+        return ans
+
+coins = [1, 2, 3]
+amount = 7
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the function to find the minimum coins
+result = sol.minimumCoins(coins, amount)
+
+# Output the result
+print("The minimum number of coins required to form the target sum is", result)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    minimumCoins(coins, amount) {
+        const n = coins.length;
+    
+        /* Create a 2D DP table with
+        n rows and amount+1 columns */
+        const dp = Array.from({ length: n }, () => Array(amount + 1).fill(0));
+    
+        // Initialize the first row of the DP table
+        for (let i = 0; i <= amount; i++) {
+            if (i % coins[0] === 0)
+                dp[0][i] = Math.floor(i / coins[0]);
+            else
+                dp[0][i] = 1e9;
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (let ind = 1; ind < n; ind++) {
+            for (let target = 0; target <= amount; target++) {
+                
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                const notTake = dp[ind - 1][target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                let take = 1e9; 
+                if (coins[ind] <= target)
+                    take = 1 + dp[ind][target - coins[ind]];
+                
+                /* Store the minimum of 'notTake'
+                and 'take' in the DP table */
+                dp[ind][target] = Math.min(notTake, take);
+            }
+        }
+    
+        // The answer is in the bottom-right cell 
+        const ans = dp[n - 1][amount];
+    
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum */
+        if (ans >= 1e9)
+            return -1;
+        
+        // Return the minimum number of coins needed
+        return ans;
+    }
+}
+
+const coins = [1, 2, 3];
+const amount = 7;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call the function to find the minimum coins
+const result = sol.minimumCoins(coins, amount);
+
+// Output the result
+console.log("The minimum number of coins required to form the target sum is " + result);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution 
+{
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount) 
+    {
+        int n = coins.Length;
+    
+        /* Create a 2D DP table with
+        n rows and amount+1 columns */
+        int[,] dp = new int[n, amount + 1];
+        int infinity = (int)1e9;
+    
+        // Initialize the first row of the DP table
+        for (int i = 0; i <= amount; i++) 
+        {
+            if (i % coins[0] == 0)
+                dp[0, i] = i / coins[0];
+            else
+                dp[0, i] = infinity;
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) 
+        {
+            for (int target = 0; target <= amount; target++) 
+            {
+                
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = dp[ind - 1, target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = infinity; 
+                if (coins[ind] <= target)
+                    take = 1 + dp[ind, target - coins[ind]];
+                
+                /* Store the minimum of 'notTake'
+                and 'take' in the DP table */
+                dp[ind, target] = Math.Min(notTake, take);
+            }
+        }
+    
+        // The answer is in the bottom-right cell 
+        int ans = dp[n - 1, amount];
+    
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum */
+        if (ans >= infinity)
+            return -1;
+        
+        // Return the minimum number of coins needed
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] coins = { 1, 2, 3 };
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the minimum coins
+        int result = sol.MinimumCoins(coins, amount);
+
+        // Output the result
+        Console.WriteLine("The minimum number of coins required to form the target sum is " + result);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// MinimumCoins implements the bottom-up DP solution for the coin change problem.
+func MinimumCoins(coins []int, amount int) int {
+	n := len(coins)
+
+	// Create a 2D DP table with n rows and amount+1 columns
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, amount+1)
+	}
+
+	// Initialize the first row of the DP table
+	for i := 0; i <= amount; i++ {
+		if i%coins[0] == 0 {
+			dp[0][i] = i / coins[0]
+		} else {
+			dp[0][i] = 1000000000 // A large value to indicate impossible
+		}
+	}
+
+	// Fill the DP table using a bottom-up approach
+	for ind := 1; ind < n; ind++ {
+		for target := 0; target <= amount; target++ {
+			// Minimum coins needed without taking the current coin
+			notTake := dp[ind-1][target]
+
+			// Minimum coins needed by taking the current coin
+			take := 1000000000
+			if coins[ind] <= target {
+				take = 1 + dp[ind][target-coins[ind]]
+			}
+
+			// Store the minimum of notTake and take
+			dp[ind][target] = min(notTake, take)
+		}
+	}
+
+	// The answer is in the bottom-right cell
+	ans := dp[n-1][amount]
+
+	// If it's still very large, return -1
+	if ans >= 1000000000 {
+		return -1
+	}
+	return ans
+}
+
+func main() {
+	coins := []int{1, 2, 3}
+	amount := 7
+
+	result := MinimumCoins(coins, amount)
+	fmt.Println("The minimum number of coins required to form the target sum is", result)
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*Target), as there are N*Target states therefore at max ‘N*Target’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*Target), as a 2D array of size N*Target is used.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we observe the relation obtained in the tabulation approach, dp[ind][target] =  dp[ind-1][target] + dp[ind-1][target-arr[ind]]. We see that to calculate a value of a cell of the dp array, only the previous row values (say prev) are need. So, we don’t need to store an entire array for that. Hence we can space optimize it.</p>
+
+<p><b>Note: </b>We first need to initialize the first row as we had done in the tabulation approach.</p>
+
+<h5><strong>Steps to consider for space optimization:</strong></h5>
+<ol>
+<li>Declare two arrays to store results of subproblems 'prev' and 'cur'. Initialize the 'prev' array for the first element of the array, as we did in the tabulation approach, for handling the base case.</li>
+<li> Fill the 'cur' array using nested loops and the same logic discussed in tabulation. If the current element is less than or equal to the target, calculate 'take'.</li>
+<li>As, the problem is asking for minimum coins, store the minimum of 'take' and 'not take' in the 'cur' array.</li>
+<li>Update 'prev' with 'cur' for the next iteration and at last get the minimum number of coins needed for the target sum stored in 'prev[Target]'.</li></ol><br>
+
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    /* Function to find the minimum number 
+    of elements needed to form the target sum*/
+    int minimumCoins(vector<int>& coins, int amount) {
+        int n = coins.size();
+        
+        /* Initialize two vectors to store 
+        the previous and current DP states*/
+        vector<int> prev(amount + 1, 0);
+        vector<int> cur(amount + 1, 0);
+    
+        // Initialize the first row of the DP table
+        for (int i = 0; i <= amount; i++) {
+            if (i % coins[0] == 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible    
+            else
+            prev[i] = 1e9; 
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            
+            for (int target = 0; target <= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element*/
+                int notTake = prev[target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element*/
+                int take = 1e9; 
+                if (coins[ind] <= target)
+                    take = 1 + cur[target - coins[ind]];
+                
+                /* Store the minimum of 'notTake' 
+                and 'take' in the current DP state*/
+                cur[target] = min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration*/
+            prev = cur;
+        }
+    
+        // The answer is in the last row of the DP table
+        int ans = prev[amount];
+    
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum*/
+        if (ans >= 1e9)
+            return -1;
+        
+        // Return the minimum number of coins
+        return ans;  
+    }
+};
+
+int main() {
+    vector<int> coins = {1, 2, 3};
+    int amount = 7;
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    // Call the function to find the minimum coins
+    int result = sol.minimumCoins(coins, amount);
+    
+    // Output the result
+    cout << "The minimum number of coins required to form the target sum is " << result << endl;
+    
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    public int minimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        /* Initialize two arrays to store 
+        the previous and current DP states */
+        int[] prev = new int[amount + 1];
+        int[] cur = new int[amount + 1];
+
+        // Initialize the first row of the DP table
+        for (int i = 0; i <= amount; i++) {
+            if (i % coins[0] == 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible
+            else
+                prev[i] = (int)1e9;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 0; target <= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = prev[target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = (int)1e9;
+                if (coins[ind] <= target)
+                    take = 1 + cur[target - coins[ind]];
+
+                /* Store the minimum of 'notTake' 
+                and 'take' in the current DP state */
+                cur[target] = Math.min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration */
+            System.arraycopy(cur, 0, prev, 0, amount + 1);
+        }
+
+        // The answer is in the last row of the DP table
+        int ans = prev[amount];
+
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum */
+        if (ans >= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int[] coins = {1, 2, 3};
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the minimum coins
+        int result = sol.minimumCoins(coins, amount);
+
+        // Output the result
+        System.out.println("The minimum number of coins required to form the target sum is " + result);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find the minimum number 
+    of elements needed to form the target sum """
+    def minimumCoins(self, coins, amount):
+        n = len(coins)
+
+        """ Initialize two lists to store 
+        the previous and current DP states """
+        prev = [0] * (amount + 1)
+        cur = [0] * (amount + 1)
+
+        # Initialize the first row of the DP table
+        for i in range(amount + 1):
+            if i % coins[0] == 0:
+                prev[i] = i // coins[0]
+            # Set it to a very large value if not possible
+            else:
+                prev[i] = int(1e9)
+
+        # Fill the DP table using a bottom-up approach
+        for ind in range(1, n):
+            for target in range(amount + 1):
+                """ Calculate the minimum elements needed
+                without taking the current element """
+                notTake = prev[target]
+
+                """ Calculate the minimum elements 
+                needed by taking the current element """
+                take = int(1e9)
+                if coins[ind] <= target:
+                    take = 1 + cur[target - coins[ind]]
+
+                """ Store the minimum of 'notTake' 
+                and 'take' in the current DP state """
+                cur[target] = min(notTake, take)
+            
+            """ Update the previous DP state with
+            the current state for the next iteration """
+            prev[:] = cur
+
+        # The answer is in the last row of the DP table
+        ans = prev[amount]
+
+        """ If 'ans' is still very large, it means 
+        it's not possible to form the target sum """
+        if ans >= int(1e9):
+            return -1
+
+        # Return the minimum number of coins
+        return ans
+
+coins = [1, 2, 3]
+amount = 7
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the function to find the minimum coins
+result = sol.minimumCoins(coins, amount)
+
+# Output the result
+print("The minimum number of coins required to form the target sum is", result)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    minimumCoins(coins, amount) {
+        let n = coins.length;
+
+        /* Initialize two arrays to store 
+        the previous and current DP states */
+        let prev = new Array(amount + 1).fill(0);
+        let cur = new Array(amount + 1).fill(0);
+
+        // Initialize the first row of the DP table
+        for (let i = 0; i <= amount; i++) {
+            if (i % coins[0] === 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible
+            else
+                prev[i] = 1e9;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (let ind = 1; ind < n; ind++) {
+            for (let target = 0; target <= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                let notTake = prev[target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                let take = 1e9;
+                if (coins[ind] <= target)
+                    take = 1 + cur[target - coins[ind]];
+
+                /* Store the minimum of 'notTake' 
+                and 'take' in the current DP state */
+                cur[target] = Math.min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration */
+            prev = [...cur];
+        }
+
+        // The answer is in the last row of the DP table
+        let ans = prev[amount];
+
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum */
+        if (ans >= 1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}
+
+const coins = [1, 2, 3];
+const amount = 7;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call the function to find the minimum coins
+const result = sol.minimumCoins(coins, amount);
+
+// Output the result
+console.log("The minimum number of coins required to form the target sum is " + result);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount)
+    {
+        int n = coins.Length;
+
+        /* Initialize two arrays to store 
+        the previous and current DP states */
+        int[] prev = new int[amount + 1];
+        int[] cur = new int[amount + 1];
+
+        int largeValue = (int)1e9;
+
+        // Initialize the first row of the DP table
+        for (int i = 0; i <= amount; i++)
+        {
+            if (i % coins[0] == 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible
+            else
+                prev[i] = largeValue;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++)
+        {
+            for (int target = 0; target <= amount; target++)
+            {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = prev[target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = largeValue;
+                if (coins[ind] <= target)
+                    take = 1 + cur[target - coins[ind]];
+
+                /* Store the minimum of 'notTake' 
+                and 'take' in the current DP state */
+                cur[target] = Math.Min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration */
+            prev = (int[])cur.Clone();
+        }
+
+        // The answer is in the last row of the DP table
+        int ans = prev[amount];
+
+        /* If 'ans' is still very large, it means 
+        it's not possible to form the target sum */
+        if (ans >= largeValue)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] coins = { 1, 2, 3 };
+        int amount = 7;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the minimum coins
+        int result = sol.MinimumCoins(coins, amount);
+
+        // Output the result
+        Console.WriteLine("The minimum number of coins required to form the target sum is " + result);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+const INF = 1000000000 // Large value to represent impossible cases
+
+// MinimumCoins finds the minimum number of coins needed to form the target sum
+func MinimumCoins(coins []int, amount int) int {
+	n := len(coins)
+
+	// Initialize two slices to store the previous and current DP states
+	prev := make([]int, amount+1)
+	cur := make([]int, amount+1)
+
+	// Initialize the first row of the DP table
+	for i := 0; i <= amount; i++ {
+		if i%coins[0] == 0 {
+			prev[i] = i / coins[0]
+		} else {
+			prev[i] = INF
+		}
+	}
+
+	// Fill the DP table using a bottom-up approach
+	for ind := 1; ind < n; ind++ {
+		for target := 0; target <= amount; target++ {
+			// Minimum coins needed without taking the current coin
+			notTake := prev[target]
+
+			// Minimum coins needed by taking the current coin
+			take := INF
+			if coins[ind] <= target {
+				take = 1 + cur[target-coins[ind]]
+			}
+
+			// Store the minimum of notTake and take in the current DP state
+			cur[target] = min(notTake, take)
+		}
+
+		// Update prev with the current state for the next iteration
+		copy(prev, cur)
+	}
+
+	// The answer is in the last row of the DP table
+	ans := prev[amount]
+
+	// If it's still very large, return -1
+	if ans >= INF {
+		return -1
+	}
+	return ans
+}
+
+func main() {
+	coins := []int{1, 2, 3}
+	amount := 7
+
+	// Call the function to find the minimum coins
+	result := MinimumCoins(coins, amount)
+
+	// Output the result
+	fmt.Println("The minimum number of coins required to form the target sum is", result)
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*Target), as there are N*Target states therefore at max ‘N*Target’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(Target), as a 2D array of size (Target+1) is used.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+    const int mod = (int)1e9 + 7;
+private:
+    /* Function to calculate the minimum number
+    of elements to form the target sum*/
+    int func(vector&lt;int&gt;&amp; arr, int ind, int T){
+
+        // Base case: If we&#x27;re at the first element
+        if(ind == 0){
+            /* Check if the target sum is
+            divisible by the first element*/
+            if(T % arr[0] == 0)
+                return T / arr[0]; 
+            else
+                /* Otherwise, return a very large
+                value to indicate it&#x27;s not possible*/
+                return 1e9; 
+        }
+        
+        /* Calculate the minimum elements needed
+        without taking the current element*/
+        int notTaken = 0 + func(arr, ind - 1, T);
+    
+        /* Calculate the minimum elements
+        needed by taking the current element*/
+        int taken = 1e9; 
+        if(arr[ind] &lt;= T)
+            taken = 1 + func(arr, ind, T - arr[ind]);
+        
+        // Return minimum of &#x27;notTaken&#x27; and &#x27;taken&#x27; 
+        return min(notTaken, taken);
+    }
+public:
+    /* Function to find the minimum number 
+    of coins needed to form the target sum*/
+    int MinimumCoins(vector&lt;int&gt;&amp; coins, int amount){
+    
+        int n = coins.size();
+    
+        // Call utility function to calculate the answer
+        int ans =  func(coins, n - 1, amount);
+    
+        /* If &#x27;ans&#x27; is still very large, it means
+        mean it&#x27;s not possible to form the target sum*/
+        if(ans &gt;= 1e9)
+            return -1;
+            
+        // Return the minimum number of coins   
+        return ans; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    const int mod = (int)1e9 + 7;
+
+    /* Function to calculate the minimum number
+       of elements to form the target sum */
+    private int Func(int[] arr, int ind, int T)
+    {
+        // Base case: If we&#x27;re at the first element
+        if (ind == 0)
+        {
+            /* Check if the target sum is
+               divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                   value to indicate it&#x27;s not possible */
+                return (int)1e9;
+        }
+
+        /* Calculate the minimum elements needed
+           without taking the current element */
+        int notTaken = 0 + Func(arr, ind - 1, T);
+
+        /* Calculate the minimum elements
+           needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] &lt;= T)
+            taken = 1 + Func(arr, ind, T - arr[ind]);
+
+        // Return minimum of &#x27;notTaken&#x27; and &#x27;taken&#x27;
+        return Math.Min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number 
+       of coins needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount)
+    {
+        int n = coins.Length;
+
+        // Call utility function to calculate the answer
+        int ans = Func(coins, n - 1, amount);
+
+        /* If &#x27;ans&#x27; is still very large, it means
+           it&#x27;s not possible to form the target sum */
+        if (ans &gt;= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins   
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const mod = int(1e9 + 7) 
+
+/* Function to calculate the minimum number
+ of elements to form the target sum*/
+func minimumCoinsHelper(arr []int, ind, T int) int {
+ 
+    // Base case: If we&#x27;re at the first element
+    if ind == 0 {
+        /* Check if the target sum is
+        divisible by the first element*/
+        if T%arr[0] == 0 {
+            return T / arr[0]
+        } else {
+            /* Otherwise, return a very large
+            value to indicate it&#x27;s not possible*/
+            return int(1e9)
+        }
+    }
+
+    /* Calculate the minimum elements needed
+    without taking the current element*/
+    notTaken := minimumCoinsHelper(arr, ind-1, T)
+
+    /* Calculate the minimum elements
+    needed by taking the current element*/
+    taken := int(1e9)
+    if arr[ind] &lt;= T {
+        taken = 1 + minimumCoinsHelper(arr, ind, T-arr[ind])
+    }
+
+    // Return minimum of &#x27;notTaken&#x27; and &#x27;taken&#x27;
+    if notTaken &lt; taken {
+        return notTaken
+    }
+    return taken
+}
+
+ /* Function to find the minimum number 
+    of coins needed to form the target sum*/
+func MinimumCoins(coins []int, amount int) int {
+   
+    n := len(coins)
+
+    // Call utility function to calculate the answer
+    ans := minimumCoinsHelper(coins, n-1, amount)
+
+    /* If &#x27;ans&#x27; is still very large, it means
+        mean it&#x27;s not possible to form the target sum*/
+    if ans &gt;= int(1e9) {
+        return -1
+    }
+
+    // Return the minimum number of coins
+    return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    final int mod = (int)1e9 + 7;
+
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    private int func(int[] arr, int ind, int T) {
+        // Base case: If we&#x27;re at the first element
+        if (ind == 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it&#x27;s not possible */
+                return (int)1e9;
+        }
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        int notTaken = func(arr, ind - 1, T);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] &lt;= T)
+            taken = 1 + func(arr, ind, T - arr[ind]);
+
+        // Return minimum of &#x27;notTaken&#x27; and &#x27;taken&#x27; 
+        return Math.min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        // Call utility function to calculate the answer
+        int ans = func(coins, n - 1, amount);
+
+        /* If &#x27;ans&#x27; is still very large, it means
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    func(arr, ind, T) {
+        // Base case: If we&#x27;re at the first element
+        if (ind === 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] === 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it&#x27;s not possible */
+                return 1e9;
+        }
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        let notTaken = this.func(arr, ind - 1, T);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        let taken = 1e9;
+        if (arr[ind] &lt;= T)
+            taken = 1 + this.func(arr, ind, T - arr[ind]);
+
+        /* Store the minimum of &#x27;notTaken&#x27; and
+        &#x27;taken&#x27; in the DP array and return it */
+        return Math.min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    MinimumCoins(coins, amount) {
+        const n = coins.length;
+
+        // Call utility function to calculate the answer
+        const ans = this.func(coins, n - 1, amount);
+
+        /* If &#x27;ans&#x27; is still very large, it means
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= 1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    mod = int(1e9) + 7
+    
+    &quot;&quot;&quot; Function to calculate the minimum number
+    of elements to form the target sum &quot;&quot;&quot;
+    def func(self, arr, ind, T):
+        # Base case: If we&#x27;re at the first element
+        if ind == 0:
+            &quot;&quot;&quot; Check if the target sum is 
+            divisible by the first element&quot;&quot;&quot;
+            if T % arr[0] == 0:
+                return T // arr[0]
+            else:
+                &quot;&quot;&quot; Otherwise, return a very large 
+                value to indicate it&#x27;s not possible&quot;&quot;&quot;
+                return int(1e9)
+        
+        &quot;&quot;&quot; Calculate the minimum elements needed 
+        without taking the current element&quot;&quot;&quot;
+        not_taken = self.func(arr, ind - 1, T)
+        
+        &quot;&quot;&quot; Calculate the minimum elements 
+        needed by taking the current element&quot;&quot;&quot;
+        taken = int(1e9)
+        if arr[ind] &lt;= T:
+            taken = 1 + self.func(arr, ind, T - arr[ind])
+        
+        # Return minimum of &#x27;notTaken&#x27; and &#x27;taken&#x27; 
+        return min(not_taken, taken)
+    
+    &quot;&quot;&quot; Function to find the minimum number
+    of coins needed to form the target sum&quot;&quot;&quot;
+    def MinimumCoins(self, coins, amount):
+        n = len(coins)
+
+        # Call utility function to calculate the answer
+        ans = self.func(coins, n - 1, amount)
+
+        &quot;&quot;&quot; If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum&quot;&quot;&quot;
+        if ans &gt;= int(1e9):
+            return -1
+        
+        # Return the minimum number of coins
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+    const int mod = (int)1e9 + 7;
+private:
+    /* Function to calculate the minimum number
+    of elements to form the target sum*/
+    int func(vector&lt;int&gt;&amp; arr, int ind, int T, vector&lt;vector&lt;int&gt;&gt;&amp; dp){
+
+        // Base case: If we&#x27;re at the first element
+        if(ind == 0){
+            /* Check if the target sum is
+            divisible by the first element*/
+            if(T % arr[0] == 0)
+                return T / arr[0]; 
+            else
+                /* Otherwise, return a very large
+                value to indicate it&#x27;s not possible*/
+                return 1e9; 
+        }
+    
+        /* If the result for this index and target
+        sum is already calculated, return it*/
+        if(dp[ind][T] != -1)
+            return dp[ind][T];
+        
+        /* Calculate the minimum elements needed
+        without taking the current element*/
+        int notTaken = 0 + func(arr, ind - 1, T, dp);
+    
+        /* Calculate the minimum elements
+        needed by taking the current element*/
+        int taken = 1e9; 
+        if(arr[ind] &lt;= T)
+            taken = 1 + func(arr, ind, T - arr[ind], dp);
+        
+        /* Store the minimum of &#x27;notTaken&#x27; and 
+        &#x27;taken&#x27; in the DP array and return it*/
+        return dp[ind][T] = min(notTaken, taken);
+    }
+public:
+    /* Function to find the minimum number 
+    of coins needed to form the target sum*/
+    int MinimumCoins(vector&lt;int&gt;&amp; coins, int amount){
+    
+        int n = coins.size();
+    
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1*/
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(amount + 1, -1));
+    
+        // Call utility function to calculate the answer
+        int ans =  func(coins, n - 1, amount, dp);
+    
+        /* If &#x27;ans&#x27; is still very large, it means
+        mean it&#x27;s not possible to form the target sum*/
+        if(ans &gt;= 1e9)
+            return -1;
+            
+        // Return the minimum number of coins   
+        return ans; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    private int Func(int[] arr, int ind, int T, int[][] dp)
+    {
+        // Base case: If we&#x27;re at the first element
+        if (ind == 0)
+        {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it&#x27;s not possible */
+                return (int)1e9;
+        }
+
+        /* If the result for this index and target
+        sum is already calculated, return it */
+        if (dp[ind][T] != -1)
+            return dp[ind][T];
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        int notTaken = Func(arr, ind - 1, T, dp);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] &lt;= T)
+            taken = 1 + Func(arr, ind, T - arr[ind], dp);
+
+        /* Store the minimum of &#x27;notTaken&#x27; and
+        &#x27;taken&#x27; in the DP array and return it */
+        dp[ind][T] = Math.Min(notTaken, taken);
+        return dp[ind][T];
+    }
+
+    public int MinimumCoins(int[] coins, int amount)
+    {
+        int n = coins.Length;
+
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1 */
+        int[][] dp = new int[n][];
+        for (int i = 0; i &lt; n; i++)
+        {
+            dp[i] = new int[amount + 1];
+            Array.Fill(dp[i], -1);
+        }
+
+        // Call utility function to calculate the answer
+        int ans = Func(coins, n - 1, amount, dp);
+
+        /* If &#x27;ans&#x27; is still very large, it means
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const INF = 1000000000 // A large value to represent impossible cases
+
+// Recursive function with memoization
+func funcRec(arr []int, ind, T int, dp [][]int) int {
+	// Base case: If at the first element
+	if ind == 0 {
+		if T%arr[0] == 0 {
+			return T / arr[0]
+		}
+		return INF
+	}
+
+	// Return already computed result
+	if dp[ind][T] != -1 {
+		return dp[ind][T]
+	}
+
+	// Not taking the current coin
+	notTaken := funcRec(arr, ind-1, T, dp)
+
+	// Taking the current coin (if possible)
+	taken := INF
+	if arr[ind] &lt;= T {
+		taken = 1 + funcRec(arr, ind, T-arr[ind], dp)
+	}
+
+	// Store and return minimum
+	dp[ind][T] = min(notTaken, taken)
+	return dp[ind][T]
+}
+
+// MinimumCoins finds the minimum number of coins to form the target sum
+func MinimumCoins(coins []int, amount int) int {
+	n := len(coins)
+
+	// Initialize dp table with -1
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, amount+1)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Call recursive function
+	ans := funcRec(coins, n-1, amount, dp)
+
+	// If not possible, return -1
+	if ans &gt;= INF {
+		return -1
+	}
+	return ans
+}
+
+func min(a int, b int) int {
+
+    // Return smaller value
+    if a &lt; b {
+        return a
+    }
+
+    return b
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{   
+ final int mod = (int)1e9 + 7;
+
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    private int func(int[] arr, int ind, int T, int[][] dp) {
+        // Base case: If we&#x27;re at the first element
+        if (ind == 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] == 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it&#x27;s not possible */
+                return (int)1e9;
+        }
+
+        /* If the result for this index and target
+        sum is already calculated, return it */
+        if (dp[ind][T] != -1)
+            return dp[ind][T];
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        int notTaken = func(arr, ind - 1, T, dp);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        int taken = (int)1e9;
+        if (arr[ind] &lt;= T)
+            taken = 1 + func(arr, ind, T - arr[ind], dp);
+
+        /* Store the minimum of &#x27;notTaken&#x27; and
+        &#x27;taken&#x27; in the DP array and return it */
+        return dp[ind][T] = Math.min(notTaken, taken);
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1 */
+        int[][] dp = new int[n][amount + 1];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+
+        // Call utility function to calculate the answer
+        int ans = func(coins, n - 1, amount, dp);
+
+        /* If &#x27;ans&#x27; is still very large, it means
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.mod = 1e9 + 7;
+    }
+
+    /* Function to calculate the minimum number
+    of elements to form the target sum */
+    func(arr, ind, T, dp) {
+        // Base case: If we&#x27;re at the first element
+        if (ind === 0) {
+            /* Check if the target sum is
+            divisible by the first element */
+            if (T % arr[0] === 0)
+                return T / arr[0];
+            else
+                /* Otherwise, return a very large
+                value to indicate it&#x27;s not possible */
+                return 1e9;
+        }
+
+        /* If the result for this index and target
+        sum is already calculated, return it */
+        if (dp[ind][T] !== -1)
+            return dp[ind][T];
+
+        /* Calculate the minimum elements needed
+        without taking the current element */
+        let notTaken = this.func(arr, ind - 1, T, dp);
+
+        /* Calculate the minimum elements
+        needed by taking the current element */
+        let taken = 1e9;
+        if (arr[ind] &lt;= T)
+            taken = 1 + this.func(arr, ind, T - arr[ind], dp);
+
+        /* Store the minimum of &#x27;notTaken&#x27; and
+        &#x27;taken&#x27; in the DP array and return it */
+        dp[ind][T] = Math.min(notTaken, taken);
+        return dp[ind][T];
+    }
+
+    /* Function to find the minimum number
+    of coins needed to form the target sum */
+    MinimumCoins(coins, amount) {
+        const n = coins.length;
+
+        /* Create a DP (Dynamic Programming) table with
+        n rows and amount+1 columns and initialize it with -1 */
+        const dp = Array.from({ length: n }, () =&gt; Array(amount + 1).fill(-1));
+
+        // Call utility function to calculate the answer
+        const ans = this.func(coins, n - 1, amount, dp);
+
+        /* If &#x27;ans&#x27; is still very large, it means
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= 1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    mod = int(1e9) + 7
+    
+    &quot;&quot;&quot; Function to calculate the minimum number
+    of elements to form the target sum &quot;&quot;&quot;
+    def func(self, arr, ind, T, dp):
+        # Base case: If we&#x27;re at the first element
+        if ind == 0:
+            &quot;&quot;&quot; Check if the target sum is 
+            divisible by the first element&quot;&quot;&quot;
+            if T % arr[0] == 0:
+                return T // arr[0]
+            else:
+                &quot;&quot;&quot; Otherwise, return a very large 
+                value to indicate it&#x27;s not possible&quot;&quot;&quot;
+                return int(1e9)
+        
+        &quot;&quot;&quot; If the result for this index and target
+        sum is already calculated, return it&quot;&quot;&quot;
+        if dp[ind][T] != -1:
+            return dp[ind][T]
+        
+        &quot;&quot;&quot; Calculate the minimum elements needed 
+        without taking the current element&quot;&quot;&quot;
+        not_taken = self.func(arr, ind - 1, T, dp)
+        
+        &quot;&quot;&quot; Calculate the minimum elements 
+        needed by taking the current element&quot;&quot;&quot;
+        taken = int(1e9)
+        if arr[ind] &lt;= T:
+            taken = 1 + self.func(arr, ind, T - arr[ind], dp)
+        
+        &quot;&quot;&quot; Store the minimum of &#x27;not_taken&#x27; and 
+        &#x27;taken&#x27; in the DP array and return it&quot;&quot;&quot;
+        dp[ind][T] = min(not_taken, taken)
+        return dp[ind][T]
+    
+    &quot;&quot;&quot; Function to find the minimum number
+    of coins needed to form the target sum&quot;&quot;&quot;
+    def MinimumCoins(self, coins, amount):
+        n = len(coins)
+
+        &quot;&quot;&quot; Create a DP (Dynamic Programming) table with n 
+        rows and amount+1 columns and initialize it with -1&quot;&quot;&quot;
+        dp = [[-1] * (amount + 1) for _ in range(n)]
+
+        # Call utility function to calculate the answer
+        ans = self.func(coins, n - 1, amount, dp)
+
+        &quot;&quot;&quot; If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum&quot;&quot;&quot;
+        if ans &gt;= int(1e9):
+            return -1
+        
+        # Return the minimum number of coins
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    /* Function to find the minimum number 
+    of elements needed to form the target sum*/
+    int MinimumCoins(vector&lt;int&gt;&amp; coins, int amount) {
+        int n = coins.size();
+    
+        /* Create a 2D DP table with
+        n rows and amount+1 columns*/
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(amount + 1, 0));
+    
+        // Initialize the first row of the DP table
+        for (int i = 0; i &lt;= amount; i++) {
+            if (i % coins[0] == 0)
+                dp[0][i] = i / coins[0];
+            else
+                dp[0][i] = 1e9; 
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int target = 0; target &lt;= amount; target++) {
+                
+                /* Calculate the minimum elements needed
+                without taking the current element*/
+                int notTake = dp[ind - 1][target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element*/
+                int take = 1e9; 
+                if (coins[ind] &lt;= target)
+                    take = 1 + dp[ind][target - coins[ind]];
+                
+                /* Store the minimum of &#x27;notTake&#x27;
+                and &#x27;take&#x27; in the DP table*/
+                dp[ind][target] = min(notTake, take);
+            }
+        }
+    
+        // The answer is in the bottom-right cell 
+        int ans = dp[n - 1][amount];
+    
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum*/
+        if (ans &gt;= 1e9)
+            return -1;
+        
+        // Return the minimum number of coins needed
+        return ans; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int MinimumCoins(int[] coins, int amount)
+    {
+        int n = coins.Length;
+    
+        /* Create a 2D DP table with
+        n rows and amount+1 columns */
+        int[,] dp = new int[n, amount + 1];
+        int infinity = (int)1e9;
+    
+        // Initialize the first row of the DP table
+        for (int i = 0; i &lt;= amount; i++)
+        {
+            if (i % coins[0] == 0)
+                dp[0, i] = i / coins[0];
+            else
+                dp[0, i] = infinity;
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            for (int target = 0; target &lt;= amount; target++)
+            {
+                
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = dp[ind - 1, target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = infinity; 
+                if (coins[ind] &lt;= target)
+                    take = 1 + dp[ind, target - coins[ind]];
+                
+                /* Store the minimum of &#x27;notTake&#x27;
+                and &#x27;take&#x27; in the DP table */
+                dp[ind, target] = Math.Min(notTake, take);
+            }
+        }
+    
+        // The answer is in the bottom-right cell 
+        int ans = dp[n - 1, amount];
+    
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= infinity)
+            return -1;
+        
+        // Return the minimum number of coins needed
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// MinimumCoins implements the bottom-up DP solution for the coin change problem.
+func MinimumCoins(coins []int, amount int) int {
+	n := len(coins)
+
+	// Create a 2D DP table with n rows and amount+1 columns
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, amount+1)
+	}
+
+	// Initialize the first row of the DP table
+	for i := 0; i &lt;= amount; i++ {
+		if i%coins[0] == 0 {
+			dp[0][i] = i / coins[0]
+		} else {
+			dp[0][i] = 1000000000 // A large value to indicate impossible
+		}
+	}
+
+	// Fill the DP table using a bottom-up approach
+	for ind := 1; ind &lt; n; ind++ {
+		for target := 0; target &lt;= amount; target++ {
+			// Minimum coins needed without taking the current coin
+			notTake := dp[ind-1][target]
+
+			// Minimum coins needed by taking the current coin
+			take := 1000000000
+			if coins[ind] &lt;= target {
+				take = 1 + dp[ind][target-coins[ind]]
+			}
+
+			// Store the minimum of notTake and take
+			dp[ind][target] = min(notTake, take)
+		}
+	}
+
+	// The answer is in the bottom-right cell
+	ans := dp[n-1][amount]
+
+	// If it&#x27;s still very large, return -1
+	if ans &gt;= 1000000000 {
+		return -1
+	}
+	return ans
+}
+
+
+func min(a int, b int) int {
+
+    // Return smaller value
+    if a &lt; b {
+        return a
+    }
+
+    return b
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        /* Create a 2D DP table with
+        n rows and amount+1 columns */
+        int[][] dp = new int[n][amount + 1];
+
+        // Initialize the first row of the DP table
+        for (int i = 0; i &lt;= amount; i++) {
+            if (i % coins[0] == 0)
+                dp[0][i] = i / coins[0];
+            else
+                dp[0][i] = (int)1e9;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int target = 0; target &lt;= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = dp[ind - 1][target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = (int)1e9;
+                if (coins[ind] &lt;= target)
+                    take = 1 + dp[ind][target - coins[ind]];
+
+                /* Store the minimum of &#x27;notTake&#x27;
+                and &#x27;take&#x27; in the DP table */
+                dp[ind][target] = Math.min(notTake, take);
+            }
+        }
+
+        // The answer is in the bottom-right cell 
+        int ans = dp[n - 1][amount];
+
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins needed
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    MinimumCoins(coins, amount) {
+        const n = coins.length;
+    
+        /* Create a 2D DP table with
+        n rows and amount+1 columns */
+        const dp = Array.from({ length: n }, () =&gt; Array(amount + 1).fill(0));
+    
+        // Initialize the first row of the DP table
+        for (let i = 0; i &lt;= amount; i++) {
+            if (i % coins[0] === 0)
+                dp[0][i] = Math.floor(i / coins[0]);
+            else
+                dp[0][i] = 1e9;
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let target = 0; target &lt;= amount; target++) {
+                
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                const notTake = dp[ind - 1][target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                let take = 1e9; 
+                if (coins[ind] &lt;= target)
+                    take = 1 + dp[ind][target - coins[ind]];
+                
+                /* Store the minimum of &#x27;notTake&#x27;
+                and &#x27;take&#x27; in the DP table */
+                dp[ind][target] = Math.min(notTake, take);
+            }
+        }
+    
+        // The answer is in the bottom-right cell 
+        const ans = dp[n - 1][amount];
+    
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= 1e9)
+            return -1;
+        
+        // Return the minimum number of coins needed
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find the minimum number 
+    of elements needed to form the target sum &quot;&quot;&quot;
+    def MinimumCoins(self, coins, amount):
+        n = len(coins)
+
+        &quot;&quot;&quot; Create a 2D DP table with
+        n rows and amount+1 columns &quot;&quot;&quot;
+        dp = [[0] * (amount + 1) for _ in range(n)]
+
+        # Initialize the first row of the DP table
+        for i in range(amount + 1):
+            if i % coins[0] == 0:
+                dp[0][i] = i // coins[0]
+            else:
+                dp[0][i] = int(1e9)
+
+        # Fill the DP table using a bottom-up approach
+        for ind in range(1, n):
+            for target in range(amount + 1):
+                &quot;&quot;&quot; Calculate the minimum elements needed
+                without taking the current element &quot;&quot;&quot;
+                notTake = dp[ind - 1][target]
+
+                &quot;&quot;&quot; Calculate the minimum elements 
+                needed by taking the current element &quot;&quot;&quot;
+                take = int(1e9)
+                if coins[ind] &lt;= target:
+                    take = 1 + dp[ind][target - coins[ind]]
+
+                &quot;&quot;&quot; Store the minimum of &#x27;notTake&#x27;
+                and &#x27;take&#x27; in the DP table &quot;&quot;&quot;
+                dp[ind][target] = min(notTake, take)
+
+        # The answer is in the bottom-right cell 
+        ans = dp[n - 1][amount]
+
+        &quot;&quot;&quot; If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum &quot;&quot;&quot;
+        if ans &gt;= int(1e9):
+            return -1
+
+        # Return the minimum number of coins needed
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    /* Function to find the minimum number 
+    of elements needed to form the target sum*/
+    int MinimumCoins(vector&lt;int&gt;&amp; coins, int amount) {
+        int n = coins.size();
+        
+        /* Initialize two vectors to store 
+        the previous and current DP states*/
+        vector&lt;int&gt; prev(amount + 1, 0);
+        vector&lt;int&gt; cur(amount + 1, 0);
+    
+        // Initialize the first row of the DP table
+        for (int i = 0; i &lt;= amount; i++) {
+            if (i % coins[0] == 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible    
+            else
+            prev[i] = 1e9; 
+        }
+    
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            
+            for (int target = 0; target &lt;= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element*/
+                int notTake = prev[target];
+            
+                /* Calculate the minimum elements 
+                needed by taking the current element*/
+                int take = 1e9; 
+                if (coins[ind] &lt;= target)
+                    take = 1 + cur[target - coins[ind]];
+                
+                /* Store the minimum of &#x27;notTake&#x27; 
+                and &#x27;take&#x27; in the current DP state*/
+                cur[target] = min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration*/
+            prev = cur;
+        }
+    
+        // The answer is in the last row of the DP table
+        int ans = prev[amount];
+    
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum*/
+        if (ans &gt;= 1e9)
+            return -1;
+        
+        // Return the minimum number of coins
+        return ans;  
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int MinimumCoins(int[] coins, int amount)
+    {
+        int n = coins.Length;
+
+        /* Initialize two arrays to store 
+        the previous and current DP states */
+        int[] prev = new int[amount + 1];
+        int[] cur = new int[amount + 1];
+
+        int largeValue = (int)1e9;
+
+        // Initialize the first row of the DP table
+        for (int i = 0; i &lt;= amount; i++)
+        {
+            if (i % coins[0] == 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible
+            else
+                prev[i] = largeValue;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            for (int target = 0; target &lt;= amount; target++)
+            {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = prev[target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = largeValue;
+                if (coins[ind] &lt;= target)
+                    take = 1 + cur[target - coins[ind]];
+
+                /* Store the minimum of &#x27;notTake&#x27; 
+                and &#x27;take&#x27; in the current DP state */
+                cur[target] = Math.Min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration */
+            prev = (int[])cur.Clone();
+        }
+
+        // The answer is in the last row of the DP table
+        int ans = prev[amount];
+
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= largeValue)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const INF = 1000000000 // Large value to represent impossible cases
+
+// MinimumCoins finds the minimum number of coins needed to form the target sum
+func MinimumCoins(coins []int, amount int) int {
+	n := len(coins)
+
+	// Initialize two slices to store the previous and current DP states
+	prev := make([]int, amount+1)
+	cur := make([]int, amount+1)
+
+	// Initialize the first row of the DP table
+	for i := 0; i &lt;= amount; i++ {
+		if i%coins[0] == 0 {
+			prev[i] = i / coins[0]
+		} else {
+			prev[i] = INF
+		}
+	}
+
+	// Fill the DP table using a bottom-up approach
+	for ind := 1; ind &lt; n; ind++ {
+		for target := 0; target &lt;= amount; target++ {
+			// Minimum coins needed without taking the current coin
+			notTake := prev[target]
+
+			// Minimum coins needed by taking the current coin
+			take := INF
+			if coins[ind] &lt;= target {
+				take = 1 + cur[target-coins[ind]]
+			}
+
+			// Store the minimum of notTake and take in the current DP state
+			cur[target] = min(notTake, take)
+		}
+
+		// Update prev with the current state for the next iteration
+		copy(prev, cur)
+	}
+
+	// The answer is in the last row of the DP table
+	ans := prev[amount]
+
+	// If it&#x27;s still very large, return -1
+	if ans &gt;= INF {
+		return -1
+	}
+	return ans
+}
+
+func min(a int, b int) int {
+
+    // Return smaller value
+    if a &lt; b {
+        return a
+    }
+
+    return b
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    public int MinimumCoins(int[] coins, int amount) {
+        int n = coins.length;
+
+        /* Initialize two arrays to store 
+        the previous and current DP states */
+        int[] prev = new int[amount + 1];
+        int[] cur = new int[amount + 1];
+
+        // Initialize the first row of the DP table
+        for (int i = 0; i &lt;= amount; i++) {
+            if (i % coins[0] == 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible
+            else
+                prev[i] = (int)1e9;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int target = 0; target &lt;= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                int notTake = prev[target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                int take = (int)1e9;
+                if (coins[ind] &lt;= target)
+                    take = 1 + cur[target - coins[ind]];
+
+                /* Store the minimum of &#x27;notTake&#x27; 
+                and &#x27;take&#x27; in the current DP state */
+                cur[target] = Math.min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration */
+            System.arraycopy(cur, 0, prev, 0, amount + 1);
+        }
+
+        // The answer is in the last row of the DP table
+        int ans = prev[amount];
+
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= (int)1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the minimum number 
+    of elements needed to form the target sum */
+    MinimumCoins(coins, amount) {
+        let n = coins.length;
+
+        /* Initialize two arrays to store 
+        the previous and current DP states */
+        let prev = new Array(amount + 1).fill(0);
+        let cur = new Array(amount + 1).fill(0);
+
+        // Initialize the first row of the DP table
+        for (let i = 0; i &lt;= amount; i++) {
+            if (i % coins[0] === 0)
+                prev[i] = i / coins[0];
+            // Set it to a very large value if not possible
+            else
+                prev[i] = 1e9;
+        }
+
+        // Fill the DP table using a bottom-up approach
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let target = 0; target &lt;= amount; target++) {
+                /* Calculate the minimum elements needed
+                without taking the current element */
+                let notTake = prev[target];
+
+                /* Calculate the minimum elements 
+                needed by taking the current element */
+                let take = 1e9;
+                if (coins[ind] &lt;= target)
+                    take = 1 + cur[target - coins[ind]];
+
+                /* Store the minimum of &#x27;notTake&#x27; 
+                and &#x27;take&#x27; in the current DP state */
+                cur[target] = Math.min(notTake, take);
+            }
+            /* Update the previous DP state with
+            the current state for the next iteration */
+            prev = [...cur];
+        }
+
+        // The answer is in the last row of the DP table
+        let ans = prev[amount];
+
+        /* If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum */
+        if (ans &gt;= 1e9)
+            return -1;
+
+        // Return the minimum number of coins
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find the minimum number 
+    of elements needed to form the target sum &quot;&quot;&quot;
+    def MinimumCoins(self, coins, amount):
+        n = len(coins)
+
+        &quot;&quot;&quot; Initialize two lists to store 
+        the previous and current DP states &quot;&quot;&quot;
+        prev = [0] * (amount + 1)
+        cur = [0] * (amount + 1)
+
+        # Initialize the first row of the DP table
+        for i in range(amount + 1):
+            if i % coins[0] == 0:
+                prev[i] = i // coins[0]
+            # Set it to a very large value if not possible
+            else:
+                prev[i] = int(1e9)
+
+        # Fill the DP table using a bottom-up approach
+        for ind in range(1, n):
+            for target in range(amount + 1):
+                &quot;&quot;&quot; Calculate the minimum elements needed
+                without taking the current element &quot;&quot;&quot;
+                notTake = prev[target]
+
+                &quot;&quot;&quot; Calculate the minimum elements 
+                needed by taking the current element &quot;&quot;&quot;
+                take = int(1e9)
+                if coins[ind] &lt;= target:
+                    take = 1 + cur[target - coins[ind]]
+
+                &quot;&quot;&quot; Store the minimum of &#x27;notTake&#x27; 
+                and &#x27;take&#x27; in the current DP state &quot;&quot;&quot;
+                cur[target] = min(notTake, take)
+            
+            &quot;&quot;&quot; Update the previous DP state with
+            the current state for the next iteration &quot;&quot;&quot;
+            prev[:] = cur
+
+        # The answer is in the last row of the DP table
+        ans = prev[amount]
+
+        &quot;&quot;&quot; If &#x27;ans&#x27; is still very large, it means 
+        it&#x27;s not possible to form the target sum &quot;&quot;&quot;
+        if ans &gt;= int(1e9):
+            return -1
+
+        # Return the minimum number of coins
+        return ans</code></pre></div>
+</body>
+</html>

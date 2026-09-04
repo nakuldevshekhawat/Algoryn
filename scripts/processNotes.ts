@@ -1,0 +1,215 @@
+import fs from 'fs';
+import path from 'path';
+
+// --- Utilities ---
+function removeNumberPrefix(name: string): string {
+  // Remove leading numbers like "01. ", "001 ", "1.1 ", etc.
+  return name.replace(/^(\d+\.)?\d+[\.\s]*/, '').trim();
+}
+
+function normalizeTitle(title: string): string {
+  // Lowercase and remove all non-alphanumeric chars for loose comparison
+  return title.toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function findHtmlFiles(dir: string, fileList: string[] = []): string[] {
+  const files = fs.readdirSync(dir);
+  for (const file of files) {
+    const filePath = path.join(dir, file);
+    if (fs.statSync(filePath).isDirectory()) {
+      findHtmlFiles(filePath, fileList);
+    } else if (filePath.endsWith('.html')) {
+      fileList.push(filePath);
+    }
+  }
+  return fileList;
+}
+
+// --- Process OS ---
+function processOS() {
+  console.log('\n--- Processing OS Notes ---');
+  const osData = JSON.parse(fs.readFileSync('./src/data/interviewX/interviewx-os.json', 'utf-8'));
+  const osNotesDir = './public/interviewx-notes/os';
+  const htmlFiles = findHtmlFiles(osNotesDir);
+
+  const matchedNotes: any = {}; // videoId -> notePath
+  const unmatchedNotes: any[] = [];
+  
+  // Create a lookup for videos based on location path
+  const videoLocations = osData.videos.map((v: any) => {
+    const locationMatch = v.title.match(/Location:\s*(.*?)(?=\s*(?:Follow Now:|Now:|Downloaded By|$))/i);
+    const loc = locationMatch ? locationMatch[1].trim() : '';
+    // Normalize location string for loose match
+    const normLoc = normalizeTitle(loc);
+    return { ...v, normLoc, loc };
+  });
+
+  for (const htmlFile of htmlFiles) {
+    // Determine relative path inside OPERATING-SYSTEM
+    const match = htmlFile.match(/OPERATING-SYSTEM\/(.*)\/index\.html$/);
+    if (!match) {
+      unmatchedNotes.push({ path: htmlFile, reason: 'Not in expected folder structure' });
+      continue;
+    }
+    const relPath = match[1]; // e.g. "01. Basics of Operating Systems/01. Operating System Introduction"
+    const normRelPath = normalizeTitle(relPath);
+
+    const matchedVideo = videoLocations.find((v: any) => v.normLoc === normRelPath);
+    
+    // We store the path relative to public/
+    const publicPath = '/' + path.relative('./public', htmlFile).replace(/\\/g, '/');
+
+    if (matchedVideo) {
+      matchedNotes[matchedVideo.id] = { path: publicPath, cleanTitle: removeNumberPrefix(path.basename(relPath)) };
+    } else {
+      unmatchedNotes.push({ path: publicPath, relPath, cleanTitle: removeNumberPrefix(path.basename(relPath)) });
+    }
+  }
+
+  console.log(`Total HTML files: ${htmlFiles.length}`);
+  console.log(`Matched notes: ${Object.keys(matchedNotes).length}`);
+  console.log(`Unmatched notes: ${unmatchedNotes.length}`);
+  
+  fs.writeFileSync('./src/data/interviewXNotes/osNotes.json', JSON.stringify({ matchedNotes, unmatchedNotes }, null, 2));
+}
+
+// --- Process DBMS ---
+function processDBMS() {
+  console.log('\n--- Processing DBMS Notes ---');
+  const dbmsData = JSON.parse(fs.readFileSync('./src/data/interviewX/interviewx-dbms.json', 'utf-8'));
+  const dbmsNotesDir = './public/interviewx-notes/dbms';
+  const htmlFiles = findHtmlFiles(dbmsNotesDir);
+
+  const matchedNotes: any = {};
+  const unmatchedNotes: any[] = [];
+
+  const videos = dbmsData.videos.map((v: any) => {
+    // Extract clean name from "File Name: 1.1 Data, Information & Database (Introduction to DBMS)"
+    let cleanName = v.title;
+    const fnMatch = v.title.match(/(?:File Name:|File:)\s*(.*?)(?=\s*(?:Location:|Follow Now:|Now:|Downloaded By|$))/i);
+    if (fnMatch) {
+      cleanName = fnMatch[1].trim();
+    }
+    cleanName = removeNumberPrefix(cleanName);
+    return { ...v, cleanName, normTitle: normalizeTitle(cleanName) };
+  });
+
+  for (const htmlFile of htmlFiles) {
+    const filename = path.basename(htmlFile, '.html');
+    const cleanTitle = removeNumberPrefix(filename);
+    const normNoteTitle = normalizeTitle(cleanTitle);
+
+    let matchedVideo = videos.find((v: any) => v.normTitle === normNoteTitle);
+    
+    // Fallback: Check if one contains the other
+    if (!matchedVideo) {
+      matchedVideo = videos.find((v: any) => v.normTitle.includes(normNoteTitle) || normNoteTitle.includes(v.normTitle));
+    }
+
+    const publicPath = '/' + path.relative('./public', htmlFile).replace(/\\/g, '/');
+
+    if (matchedVideo) {
+      matchedNotes[matchedVideo.id] = { path: publicPath, cleanTitle };
+    } else {
+      unmatchedNotes.push({ path: publicPath, cleanTitle, originalFilename: filename });
+    }
+  }
+
+  console.log(`Total HTML files: ${htmlFiles.length}`);
+  console.log(`Matched notes: ${Object.keys(matchedNotes).length}`);
+  console.log(`Unmatched notes: ${unmatchedNotes.length}`);
+
+  fs.writeFileSync('./src/data/interviewXNotes/dbmsNotes.json', JSON.stringify({ matchedNotes, unmatchedNotes }, null, 2));
+}
+
+// --- Process CN ---
+function processCN() {
+  console.log('\n--- Processing CN Notes ---');
+  const cnData = JSON.parse(fs.readFileSync('./src/data/interviewX/interviewx-cn.json', 'utf-8'));
+  const cnNotesDir = './public/interviewx-notes/cn';
+  const htmlFiles = findHtmlFiles(cnNotesDir);
+
+  const matchedNotes: any = {};
+  const unmatchedNotes: any[] = [];
+
+  const videos = cnData.videos.map((v: any) => {
+    let cleanName = v.title;
+    const fnMatch = v.title.match(/(?:File Name:|File:)\s*(.*?)(?=\s*(?:Location:|Follow Now:|Now:|Downloaded By|$))/i);
+    if (fnMatch) {
+      cleanName = fnMatch[1].trim();
+    }
+    cleanName = removeNumberPrefix(cleanName);
+    // Specifically handle "(...)" suffixes if they exist, to improve matching
+    const noBracketName = cleanName.replace(/\s*\(.*\)\s*$/, '').trim();
+    return { ...v, cleanName, noBracketName, normTitle: normalizeTitle(noBracketName) };
+  });
+
+  for (const htmlFile of htmlFiles) {
+    const content = fs.readFileSync(htmlFile, 'utf-8');
+    // E.g. url: https://takeuforward.org/plus/computer-networks/introduction-to-computer-networks/types-of-networks-and-interconnected-networks
+    const urlMatch = content.match(/url:\s*(https?:\/\/[^\s]+)/i);
+    
+    let cleanTitle = 'Unknown Topic';
+    if (urlMatch) {
+      const urlStr = urlMatch[1];
+      try {
+        const urlObj = new URL(urlStr);
+        const parts = urlObj.pathname.split('/').filter(Boolean);
+        if (parts.length > 0) {
+          const lastPart = parts[parts.length - 1]; // e.g. types-of-networks-and-interconnected-networks
+          cleanTitle = lastPart
+            .split('-')
+            .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+        }
+      } catch (e) {
+         // ignore
+      }
+    } else {
+       // Fallback to heading or title if url comment is missing
+       const h1Match = content.match(/<h1[^>]*>(.*?)<\/h1>/i);
+       if (h1Match) {
+           cleanTitle = h1Match[1].replace(/<[^>]+>/g, '').trim();
+       } else {
+           const titleMatch = content.match(/<title>(.*?)<\/title>/i);
+           if (titleMatch) {
+               cleanTitle = titleMatch[1].replace(/<[^>]+>/g, '').trim();
+               // Clean up takeuforward generic titles
+               if (cleanTitle.includes('takeuforward')) cleanTitle = 'Unknown Topic';
+           }
+       }
+    }
+
+    const normNoteTitle = normalizeTitle(cleanTitle);
+
+    let matchedVideo = videos.find((v: any) => v.normTitle === normNoteTitle);
+    
+    // Fallback logic
+    if (!matchedVideo) {
+       matchedVideo = videos.find((v: any) => v.normTitle.includes(normNoteTitle) || normNoteTitle.includes(v.normTitle));
+    }
+
+    const publicPath = '/' + path.relative('./public', htmlFile).replace(/\\/g, '/');
+
+    if (matchedVideo) {
+      matchedNotes[matchedVideo.id] = { path: publicPath, cleanTitle };
+    } else {
+      unmatchedNotes.push({ path: publicPath, cleanTitle, urlFound: !!urlMatch });
+    }
+  }
+
+  console.log(`Total HTML files: ${htmlFiles.length}`);
+  console.log(`Matched notes: ${Object.keys(matchedNotes).length}`);
+  console.log(`Unmatched notes: ${unmatchedNotes.length}`);
+
+  fs.writeFileSync('./src/data/interviewXNotes/cnNotes.json', JSON.stringify({ matchedNotes, unmatchedNotes }, null, 2));
+}
+
+// Ensure output dir exists
+if (!fs.existsSync('./src/data/interviewXNotes')) {
+  fs.mkdirSync('./src/data/interviewXNotes', { recursive: true });
+}
+
+processOS();
+processDBMS();
+processCN();

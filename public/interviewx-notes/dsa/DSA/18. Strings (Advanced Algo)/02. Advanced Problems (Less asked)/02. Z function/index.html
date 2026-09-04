@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Z function</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Z function</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Math</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two strings, one is a text string, <strong>text</strong>, and the other is a pattern string,<strong> pattern</strong>. Print the indexes of all occurrences of the pattern string in the text string using the <strong>Z function algorithm</strong>. Use 0-based indexing while returning the indices.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li><span style="color: rgb(245, 245, 245);">1<= text.length, pattern.length <=5*10</span><sup style="color: rgb(245, 245, 245);">4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: text = "xyzabxyzabxyz", pattern = "xyz"</p><p><br></p><p>Output: 0 5 10</p><p><br></p><p>Expalanation : The pattern "xyz" occurs three times in text, starting at indices 0, 5, and 10.</p><h3>Example 2</h3><p>Input: text = "cabcdab", pattern = "abc"</p><p><br></p><p>Output: 1</p><p><br></p><p>Expalanation : The pattern "abc" occurs one time in text, starting at index 1.</p><h3>Example 3</h3><p>Input: text = "aaabaaaabaaa", pattern = "aa"</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The underlying concept of this problem, finding the occurrences of a pattern in a text string, is commonly used in search engines and text editors. For example, the 'Find' or 'Search' function in text editors like Notepad or Word, uses similar algorithms to highlight or navigate to the occurrences of a search term within the open document. Similarly, search engines like Google also use more complex variations of this algorithm to find and display relevant web pages containing the user's search terms.</p></div>
+<div class="section"><h2>Editorial: Brute Force Approach</h2><html><head></head><body><p>
+    Before going to the Intution, let's first understand what is Z-algorithm.
+</p>
+
+<h2>Z Algorithm:</h2>
+<p>
+    The Z-algorithm is a common technique to solve <b>String Pattern Matching</b> problems. <br>
+    It combines the pattern <code>P</code> and the text <code>T</code> as <code>P+"$"+T</code>, computes the <b>Z-array</b>, and find matches.
+    
+    </p><h3>Z-array:</h3>
+    The <strong>Z-array</strong> is an array where each position <code>Z[i]</code> represents the length of the longest substring starting from <code>s[i]</code> that is also a prefix of the string <code>s</code>. <br><br>
+    
+    For example, if the string is <code>s = "aaabaab"</code>:
+    <ul>
+        <li><code>Z[0]</code> is undefined (commonly set to 0).</li>
+        <li><code>Z[1] = 2</code> because the longest substring starting at <code>s[1]</code> is "aa" that also matches the prefix of s.</li>
+    </ul> <br>
+
+    Computing in a similar fashion, the Z-array for <code>"aaabaab"</code> will be: <br>
+    <code>Z = [0, 2, 1, 0, 2, 1, 0]</code>
+
+    <h3>Understanding how Z-algorithm is used for Pattern Matching:</h3>
+    <ul>
+        <li>
+            <b>Step 1 - Form a combined string S:</b>
+            <ul>
+                <li>Concatenate the pattern P, a special delimiter (eg, '$') and text T.</li>
+                <li>For the pattern P of length m, and text T of length n, the combined string S becomes: <br>
+                    <code><pre>       S = P + '$' + T</pre></code>
+                </li>
+                <li>Example: If P = "abc" and T = "abcabbabcb", then S = "abc$abcabbabcb"</li>
+            </ul>
+        </li>
+
+        <li>
+            <strong>Step 2 - Compute the Z-array for the combined string S:</strong> Each value of Z[i] indicates the length of the longest substring starting at i in Sthat matches the prefix of S.
+        </li>
+
+        <li>
+            <b>Step 3 - Search for Pattern Matches:</b>
+            <ul>
+                <li>Look at the portion of the Z-array that corresponds to the text (i.e., indices after m+1, the length of the pattern plus the delimiter).</li>
+                <li>If <code>Z[i] = m</code>, then the substring starting at position i - (m + 1) in T matches P.</li>
+                <li>For example: If S = "abc$abcabbabcb" and Z[4] = 3, this means that the pattern P = "abc" matches the text starting at index 4 - (3 + 1) = 0.</li>
+            </ul>
+        </li>
+    </ul>
+
+    
+    <h6>Key Notes:</h6>
+    <ul>
+        <li>The Z-array helps identify positions where the pattern fully matches a substring in the text.</li>
+        <li>The delimiter ensures there are no false matches due to overlapping of the pattern with itself.</li>
+    </ul>
+<p></p>
+
+<hr>
+
+<h2>Intuition:</h2>
+<p>
+    The Z-algorithm uses the Z-array which contains for every index, the length of the longest substring starting from that particular index which is also a prefix of the string. Thus, the <b>pattern P</b> that needs to be matched is kept as prefix in the string <b>S</b> and then the Z-array can be used to find all the indices where the <b>pattern P</b> is found in the <b>text T</b> string. <br>
+
+    </p><h4>Computing the Z-Function (Brute Force Way):</h4>
+    For each index <code>i</code>, compare <code>S[i]</code> (substring starting at <code>i</code>) with the prefix <code>S[0]</code>. Calculate the number of matching characters for each <code>i</code>.
+<p></p>
+
+
+<h2>Approach:</h2>
+<p>
+    </p><ul>
+        <li>Combine Pattern and Text using a delimiter forming a combined string. Compute the Z-array for the combined string.</li>
+        <li>Iterate over the portion of the Z-array corresponding to the text. If any value in the Z-array equals the length of the pattern, it indicates a match. The starting index of the match in the text is calculated and stored in the result.</li>
+        <li>The indices of all matches are returned as the final output.</li>
+    </ul>
+<p></p>
+
+<h2>Solution:</h2>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Compute the Z array for the combined string
+    vector<int> computeZarray(string s) {
+        int n = s.size(); // size of string
+    
+        vector<int> Z(n, 0); // Z-array
+        
+        // For every character
+        for(int i=1; i < n; i++) {
+            // Increment Z[i] till the characters matches with the prefix
+            while(i + Z[i] < n && s[i + Z[i]] == s[Z[i]]) Z[i]++;
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector<int> search(string text, string pattern)   {
+        string s = pattern + '$' + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector<int> Z = computeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector<int> ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i < s.size(); i++) {
+            if(Z[i] == m) ans.push_back(i - (m + 1));
+        }
+        
+        return ans;
+    }
+};
+
+int main() {
+    string text = "xyzabxyzabxyz";
+    string pattern = "xyz";
+    
+    // Creating an instance of the solution class
+    Solution sol;
+    
+    // Function call to find all indices of pattern in text
+    vector<int> ans = sol.search(text, pattern);
+    
+    for(auto ind : ans) cout << ind << " ";
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;  
+
+class Solution {
+    
+    // Compute the Z array for the combined string
+    private int[] computeZarray(String s) {
+        int n = s.length(); // size of string
+    
+        int[] Z = new int[n]; // Z-array
+        
+        // For every character
+        for(int i = 1; i < n; i++) {
+            // Increment Z[i] till the characters matches with the prefix
+            while(i + Z[i] < n && s.charAt(i + Z[i]) == s.charAt(Z[i])) {
+                Z[i]++;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+    // Function to find all indices of pattern in text
+    public List<Integer> search(String text, String pattern) {
+        String s = pattern + '$' + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        int[] Z = computeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+        
+        // To store the result
+        List<Integer> ans = new ArrayList<>();
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i < s.length(); i++) {
+            if(Z[i] == m) ans.add(i - (m + 1));
+        }
+        
+        return ans;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String text = "xyzabxyzabxyz";
+        String pattern = "xyz";
+        
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+        
+        // Function call to find all indices of pattern in text
+        List<Integer> ans = sol.search(text, pattern);
+        
+        for(int ind : ans) {
+            System.out.print(ind + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Compute the Z array for the combined string
+    def computeZarray(self, s):
+        n = len(s)  # size of string
+    
+        Z = [0] * n  # Z-array
+        
+        # For every character
+        for i in range(1, n):
+            # Increment Z[i] till the characters matches with the prefix
+            while i + Z[i] < n and s[i + Z[i]] == s[Z[i]]:
+                Z[i] += 1
+        
+        return Z  # Return the computed Z-array
+    
+    # Function to find all indices of pattern in text
+    def search(self, text, pattern):
+        s = pattern + '$' + text  # Combined string
+        
+        # Function call to find the Z array for the combined string
+        Z = self.computeZarray(s)
+        
+        # Length of pattern and text
+        n = len(text)
+        m = len(pattern)
+        
+        # To store the result
+        ans = []
+        
+        # Iterate on the combined string after the delimiter
+        for i in range(m+1, len(s)):
+            if Z[i] == m:
+                ans.append(i - (m + 1))
+        
+        return ans
+
+if __name__ == "__main__":
+    text = "xyzabxyzabxyz"
+    pattern = "xyz"
+    
+    # Creating an instance of the solution class
+    sol = Solution()
+    
+    # Function call to find all indices of pattern in text
+    ans = sol.search(text, pattern)
+    
+    for ind in ans:
+        print(ind, end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    
+    // Compute the Z array for the combined string
+    computeZarray(s) {
+        let n = s.length; // size of string
+    
+        let Z = new Array(n).fill(0); // Z-array
+        
+        // For every character
+        for(let i = 1; i < n; i++) {
+            // Increment Z[i] till the characters matches with the prefix
+            while(i + Z[i] < n && s[i + Z[i]] === s[Z[i]]) {
+                Z[i]++;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+    // Function to find all indices of pattern in text
+    search(text, pattern) {
+        let s = pattern + '$' + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        let Z = this.computeZarray(s);
+        
+        // Length of pattern and text
+        let n = text.length, m = pattern.length;
+        
+        // To store the result
+        let ans = [];
+        
+        // Iterate on the combined string after the delimiter
+        for(let i = m + 1; i < s.length; i++) {
+            if(Z[i] === m) ans.push(i - (m + 1));
+        }
+        
+        return ans;
+    }
+}
+
+// Example usage:
+let text = "xyzabxyzabxyz";
+let pattern = "xyz";
+
+// Creating an instance of the solution class
+let sol = new Solution();
+
+// Function call to find all indices of pattern in text
+let ans = sol.search(text, pattern);
+
+for(let ind of ans) {
+    process.stdout.write(ind + " ");
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // Compute the Z array for the combined string
+    private int[] ComputeZarray(string s)
+    {
+        int n = s.Length; // size of string
+
+        int[] Z = new int[n]; // Z-array
+        
+        // For every character
+        for (int i = 1; i < n; i++)
+        {
+            // Increment Z[i] till the characters matches with the prefix
+            while (i + Z[i] < n && s[i + Z[i]] == s[Z[i]])
+            {
+                Z[i]++;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+    // Function to find all indices of pattern in text
+    public List<int> Search(string text, string pattern)
+    {
+        string s = pattern + '$' + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        int[] Z = ComputeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.Length;
+        int m = pattern.Length;
+        
+        // To store the result
+        List<int> ans = new List<int>();
+        
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i < s.Length; i++)
+        {
+            if (Z[i] == m) 
+            {
+                ans.Add(i - (m + 1));
+            }
+        }
+        
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage:
+        string text = "xyzabxyzabxyz";
+        string pattern = "xyz";
+
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+
+        // Function call to find all indices of pattern in text
+        List<int> ans = sol.Search(text, pattern);
+
+        foreach (int ind in ans)
+        {
+            Console.Write(ind + " ");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Compute the Z array for the combined string
+func computeZarray(s string) []int {
+	n := len(s) // size of string
+	Z := make([]int, n)
+
+	// For every character
+	for i := 1; i < n; i++ {
+		// Increment Z[i] till the characters match with the prefix
+		for i+Z[i] < n && s[i+Z[i]] == s[Z[i]] {
+			Z[i]++
+		}
+	}
+
+	return Z // Return the computed Z-array
+}
+
+// Function to find all indices of pattern in text
+func search(text string, pattern string) []int {
+	// Combined string: pattern + '$' + text
+	s := pattern + "$" + text
+
+	// Function call to find the Z array for the combined string
+	Z := computeZarray(s)
+
+	m := len(pattern) // Length of pattern
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i < len(s); i++ {
+		if Z[i] == m {
+			ans = append(ans, i-(m+1))
+		}
+	}
+
+	return ans
+}
+
+func main() {
+	text := "xyzabxyzabxyz"
+	pattern := "xyz"
+
+	// Function call to find all indices of pattern in text
+	ans := search(text, pattern)
+
+	// Output
+	for _, ind := range ans {
+		fmt.Printf("%d ", ind)
+	}
+}
+</code></pre></div></div></div>
+
+<h2>Complexity Analysis:</h2>
+<p>
+    <strong>Time Complexity: O(N<sup>2</sup>)</strong>, where N is the length of the combined string S <br>
+    Computing the Z-array using brute force takes O(N<sup>2</sup>) time and finding the matches requires iterating on the Z-array taking O(N) time.
+    <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, to store the Z-array.
+</p></body></html></div>
+<div class="section"><h2>Editorial: Optimal Approach</h2><html><head></head><body><h2>Intuition:</h2>
+<p>
+    The better approach includes computing the Z-array using a modified approach. 
+
+    </p><h4>Thought Process Behind the Modification:</h4>
+    The previous brute force method computed the Z-array by iterating over each character and using a <code>while</code> loop to match characters against the prefix, resulting in a worst-case time complexity of O(N²) when all characters are identical. <br><br>
+    The new approach optimizes the process by leveraging previously computed Z-values to avoid redundant comparisons. It maintains a <strong>window [left, right]</strong> that represents a segment of the string where a prefix match has already been found. The key idea is to reuse previously computed Z-values wherever possible and only perform character comparisons when necessary.
+
+    <h4>Modifications:</h4>
+    The following are the key changes while computing the Z-array:
+    <ul>
+        <li><strong>Maintaining a Window</strong>
+            <ul>
+                <li>A window [left, right] is maintained where a valid prefix match exists.</li>
+                <li>If the current index i is inside this window, the Z-values from previously computed results are reused.</li>
+                <li>If i is outside the window, character comparisons are performed from scratch.</li>
+            </ul>
+        </li>
+        <li><strong>Reusing Previously Computed Z-values</strong>
+            <ul>
+                <li>If <code>i</code> is inside the window and the mirrored index <code>i - left</code> has a Z-value within bounds, reuse it (<code>Z[i] = Z[i - left]</code>).</li>
+                <li>Otherwise, extend the prefix match by checking characters beyond the window.</li>
+            </ul>
+        </li>
+        <li><strong>Extending the Match Beyond the Window</strong>
+            <ul>
+                <li>If the precomputed Z-value is not enough, brute force is used only beyond the window.</li>
+                <li>The new boundaries [left, right] are updated.</li>
+            </ul>
+        </li>
+    </ul>
+<p></p>
+
+<hr>
+
+<h2>Brute Force Approach vs. Modified Approach</h2>
+<p>
+    Let's take an example: <code>text = "abacaba", pattern = "aba"</code> <br>
+    We construct <code>s = "aba$abacaba</code> and compute Z function for it.
+
+    </p><h4>Brute Force Approach</h4>
+    <ul>
+        <li>It iterates over every index i and compares characters one-by-one.</li>
+        <li>No information is reused; redundant comparisons happen.</li>
+        <li><strong>Example of Redundancy:</strong>
+            <ul>
+                <li>Z[4] = 3 (because "aba" matches the prefix)</li>
+                <li>Z[6] is recalculated from scratch, even though part of "aba" has already been checked at Z[4].</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h4>Modified Approach</h4>
+    <ul>
+        <li>Maintains a [left, right] window where a prefix match exists.</li>
+        <li>Reuses Z-values instead of recalculating them.</li>
+        <li><strong>Example:</strong>
+            <ul>
+                <li>At i = 4, "aba" matches the prefix, so Z[4] = 3, updating [left = 4, right = 6].</li>
+                <li>At i = 5, instead of checking from scratch, it mirrors Z[5-4] = Z[1] = 0, avoiding extra work.</li>
+                <li>At i = 6, Z[6] = Z[2] = 1 is used, avoiding a fresh comparison.</li>
+            </ul>
+        </li>
+    </ul>
+<p></p>
+
+<h2>Solution:</h2>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Compute the Z array for the combined string
+    vector<int> computeZarray(string s) {
+        int n = s.size(); // size of string
+    
+        vector<int> Z(n, 0); // Z-array
+        
+        // Pointers to mark the window
+        int left = 0, right = 0;
+        
+        // For every character
+        for(int i=1; i < n; i++) {
+            
+            // Out of window
+            if(i > right) {
+                while(i + Z[i] < n && s[i+Z[i]] == s[Z[i]])
+                    Z[i]++;
+            }
+            
+            // Else (Inside the window)
+            else {
+                // Check for inside
+                if(i + Z[i - left] <= right) Z[i] = Z[i - left];
+                
+                // Else compute again using brute force method
+                else { 
+                    Z[i] = right - i + 1; // Take the answer till boundary
+                    
+                    // Start matching beyond boundary using brute force
+                    while(i + Z[i] < n && s[i + Z[i]] == s[Z[i]]) Z[i]++;
+                }
+            }
+            
+            // Update the window only if it extends beyond current boundary
+            if (i + Z[i] - 1 > right) {
+                left = i;
+                right = i + Z[i] - 1;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector<int> search(string text, string pattern)   {
+        string s = pattern + '$' + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector<int> Z = computeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector<int> ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i < s.size(); i++) {
+            if(Z[i] == m) ans.push_back(i - (m + 1));
+        }
+        
+        return ans;
+    }
+};
+
+int main() {
+    string text = "xyzabxyzabxyz";
+    string pattern = "xyz";
+    
+    // Creating an instance of the solution class
+    Solution sol;
+    
+    // Function call to find all indices of pattern in text
+    vector<int> ans = sol.search(text, pattern);
+    
+    for(auto ind : ans) cout << ind << " ";
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    // Compute the Z array for the combined string
+    private int[] computeZarray(String s) {
+        int n = s.length(); // size of string
+
+        int[] Z = new int[n]; // Z-array
+
+        // Pointers to mark the window
+        int left = 0, right = 0;
+
+        // For every character
+        for(int i = 1; i < n; i++) {
+
+            // Out of window
+            if(i > right) {
+                while(i + Z[i] < n && s.charAt(i + Z[i]) == s.charAt(Z[i])) {
+                    Z[i]++;
+                }
+            }
+
+            // Else (Inside the window)
+            else {
+                // Check for inside
+                if(i + Z[i - left] <= right) {
+                    Z[i] = Z[i - left];
+                }
+
+                // Else compute again using brute force method
+                else {
+                    Z[i] = right - i + 1; // Take the answer till boundary
+
+                    // Start matching beyond boundary using brute force
+                    while(i + Z[i] < n && s.charAt(i + Z[i]) == s.charAt(Z[i])) {
+                        Z[i]++;
+                    }
+                }
+            }
+
+            // Update the window only if it extends beyond current boundary
+            if(i + Z[i] - 1 > right) {
+                left = i;
+                right = i + Z[i] - 1;
+            }
+        }
+
+        return Z; // Return the computed Z-array
+    }
+
+    // Function to find all indices of pattern in text
+    public List<Integer> search(String text, String pattern) {
+        String s = pattern + '$' + text; // Combined string
+
+        // Function call to find the Z array for the combined string
+        int[] Z = computeZarray(s);
+
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+
+        // To store the result
+        List<Integer> ans = new ArrayList<>();
+
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i < s.length(); i++) {
+            if(Z[i] == m) {
+                ans.add(i - (m + 1));
+            }
+        }
+
+        return ans;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String text = "xyzabxyzabxyz";
+        String pattern = "xyz";
+
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+
+        // Function call to find all indices of pattern in text
+        List<Integer> ans = sol.search(text, pattern);
+
+        for(int ind : ans) {
+            System.out.print(ind + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Compute the Z array for the combined string
+    def computeZarray(self, s):
+        n = len(s)  # size of string
+
+        Z = [0] * n  # Z-array
+
+        # Pointers to mark the window
+        left, right = 0, 0
+
+        # For every character
+        for i in range(1, n):
+
+            # Out of window
+            if i > right:
+                while i + Z[i] < n and s[i + Z[i]] == s[Z[i]]:
+                    Z[i] += 1
+
+            # Else (Inside the window)
+            else:
+                # Check for inside
+                if i + Z[i - left] <= right:
+                    Z[i] = Z[i - left]
+
+                # Else compute again using brute force method
+                else:
+                    Z[i] = right - i + 1  # Take the answer till boundary
+
+                    # Start matching beyond boundary using brute force
+                    while i + Z[i] < n and s[i + Z[i]] == s[Z[i]]:
+                        Z[i] += 1
+
+            # Update the window only if it extends beyond current boundary
+            if i + Z[i] - 1 > right:
+                left = i
+                right = i + Z[i] - 1
+
+        return Z  # Return the computed Z-array
+
+    # Function to find all indices of pattern in text
+    def search(self, text, pattern):
+        s = pattern + '$' + text  # Combined string
+
+        # Function call to find the Z array for the combined string
+        Z = self.computeZarray(s)
+
+        # Length of pattern and text
+        n, m = len(text), len(pattern)
+
+        # To store the result
+        ans = []
+
+        # Iterate on the combined string after the delimiter
+        for i in range(m+1, len(s)):
+            if Z[i] == m:
+                ans.append(i - (m + 1))
+
+        return ans
+
+
+if __name__ == "__main__":
+    text = "xyzabxyzabxyz"
+    pattern = "xyz"
+
+    # Creating an instance of the solution class
+    sol = Solution()
+
+    # Function call to find all indices of pattern in text
+    ans = sol.search(text, pattern)
+
+    for ind in ans:
+        print(ind, end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+
+    // Compute the Z array for the combined string
+    computeZarray(s) {
+        let n = s.length; // size of string
+
+        let Z = new Array(n).fill(0); // Z-array
+
+        // Pointers to mark the window
+        let left = 0, right = 0;
+
+        // For every character
+        for(let i = 1; i < n; i++) {
+
+            // Out of window
+            if(i > right) {
+                while(i + Z[i] < n && s[i + Z[i]] === s[Z[i]]) {
+                    Z[i]++;
+                }
+            }
+
+            // Else (Inside the window)
+            else {
+                // Check for inside
+                if(i + Z[i - left] <= right) {
+                    Z[i] = Z[i - left];
+                }
+
+                // Else compute again using brute force method
+                else {
+                    Z[i] = right - i + 1; // Take the answer till boundary
+
+                    // Start matching beyond boundary using brute force
+                    while(i + Z[i] < n && s[i + Z[i]] === s[Z[i]]) {
+                        Z[i]++;
+                    }
+                }
+            }
+
+            // Update the window only if it extends beyond current boundary
+            if(i + Z[i] - 1 > right) {
+                left = i;
+                right = i + Z[i] - 1;
+            }
+        }
+
+        return Z; // Return the computed Z-array
+    }
+
+    // Function to find all indices of pattern in text
+    search(text, pattern) {
+        let s = pattern + '$' + text; // Combined string
+
+        // Function call to find the Z array for the combined string
+        let Z = this.computeZarray(s);
+
+        // Length of pattern and text
+        let n = text.length, m = pattern.length;
+
+        // To store the result
+        let ans = [];
+
+        // Iterate on the combined string after the delimiter
+        for(let i = m + 1; i < s.length; i++) {
+            if(Z[i] === m) {
+                ans.push(i - (m + 1));
+            }
+        }
+
+        return ans;
+    }
+}
+
+// Example usage:
+let text = "xyzabxyzabxyz";
+let pattern = "xyz";
+
+// Creating an instance of the solution class
+let sol = new Solution();
+
+// Function call to find all indices of pattern in text
+let ans = sol.search(text, pattern);
+
+for(let ind of ans) {
+    process.stdout.write(ind + " ");
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // Compute the Z array for the combined string
+    private int[] ComputeZarray(string s)
+    {
+        int n = s.Length; // size of string
+
+        int[] Z = new int[n]; // Z-array
+
+        // Pointers to mark the window
+        int left = 0, right = 0;
+
+        // For every character
+        for (int i = 1; i < n; i++)
+        {
+            // Out of window
+            if (i > right)
+            {
+                while (i + Z[i] < n && s[i + Z[i]] == s[Z[i]])
+                {
+                    Z[i]++;
+                }
+
+                // Update the window
+                left = i;
+                right = i + Z[i] - 1;
+            }
+            // Else (Inside the window)
+            else
+            {
+                // Check for inside
+                if (i + Z[i - left] <= right)
+                {
+                    Z[i] = Z[i - left];
+                }
+                // Else compute again using brute force method
+                else
+                {
+                    Z[i] = right - i + 1; // Take the answer till boundary
+
+                    // Start matching beyond boundary using brute force
+                    while (i + Z[i] < n && s[i + Z[i]] == s[Z[i]])
+                    {
+                        Z[i]++;
+                    }
+
+                    // Update the window
+                    if (i + Z[i] - 1 > right) {
+                        left = i;
+                        right = i + Z[i] - 1;
+                    }
+                }
+            }
+        }
+
+        return Z; // Return the computed Z-array
+    }
+
+    // Function to find all indices of pattern in text
+    public List<int> Search(string text, string pattern)
+    {
+        string s = pattern + '$' + text; // Combined string
+
+        // Function call to find the Z array for the combined string
+        int[] Z = this.ComputeZarray(s);
+
+        // Length of pattern and text
+        int n = text.Length, m = pattern.Length;
+
+        // To store the result
+        List<int> ans = new List<int>();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i < s.Length; i++)
+        {
+            if (Z[i] == m)
+            {
+                ans.Add(i - (m + 1));
+            }
+        }
+
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage:
+        string text = "xyzabxyzabxyz";
+        string pattern = "xyz";
+
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+
+        // Function call to find all indices of pattern in text
+        List<int> ans = sol.Search(text, pattern);
+
+        foreach (int ind in ans)
+        {
+            Console.Write(ind + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Compute the Z array for the combined string
+func computeZarray(s string) []int {
+	n := len(s) // size of string
+
+	Z := make([]int, n) // Z-array
+
+	// Pointers to mark the window
+	left, right := 0, 0
+
+	// For every character
+	for i := 1; i < n; i++ {
+
+		// Out of window
+		if i > right {
+			for i+Z[i] < n && s[i+Z[i]] == s[Z[i]] {
+				Z[i]++
+			}
+
+			// Update the window
+			left = i
+			right = i + Z[i] - 1
+		} else {
+			// Check for inside
+			if i+Z[i-left] <= right {
+				Z[i] = Z[i-left]
+			} else {
+				// Else compute again using brute force method
+				Z[i] = right - i + 1 // Take the answer till boundary
+
+				// Start matching beyond boundary using brute force
+				for i+Z[i] < n && s[i+Z[i]] == s[Z[i]] {
+					Z[i]++
+				}
+
+				// Update the window
+				if (i + Z[i] - 1 > right) {
+    				left = i
+    				right = i + Z[i] - 1
+				}
+			}
+		}
+	}
+
+	return Z // Return the computed Z-array
+}
+
+// Function to find all indices of pattern in text
+func search(text string, pattern string) []int {
+	s := pattern + "$" + text // Combined string
+
+	// Function call to find the Z array for the combined string
+	Z := computeZarray(s)
+
+	m := len(pattern) // Length of pattern
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i < len(s); i++ {
+		if Z[i] == m {
+			ans = append(ans, i-(m+1))
+		}
+	}
+
+	return ans
+}
+
+func main() {
+	text := "xyzabxyzabxyz"
+	pattern := "xyz"
+
+	// Function call to find all indices of pattern in text
+	ans := search(text, pattern)
+
+	// Output
+	for _, ind := range ans {
+		fmt.Printf("%d ", ind)
+	}
+}
+</code></pre></div></div></div>
+
+<h2>Complexity Analysis:</h2>
+<p>
+    <strong>Time Complexity: O(N)</strong>, where N is the length of the combined string S <br>
+    Computing the Z-array using modified approach takes O(N) time as each character of the string is processed at most once. And finding the matches requires iterating on the Z-array taking O(N) time.
+    <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, to store the Z-array.
+</p></body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Compute the Z array for the combined string
+    vector&lt;int&gt; computeZarray(string s) {
+        int n = s.size(); // size of string
+    
+        vector&lt;int&gt; Z(n, 0); // Z-array
+        
+        // For every character
+        for(int i=1; i &lt; n; i++) {
+            // Increment Z[i] till the characters matches with the prefix
+            while(i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] == s[Z[i]]) Z[i]++;
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector&lt;int&gt; search(string text, string pattern)   {
+        string s = pattern + &#x27;$&#x27; + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector&lt;int&gt; Z = computeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i &lt; s.size(); i++) {
+            if(Z[i] == m) ans.push_back(i - (m + 1));
+        }
+        
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    // Compute the Z array for the combined string
+    private int[] ComputeZarray(string s) {
+        int n = s.Length; // size of string
+    
+        int[] Z = new int[n]; // Z-array
+        
+        // For every character
+        for(int i = 1; i &lt; n; i++) {
+            // Increment Z[i] till the characters matches with the prefix
+            while(i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] == s[Z[i]]) {
+                Z[i]++;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+
+    public List&lt;int&gt; Search(string text, string pattern) {
+        string s = pattern + &#x27;$&#x27; + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        int[] Z = ComputeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.Length;
+        int m = pattern.Length;
+        
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m + 1; i &lt; s.Length; i++) {
+            if(Z[i] == m) {
+                ans.Add(i - (m + 1));
+            }
+        }
+        
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Compute the Z array for the combined string
+func computeZarray(s string) []int {
+	n := len(s) // size of string
+	Z := make([]int, n)
+
+	// For every character
+	for i := 1; i &lt; n; i++ {
+		// Increment Z[i] till the characters match with the prefix
+		for i+Z[i] &lt; n &amp;&amp; s[i+Z[i]] == s[Z[i]] {
+			Z[i]++
+		}
+	}
+
+	return Z // Return the computed Z-array
+}
+
+// Function to find all indices of pattern in text
+func search(text string, pattern string) []int {
+	// Combined string: pattern + &#x27;$&#x27; + text
+	s := pattern + &quot;$&quot; + text
+
+	// Function call to find the Z array for the combined string
+	Z := computeZarray(s)
+
+	m := len(pattern) // Length of pattern
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i &lt; len(s); i++ {
+		if Z[i] == m {
+			ans = append(ans, i-(m+1))
+		}
+	}
+
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    
+    // Compute the Z array for the combined string
+    private int[] computeZarray(String s) {
+        int n = s.length(); // size of string
+    
+        int[] Z = new int[n]; // Z-array
+        
+        // For every character
+        for(int i = 1; i &lt; n; i++) {
+            // Increment Z[i] till the characters matches with the prefix
+            while(i + Z[i] &lt; n &amp;&amp; s.charAt(i + Z[i]) == s.charAt(Z[i])) {
+                Z[i]++;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+    // Function to find all indices of pattern in text
+    public List&lt;Integer&gt; search(String text, String pattern) {
+        String s = pattern + &#x27;$&#x27; + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        int[] Z = computeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+        
+        // To store the result
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i &lt; s.length(); i++) {
+            if(Z[i] == m) ans.add(i - (m + 1));
+        }
+        
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    
+    // Compute the Z array for the combined string
+    computeZarray(s) {
+        let n = s.length; // size of string
+    
+        let Z = new Array(n).fill(0); // Z-array
+        
+        // For every character
+        for(let i = 1; i &lt; n; i++) {
+            // Increment Z[i] till the characters matches with the prefix
+            while(i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] === s[Z[i]]) {
+                Z[i]++;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+    // Function to find all indices of pattern in text
+    search(text, pattern) {
+        let s = pattern + &#x27;$&#x27; + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        let Z = this.computeZarray(s);
+        
+        // Length of pattern and text
+        let n = text.length, m = pattern.length;
+        
+        // To store the result
+        let ans = [];
+        
+        // Iterate on the combined string after the delimiter
+        for(let i = m + 1; i &lt; s.length; i++) {
+            if(Z[i] === m) ans.push(i - (m + 1));
+        }
+        
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Compute the Z array for the combined string
+    def computeZarray(self, s):
+        n = len(s)  # size of string
+    
+        Z = [0] * n  # Z-array
+        
+        # For every character
+        for i in range(1, n):
+            # Increment Z[i] till the characters matches with the prefix
+            while i + Z[i] &lt; n and s[i + Z[i]] == s[Z[i]]:
+                Z[i] += 1
+        
+        return Z  # Return the computed Z-array
+    
+    # Function to find all indices of pattern in text
+    def search(self, text, pattern):
+        s = pattern + &#x27;$&#x27; + text  # Combined string
+        
+        # Function call to find the Z array for the combined string
+        Z = self.computeZarray(s)
+        
+        # Length of pattern and text
+        n = len(text)
+        m = len(pattern)
+        
+        # To store the result
+        ans = []
+        
+        # Iterate on the combined string after the delimiter
+        for i in range(m+1, len(s)):
+            if Z[i] == m:
+                ans.append(i - (m + 1))
+        
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Compute the Z array for the combined string
+    vector&lt;int&gt; computeZarray(string s) {
+        int n = s.size(); // size of string
+    
+        vector&lt;int&gt; Z(n, 0); // Z-array
+        
+        // Pointers to mark the window
+        int left = 0, right = 0;
+        
+        // For every character
+        for(int i=1; i &lt; n; i++) {
+            
+            // Out of window
+            if(i &gt; right) {
+                while(i + Z[i] &lt; n &amp;&amp; s[i+Z[i]] == s[Z[i]])
+                    Z[i]++;
+            }
+            
+            // Else (Inside the window)
+            else {
+                // Check for inside
+                if(i + Z[i - left] &lt;= right) Z[i] = Z[i - left];
+                
+                // Else compute again using brute force method
+                else { 
+                    Z[i] = right - i + 1; // Take the answer till boundary
+                    
+                    // Start matching beyond boundary using brute force
+                    while(i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] == s[Z[i]]) Z[i]++;
+                }
+            }
+            
+            // Update the window only if it extends beyond current boundary
+            if (i + Z[i] - 1 &gt; right) {
+                left = i;
+                right = i + Z[i] - 1;
+            }
+        }
+        
+        return Z; // Return the computed Z-array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector&lt;int&gt; search(string text, string pattern)   {
+        string s = pattern + &#x27;$&#x27; + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector&lt;int&gt; Z = computeZarray(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i &lt; s.size(); i++) {
+            if(Z[i] == m) ans.push_back(i - (m + 1));
+        }
+        
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Compute the Z array for the combined string
+    private int[] ComputeZarray(string s)
+    {
+        int n = s.Length; // size of string
+
+        int[] Z = new int[n]; // Z-array
+
+        // Pointers to mark the window
+        int left = 0, right = 0;
+
+        // For every character
+        for (int i = 1; i &lt; n; i++)
+        {
+            // Out of window
+            if (i &gt; right)
+            {
+                while (i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] == s[Z[i]])
+                {
+                    Z[i]++;
+                }
+
+                // Update the window
+                left = i;
+                right = i + Z[i] - 1;
+            }
+            // Else (Inside the window)
+            else
+            {
+                // Check for inside
+                if (i + Z[i - left] &lt;= right)
+                {
+                    Z[i] = Z[i - left];
+                }
+                // Else compute again using brute force method
+                else
+                {
+                    Z[i] = right - i + 1; // Take the answer till boundary
+
+                    // Start matching beyond boundary using brute force
+                    while (i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] == s[Z[i]])
+                    {
+                        Z[i]++;
+                    }
+
+                    // Update the window
+                    if (i + Z[i] - 1 &gt; right) {
+                        left = i;
+                        right = i + Z[i] - 1;
+                    }
+                }
+            }
+        }
+
+        return Z; // Return the computed Z-array
+    }
+
+    // Function to find all indices of pattern in text
+    public List&lt;int&gt; Search(string text, string pattern)
+    {
+        string s = pattern + &#x27;$&#x27; + text; // Combined string
+
+        // Function call to find the Z array for the combined string
+        int[] Z = this.ComputeZarray(s);
+
+        // Length of pattern and text
+        int n = text.Length, m = pattern.Length;
+
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i &lt; s.Length; i++)
+        {
+            if (Z[i] == m)
+            {
+                ans.Add(i - (m + 1));
+            }
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Compute the Z array for the combined string
+func computeZarray(s string) []int {
+	n := len(s) // size of string
+
+	Z := make([]int, n) // Z-array
+
+	// Pointers to mark the window
+	left, right := 0, 0
+
+	// For every character
+	for i := 1; i &lt; n; i++ {
+
+		// Out of window
+		if i &gt; right {
+			for i+Z[i] &lt; n &amp;&amp; s[i+Z[i]] == s[Z[i]] {
+				Z[i]++
+			}
+
+			// Update the window
+			left = i
+			right = i + Z[i] - 1
+		} else {
+			// Check for inside
+			if i+Z[i-left] &lt;= right {
+				Z[i] = Z[i-left]
+			} else {
+				// Else compute again using brute force method
+				Z[i] = right - i + 1 // Take the answer till boundary
+
+				// Start matching beyond boundary using brute force
+				for i+Z[i] &lt; n &amp;&amp; s[i+Z[i]] == s[Z[i]] {
+					Z[i]++
+				}
+
+				// Update the window
+				if (i + Z[i] - 1 &gt; right) {
+    				left = i
+    				right = i + Z[i] - 1
+				}
+			}
+		}
+	}
+
+	return Z // Return the computed Z-array
+}
+
+// Function to find all indices of pattern in text
+func search(text string, pattern string) []int {
+	s := pattern + &quot;$&quot; + text // Combined string
+
+	// Function call to find the Z array for the combined string
+	Z := computeZarray(s)
+
+	m := len(pattern) // Length of pattern
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i &lt; len(s); i++ {
+		if Z[i] == m {
+			ans = append(ans, i-(m+1))
+		}
+	}
+
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+
+    // Compute the Z array for the combined string
+    private int[] computeZarray(String s) {
+        int n = s.length(); // size of string
+
+        int[] Z = new int[n]; // Z-array
+
+        // Pointers to mark the window
+        int left = 0, right = 0;
+
+        // For every character
+        for(int i = 1; i &lt; n; i++) {
+
+            // Out of window
+            if(i &gt; right) {
+                while(i + Z[i] &lt; n &amp;&amp; s.charAt(i + Z[i]) == s.charAt(Z[i])) {
+                    Z[i]++;
+                }
+            }
+
+            // Else (Inside the window)
+            else {
+                // Check for inside
+                if(i + Z[i - left] &lt;= right) {
+                    Z[i] = Z[i - left];
+                }
+
+                // Else compute again using brute force method
+                else {
+                    Z[i] = right - i + 1; // Take the answer till boundary
+
+                    // Start matching beyond boundary using brute force
+                    while(i + Z[i] &lt; n &amp;&amp; s.charAt(i + Z[i]) == s.charAt(Z[i])) {
+                        Z[i]++;
+                    }
+                }
+            }
+
+            // Update the window only if it extends beyond current boundary
+            if(i + Z[i] - 1 &gt; right) {
+                left = i;
+                right = i + Z[i] - 1;
+            }
+        }
+
+        return Z; // Return the computed Z-array
+    }
+
+    // Function to find all indices of pattern in text
+    public List&lt;Integer&gt; search(String text, String pattern) {
+        String s = pattern + &#x27;$&#x27; + text; // Combined string
+
+        // Function call to find the Z array for the combined string
+        int[] Z = computeZarray(s);
+
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+
+        // To store the result
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i &lt; s.length(); i++) {
+            if(Z[i] == m) {
+                ans.add(i - (m + 1));
+            }
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+
+    // Compute the Z array for the combined string
+    computeZarray(s) {
+        let n = s.length; // size of string
+
+        let Z = new Array(n).fill(0); // Z-array
+
+        // Pointers to mark the window
+        let left = 0, right = 0;
+
+        // For every character
+        for(let i = 1; i &lt; n; i++) {
+
+            // Out of window
+            if(i &gt; right) {
+                while(i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] === s[Z[i]]) {
+                    Z[i]++;
+                }
+            }
+
+            // Else (Inside the window)
+            else {
+                // Check for inside
+                if(i + Z[i - left] &lt;= right) {
+                    Z[i] = Z[i - left];
+                }
+
+                // Else compute again using brute force method
+                else {
+                    Z[i] = right - i + 1; // Take the answer till boundary
+
+                    // Start matching beyond boundary using brute force
+                    while(i + Z[i] &lt; n &amp;&amp; s[i + Z[i]] === s[Z[i]]) {
+                        Z[i]++;
+                    }
+                }
+            }
+
+            // Update the window only if it extends beyond current boundary
+            if(i + Z[i] - 1 &gt; right) {
+                left = i;
+                right = i + Z[i] - 1;
+            }
+        }
+
+        return Z; // Return the computed Z-array
+    }
+
+    // Function to find all indices of pattern in text
+    search(text, pattern) {
+        let s = pattern + &#x27;$&#x27; + text; // Combined string
+
+        // Function call to find the Z array for the combined string
+        let Z = this.computeZarray(s);
+
+        // Length of pattern and text
+        let n = text.length, m = pattern.length;
+
+        // To store the result
+        let ans = [];
+
+        // Iterate on the combined string after the delimiter
+        for(let i = m + 1; i &lt; s.length; i++) {
+            if(Z[i] === m) {
+                ans.push(i - (m + 1));
+            }
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Compute the Z array for the combined string
+    def computeZarray(self, s):
+        n = len(s)  # size of string
+
+        Z = [0] * n  # Z-array
+
+        # Pointers to mark the window
+        left, right = 0, 0
+
+        # For every character
+        for i in range(1, n):
+
+            # Out of window
+            if i &gt; right:
+                while i + Z[i] &lt; n and s[i + Z[i]] == s[Z[i]]:
+                    Z[i] += 1
+
+            # Else (Inside the window)
+            else:
+                # Check for inside
+                if i + Z[i - left] &lt;= right:
+                    Z[i] = Z[i - left]
+
+                # Else compute again using brute force method
+                else:
+                    Z[i] = right - i + 1  # Take the answer till boundary
+
+                    # Start matching beyond boundary using brute force
+                    while i + Z[i] &lt; n and s[i + Z[i]] == s[Z[i]]:
+                        Z[i] += 1
+
+            # Update the window only if it extends beyond current boundary
+            if i + Z[i] - 1 &gt; right:
+                left = i
+                right = i + Z[i] - 1
+
+        return Z  # Return the computed Z-array
+
+    # Function to find all indices of pattern in text
+    def search(self, text, pattern):
+        s = pattern + &#x27;$&#x27; + text  # Combined string
+
+        # Function call to find the Z array for the combined string
+        Z = self.computeZarray(s)
+
+        # Length of pattern and text
+        n, m = len(text), len(pattern)
+
+        # To store the result
+        ans = []
+
+        # Iterate on the combined string after the delimiter
+        for i in range(m+1, len(s)):
+            if Z[i] == m:
+                ans.append(i - (m + 1))
+
+        return ans</code></pre></div>
+</body>
+</html>

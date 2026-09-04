@@ -4,22 +4,22 @@ import { CourseVideoItem } from './CourseVideoItem';
 
 interface CourseTreeNodeProps {
   node: CourseNode;
-  selectedVideoId: string | null;
-  onSelectVideo: (video: any) => void;
+  selectedLessonId: string | null;
+  onSelectLesson: (lesson: any) => void;
   expandedFolders: Set<string>;
   onToggleFolder: (folderId: string) => void;
-  completedIds: Set<number>;
+  completedIds: Set<string>;
 }
 
-export function CourseTreeNode({ node, selectedVideoId, onSelectVideo, expandedFolders, onToggleFolder, completedIds }: CourseTreeNodeProps) {
-  if (node.type === 'video') {
-    const isSelected = selectedVideoId === `v-${node.video.id}`;
-    const isCompleted = node.video ? completedIds.has(node.video.id) : false;
+export function CourseTreeNode({ node, selectedLessonId, onSelectLesson, expandedFolders, onToggleFolder, completedIds }: CourseTreeNodeProps) {
+  if (node.type === 'lesson') {
+    const isSelected = selectedLessonId === node.id;
+    const isCompleted = node.lesson ? completedIds.has(node.lesson.id) : false;
     return (
       <CourseVideoItem
         node={node}
         isSelected={isSelected}
-        onSelect={onSelectVideo}
+        onSelect={onSelectLesson}
         isCompleted={isCompleted}
       />
     );
@@ -59,8 +59,8 @@ export function CourseTreeNode({ node, selectedVideoId, onSelectVideo, expandedF
             <CourseTreeNode
               key={child.id}
               node={child}
-              selectedVideoId={selectedVideoId}
-              onSelectVideo={onSelectVideo}
+              selectedLessonId={selectedLessonId}
+              onSelectLesson={onSelectLesson}
               expandedFolders={expandedFolders}
               onToggleFolder={onToggleFolder}
               completedIds={completedIds}

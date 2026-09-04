@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kosaraju's algorithm</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Kosaraju's algorithm</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Graph</span><span>Depth-First Search</span><span>Stack</span><span>Strongly Connected Component</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>You are given a <strong>directed </strong>graph with <strong>V </strong>vertices, numbered from 0 to <strong>V − 1</strong>, and its adjacency list Adj, where <strong>Adj[i] </strong>contains all vertices j such that there is a <strong>directed </strong>edge from vertex<strong> i to vertex j.</strong></p><p>Your task is to find the number of strongly connected components <strong>(SCCs) </strong>in the graph.</p>
+</div>
+<div class="section"><h2>Constraints</h2><p>1 ≤ V ≤ 5000</p><p>0 ≤ E ≤ (V*(V-1))</p><p>0 ≤ a<sub>i</sub>, b<sub>i</sub> ≤ V-1</p></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> V=5, <span style="color: rgb(229, 231, 235);">Adj=[[2,3],[0],[1],[4],[]]</span></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-PnLIld6k"></p><p><br></p><p><strong>Output:</strong> 3</p><p><strong>Explanation:</strong> Three strongly connected components are marked below:</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-o_TbPDq_"></p><h3>Example 2</h3><p><strong>Input:</strong> V=8, <span style="color: rgb(229, 231, 235);">Adj=[[1],[2],[0,3],[4],[5,7],[6],[4,7],[]]</span></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-D_9a6TOG"></p><p><strong>Output:</strong> 4</p><p><strong>Explanation:</strong> Four strongly connected components are marked below:</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-izephqU5"></p><h3>Example 3</h3><p><strong>Input:</strong> V=3, Adj=[[1], [2],[]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The concept of finding strongly connected components in a directed graph has real-world applications in many fields like social media, search engines, and recommendation systems. Did you know, in social media, it is used to identify tightly-knit community structures? For example, one where everyone is friends with everyone else or everyone follows everyone else. It also helps in analyzing web pages, where each page is a vertex and hyperlinks are directed edges. By finding the strongly connected components, search engines can identify groups of pages that are highly interlinked, improving search results. So, next time when you see groups in your social media or clustered search results remember, it's derived from this graph problem!</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><p>
+    <strong>Pre Requisite:</strong> <a href="/plus/dsa/problems/traversal-techniques?category=graph&subcategory=theory-and-traversals">DFS traversal technique</a>
+</p>
+
+<h6>What is meant by Strongly Connected Component (SCC)?</h6>
+<p>
+    A component is called a Strongly Connected Component(SCC) only if for every possible pair of vertices (u, v) inside that component, u is reachable from v and v is reachable from u. <br>
+    <strong>Note:</strong> Strongly connected components(SCC) are only valid for directed graphs. <br><br>
+    Consider the following example:
+    <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/Image_1-lo_SV3W6" alt=""> <br>
+    There are 4 strongly connected components in the above graph which are (0,1,2), (3), (4,5,6), and (7). Note that a component containing a single vertex is always a strongly connected component.
+</p>
+
+<h3>Intuition:</h3> 
+<p>
+    </p><h6>Example:</h6>
+    Consider starting a DFS traversal from node 0 for the following graph, it will end up visiting all nodes making it impossible to differentiate between different SCCs:
+    <img src="https://static.takeuforward.org/content/ProblemSetter-D_9a6TOG" alt=""> <br>
+    Another way to represent the graph is in the following way: <br>
+    <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/Image_3-kk6sDOho">
+    <br>
+    By definition, within each SCC, every node is reachable. So, DFS traversal is started from a node of SCC1, all the nodes in SCC1 can be visited and via edge e1 the SCC2 can be reached. Similarly, traversal can be done from SCC2 to SCC3 via edge e2 and from SCC3 to SCC4 via edge e3. Thus all the nodes of the graph become reachable. <br><br>
+    But, if the edges e1, e2, e3 and e4 are reversed, the graph will be:
+    <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/Image_4-Lg1fvvSV">
+    <br>
+    Now, in this graph, if a DFS is started from node 0, it will only visit nodes in SSC1. It is true for all other nodes in Strongly Connected Components. Hence, it is clear that in one DFS call, all the nodes in one SCC will be visited. <strong>Thus, the number of DFS calls will represent the number of strongly connected components.</strong>
+    <br><br>
+
+    <h6>How to identify the edges that must be reversed?</h6>
+    To find the edges that must be reversed, the strongly connected components must be known prior. To solve this problem, all the edges in the graph can be reversed, this will not affect the strongly connected components as already all nodes are reachable to each other. Thus, the graph will look like this:
+    <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/Image_5-AzznYXJB">
+
+    <h6>How to identify the starting node for DFS traversal?</h6>
+    Consider if instead of node 0, node 7 is used as the starting node for DFS traversal. In such a case, even after reversing the edges, all the nodes will be visited. Thus, it is important to identify the node from where the DFS can be started so that the SCCs can be identified. 
+    <br><br>
+    This can be solved by identifying the order of visiting the nodes when a DFS traversal is made on the original graph. The node that will be visited later will have a <strong>greater</strong> finishing time, and the node that will be visited before will have a <strong>smaller</strong> finishing time. <br><br>
+    Using this, the order in which the nodes must be visited to determine the number of SCCs can be determined based on their finishing time. The DFS calls for the node that was visited first(having the smallest finishing time) must be made first and for the node that was visited last(having the greatest finishing time) must be made last. <br><br>
+    <strong>Note:</strong> Since the node visited <strong>last</strong> in the original DFS call must be visited <strong>first</strong> in the later DFS call, a <strong>Stack</strong> data structure can be used to store the nodes based on their finishing times.
+
+<p></p>
+
+<h3>Kosaraju's Algorithm:</h3>
+<p>
+    </p><ul>
+        <li><strong>Sort all the nodes according to their finishing time:</strong> Perform a DFS call to sort the nodes based on their finishing time and store them in a stack.</li>
+        <li><strong>Reverse all the edges of the entire graph:</strong> Create a new graph where all the edges of the original graph will be reversed.</li>
+        <li><strong>Perform the DFS and count the number of different DFS calls to get the number of SCC:</strong> Start DFS traversal on the reversed graph from the node which is on the top of the stack and continue until the stack becomes empty. For each DFS call, the counter representing the number of SCCs can be incremented by 1.
+        </li>
+    </ul>
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Create a visited array to keep track of visited nodes and a stack to store nodes based on their finishing times during DFS traversal.</li>
+   <li>Perform a DFS on the original graph to determine the finishing times of nodes. Each node is pushed onto the stack after all its descendants are processed.</li>
+   <li>Reverse the edges of the original graph to create a transposed graph. Perform DFS on the transposed graph, starting from the nodes in the order defined by the stack (based on their finishing times from the first DFS).</li>
+   <li>Count the number of DFS trees formed in this step, which corresponds to the number of strongly connected components.</li>
+   <li>The count of DFS trees from the second pass is the number of strongly connected components in the original graph.</li>
+</ol>
+
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/01.drawio.png-iNzmf3gL" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/02.drawio.png-ZaoLdoyH" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/03.drawio.png-dd25JUyq" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/04.drawio.png-SQQxWUU3" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/01.drawio.png-iNzmf3gL" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/02.drawio.png-ZaoLdoyH" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/03.drawio.png-dd25JUyq" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Kosaraju's algorithm/04.drawio.png-SQQxWUU3" alt="Image 4"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    /* Function to perform DFS for storing the 
+    nodes in stack based on their finishing time */
+    void dfs(int node, vector<int> &vis, vector<int> adj[],
+             stack<int> &st) {
+
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all its neighbors
+        for (auto it : adj[node]) {
+            if (!vis[it]) {
+                // Recursively perform DFS is not visited already
+                dfs(it, vis, adj, st);
+            }
+        }
+        
+        // Push the node in stack
+        st.push(node);
+    }
+    
+    /* Helper function to perform DFS for finding
+    number of Strongly connected components */
+    void helperDFS(int node, vector<int> &vis, 
+                   vector<int> adjT[]) {
+                       
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all its neighbors
+        for (auto it : adjT[node]) {
+            if (!vis[it]) {
+                // Recursively perform DFS if not already visited
+                helperDFS(it, vis, adjT);
+            }
+        }
+    }
+public:
+
+    /* Funtion call to find the number of 
+    strongly connected components */
+    int kosaraju(int V, vector<int> adj[]) {
+        
+        // Visited array
+        vector<int> vis(V, 0);
+        
+        // Stack data structure 
+        stack<int> st;
+        
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (int i = 0; i < V; i++) {
+            if (!vis[i]) {
+                dfs(i, vis, adj, st);
+            }
+        }
+        
+        // To store the revered graph
+        vector<int> adjT[V];
+        
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (int i = 0; i < V; i++) {
+            
+            // Mark the node as unvisited
+            vis[i] = 0;
+            
+            // Add the reversed edge
+            for (auto it : adj[i]) {
+                adjT[it].push_back(i);
+            }
+        }
+        
+        /* To store the count of strongly 
+        connected components */
+        int count = 0;
+        
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (!st.empty()) {
+            // Get the node
+            int node = st.top();
+            st.pop();
+            
+            // If not visited already
+            if (!vis[node]) {
+                count += 1;
+                helperDFS(node, vis, adjT);
+            }
+        }
+        
+        // Return the result
+        return count;
+    }
+};
+
+int main() {
+
+    int n = 5;
+    int edges[5][2] = {
+        {1, 0}, {0, 2},
+        {2, 1}, {0, 3},
+        {3, 4}
+    };
+    
+    // Creating the adjacency list
+    vector<int> adj[n];
+    for (int i = 0; i < n; i++) {
+        adj[edges[i][0]].push_back(edges[i][1]);
+    }
+    
+    // Creating an instance of Solution class
+    Solution obj;
+    
+    /* Funtion call to find the number of 
+    strongly connected components */
+    int ans = obj.kosaraju(n, adj);
+    
+    cout << "The number of strongly connected components is: " << ans << endl;
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Function to perform DFS for storing the 
+    nodes in stack based on their finishing time */
+    private void dfs(int node, int[] vis, 
+                     ArrayList<ArrayList<Integer>> adj, 
+                     Stack<Integer> st) {
+                         
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        for (int it : adj.get(node)) {
+            if (vis[it] == 0) {
+                // Recursively perform DFS if not visited already
+                dfs(it, vis, adj, st);
+            }
+        }
+
+        // Push the node in stack
+        st.push(node);
+    }
+    
+    /* Helper function to perform DFS for finding
+    number of Strongly connected components */
+    private void helperDFS(int node, int[] vis, 
+                           ArrayList<ArrayList<Integer>> adjT) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        for (int it : adjT.get(node)) {
+            if (vis[it] == 0) {
+                // Recursively perform DFS if not already visited
+                helperDFS(it, vis, adjT);
+            }
+        }
+    }
+    
+    /* Funtion call to find the number of 
+    strongly connected components */
+    public int kosaraju(int V, ArrayList<ArrayList<Integer>> adj) {
+        // Visited array
+        int[] vis = new int[V];
+
+        // Stack data structure 
+        Stack<Integer> st = new Stack<>();
+
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (int i = 0; i < V; i++) {
+            if (vis[i] == 0) {
+                dfs(i, vis, adj, st);
+            }
+        }
+
+        // To store the reversed graph
+        ArrayList<ArrayList<Integer>> adjT = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adjT.add(new ArrayList<>());
+        }
+
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (int i = 0; i < V; i++) {
+            // Mark the node as unvisited
+            vis[i] = 0;
+
+            // Add the reversed edge
+            for (int it : adj.get(i)) {
+                adjT.get(it).add(i);
+            }
+        }
+
+        /* To store the count of strongly 
+        connected components */
+        int count = 0;
+
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (!st.isEmpty()) {
+            // Get the node
+            int node = st.pop();
+
+            // If not visited already
+            if (vis[node] == 0) {
+                count += 1;
+                helperDFS(node, vis, adjT);
+            }
+        }
+
+        // Return the result
+        return count;
+    }
+
+    public static void main(String[] args) {
+        int V = 5;
+        ArrayList<ArrayList<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+        adj.get(0).add(2);
+        adj.get(0).add(3);
+        adj.get(1).add(0);
+        adj.get(2).add(1);
+        adj.get(3).add(4);
+
+        Solution sol = new Solution();
+        int count = sol.kosaraju(V, adj);
+        System.out.println("Number of strongly connected components: " + count);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def dfs(self, node, vis, adj, st):
+        # Mark the node as visited
+        vis[node] = 1
+
+        # Traverse all its neighbors
+        for it in adj[node]:
+            if not vis[it]:
+                # Recursively perform DFS if not visited already
+                self.dfs(it, vis, adj, st)
+        
+        # Push the node in stack
+        st.append(node)
+    
+    def helperDFS(self, node, vis, adjT):
+        # Mark the node as visited
+        vis[node] = 1
+        
+        # Traverse all its neighbors
+        for it in adjT[node]:
+            if not vis[it]:
+                # Recursively perform DFS if not already visited
+                self.helperDFS(it, vis, adjT)
+    
+    def kosaraju(self, V, adj):
+        # Visited array
+        vis = [0] * V
+        
+        # Stack data structure 
+        st = []
+        
+        ''' Perform initial DFS to store the nodes 
+        in stack based on their finishing time '''
+        for i in range(V):
+            if not vis[i]:
+                self.dfs(i, vis, adj, st)
+        
+        # To store the reversed graph
+        adjT = [[] for _ in range(V)]
+        
+        ''' Reverse all the edges of original 
+        graph to the reversed graph '''
+        for i in range(V):
+            # Mark the node as unvisited
+            vis[i] = 0
+            
+            # Add the reversed edge
+            for it in adj[i]:
+                adjT[it].append(i)
+        
+        ''' To store the count of strongly 
+        connected components '''
+        count = 0
+        
+        ''' Start DFS call from every unvisited 
+        node based on their finishing time '''
+        while st:
+            # Get the node
+            node = st.pop()
+            
+            # If not visited already
+            if not vis[node]:
+                count += 1
+                self.helperDFS(node, vis, adjT)
+        
+        # Return the result
+        return count
+
+# Main function
+if __name__ == "__main__":
+    V = 5
+    adj = [[] for _ in range(V)]
+    adj[0].extend([2, 3])
+    adj[1].append(0)
+    adj[2].append(1)
+    adj[3].append(4)
+    
+    sol = Solution()
+    count = sol.kosaraju(V, adj)
+    print("Number of strongly connected components:", count)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to perform DFS for storing the nodes 
+    in stack based on their finishing time */
+    dfs(node, vis, adj, st) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        adj[node].forEach(it => {
+            if (!vis[it]) {
+                // Recursively perform DFS if not visited already
+                this.dfs(it, vis, adj, st);
+            }
+        });
+
+        // Push the node in stack
+        st.push(node);
+    }
+
+    /* Helper function to perform DFS for finding 
+    number of Strongly connected components */
+    helperDFS(node, vis, adjT) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        adjT[node].forEach(it => {
+            if (!vis[it]) {
+                // Recursively perform DFS if not already visited
+                this.helperDFS(it, vis, adjT);
+            }
+        });
+    }
+
+    /* Function call to find the number of 
+    strongly connected components */
+    kosaraju(V, adj) {
+        // Visited array
+        let vis = new Array(V).fill(0);
+
+        // Stack data structure 
+        let st = [];
+
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (let i = 0; i < V; i++) {
+            if (!vis[i]) {
+                this.dfs(i, vis, adj, st);
+            }
+        }
+
+        // To store the revered graph
+        let adjT = new Array(V).fill(null).map(() => []);
+
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (let i = 0; i < V; i++) {
+            // Mark the node as unvisited
+            vis[i] = 0;
+
+            // Add the reversed edge
+            adj[i].forEach(it => {
+                adjT[it].push(i);
+            });
+        }
+
+        /* To store the count of strongly 
+        connected components */
+        let count = 0;
+
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (st.length > 0) {
+            // Get the node
+            let node = st.pop();
+
+            // If not visited already
+            if (!vis[node]) {
+                count += 1;
+                this.helperDFS(node, vis, adjT);
+            }
+        }
+
+        // Return the result
+        return count;
+    }
+}
+
+// Main function
+(function() {
+    const V = 5;
+    let adj = new Array(V).fill(null).map(() => []);
+    adj[0].push(2);
+    adj[0].push(3);
+    adj[1].push(0);
+    adj[2].push(1);
+    adj[3].push(4);
+
+    let sol = new Solution();
+    let count = sol.kosaraju(V, adj);
+    console.log("Number of strongly connected components:", count);
+})();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int V = 5;
+        List<List<int>> adj = new List<List<int>>();
+        for (int i = 0; i < V; i++)
+        {
+            adj.Add(new List<int>());
+        }
+
+        adj[0].Add(2);
+        adj[0].Add(3);
+        adj[1].Add(0);
+        adj[2].Add(1);
+        adj[3].Add(4);
+
+        Solution sol = new Solution();
+        int count = sol.Kosaraju(V, adj);
+        Console.WriteLine("Number of strongly connected components: " + count);
+    }
+}
+
+class Solution
+{
+    /* Function to perform DFS for storing the nodes 
+    in stack based on their finishing time */
+    private void Dfs(int node, bool[] vis, List<List<int>> adj, Stack<int> st)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+
+        // Traverse all its neighbors
+        foreach (int neighbor in adj[node])
+        {
+            if (!vis[neighbor])
+            {
+                // Recursively perform DFS if not visited already
+                Dfs(neighbor, vis, adj, st);
+            }
+        }
+
+        // Push the node in stack
+        st.Push(node);
+    }
+
+    /* Helper function to perform DFS for finding 
+    number of Strongly connected components */
+    private void HelperDfs(int node, bool[] vis, List<List<int>> adjT)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+
+        // Traverse all its neighbors
+        foreach (int neighbor in adjT[node])
+        {
+            if (!vis[neighbor])
+            {
+                // Recursively perform DFS if not already visited
+                HelperDfs(neighbor, vis, adjT);
+            }
+        }
+    }
+
+    /* Function call to find the number of 
+    strongly connected components */
+    public int Kosaraju(int V, List<List<int>> adj)
+    {
+        // Visited array
+        bool[] vis = new bool[V];
+
+        // Stack data structure 
+        Stack<int> st = new Stack<int>();
+
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (int i = 0; i < V; i++)
+        {
+            if (!vis[i])
+            {
+                Dfs(i, vis, adj, st);
+            }
+        }
+
+        // To store the revered graph
+        List<List<int>> adjT = new List<List<int>>();
+        for (int i = 0; i < V; i++)
+        {
+            adjT.Add(new List<int>());
+        }
+
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (int i = 0; i < V; i++)
+        {
+            // Mark the node as unvisited
+            vis[i] = false;
+
+            // Add the reversed edge
+            foreach (int neighbor in adj[i])
+            {
+                adjT[neighbor].Add(i);
+            }
+        }
+
+        /* To store the count of strongly 
+        connected components */
+        int count = 0;
+
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (st.Count > 0)
+        {
+            // Get the node
+            int node = st.Pop();
+
+            // If not visited already
+            if (!vis[node])
+            {
+                count += 1;
+                HelperDfs(node, vis, adjT);
+            }
+        }
+
+        // Return the result
+        return count;
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// dfs performs DFS and stores nodes in the stack based on their finishing time
+func dfs(node int, vis []bool, adj [][]int, st *[]int) {
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all its neighbors
+	for _, it := range adj[node] {
+		if !vis[it] {
+			dfs(it, vis, adj, st)
+		}
+	}
+
+	// Push the node in stack
+	*st = append(*st, node)
+}
+
+// helperDFS performs DFS on the reversed graph to find SCCs
+func helperDFS(node int, vis []bool, adjT [][]int) {
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all its neighbors
+	for _, it := range adjT[node] {
+		if !vis[it] {
+			helperDFS(it, vis, adjT)
+		}
+	}
+}
+
+// kosaraju finds the number of strongly connected components
+func kosaraju(V int, adj [][]int) int {
+	// Visited array
+	vis := make([]bool, V)
+
+	// Stack data structure
+	st := []int{}
+
+	// Perform initial DFS to store the nodes in stack based on their finishing time
+	for i := 0; i < V; i++ {
+		if !vis[i] {
+			dfs(i, vis, adj, &st)
+		}
+	}
+
+	// Reverse all the edges of the original graph
+	adjT := make([][]int, V)
+	for i := 0; i < V; i++ {
+		vis[i] = false // Mark unvisited again
+		for _, it := range adj[i] {
+			adjT[it] = append(adjT[it], i)
+		}
+	}
+
+	// Count of strongly connected components
+	count := 0
+
+	// Process nodes in the order of finishing time
+	for len(st) > 0 {
+		// Pop the top element
+		node := st[len(st)-1]
+		st = st[:len(st)-1]
+
+		if !vis[node] {
+			count++
+			helperDFS(node, vis, adjT)
+		}
+	}
+
+	// Return the result
+	return count
+}
+
+func main() {
+	V := 5
+	edges := [][]int{
+		{1, 0}, {0, 2},
+		{2, 1}, {0, 3},
+		{3, 4},
+	}
+
+	// Creating the adjacency list
+	adj := make([][]int, V)
+	for _, e := range edges {
+		adj[e[0]] = append(adj[e[0]], e[1])
+	}
+
+	// Function call to find the number of strongly connected components
+	ans := kosaraju(V, adj)
+	fmt.Println("The number of strongly connected components is:", ans)
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where E represent the number of edges) <br>
+    Two DFS traversals are made each taking an O(V+E) time. Reversing all the edges in the graph takes O(E) time.
+   
+</p>
+
+<p><strong>Space Complexity: O(V+E)</strong> <br>
+    Storing the transposed graph takes O(V+E) space and the space due to the stack and visited array will be O(V) each.
+   
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    /* Function to perform DFS for storing the 
+    nodes in stack based on their finishing time */
+    void dfs(int node, vector&lt;int&gt; &amp;vis, vector&lt;int&gt; adj[],
+             stack&lt;int&gt; &amp;st) {
+
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all its neighbors
+        for (auto it : adj[node]) {
+            if (!vis[it]) {
+                // Recursively perform DFS is not visited already
+                dfs(it, vis, adj, st);
+            }
+        }
+        
+        // Push the node in stack
+        st.push(node);
+    }
+    
+    /* Helper function to perform DFS for finding
+    number of Strongly connected components */
+    void helperDFS(int node, vector&lt;int&gt; &amp;vis, 
+                   vector&lt;int&gt; adjT[]) {
+                       
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all its neighbors
+        for (auto it : adjT[node]) {
+            if (!vis[it]) {
+                // Recursively perform DFS if not already visited
+                helperDFS(it, vis, adjT);
+            }
+        }
+    }
+public:
+
+    /* Funtion call to find the number of 
+    strongly connected components */
+    int kosaraju(int V, vector&lt;int&gt; adj[]) {
+        
+        // Visited array
+        vector&lt;int&gt; vis(V, 0);
+        
+        // Stack data structure 
+        stack&lt;int&gt; st;
+        
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (int i = 0; i &lt; V; i++) {
+            if (!vis[i]) {
+                dfs(i, vis, adj, st);
+            }
+        }
+        
+        // To store the revered graph
+        vector&lt;int&gt; adjT[V];
+        
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (int i = 0; i &lt; V; i++) {
+            
+            // Mark the node as unvisited
+            vis[i] = 0;
+            
+            // Add the reversed edge
+            for (auto it : adj[i]) {
+                adjT[it].push_back(i);
+            }
+        }
+        
+        /* To store the count of strongly 
+        connected components */
+        int count = 0;
+        
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (!st.empty()) {
+            // Get the node
+            int node = st.top();
+            st.pop();
+            
+            // If not visited already
+            if (!vis[node]) {
+                count += 1;
+                helperDFS(node, vis, adjT);
+            }
+        }
+        
+        // Return the result
+        return count;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Function to perform DFS for storing the nodes 
+    in stack based on their finishing time */
+    private void Dfs(int node, bool[] vis, List&lt;List&lt;int&gt;&gt; adj, Stack&lt;int&gt; st)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+
+        // Traverse all its neighbors
+        foreach (int neighbor in adj[node])
+        {
+            if (!vis[neighbor])
+            {
+                // Recursively perform DFS if not visited already
+                Dfs(neighbor, vis, adj, st);
+            }
+        }
+
+        // Push the node in stack
+        st.Push(node);
+    }
+
+    /* Helper function to perform DFS for finding 
+    number of Strongly connected components */
+    private void HelperDfs(int node, bool[] vis, List&lt;List&lt;int&gt;&gt; adjT)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+
+        // Traverse all its neighbors
+        foreach (int neighbor in adjT[node])
+        {
+            if (!vis[neighbor])
+            {
+                // Recursively perform DFS if not already visited
+                HelperDfs(neighbor, vis, adjT);
+            }
+        }
+    }
+
+    /* Function call to find the number of 
+    strongly connected components */
+    public int Kosaraju(int V, List&lt;List&lt;int&gt;&gt; adj)
+    {
+        // Visited array
+        bool[] vis = new bool[V];
+
+        // Stack data structure 
+        Stack&lt;int&gt; st = new Stack&lt;int&gt;();
+
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (int i = 0; i &lt; V; i++)
+        {
+            if (!vis[i])
+            {
+                Dfs(i, vis, adj, st);
+            }
+        }
+
+        // To store the revered graph
+        List&lt;List&lt;int&gt;&gt; adjT = new List&lt;List&lt;int&gt;&gt;();
+        for (int i = 0; i &lt; V; i++)
+        {
+            adjT.Add(new List&lt;int&gt;());
+        }
+
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (int i = 0; i &lt; V; i++)
+        {
+            // Mark the node as unvisited
+            vis[i] = false;
+
+            // Add the reversed edge
+            foreach (int neighbor in adj[i])
+            {
+                adjT[neighbor].Add(i);
+            }
+        }
+
+        /* To store the count of strongly 
+        connected components */
+        int count = 0;
+
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (st.Count &gt; 0)
+        {
+            // Get the node
+            int node = st.Pop();
+
+            // If not visited already
+            if (!vis[node])
+            {
+                count += 1;
+                HelperDfs(node, vis, adjT);
+            }
+        }
+
+        // Return the result
+        return count;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// dfs performs DFS and stores nodes in the stack based on their finishing time
+func dfs(node int, vis []bool, adj [][]int, st *[]int) {
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all its neighbors
+	for _, it := range adj[node] {
+		if !vis[it] {
+			dfs(it, vis, adj, st)
+		}
+	}
+
+	// Push the node in stack
+	*st = append(*st, node)
+}
+
+// helperDFS performs DFS on the reversed graph to find SCCs
+func helperDFS(node int, vis []bool, adjT [][]int) {
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all its neighbors
+	for _, it := range adjT[node] {
+		if !vis[it] {
+			helperDFS(it, vis, adjT)
+		}
+	}
+}
+
+// kosaraju finds the number of strongly connected components
+func kosaraju(V int, adj [][]int) int {
+	// Visited array
+	vis := make([]bool, V)
+
+	// Stack data structure
+	st := []int{}
+
+	// Perform initial DFS to store the nodes in stack based on their finishing time
+	for i := 0; i &lt; V; i++ {
+		if !vis[i] {
+			dfs(i, vis, adj, &amp;st)
+		}
+	}
+
+	// Reverse all the edges of the original graph
+	adjT := make([][]int, V)
+	for i := 0; i &lt; V; i++ {
+		vis[i] = false // Mark unvisited again
+		for _, it := range adj[i] {
+			adjT[it] = append(adjT[it], i)
+		}
+	}
+
+	// Count of strongly connected components
+	count := 0
+
+	// Process nodes in the order of finishing time
+	for len(st) &gt; 0 {
+		// Pop the top element
+		node := st[len(st)-1]
+		st = st[:len(st)-1]
+
+		if !vis[node] {
+			count++
+			helperDFS(node, vis, adjT)
+		}
+	}
+
+	// Return the result
+	return count
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{    
+/* Function to perform DFS for storing the 
+    nodes in stack based on their finishing time */
+    private void dfs(int node, int[] vis, 
+                     ArrayList&lt;ArrayList&lt;Integer&gt;&gt; adj, 
+                     Stack&lt;Integer&gt; st) {
+                         
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        for (int it : adj.get(node)) {
+            if (vis[it] == 0) {
+                // Recursively perform DFS if not visited already
+                dfs(it, vis, adj, st);
+            }
+        }
+
+        // Push the node in stack
+        st.push(node);
+    }
+    
+    /* Helper function to perform DFS for finding
+    number of Strongly connected components */
+    private void helperDFS(int node, int[] vis, 
+                           ArrayList&lt;ArrayList&lt;Integer&gt;&gt; adjT) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        for (int it : adjT.get(node)) {
+            if (vis[it] == 0) {
+                // Recursively perform DFS if not already visited
+                helperDFS(it, vis, adjT);
+            }
+        }
+    }
+    
+    /* Funtion call to find the number of 
+    strongly connected components */
+    public int kosaraju(int V, ArrayList&lt;ArrayList&lt;Integer&gt;&gt; adj) {
+        // Visited array
+        int[] vis = new int[V];
+
+        // Stack data structure 
+        Stack&lt;Integer&gt; st = new Stack&lt;&gt;();
+
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (int i = 0; i &lt; V; i++) {
+            if (vis[i] == 0) {
+                dfs(i, vis, adj, st);
+            }
+        }
+
+        // To store the reversed graph
+        ArrayList&lt;ArrayList&lt;Integer&gt;&gt; adjT = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; V; i++) {
+            adjT.add(new ArrayList&lt;&gt;());
+        }
+
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (int i = 0; i &lt; V; i++) {
+            // Mark the node as unvisited
+            vis[i] = 0;
+
+            // Add the reversed edge
+            for (int it : adj.get(i)) {
+                adjT.get(it).add(i);
+            }
+        }
+
+        /* To store the count of strongly 
+        connected components */
+        int count = 0;
+
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (!st.isEmpty()) {
+            // Get the node
+            int node = st.pop();
+
+            // If not visited already
+            if (vis[node] == 0) {
+                count += 1;
+                helperDFS(node, vis, adjT);
+            }
+        }
+
+        // Return the result
+        return count;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to perform DFS for storing the nodes 
+    in stack based on their finishing time */
+    dfs(node, vis, adj, st) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        adj[node].forEach(it =&gt; {
+            if (!vis[it]) {
+                // Recursively perform DFS if not visited already
+                this.dfs(it, vis, adj, st);
+            }
+        });
+
+        // Push the node in stack
+        st.push(node);
+    }
+
+    /* Helper function to perform DFS for finding 
+    number of Strongly connected components */
+    helperDFS(node, vis, adjT) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all its neighbors
+        adjT[node].forEach(it =&gt; {
+            if (!vis[it]) {
+                // Recursively perform DFS if not already visited
+                this.helperDFS(it, vis, adjT);
+            }
+        });
+    }
+
+    /* Function call to find the number of 
+    strongly connected components */
+    kosaraju(V, adj) {
+        // Visited array
+        let vis = new Array(V).fill(0);
+
+        // Stack data structure 
+        let st = [];
+
+        /* Perform initial DFS to store the nodes 
+        in stack based on their finishing time */
+        for (let i = 0; i &lt; V; i++) {
+            if (!vis[i]) {
+                this.dfs(i, vis, adj, st);
+            }
+        }
+
+        // To store the revered graph
+        let adjT = new Array(V).fill(null).map(() =&gt; []);
+
+        /* Reverse all the edges of original 
+        graph to the reversed graph */
+        for (let i = 0; i &lt; V; i++) {
+            // Mark the node as unvisited
+            vis[i] = 0;
+
+            // Add the reversed edge
+            adj[i].forEach(it =&gt; {
+                adjT[it].push(i);
+            });
+        }
+
+        /* To store the count of strongly 
+        connected components */
+        let count = 0;
+
+        /* Start DFS call from every unvisited 
+        node based on their finishing time */
+        while (st.length &gt; 0) {
+            // Get the node
+            let node = st.pop();
+
+            // If not visited already
+            if (!vis[node]) {
+                count += 1;
+                this.helperDFS(node, vis, adjT);
+            }
+        }
+
+        // Return the result
+        return count;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def dfs(self, node, vis, adj, st):
+        # Mark the node as visited
+        vis[node] = 1
+
+        # Traverse all its neighbors
+        for it in adj[node]:
+            if not vis[it]:
+                # Recursively perform DFS if not visited already
+                self.dfs(it, vis, adj, st)
+        
+        # Push the node in stack
+        st.append(node)
+    
+    def helperDFS(self, node, vis, adjT):
+        # Mark the node as visited
+        vis[node] = 1
+        
+        # Traverse all its neighbors
+        for it in adjT[node]:
+            if not vis[it]:
+                # Recursively perform DFS if not already visited
+                self.helperDFS(it, vis, adjT)
+    
+    def kosaraju(self, V, adj):
+        # Visited array
+        vis = [0] * V
+        
+        # Stack data structure 
+        st = []
+        
+        &#x27;&#x27;&#x27; Perform initial DFS to store the nodes 
+        in stack based on their finishing time &#x27;&#x27;&#x27;
+        for i in range(V):
+            if not vis[i]:
+                self.dfs(i, vis, adj, st)
+        
+        # To store the reversed graph
+        adjT = [[] for _ in range(V)]
+        
+        &#x27;&#x27;&#x27; Reverse all the edges of original 
+        graph to the reversed graph &#x27;&#x27;&#x27;
+        for i in range(V):
+            # Mark the node as unvisited
+            vis[i] = 0
+            
+            # Add the reversed edge
+            for it in adj[i]:
+                adjT[it].append(i)
+        
+        &#x27;&#x27;&#x27; To store the count of strongly 
+        connected components &#x27;&#x27;&#x27;
+        count = 0
+        
+        &#x27;&#x27;&#x27; Start DFS call from every unvisited 
+        node based on their finishing time &#x27;&#x27;&#x27;
+        while st:
+            # Get the node
+            node = st.pop()
+            
+            # If not visited already
+            if not vis[node]:
+                count += 1
+                self.helperDFS(node, vis, adjT)
+        
+        # Return the result
+        return count</code></pre></div>
+</body>
+</html>

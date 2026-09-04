@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number of islands II</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Number of islands II</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Hash Table</span><span>Union Find</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given n, m denoting the row and column of the 2D matrix, and an array A of size k denoting the number of operations. Matrix elements are 0 if there is water or 1 if there is land. Originally, the 2D matrix is all 0 which means there is no land in the matrix. </p><p><br></p><p>The array has <strong>k</strong> operator(s) and each operator has two integers A[i][0], A[i][1] means that you can change the cell matrix[A[i][0]][A[i][1]] from sea to island. Return how many <strong>islands</strong> are there in the matrix after each operation.</p><p><br></p><p>The directions to check for the island are up, down, right, left. The answer array will be of size k.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  1 <= n, m <= 1000</li><li>  1 <= k <= 10<sup>4</sup></li><li>  0 <= A[i][0] < n</li><li>  0 <= A[i][1] < m</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: n = 4, m = 5, k = 4, A = [[1,1],[0,1],[3,3],[3,4]] </p><p><strong>Output</strong>: [1, 1, 2, 2]</p><p><strong>Explanation</strong>: The following illustration is the representation of the operation:</p><p><img src="https://static.takeuforward.org/content/ProblemSetter-LfUoJCTR"></p><h3>Example 2</h3><p><strong>Input</strong>: n = 4, m = 5, k = 12, A = [[0,0],[0,0],[1,1],[1,0],[0,1],[0,3],[1,3],[0,4], [3,2], [2,2],[1,2], [0,2]] </p><p><strong>Output</strong>: [1, 1, 2, 1, 1, 2, 2, 2, 3, 3, 1, 1] </p><p><strong>Explanation</strong>: If we follow the process like in example 1, we will get the above result.</p><h3>Example 3</h3><p><strong>Input:</strong> n = 2, m = 2, k = 4, A = [[0,0],[0,1],[1,0],[1,1]] </p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem is a perfect representation of how geographical information systems (GIS) work. In GIS software, they constantly deal with similar situations. Land mass configuration, changes over time, and pinpointing particular areas on the maps are an everyday task for them. Watershed modeling, environmental changes, town planning, or even video games that deal with terrain generation could use an algorithm that solves this problem.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><p>
+    <strong>Pre Requisite:</strong> <a href="/plus/dsa/problems/disjoint-set-?category=graph&subcategory=minimum-spanning-tree" target="_blank">Disjoint Set</a>
+</p>
+
+<h3>Intuition:</h3> 
+<p>
+    It is clear that there is a need to find the number of islands after every operation. This implies that the problem statement refers to a dynamic graph (where edges are added after every operation). In such cases, the <strong>Disjoint Set</strong> data structure plays a huge role, using which the union(merge) operation can be performed in constant time.<br>
+    </p><h6>Understanding:</h6> 
+    Each cell in the matrix can be represented as a node in the disjoint set. An edge will be identified to be present between two land cells if and only if both the cells are in the same column or same row. <br><br>
+
+    Every time a new cell is converted from sea to land, it can be assumed to be a single island, incrementing the count of islands by one. For every neighboring islands, the merging can be performed and the count of islands can be decremented with each merge.
+
+<h6>How to store cells as nodes in the Disjoint Set?</h6>
+    The cells can be numbered sequentially as shown in the following figure: 
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/-NG4_U9OE">
+    Thus, a number can be assigned to a cell having coordinates (i, j) in the following way: <br>
+    <code> Node number = i*n + j</code>, where n is the number of columns in the grid
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Initialize a Disjoint Set Union (DSU) to manage the union and find operations for connected components. Use a visited matrix to keep track of cells that have been converted to land.</li>
+   <li>For each operation, convert the specified water cell to land:
+    <ul>
+        <li>If the cell is already land, skip to the next operation.</li>
+        <li>Assume the new land cell starts as a new island.Examine the four possible neighboring cells (up, down, left, right):
+            <ul>
+                <li>If a neighboring cell is also land, attempt to union the current cell with the neighboring cell.</li>
+                <li>If the cells are not already connected, decrement the island count and union the sets.</li>
+            </ul>
+        </li>
+    </ul>
+   </li>
+   <li>After processing each operation, store the current number of islands.</li>
+   <li>Output the number of islands after each operation.</li>
+</ol>
+
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/1.drawio (1).png-Q_nUe6cD" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/2.drawio (1).png-H9O-fBg7" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/3.drawio (1).png-Fyw8XW0L" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/4.drawio (1).png-FV4Kbco9" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/1.drawio (1).png-Q_nUe6cD" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/2.drawio (1).png-H9O-fBg7" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/3.drawio (1).png-Fyw8XW0L" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Number of islands II/4.drawio (1).png-FV4Kbco9" alt="Image 4"></div></div>
+
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector<int> rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+private:
+    // DelRow and delCol for neighbors
+    vector<int> delRow = {-1, 0, 1, 0};
+    vector<int> delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    bool isValid(int &i, int &j, 
+                 int &n, int &m) {
+        
+        // Return false if pixel is invalid
+        if(i < 0 || i >= n) return false;
+        if(j < 0 || j >= m) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+public:
+
+    /* Function to return the nunmber 
+    of islands after each operation */
+    vector<int> numOfIslands(int n, int m,
+                             vector<vector<int>> &A) {
+                                 
+        // Disjoint set Data structure
+        DisjointSet ds(n * m);
+        
+        // Visited array
+        int vis[n][m];
+        memset(vis, 0, sizeof vis);
+        
+        // To store the count of islands
+        int cnt = 0;
+        
+        // To store the result
+        vector<int> ans;
+        
+        // Perform each operation
+        for (auto it : A) {
+            int row = it[0]; // Row
+            int col = it[1]; // Column
+            
+            /* If already a land cell, no new 
+            islands will be formed */
+            if (vis[row][col] == 1) {
+                ans.push_back(cnt);
+                continue;
+            }
+            
+            // Make the cell as land
+            vis[row][col] = 1;
+            
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+            
+            // Check all the neighbors
+            for (int ind = 0; ind < 4; ind++) {
+                // Get the coordinates of cell
+                int newRow = row + delRow[ind];
+                int newCol = col + delCol[ind];
+                
+                // If the cell is a valid land cell
+                if (isValid(newRow, newCol, n, m) && 
+                    vis[newRow][newCol] == 1) {
+                    
+                    // Get the node and adjacent node number
+                    int nodeNo = row * m + col;
+                    int adjNodeNo = newRow * m + newCol;
+                    
+                    // If not already conencted, perfom the union
+                    if (ds.findUPar(nodeNo) != 
+                        ds.findUPar(adjNodeNo)) {
+                            
+                        // Decrement count
+                        cnt--;
+                        
+                        // Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+            
+            /* Store the number of islands after 
+            current operation in the result list */
+            ans.push_back(cnt);
+        }
+        
+        // Return the result
+        return ans;
+    }
+};
+
+
+int main() {
+    int  n = 4, m = 5, k = 4;
+    vector<vector<int>> A = {
+        {1,1},
+        {0,1},
+        {3,3},
+        {3,4}
+    };
+
+    // Creating instance of Solution class
+    Solution sol;
+    
+    /* Function call to return the number 
+    of islands after each operation */
+    vector<int> ans = sol.numOfIslands(n, m, A);
+    
+    // Output
+    cout << "The number of islands after each operations are: ";
+    for(int i=0; i < ans.size(); i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    // DelRow and delCol for neighbors
+    int[] delRow = {-1, 0, 1, 0};
+    int[] delCol = {0, 1, 0, -1};
+
+    /* Helper Function to check if a 
+    cell is within boundaries */
+    boolean isValid(int i, int j, int n, int m) {
+        
+        // Return false if cell is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= m) return false;
+        
+        // Return true if cell is valid
+        return true;
+    }
+
+    /* Function to return the number 
+    of islands after each operation */
+    public List<Integer> numOfIslands(int n, int m, int[][] A) {
+        
+        // Disjoint set Data structure
+        DisjointSet ds = new DisjointSet(n * m);
+
+        // Visited array
+        int[][] vis = new int[n][m];
+        for (int[] row : vis) Arrays.fill(row, 0);
+
+        // To store the count of islands
+        int cnt = 0;
+
+        // To store the result
+        List<Integer> ans = new ArrayList<>();
+
+        // Perform each operation
+        for (int[] it : A) {
+            int row = it[0]; // Row
+            int col = it[1]; // Column
+
+            /* If already a land cell, no new 
+            islands will be formed */
+            if (vis[row][col] == 1) {
+                ans.add(cnt);
+                continue;
+            }
+
+            // Make the cell as land
+            vis[row][col] = 1;
+
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+
+            // Check all the neighbors
+            for (int ind = 0; ind < 4; ind++) {
+                // Get the coordinates of cell
+                int newRow = row + delRow[ind];
+                int newCol = col + delCol[ind];
+
+                // If the cell is a valid land cell
+                if (isValid(newRow, newCol, n, m) && 
+                    vis[newRow][newCol] == 1) {
+                        
+                    // Get the node and adjacent node number
+                    int nodeNo = row * m + col;
+                    int adjNodeNo = newRow * m + newCol;
+
+                    // If not already connected, perform the union
+                    if (ds.findUPar(nodeNo) != 
+                        ds.findUPar(adjNodeNo)) {
+                        // Decrement count
+                        cnt--;
+
+                        // Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+
+            /* Store the number of islands after 
+            current operation in the result list */
+            ans.add(cnt);
+        }
+
+        // Return the result
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int n = 4, m = 5, k = 4;
+        int[][] A = {
+            {1, 1},
+            {0, 1},
+            {3, 3},
+            {3, 4}
+        };
+
+        // Creating instance of Solution class
+        Solution sol = new Solution();
+
+        /* Function call to return the number of islands after each operation */
+        List<Integer> ans = sol.numOfIslands(n, m, A);
+
+        // Output
+        System.out.print("The number of islands after each operations are: ");
+        for (int num : ans) {
+            System.out.print(num + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class DisjointSet:
+    # To store the ranks, parents and sizes
+    # of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = list(range(n + 1))
+        self.size = [1] * (n + 1)
+
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+
+    # Function to implement union by rank
+    def unionByRank(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.rank[ulp_u] < self.rank[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+        elif self.rank[ulp_v] < self.rank[ulp_u]:
+            self.parent[ulp_v] = ulp_u
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.rank[ulp_u] += 1
+
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.size[ulp_u] < self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+
+# Solution class
+class Solution:
+    # DelRow and delCol for neighbors
+    delRow = [-1, 0, 1, 0]
+    delCol = [0, 1, 0, -1]
+
+    # Helper Function to check if a 
+    # pixel is within boundaries
+    def isValid(self, i, j, n, m):
+        # Return false if pixel is invalid
+        if i < 0 or i >= n:
+            return False
+        if j < 0 or j >= m:
+            return False
+        # Return true if pixel is valid
+        return True
+
+    # Function to return the number of 
+    # islands after each operation
+    def numOfIslands(self, n, m, A):
+        # Disjoint set Data structure
+        ds = DisjointSet(n * m)
+
+        # Visited array
+        vis = [[0] * m for _ in range(n)]
+
+        # To store the count of islands
+        cnt = 0
+
+        # To store the result
+        ans = []
+
+        # Perform each operation
+        for it in A:
+            row = it[0]  # Row
+            col = it[1]  # Column
+
+            # If already a land cell, no new 
+            # islands will be formed
+            if vis[row][col] == 1:
+                ans.append(cnt)
+                continue
+
+            # Make the cell as land
+            vis[row][col] = 1
+
+            # Increment the count considering 
+            # the land cell was alone
+            cnt += 1
+
+            # Check all the neighbors
+            for ind in range(4):
+                # Get the coordinates of cell
+                newRow = row + self.delRow[ind]
+                newCol = col + self.delCol[ind]
+
+                # If the cell is a valid land cell
+                if (self.isValid(newRow, newCol, n, m) and 
+                    vis[newRow][newCol] == 1):
+                        
+                    # Get the node and adjacent node number
+                    nodeNo = row * m + col
+                    adjNodeNo = newRow * m + newCol
+
+                    # If not already connected, perform the union
+                    if ds.findUPar(nodeNo) != ds.findUPar(adjNodeNo):
+                        # Decrement count
+                        cnt -= 1
+
+                        # Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo)
+
+            # Store the number of islands after 
+            # current operation in the result list
+            ans.append(cnt)
+
+        # Return the result
+        return ans
+
+
+# Main function
+if __name__ == "__main__":
+    n = 4
+    m = 5
+    k = 4
+    A = [
+        [1, 1],
+        [0, 1],
+        [3, 3],
+        [3, 4]
+    ]
+
+    # Creating instance of Solution class
+    sol = Solution()
+
+    # Function call to return the number of
+    # islands after each operation
+    ans = sol.numOfIslands(n, m, A)
+
+    # Output
+    print("The number of islands after each operations are: ", end="")
+    for num in ans:
+        print(num, end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    constructor(n) {
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) => i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node])
+            return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by rank
+    unionByRank(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.rank[ulp_u] < this.rank[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+            this.parent[ulp_v] = ulp_u;
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] < this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    constructor() {
+        // DelRow and delCol for neighbors
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, 1, 0, -1];
+    }
+
+    // Helper Function to check if a pixel is within boundaries
+    isValid(i, j, n, m) {
+        // Return false if pixel is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    /* Function to return the number of 
+    islands after each operation */
+    numOfIslands(n, m, A) {
+        // Disjoint set Data structure
+        const ds = new DisjointSet(n * m);
+
+        // Visited array
+        const vis = Array.from(
+            { length: n }, () => Array(m).fill(0)
+        );
+
+        // To store the count of islands
+        let cnt = 0;
+
+        // To store the result
+        const ans = [];
+
+        // Perform each operation
+        for (const it of A) {
+            const row = it[0]; // Row
+            const col = it[1]; // Column
+
+            /* If already a land cell, no 
+            new islands will be formed */
+            if (vis[row][col] === 1) {
+                ans.push(cnt);
+                continue;
+            }
+
+            // Make the cell as land
+            vis[row][col] = 1;
+
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+
+            // Check all the neighbors
+            for (let ind = 0; ind < 4; ind++) {
+                // Get the coordinates of cell
+                const newRow = row + this.delRow[ind];
+                const newCol = col + this.delCol[ind];
+
+                // If the cell is a valid land cell
+                if (this.isValid(newRow, newCol, n, m) && 
+                    vis[newRow][newCol] === 1) {
+                        
+                    // Get the node and adjacent node number
+                    const nodeNo = row * m + col;
+                    const adjNodeNo = newRow * m + newCol;
+
+                    // If not already connected, perform the union
+                    if (ds.findUPar(nodeNo) !== ds.findUPar(adjNodeNo)) {
+                        // Decrement count
+                        cnt--;
+
+                        // Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+
+            /* Store the number of islands after current 
+            operation in the result list */
+            ans.push(cnt);
+        }
+
+        // Return the result
+        return ans;
+    }
+}
+
+// Main function
+const main = () => {
+    const n = 4;
+    const m = 5;
+    const k = 4;
+    const A = [
+        [1, 1],
+        [0, 1],
+        [3, 3],
+        [3, 4]
+    ];
+
+    // Creating instance of Solution class
+    const sol = new Solution();
+
+    /* Function call to return the number of
+    islands after each operation */
+    const ans = sol.numOfIslands(n, m, A);
+
+    // Output
+    console.log("The number of islands after each operations are: ", ans.join(" "));
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System; 
+using System.Collections.Generic;
+using System.Linq; // For Array.Fill
+
+public class DisjointSet
+{
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    private int[] rank;
+    private int[] parent;
+    private int[] size;
+
+    public DisjointSet(int n)
+    {
+        this.rank = new int[n + 1]; // Default initialized to 0
+        this.parent = new int[n + 1];
+        for (int i = 0; i <= n; i++)
+        {
+            this.parent[i] = i;
+        }
+        this.size = new int[n + 1];
+        Array.Fill(this.size, 1);
+    }
+
+    // Function to find ultimate parent
+    public int FindUPar(int node)
+    {
+        if (node == this.parent[node])
+            return node;
+        this.parent[node] = FindUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by rank
+    public void UnionByRank(int u, int v)
+    {
+        int ulp_u = FindUPar(u);
+        int ulp_v = FindUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (this.rank[ulp_u] < this.rank[ulp_v])
+        {
+            this.parent[ulp_u] = ulp_v;
+        }
+        else if (this.rank[ulp_v] < this.rank[ulp_u])
+        {
+            this.parent[ulp_v] = ulp_u;
+        }
+        else
+        {
+            this.parent[ulp_v] = ulp_u;
+            this.rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    public void UnionBySize(int u, int v)
+    {
+        int ulp_u = FindUPar(u);
+        int ulp_v = FindUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (this.size[ulp_u] < this.size[ulp_v])
+        {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        }
+        else
+        {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+public class Solution
+{
+    // DelRow and delCol for neighbors
+    private int[] delRow = { -1, 0, 1, 0 };
+    private int[] delCol = { 0, 1, 0, -1 };
+
+    // Helper Function to check if a pixel is within boundaries
+    private bool IsValid(int i, int j, int n, int m)
+    {
+        // Return false if pixel is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    /* Function to return the number of 
+    islands after each operation */
+    public List<int> NumOfIslands(int n, int m, List<List<int>> A)
+    {
+        // Disjoint set Data structure
+        DisjointSet ds = new DisjointSet(n * m);
+
+        // Visited array
+        // C# 2D array int[,] initializes elements to 0 by default
+        int[,] vis = new int[n, m]; 
+
+        // To store the count of islands
+        int cnt = 0;
+
+        // To store the result
+        List<int> ans = new List<int>();
+
+        // Perform each operation
+        foreach (List<int> it in A)
+        {
+            int row = it[0]; // Row
+            int col = it[1]; // Column
+
+            /* If already a land cell, no 
+            new islands will be formed */
+            if (vis[row, col] == 1)
+            {
+                ans.Add(cnt);
+                continue;
+            }
+
+            // Make the cell as land
+            vis[row, col] = 1;
+
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+
+            // Check all the neighbors
+            for (int ind = 0; ind < 4; ind++)
+            {
+                // Get the coordinates of cell
+                int newRow = row + delRow[ind];
+                int newCol = col + delCol[ind];
+
+                // If the cell is a valid land cell
+                if (IsValid(newRow, newCol, n, m) && 
+                    vis[newRow, newCol] == 1)
+                {
+                        
+                    // Get the node and adjacent node number
+                    int nodeNo = row * m + col;
+                    int adjNodeNo = newRow * m + newCol;
+
+                    // If not already connected, perform the union
+                    if (ds.FindUPar(nodeNo) != ds.FindUPar(adjNodeNo))
+                    {
+                        // Decrement count
+                        cnt--;
+
+                        // Perform the union
+                        ds.UnionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+
+            /* Store the number of islands after current 
+            operation in the result list */
+            ans.Add(cnt);
+        }
+
+        // Return the result
+        return ans;
+    }
+}
+
+public class Program
+{
+    // Main function
+    public static void Main(string[] args)
+    {
+        int n = 4;
+        int m = 5;
+        // int k = 4; // k is not used in the JS code, so not needed in C#
+        List<List<int>> A = new List<List<int>>
+        {
+            new List<int> { 1, 1 },
+            new List<int> { 0, 1 },
+            new List<int> { 3, 3 },
+            new List<int> { 3, 4 }
+        };
+
+        // Creating instance of Solution class
+        Solution sol = new Solution();
+
+        /* Function call to return the number of
+        islands after each operation */
+        List<int> ans = sol.NumOfIslands(n, m, A);
+
+        // Output
+        Console.WriteLine("The number of islands after each operations are: " + string.Join(" ", ans));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import ("fmt")
+
+
+// DisjointSet Data structure
+type DisjointSet struct {
+	rank   []int
+	parent []int
+	size   []int
+}
+
+// Constructor for DisjointSet
+func NewDisjointSet(n int) *DisjointSet {
+	ds := &DisjointSet{
+		rank:   make([]int, n+1),
+		parent: make([]int, n+1),
+		size:   make([]int, n+1),
+	}
+
+	// Initialize parent and size for each element
+	for i := 0; i <= n; i++ {
+		ds.parent[i] = i
+		ds.size[i] = 1
+	}
+	return ds
+}
+
+// Function to find the ultimate parent of a node
+func (ds *DisjointSet) findUPar(node int) int {
+	if node == ds.parent[node] {
+		return node
+	}
+	ds.parent[node] = ds.findUPar(ds.parent[node]) // Path compression
+	return ds.parent[node]
+}
+
+// Function to perform union by size
+func (ds *DisjointSet) unionBySize(u, v int) {
+	ulp_u := ds.findUPar(u)
+	ulp_v := ds.findUPar(v)
+
+	if ulp_u == ulp_v {
+		return
+	}
+
+	if ds.size[ulp_u] < ds.size[ulp_v] {
+		ds.parent[ulp_u] = ulp_v
+		ds.size[ulp_v] += ds.size[ulp_u]
+	} else {
+		ds.parent[ulp_v] = ulp_u
+		ds.size[ulp_u] += ds.size[ulp_v]
+	}
+}
+
+// Solution methods
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, -1, 0, 1}
+
+// Helper function to check if a pixel is within boundaries
+func isValid(i, j, n, m int) bool {
+	if i < 0 || i >= n {
+		return false
+	}
+	if j < 0 || j >= m {
+		return false
+	}
+	return true
+}
+
+// Function to return the number of islands after each operation
+func numOfIslands(n, m int, A [][]int) []int {
+	// Disjoint set data structure
+	ds := NewDisjointSet(n * m)
+
+	// Visited array
+	vis := make([][]int, n)
+	for i := range vis {
+		vis[i] = make([]int, m)
+	}
+
+	// To store the count of islands
+	cnt := 0
+
+	// To store the result
+	var ans []int
+
+	// Perform each operation
+	for _, it := range A {
+		row, col := it[0], it[1]
+
+		// If already a land cell, no new islands will be formed
+		if vis[row][col] == 1 {
+			ans = append(ans, cnt)
+			continue
+		}
+
+		// Make the cell as land
+		vis[row][col] = 1
+
+		// Increment the count considering the land cell was alone
+		cnt++
+
+		// Check all the neighbors
+		for ind := 0; ind < 4; ind++ {
+			// Get the coordinates of the neighboring cell
+			newRow, newCol := row+delRow[ind], col+delCol[ind]
+
+			// If the neighboring cell is a valid land cell
+			if isValid(newRow, newCol, n, m) && vis[newRow][newCol] == 1 {
+				// Get the node and adjacent node number
+				nodeNo := row*m + col
+				adjNodeNo := newRow*m + newCol
+
+				// If not already connected, perform the union
+				if ds.findUPar(nodeNo) != ds.findUPar(adjNodeNo) {
+					// Decrement count
+					cnt--
+
+					// Perform the union
+					ds.unionBySize(nodeNo, adjNodeNo)
+				}
+			}
+		}
+
+		// Store the number of islands after current operation in the result list
+		ans = append(ans, cnt)
+	}
+
+	// Return the result
+	return ans
+}
+
+func main() {
+	// Test case
+	n, m := 4, 5
+	A := [][]int{
+		{1, 1},
+		{0, 1},
+		{3, 3},
+		{3, 4},
+	}
+
+	// Function call to return the number of islands after each operation
+	ans := numOfIslands(n, m, A)
+
+	// Output the result
+	fmt.Println("The number of islands after each operations are:", ans)
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(K*4ɑ)</strong> <br>
+    Each operation involves converting the sea cell to land cell and merging the nodes (if possible) taking an overall O(4ɑ) time. Since, there are a total of K operations, the overall time complexoty is O(K*4ɑ).
+</p>
+
+<p><strong>Space Complexity: O(K) + O(N*M)</strong><br>
+    The result list takes O(K) space. The visited array takes O(N*M) space and the Disjoint set uses parent and rank/size array storing all N*M nodes taking O(N*M) space.
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector&lt;int&gt; rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] &lt; rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] &lt; rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+private:
+    // DelRow and delCol for neighbors
+    vector&lt;int&gt; delRow = {-1, 0, 1, 0};
+    vector&lt;int&gt; delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    bool isValid(int &amp;i, int &amp;j, 
+                 int &amp;n, int &amp;m) {
+        
+        // Return false if pixel is invalid
+        if(i &lt; 0 || i &gt;= n) return false;
+        if(j &lt; 0 || j &gt;= m) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+public:
+
+    /* Function to return the number 
+    of islands after each operation */
+    vector&lt;int&gt; numOfIslands(int n, int m,
+                             vector&lt;vector&lt;int&gt;&gt; &amp;A) {
+                                 
+        // Disjoint set Data structure
+        DisjointSet ds(n * m);
+        
+        // Visited array
+        int vis[n][m];
+        memset(vis, 0, sizeof vis);
+        
+        // To store the count of islands
+        int cnt = 0;
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+        
+        // Perform each operation
+        for (auto it : A) {
+            int row = it[0]; // Row
+            int col = it[1]; // Column
+            
+            /* If already a land cell, no new 
+            islands will be formed */
+            if (vis[row][col] == 1) {
+                ans.push_back(cnt);
+                continue;
+            }
+            
+            // Make the cell as land
+            vis[row][col] = 1;
+            
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+            
+            // Check all the neighbors
+            for (int ind = 0; ind &lt; 4; ind++) {
+                // Get the coordinates of cell
+                int newRow = row + delRow[ind];
+                int newCol = col + delCol[ind];
+                
+                // If the cell is a valid land cell
+                if (isValid(newRow, newCol, n, m) &amp;&amp; 
+                    vis[newRow][newCol] == 1) {
+                    
+                    // Get the node and adjacent node number
+                    int nodeNo = row * m + col;
+                    int adjNodeNo = newRow * m + newCol;
+                    
+                    // If not already connected, perform the union
+                    if (ds.findUPar(nodeNo) != 
+                        ds.findUPar(adjNodeNo)) {
+                            
+                        // Decrement count
+                        cnt--;
+                        
+                        // Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+            
+            /* Store the number of islands after 
+            current operation in the result list */
+            ans.push_back(cnt);
+        }
+        
+        // Return the result
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    // DelRow and delCol for neighbors
+    private int[] delRow = { -1, 0, 1, 0 };
+    private int[] delCol = { 0, 1, 0, -1 };
+
+    // Helper Function to check if a pixel is within boundaries
+    private bool IsValid(int i, int j, int n, int m)
+    {
+        // Return false if pixel is invalid
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    // DisjointSet Class (nested for IDE context)
+    private class DisjointSet
+    {
+        /* To store the ranks, parents and 
+        sizes of different set of vertices */
+        private int[] rank;
+        private int[] parent;
+        private int[] size;
+
+        public DisjointSet(int n)
+        {
+            this.rank = new int[n + 1]; // Default initialized to 0
+            this.parent = new int[n + 1];
+            for (int i = 0; i &lt;= n; i++)
+            {
+                this.parent[i] = i;
+            }
+            this.size = new int[n + 1];
+            System.Array.Fill(this.size, 1); 
+        }
+
+        // Function to find ultimate parent
+        public int FindUPar(int node)
+        {
+            if (node == this.parent[node])
+                return node;
+            this.parent[node] = FindUPar(this.parent[node]);
+            return this.parent[node];
+        }
+
+        // Function to implement union by rank
+        public void UnionByRank(int u, int v)
+        {
+            int ulp_u = FindUPar(u);
+            int ulp_v = FindUPar(v);
+            if (ulp_u == ulp_v) return;
+            if (this.rank[ulp_u] &lt; this.rank[ulp_v])
+            {
+                this.parent[ulp_u] = ulp_v;
+            }
+            else if (this.rank[ulp_v] &lt; this.rank[ulp_u])
+            {
+                this.parent[ulp_v] = ulp_u;
+            }
+            else
+            {
+                this.parent[ulp_v] = ulp_u;
+                this.rank[ulp_u]++;
+            }
+        }
+
+        // Function to implement union by size
+        public void UnionBySize(int u, int v)
+        {
+            int ulp_u = FindUPar(u);
+            int ulp_v = FindUPar(v);
+            if (ulp_u == ulp_v) return;
+            if (this.size[ulp_u] &lt; this.size[ulp_v])
+            {
+                this.parent[ulp_u] = ulp_v;
+                this.size[ulp_v] += this.size[ulp_u];
+            }
+            else
+            {
+                this.parent[ulp_v] = ulp_u;
+                this.size[ulp_u] += this.size[ulp_v];
+            }
+        }
+    }
+
+    public System.Collections.Generic.List&lt;int&gt; NumOfIslands(int n, int m, System.Collections.Generic.List&lt;System.Collections.Generic.List&lt;int&gt;&gt; A) {
+        // Disjoint set Data structure
+        DisjointSet ds = new DisjointSet(n * m);
+
+        // Visited array
+        // C# 2D array int[,] initializes elements to 0 by default
+        int[,] vis = new int[n, m]; 
+
+        // To store the count of islands
+        int cnt = 0;
+
+        // To store the result
+        System.Collections.Generic.List&lt;int&gt; ans = new System.Collections.Generic.List&lt;int&gt;();
+
+        // Perform each operation
+        foreach (System.Collections.Generic.List&lt;int&gt; it in A)
+        {
+            int row = it[0]; // Row
+            int col = it[1]; // Column
+
+            /* If already a land cell, no 
+            new islands will be formed */
+            if (vis[row, col] == 1)
+            {
+                ans.Add(cnt);
+                continue;
+            }
+
+            // Make the cell as land
+            vis[row, col] = 1;
+
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+
+            // Check all the neighbors
+            for (int ind = 0; ind &lt; 4; ind++)
+            {
+                // Get the coordinates of cell
+                int newRow = row + delRow[ind];
+                int newCol = col + delCol[ind];
+
+                // If the cell is a valid land cell
+                if (IsValid(newRow, newCol, n, m) &amp;&amp; 
+                    vis[newRow, newCol] == 1)
+                {
+                        
+                    // Get the node and adjacent node number
+                    int nodeNo = row * m + col;
+                    int adjNodeNo = newRow * m + newCol;
+
+                    // If not already connected, perform the union
+                    if (ds.FindUPar(nodeNo) != ds.FindUPar(adjNodeNo))
+                    {
+                        // Decrement count
+                        cnt--;
+
+                        // Perform the union
+                        ds.UnionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+
+            /* Store the number of islands after current 
+            operation in the result list */
+            ans.Add(cnt);
+        }
+
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// DisjointSet Data structure
+type DisjointSet struct {
+	rank   []int
+	parent []int
+	size   []int
+}
+
+// Constructor for DisjointSet
+func NewDisjointSet(n int) *DisjointSet {
+	ds := &amp;DisjointSet{
+		rank:   make([]int, n+1),
+		parent: make([]int, n+1),
+		size:   make([]int, n+1),
+	}
+
+	// Initialize parent and size for each element
+	for i := 0; i &lt;= n; i++ {
+		ds.parent[i] = i
+		ds.size[i] = 1
+	}
+	return ds
+}
+
+// Function to find the ultimate parent of a node
+func (ds *DisjointSet) findUPar(node int) int {
+	if node == ds.parent[node] {
+		return node
+	}
+	ds.parent[node] = ds.findUPar(ds.parent[node]) // Path compression
+	return ds.parent[node]
+}
+
+// Function to perform union by size
+func (ds *DisjointSet) unionBySize(u, v int) {
+	ulp_u := ds.findUPar(u)
+	ulp_v := ds.findUPar(v)
+
+	if ulp_u == ulp_v {
+		return
+	}
+
+	if ds.size[ulp_u] &lt; ds.size[ulp_v] {
+		ds.parent[ulp_u] = ulp_v
+		ds.size[ulp_v] += ds.size[ulp_u]
+	} else {
+		ds.parent[ulp_v] = ulp_u
+		ds.size[ulp_u] += ds.size[ulp_v]
+	}
+}
+
+// Solution methods
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, -1, 0, 1}
+
+// Helper function to check if a pixel is within boundaries
+func isValid(i, j, n, m int) bool {
+	if i &lt; 0 || i &gt;= n {
+		return false
+	}
+	if j &lt; 0 || j &gt;= m {
+		return false
+	}
+	return true
+}
+
+// Function to return the number of islands after each operation
+func numOfIslands(n, m int, A [][]int) []int {
+	// Disjoint set data structure
+	ds := NewDisjointSet(n * m)
+
+	// Visited array
+	vis := make([][]int, n)
+	for i := range vis {
+		vis[i] = make([]int, m)
+	}
+
+	// To store the count of islands
+	cnt := 0
+
+	// To store the result
+	var ans []int
+
+	// Perform each operation
+	for _, it := range A {
+		row, col := it[0], it[1]
+
+		// If already a land cell, no new islands will be formed
+		if vis[row][col] == 1 {
+			ans = append(ans, cnt)
+			continue
+		}
+
+		// Make the cell as land
+		vis[row][col] = 1
+
+		// Increment the count considering the land cell was alone
+		cnt++
+
+		// Check all the neighbors
+		for ind := 0; ind &lt; 4; ind++ {
+			// Get the coordinates of the neighboring cell
+			newRow, newCol := row+delRow[ind], col+delCol[ind]
+
+			// If the neighboring cell is a valid land cell
+			if isValid(newRow, newCol, n, m) &amp;&amp; vis[newRow][newCol] == 1 {
+				// Get the node and adjacent node number
+				nodeNo := row*m + col
+				adjNodeNo := newRow*m + newCol
+
+				// If not already connected, perform the union
+				if ds.findUPar(nodeNo) != ds.findUPar(adjNodeNo) {
+					// Decrement count
+					cnt--
+
+					// Perform the union
+					ds.unionBySize(nodeNo, adjNodeNo)
+				}
+			}
+		}
+
+		// Store the number of islands after current operation in the result list
+		ans = append(ans, cnt)
+	}
+
+	// Return the result
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] &lt; rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] &lt; rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    // DelRow and delCol for neighbors
+    int[] delRow = {-1, 0, 1, 0};
+    int[] delCol = {0, 1, 0, -1};
+
+    /* Helper Function to check if a 
+    cell is within boundaries */
+    boolean isValid(int i, int j, int n, int m) {
+        
+        // Return false if cell is invalid
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= m) return false;
+        
+        // Return true if cell is valid
+        return true;
+    }
+
+    /* Function to return the number 
+    of islands after each operation */
+    public List&lt;Integer&gt; numOfIslands(int n, int m, int[][] A) {
+        
+        // Disjoint set Data structure
+        DisjointSet ds = new DisjointSet(n * m);
+
+        // Visited array
+        int[][] vis = new int[n][m];
+        for (int[] row : vis) Arrays.fill(row, 0);
+
+        // To store the count of islands
+        int cnt = 0;
+
+        // To store the result
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+
+        // Perform each operation
+        for (int[] it : A) {
+            int row = it[0]; // Row
+            int col = it[1]; // Column
+
+            /* If already a land cell, no new 
+            islands will be formed */
+            if (vis[row][col] == 1) {
+                ans.add(cnt);
+                continue;
+            }
+
+            // Make the cell as land
+            vis[row][col] = 1;
+
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+
+            // Check all the neighbors
+            for (int ind = 0; ind &lt; 4; ind++) {
+                // Get the coordinates of cell
+                int newRow = row + delRow[ind];
+                int newCol = col + delCol[ind];
+
+                // If the cell is a valid land cell
+                if (isValid(newRow, newCol, n, m) &amp;&amp; 
+                    vis[newRow][newCol] == 1) {
+                        
+                    // Get the node and adjacent node number
+                    int nodeNo = row * m + col;
+                    int adjNodeNo = newRow * m + newCol;
+
+                    // If not already connected, perform the union
+                    if (ds.findUPar(nodeNo) != 
+                        ds.findUPar(adjNodeNo)) {
+                        // Decrement count
+                        cnt--;
+
+                        // Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+
+            /* Store the number of islands after 
+            current operation in the result list */
+            ans.add(cnt);
+        }
+
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    constructor(n) {
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) =&gt; i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node])
+            return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by rank
+    unionByRank(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.rank[ulp_u] &lt; this.rank[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] &lt; this.rank[ulp_u]) {
+            this.parent[ulp_v] = ulp_u;
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] &lt; this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    constructor() {
+        // DelRow and delCol for neighbors
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, 1, 0, -1];
+    }
+
+    // Helper Function to check if a pixel is within boundaries
+    isValid(i, j, n, m) {
+        // Return false if pixel is invalid
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    /* Function to return the number of 
+    islands after each operation */
+    numOfIslands(n, m, A) {
+        // Disjoint set Data structure
+        const ds = new DisjointSet(n * m);
+
+        // Visited array
+        const vis = Array.from(
+            { length: n }, () =&gt; Array(m).fill(0)
+        );
+
+        // To store the count of islands
+        let cnt = 0;
+
+        // To store the result
+        const ans = [];
+
+        // Perform each operation
+        for (const it of A) {
+            const row = it[0]; // Row
+            const col = it[1]; // Column
+
+            /* If already a land cell, no 
+            new islands will be formed */
+            if (vis[row][col] === 1) {
+                ans.push(cnt);
+                continue;
+            }
+
+            // Make the cell as land
+            vis[row][col] = 1;
+
+            /* Increment the count considering 
+            the land cell was alone */
+            cnt++;
+
+            // Check all the neighbors
+            for (let ind = 0; ind &lt; 4; ind++) {
+                // Get the coordinates of cell
+                const newRow = row + this.delRow[ind];
+                const newCol = col + this.delCol[ind];
+
+                // If the cell is a valid land cell
+                if (this.isValid(newRow, newCol, n, m) &amp;&amp; 
+                    vis[newRow][newCol] === 1) {
+                        
+                    // Get the node and adjacent node number
+                    const nodeNo = row * m + col;
+                    const adjNodeNo = newRow * m + newCol;
+
+                    // If not already connected, perform the union
+                    if (ds.findUPar(nodeNo) !== ds.findUPar(adjNodeNo)) {
+                        // Decrement count
+                        cnt--;
+
+                        // Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+
+            /* Store the number of islands after current 
+            operation in the result list */
+            ans.push(cnt);
+        }
+
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class DisjointSet:
+    # To store the ranks, parents and sizes
+    # of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = list(range(n + 1))
+        self.size = [1] * (n + 1)
+
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.size[ulp_u] &lt; self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+
+# Solution class
+class Solution:
+    # DelRow and delCol for neighbors
+    delRow = [-1, 0, 1, 0]
+    delCol = [0, 1, 0, -1]
+
+    # Helper Function to check if a 
+    # pixel is within boundaries
+    def isValid(self, i, j, n, m):
+        # Return false if pixel is invalid
+        if i &lt; 0 or i &gt;= n:
+            return False
+        if j &lt; 0 or j &gt;= m:
+            return False
+        # Return true if pixel is valid
+        return True
+
+    # Function to return the number of 
+    # islands after each operation
+    def numOfIslands(self, n, m, A):
+        # Disjoint set Data structure
+        ds = DisjointSet(n * m)
+
+        # Visited array
+        vis = [[0] * m for _ in range(n)]
+
+        # To store the count of islands
+        cnt = 0
+
+        # To store the result
+        ans = []
+
+        # Perform each operation
+        for it in A:
+            row = it[0]  # Row
+            col = it[1]  # Column
+
+            # If already a land cell, no new 
+            # islands will be formed
+            if vis[row][col] == 1:
+                ans.append(cnt)
+                continue
+
+            # Make the cell as land
+            vis[row][col] = 1
+
+            # Increment the count considering 
+            # the land cell was alone
+            cnt += 1
+
+            # Check all the neighbors
+            for ind in range(4):
+                # Get the coordinates of cell
+                newRow = row + self.delRow[ind]
+                newCol = col + self.delCol[ind]
+
+                # If the cell is a valid land cell
+                if (self.isValid(newRow, newCol, n, m) and 
+                    vis[newRow][newCol] == 1):
+                        
+                    # Get the node and adjacent node number
+                    nodeNo = row * m + col
+                    adjNodeNo = newRow * m + newCol
+
+                    # If not already connected, perform the union
+                    if ds.findUPar(nodeNo) != ds.findUPar(adjNodeNo):
+                        # Decrement count
+                        cnt -= 1
+
+                        # Perform the union
+                        ds.unionBySize(nodeNo, adjNodeNo)
+
+            # Store the number of islands after 
+            # current operation in the result list
+            ans.append(cnt)
+
+        # Return the result
+        return ans</code></pre></div>
+</body>
+</html>

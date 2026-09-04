@@ -1,0 +1,2546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find eventual safe states</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Find eventual safe states</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Breadth-First Search</span><span>Depth-First Search</span><span>Graph</span><span>Topological Sort</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a directed graph with V vertices labeled from 0 to V-1. The graph is represented using an adjacency list where adj[i] lists all nodes adjacent to node i, meaning there is an edge from node i to each node in adj[i]. A node is a terminal node if there are no outgoing edges. A node is a safe node if every possible path starting from that node leads to a terminal node. Return an array containing all the <strong>safe nodes</strong> of the graph in <strong>ascending</strong> order.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  V == adj.length</li><li>  1 <= V <= 10<sup>4</sup></li><li>  0 <= adj[i].length <= n</li><li>  0 <= adj[i][j] <= n - 1</li><li>  adj[i] is sorted in a strictly increasing order.</li><li>  The graph may contain self-loops.</li><li>  The number of edges in the graph will be in the range [1, 4 * 10<sup>4</sup>].</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> V = 7, adj= [[1,2], [2,3], [5], [0], [5], [], []]</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-rrMbBwFC"></p><p><br></p><p><strong>Output:</strong> [2, 4, 5, 6]</p><p><br></p><p><strong>Explanation:</strong> </p><p>From node 0: two paths are there 0->2->5 and 0->1->3->0. </p><p>The second path does not end at a terminal node. So it is not </p><p>a safe node.</p><p>From node 1: two paths exist: 1->3->0->1 and 1->2->5.</p><p>But the first one does not end at a terminal node. So it is not a safe node.</p><p>From node 2: only one path: 2->5 and 5 is a terminal node.</p><p>So it is a safe node.</p><p>From node 3: two paths: 3->0->1->3 and 3->0->2->5 </p><p>but the first path does not end at a terminal node. </p><p>So it is not a safe node.</p><p>From node 4: Only one path: 4->5 and 5 is a terminal node. </p><p>So it is also a safe node.</p><p>From node 5: It is a terminal node. </p><p>So it is a safe node as well.</p><p>From node 6: It is a terminal node. </p><p>So it is a safe node as well.</p><h3>Example 2</h3><p><strong>Input:</strong> V = 4, adj= [[1], [2], [0,3], []]</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-3KCPYxOn"></p><p><br></p><p><strong>Output:</strong> [3]</p><p><br></p><p><strong>Explanation: </strong>Node 3 itself is a terminal node and it is a safe node as well. But all the paths from other nodes do not lead to a terminal node.So they are excluded from the answer.</p><h3>Example 3</h3><p>Input: V = 4, adj= [[1], [2], [0], []]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The problem of finding safe nodes in a graph is directly relevant to the implementation of network routing protocols. Network devices, like routers, create a graph representation of the network topology. As packets of data traverse the network, they follow the paths defined by this graph. In some cases, a failed device or lost connection could render a node, or even an entire sub-network, unreachable. These are equivalent to the terminal nodes in this problem. So, effectively determining safe nodes could ensure the reliable delivery of packets by avoiding isolated or failure-prone segments of the network.</p></div>
+<div class="section"><h2>Editorial: DFS</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    It can be observed that all possible paths starting from a node are going to end at some terminal node unless there exists a cycle and the paths return back to themselves. 
+
+    </p><h6>Understanding:</h6>
+     Consider the below graph: <br><br>
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Find eventual safe states/Image_1-JrlypaPd"> <br><br>
+
+    It is clear that these types of nodes will never be considered safe:
+    <ul>
+        <li>One is which are occuring in a cycle. Example: Nodes 0, 1 and 3.</li>
+        <li>Second is which are leading to a cycle. Example: Node 7.</li>
+    </ul>
+<br>
+    Except these types of nodes, all other nodes will be considered eventually safe.
+<p></p>
+
+<p>
+    Hence in order to find the safe nodes, the unsafe nodes can be detected by checking if they exist or point to a cycle. Now, a cycle detection technique is already known to us as discussed in <strong><a href="/plus/dsa/problems/detect-a-cycle-in-a-directed-graph?category=graph&subcategory=cycles" target="_blank">detect cycles in a Directed graph (Using DFS)</a></strong>.
+</p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Initialize three arrays to keep track of visited nodes, nodes in the current traversal path, and nodes identified as safe. Each node starts as unvisited and is considered potentially unsafe until proven otherwise.</li>
+    <li>Perform a DFS from each node that has not been visited yet. During the DFS traversal, mark the current node as visited and add it to the current path. Assume the current node is unsafe initially.</li>
+    <li>For each adjacent node of the current node:
+        <ul>
+            <li>If the adjacent node is unvisited, recursively perform DFS on it.</li>
+            <li>If the adjacent node is in the current path, a cycle is detected, making the node unsafe.</li>
+        </ul>
+        If any adjacent node leads to a cycle, the current node remains marked as unsafe.
+    </li>
+    <li>If no cycles are detected from the current node and its paths, mark the current node as safe. Remove the current node from the path, as the DFS for this node is complete.</li>
+    <li>After the entire graph is traversed, gather all nodes marked as safe and return the result.</li>
+</ol>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    /* Function to perform DFS traversal 
+    while checking for safe nodes */
+    bool dfsCheck(int node, vector<int> adj[], 
+                  vector<int> &vis, 
+                  vector<int> &pathVis, 
+                  vector<int> &check) {
+                      
+        // Mark the node as visited
+		vis[node] = 1;
+		
+		// Add the node to current path
+		pathVis[node] = 1;
+		
+		// Mark the node as potentially unsafe
+		check[node] = 0;
+		
+		
+		// Traverse for adjacent nodes
+		for (auto it : adj[node]) {
+		    
+			// When the node is not visited
+			if (!vis[it]) {
+			    
+			    /* Perform DFS recursively and if 
+			    a cycle is found, return false */
+    			if (dfsCheck(it, adj, vis, pathVis, check)) {
+    			        
+    			        /* Return true since a 
+    			        cycle was detected */
+    					return true;
+    				}
+
+			}
+			
+			/* Else if the node has been previously 
+			visited in the same path*/
+			else if (pathVis[it]) {
+				
+				/* Return true since a 
+		        cycle was detected */
+				return true;
+			}
+		}
+		
+		/* If the current node neither exist 
+		in a cycle nor points to a cycle, 
+		it can be marked as a safe node */
+		check[node] = 1;
+		
+		// Remove the node from the current path
+		pathVis[node] = 0;
+		
+		// Return false since no cycle was found
+		return false;
+	}
+    
+public:
+
+	/* Function to get the
+	eventually safe nodes */
+	vector<int> eventualSafeNodes(int V, 
+	                vector<int> adj[]) {
+	   
+	    // Visited array
+	    vector<int> vis(V, false);
+	    
+	    // Path Visited array
+	    vector<int> pathVis(V, false);
+	    
+	    // To keep a check of safe nodes
+	    vector<int> check(V, false);
+	    
+	    /* Traverse the graph and 
+	    check for safe nodes */
+		for (int i = 0; i < V; i++) {
+			if (!vis[i]) {
+			    
+			    // Start DFS traversal
+				dfsCheck(i, adj, vis, pathVis, check);
+			}
+		}
+		
+		// To store the result
+		vector<int> ans;
+		
+		// Add the safe nodes to the result
+		for (int i = 0; i < V; i++) {
+			if (check[i] == 1) 
+			    ans.push_back(i);
+		}
+		
+		// Return the result
+		return ans;
+	}
+};
+
+int main() {
+    
+    int V = 7;
+    vector<int> adj[V] = {
+         {1,2},
+         {2,3},
+         {5},
+         {0},
+         {5},
+         {},
+         {}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to get the eventually 
+    safe nodes in the given graph */
+    vector<int> ans = sol.eventualSafeNodes(V, adj);
+    
+    // Output
+    cout << "The eventually safe nodes in the graph are:\n";
+    for(int i=0; i < ans.size(); i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Function to perform DFS traversal 
+    while checking for safe nodes */
+    private boolean dfsCheck(int node, int[][] adj, 
+                             boolean[] vis, 
+                             boolean[] pathVis, 
+                             boolean[] check) {
+                                 
+        // Mark the node as visited
+        vis[node] = true;
+        
+        // Add the node to current path
+        pathVis[node] = true;
+        
+        // Mark the node as potentially unsafe
+        check[node] = false;
+        
+        // Traverse for adjacent nodes
+        for (int it : adj[node]) {
+            
+            // When the node is not visited
+            if (!vis[it]) {
+                
+                /* Perform DFS recursively and if 
+                a cycle is found, return false */
+                if (dfsCheck(it, adj, vis, pathVis, check)) {
+                    
+                    /* Return true since a 
+                    cycle was detected */
+                    return true;
+                }
+
+            }
+            
+            /* Else if the node has been previously 
+            visited in the same path*/
+            else if (pathVis[it]) {
+                
+                /* Return true since a 
+                cycle was detected */
+                return true;
+            }
+        }
+        
+        /* If the current node neither exist 
+        in a cycle nor points to a cycle, 
+        it can be marked as a safe node */
+        check[node] = true;
+        
+        // Remove the node from the current path
+        pathVis[node] = false;
+        
+        // Return false since no cycle was found
+        return false;
+    }
+    
+    // Function to get the eventually safe nodes
+    public int[] eventualSafeNodes(int V, int[][] adj) {
+        
+        // Visited array
+        boolean[] vis = new boolean[V];
+        
+        // Path Visited array
+        boolean[] pathVis = new boolean[V];
+        
+        // To keep a check of safe nodes
+        boolean[] check = new boolean[V];
+        
+        /* Traverse the graph and 
+        check for safe nodes */
+        for (int i = 0; i < V; i++) {
+            if (!vis[i]) {
+                
+                // Start DFS traversal
+                dfsCheck(i, adj, vis, pathVis, check);
+            }
+        }
+        
+        // To store the result
+        List<Integer> temp = new ArrayList<>();
+        
+        // Add the safe nodes to the result
+        for (int i = 0; i < V; i++) {
+            if (check[i]) 
+                temp.add(i);
+        }
+        
+        // Convert List to array
+        int[] ans = new int[temp.size()];
+        for (int i = 0; i < temp.size(); i++) {
+            ans[i] = temp.get(i);
+        }
+        
+        // Return the result
+        return ans;
+    }
+    
+    public static void main(String[] args) {
+        int V = 7;
+        int[][] adj = {
+            {1, 2},
+            {2, 3},
+            {5},
+            {0},
+            {5},
+            {},
+            {}
+        };
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to get the eventually 
+        safe nodes in the given graph */
+        int[] ans = sol.eventualSafeNodes(V, adj);
+        
+        // Output
+        System.out.println("The eventually safe nodes in the graph are:");
+        for (int node : ans) {
+            System.out.print(node + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from typing import List
+
+class Solution:
+    
+    # Function to perform DFS traversal 
+    # while checking for safe nodes
+    def dfsCheck(self, node: int, adj: List[List[int]], 
+                 vis: List[bool], 
+                 pathVis: List[bool], 
+                 check: List[bool]) -> bool:
+                      
+        # Mark the node as visited
+        vis[node] = True
+        
+        # Add the node to current path
+        pathVis[node] = True
+        
+        # Mark the node as potentially unsafe
+        check[node] = False
+        
+        # Traverse for adjacent nodes
+        for it in adj[node]:
+            
+            # When the node is not visited
+            if not vis[it]:
+                
+                # Perform DFS recursively and if 
+                # a cycle is found, return false
+                if self.dfsCheck(it, adj, vis, pathVis, check):
+                    
+                    # Return true since a 
+                    # cycle was detected
+                    return True
+
+            # Else if the node has been previously 
+            # visited in the same path
+            elif pathVis[it]:
+                
+                # Return true since a 
+                # cycle was detected
+                return True
+        
+        # If the current node neither exist 
+        # in a cycle nor points to a cycle, 
+        # it can be marked as a safe node
+        check[node] = True
+        
+        # Remove the node from the current path
+        pathVis[node] = False
+        
+        # Return false since no cycle was found
+        return False
+
+    # Function to get the eventually safe nodes
+    def eventualSafeNodes(self, V, adj):
+        
+        # Visited array
+        vis = [False] * V
+        
+        # Path Visited array
+        pathVis = [False] * V
+        
+        # To keep a check of safe nodes
+        check = [False] * V
+        
+        # Traverse the graph and 
+        # check for safe nodes
+        for i in range(V):
+            if not vis[i]:
+                
+                # Start DFS traversal
+                self.dfsCheck(i, adj, vis, pathVis, check)
+        
+        # To store the result
+        ans = []
+        
+        # Add the safe nodes to the result
+        for i in range(V):
+            if check[i]:
+                ans.append(i)
+        
+        # Return the result
+        return ans
+
+# Main function
+if __name__ == "__main__":
+    
+    V = 7
+    adj = [
+         [1,2],
+         [2,3],
+         [5],
+         [0],
+         [5],
+         [],
+         []
+    ]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution() 
+    
+    # Function call to get the eventually 
+    # safe nodes in the given graph
+    ans = sol.eventualSafeNodes(V, adj)
+    
+    # Output
+    print("The eventually safe nodes in the graph are:")
+    for node in ans:
+        print(node, end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to perform DFS traversal 
+    // while checking for safe nodes
+    dfsCheck(node, adj, vis, pathVis, check) {
+        // Mark the node as visited
+        vis[node] = true;
+        
+        // Add the node to current path
+        pathVis[node] = true;
+        
+        // Mark the node as potentially unsafe
+        check[node] = false;
+        
+        // Traverse for adjacent nodes
+        for (let it of adj[node]) {
+            
+            // When the node is not visited
+            if (!vis[it]) {
+                
+                // Perform DFS recursively and if 
+                // a cycle is found, return false
+                if (this.dfsCheck(it, adj, vis, pathVis, check)) {
+                    
+                    // Return true since a 
+                    // cycle was detected
+                    return true;
+                }
+
+            }
+            
+            // Else if the node has been previously 
+            // visited in the same path
+            else if (pathVis[it]) {
+                
+                // Return true since a 
+                // cycle was detected
+                return true;
+            }
+        }
+        
+        // If the current node neither exist 
+        // in a cycle nor points to a cycle, 
+        // it can be marked as a safe node
+        check[node] = true;
+        
+        // Remove the node from the current path
+        pathVis[node] = false;
+        
+        // Return false since no cycle was found
+        return false;
+    }
+
+    // Function to get the eventually safe nodes
+    eventualSafeNodes(V, adj) {
+        
+        // Visited array
+        let vis = new Array(V).fill(false);
+        
+        // Path Visited array
+        let pathVis = new Array(V).fill(false);
+        
+        // To keep a check of safe nodes
+        let check = new Array(V).fill(false);
+        
+        // Traverse the graph and 
+        // check for safe nodes
+        for (let i = 0; i < V; i++) {
+            if (!vis[i]) {
+                
+                // Start DFS traversal
+                this.dfsCheck(i, adj, vis, pathVis, check);
+            }
+        }
+        
+        // To store the result
+        let ans = [];
+        
+        // Add the safe nodes to the result
+        for (let i = 0; i < V; i++) {
+            if (check[i]) 
+                ans.push(i);
+        }
+        
+        // Return the result
+        return ans;
+    }
+}
+
+// Main function
+let V = 7;
+let adj = [
+     [1,2],
+     [2,3],
+     [5],
+     [0],
+     [5],
+     [],
+     []
+];
+
+// Creating an instance of 
+// Solution class
+let sol = new Solution(); 
+
+// Function call to get the eventually 
+// safe nodes in the given graph
+let ans = sol.eventualSafeNodes(V, adj);
+
+// Output
+console.log("The eventually safe nodes in the graph are:");
+for (let i = 0; i < ans.length; i++) {
+    console.log(ans[i] + " ");
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution {
+    // Function to perform DFS traversal 
+    // while checking for safe nodes
+    private bool dfsCheck(int node, List<int>[] adj, bool[] vis, bool[] pathVis, bool[] check) {
+        // Mark the node as visited
+        vis[node] = true;
+        
+        // Add the node to current path
+        pathVis[node] = true;
+        
+        // Mark the node as potentially unsafe
+        check[node] = false;
+        
+        // Traverse for adjacent nodes
+        foreach (int it in adj[node]) {
+            
+            // When the node is not visited
+            if (!vis[it]) {
+                
+                // Perform DFS recursively and if 
+                // a cycle is found, return false
+                if (dfsCheck(it, adj, vis, pathVis, check)) {
+                    
+                    // Return true since a 
+                    // cycle was detected
+                    return true;
+                }
+
+            }
+            
+            // Else if the node has been previously 
+            // visited in the same path
+            else if (pathVis[it]) {
+                
+                // Return true since a 
+                // cycle was detected
+                return true;
+            }
+        }
+        
+        // If the current node neither exist 
+        // in a cycle nor points to a cycle, 
+        // it can be marked as a safe node
+        check[node] = true;
+        
+        // Remove the node from the current path
+        pathVis[node] = false;
+        
+        // Return false since no cycle was found
+        return false;
+    }
+
+    // Function to get the eventually safe nodes
+    public List<int> EventualSafeNodes(int V, List<int>[] adj) {
+        
+        // Visited array
+        bool[] vis = new bool[V];
+        
+        // Path Visited array
+        bool[] pathVis = new bool[V];
+        
+        // To keep a check of safe nodes
+        bool[] check = new bool[V];
+        
+        // Traverse the graph and 
+        // check for safe nodes
+        for (int i = 0; i < V; i++) {
+            if (!vis[i]) {
+                
+                // Start DFS traversal
+                dfsCheck(i, adj, vis, pathVis, check);
+            }
+        }
+        
+        // To store the result
+        List<int> ans = new List<int>();
+        
+        // Add the safe nodes to the result
+        for (int i = 0; i < V; i++) {
+            if (check[i]) 
+                ans.Add(i);
+        }
+        
+        // Return the result
+        return ans;
+    }
+}
+
+public class Program {
+    public static void Main(string[] args) {
+        int V = 7;
+        List<int>[] adj = new List<int>[V];
+        for (int i = 0; i < V; i++) {
+            adj[i] = new List<int>();
+        }
+
+        // Initialize adjacency list
+        adj[0].AddRange(new int[] { 1, 2 });
+        adj[1].AddRange(new int[] { 2, 3 });
+        adj[2].Add(5);
+        adj[3].Add(0);
+        adj[4].Add(5);
+        // adj[5] and adj[6] are empty lists by default
+
+        // Creating an instance of 
+        // Solution class
+        Solution sol = new Solution(); 
+
+        // Function call to get the eventually 
+        // safe nodes in the given graph
+        List<int> ans = sol.EventualSafeNodes(V, adj);
+
+        // Output
+        Console.WriteLine("The eventually safe nodes in the graph are:");
+        for (int i = 0; i < ans.Count; i++) {
+            Console.WriteLine(ans[i] + " ");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// dfsCheck performs DFS traversal while checking for safe nodes
+func dfsCheck(node int, adj [][]int, vis, pathVis, check []int) bool {
+
+	// Mark the node as visited
+	vis[node] = 1
+
+	// Add the node to current path
+	pathVis[node] = 1
+
+	// Mark the node as potentially unsafe
+	check[node] = 0
+
+	// Traverse for adjacent nodes
+	for _, it := range adj[node] {
+
+		// When the node is not visited
+		if vis[it] == 0 {
+
+			/* Perform DFS recursively and if
+			a cycle is found, return true */
+			if dfsCheck(it, adj, vis, pathVis, check) {
+
+				/* Return true since a
+				cycle was detected */
+				return true
+			}
+
+		} else if pathVis[it] == 1 {
+			/* Else if the node has been previously
+			visited in the same path, return true */
+			return true
+		}
+	}
+
+	/* If the current node neither exists
+	in a cycle nor points to a cycle,
+	it can be marked as a safe node */
+	check[node] = 1
+
+	// Remove the node from the current path
+	pathVis[node] = 0
+
+	// Return false since no cycle was found
+	return false
+}
+
+// eventualSafeNodes returns the eventually safe nodes in the graph
+func eventualSafeNodes(V int, adj [][]int) []int {
+
+	// Visited array
+	vis := make([]int, V)
+
+	// Path Visited array
+	pathVis := make([]int, V)
+
+	// To keep a check of safe nodes
+	check := make([]int, V)
+
+	/* Traverse the graph and
+	check for safe nodes */
+	for i := 0; i < V; i++ {
+		if vis[i] == 0 {
+			// Start DFS traversal
+			dfsCheck(i, adj, vis, pathVis, check)
+		}
+	}
+
+	// To store the result
+	ans := []int{}
+
+	// Add the safe nodes to the result
+	for i := 0; i < V; i++ {
+		if check[i] == 1 {
+			ans = append(ans, i)
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+func main() {
+
+	V := 7
+	adj := [][]int{
+		{1, 2},
+		{2, 3},
+		{5},
+		{0},
+		{5},
+		{},
+		{},
+	}
+
+	// Function call to get the eventually safe nodes in the given graph
+	ans := eventualSafeNodes(V, adj)
+
+	// Output
+	fmt.Println("The eventually safe nodes in the graph are:")
+	for _, v := range ans {
+		fmt.Print(v, " ")
+	}
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where V and E represents the number of nodes and edges in the given graph) <br>
+DFS traversal takes O(V+E) time and adding the safe nodes to the result takes O(V) time.
+</p>
+
+<p><strong>Space Complexity: O(V)</strong> <br>
+The visited, path visited, and check array take O(V) space each and the recursion stack space will be O(V) in the worst case.</p>
+</body></html></div>
+<div class="section"><h2>Editorial: BFS</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    It can be observed that all possible paths starting from a node are going to end at some terminal node unless there exists a cycle and the paths return back to themselves. 
+
+    </p><h6>Understanding:</h6>
+    Consider the below graph: <br><br>
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Find eventual safe states/Image_1-JrlypaPd"> <br><br>
+
+    It is clear that these types of nodes will never be considered safe:
+    <ul>
+        <li>One is which is occurring in a cycle. Example: Nodes 0, 1, and 3.</li>
+        <li>Second is which is leading to a cycle. Example: Node 7.</li>
+    </ul>
+    <br>
+    Except these types of nodes, all other nodes will be considered eventually safe.
+<p></p>
+
+<p>
+    Hence in order to find the safe nodes, the unsafe nodes can be detected by checking if they exist or point to a cycle. Now, to solve this using BFS traversal technique, the topological sorting (Kahn's Algorithm) can be used. The topological sort algorithm will automatically exclude the nodes which are either forming a cycle or connected to a cycle. 
+
+    </p><h6>Transforming the graph:</h6>
+    The node with outdegree 0 is considered as terminal node but the topological sort algorithm deals with the indegrees of the nodes. So, to use the topological sort algorithm, we will reverse every edge of the graph. 
+    <br> <br>
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Find eventual safe states/Image_1-kcjK5es_">
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Reverse the edges of the graph reversing the graph.</li>
+    <li>Find the topological sort of the reversed graph which will exclude automatically the unsafe nodes.</li>
+    <li>Sort the ordering returned by topological sort to obtain the eventually safe nodes in a sorted fashion.
+    </li>
+</ol>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    /* Function to return the topological
+     sorting of given graph */
+    vector<int> topoSort(int V, vector<int> adj[]) {
+	    
+        // To store the In-degrees of nodes
+	    vector<int> inDegree(V, 0);
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i < V; i++) {
+		    
+			for(auto it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        
+        // To store the result
+        vector<int> ans;
+	    
+	    // Queue to facilitate BFS
+	    queue<int> q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i<V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+    
+public:
+
+	/* Function to get the
+	eventually safe nodes */
+	vector<int> eventualSafeNodes(int V, 
+	                vector<int> adj[]) {
+	    
+	    // To store the reverse graph
+	    vector<int> adjRev[V];
+	    
+	    // Reversing the edges
+	    for (int i = 0; i < V; i++) {
+		    
+			// i -> it, it-> i
+			for (auto it : adj[i]) {
+			    
+			    // Add the edge to reversed graph
+				adjRev[it].push_back(i);
+			}
+		}
+		
+	    /* Return the topological 
+	    sort of the given graph */
+	    vector<int> result = topoSort(V, adjRev);
+	    
+	    // Sort the result
+	    sort(result.begin(), result.end());
+	    
+	    // Return the result
+	    return result;
+	}
+};
+
+int main() {
+    
+    int V = 7;
+    vector<int> adj[V] = {
+         {1,2},
+         {2,3},
+         {5},
+         {0},
+         {5},
+         {},
+         {}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to get the eventually 
+    safe nodes in the given graph */
+    vector<int> ans = sol.eventualSafeNodes(V, adj);
+    
+    // Output
+    cout << "The eventually safe nodes in the graph are:\n";
+    for(int i=0; i < ans.size(); i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Function to return the topological
+     sorting of given graph */
+    private int[] topoSort(int V, 
+            List<Integer>[] adj) {
+	    
+        // To store the In-degrees of nodes
+	    int[] inDegree = new int[V];
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i < V; i++) {
+		    
+			for(int it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        // To store the result
+        int[] ans = new int[V];
+        int idx = 0;
+	    
+	    // Queue to facilitate BFS
+	    Queue<Integer> q = new LinkedList<>();
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i = 0; i < V; i++) {
+	        if(inDegree[i] == 0) q.add(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.isEmpty()) {
+	        
+	        // Get the node
+	        int node = q.poll();
+	        
+	        // Add it to the answer
+	        ans[idx++] = node;
+	        
+	        // Traverse the neighbours
+	        for(int it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.add(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return Arrays.copyOfRange(ans, 0, idx);
+    }
+    
+    /* Function to get the
+	eventually safe nodes */
+    public int[] eventualSafeNodes(int V, 
+                            int[][] adj) {
+	    
+	    // To store the reverse graph
+	    ArrayList<Integer>[] adjRev = new ArrayList[V];
+	    for (int i = 0; i < V; i++) 
+	        adjRev[i] = new ArrayList<>();
+	    
+	    // Reversing the edges
+	    for (int i = 0; i < V; i++) {
+		    
+			// i -> it, it-> i
+			for (int it : adj[i]) {
+			    
+			    // Add the edge to reversed graph
+				adjRev[it].add(i);
+			}
+		}
+		
+	    /* Return the topological 
+	    sort of the given graph */
+	    int[] result = topoSort(V, adjRev);
+	    
+	    // Sort the result
+	    Arrays.sort(result);
+	    
+	    // Return the result
+	    return result;
+	}
+
+    public static void main(String[] args) {
+        int V = 7;
+        int[][] adj = {
+            {1, 2},
+            {2, 3},
+            {5},
+            {0},
+            {5},
+            {},
+            {}
+        };
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to get the eventually 
+        safe nodes in the given graph */
+        int[] ans = sol.eventualSafeNodes(V, adj);
+        
+        // Output
+        System.out.println("The eventually safe nodes in the graph are:");
+        for (int i : ans) {
+            System.out.print(i + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+class Solution:
+
+    # Function to return the topological
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Update the in-degrees of nodes
+        for i in range(V):
+            
+            for it in adj[i]:
+                # Update the in-degree
+                inDegree[it] += 1
+
+        # To store the result
+        ans = []
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+    # Function to get the
+    # eventually safe nodes
+    def eventualSafeNodes(self, V, adj):
+        
+        # To store the reverse graph
+        adjRev = [[] for _ in range(V)]
+        
+        # Reversing the edges
+        for i in range(V):
+            
+            # i -> it, it-> i
+            for it in adj[i]:
+                
+                # Add the edge to reversed graph
+                adjRev[it].append(i)
+        
+        # Return the topological 
+        # sort of the given graph
+        result = self.topoSort(V, adjRev)
+        
+        # Sort the result
+        result.sort()
+        
+        # Return the result
+        return result
+
+# Example usage
+V = 7
+adj = [
+    [1, 2],
+    [2, 3],
+    [5],
+    [0],
+    [5],
+    [],
+    []
+]
+
+sol = Solution()
+ans = sol.eventualSafeNodes(V, adj)
+
+# Output
+print("The eventually safe nodes in the graph are:")
+print(" ".join(map(str, ans)))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+
+    /* Function to return the topological
+     sorting of given graph */
+    topoSort(V, adj) {
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        // Update the in-degrees of nodes
+        for (let i = 0; i < V; i++) {
+            
+            for(let it of adj[i]) {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        let ans = [];
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for(let i = 0; i < V; i++) {
+            if(inDegree[i] == 0) q.push(i);
+        }
+        
+        // Until the queue is empty
+        while(q.length > 0) {
+            
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for(let it of adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.push(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+    
+    /* Function to get the
+    eventually safe nodes */
+    eventualSafeNodes(V, adj) {
+        
+        // To store the reverse graph
+        let adjRev = new Array(V).fill().map(() => []);
+        
+        // Reversing the edges
+        for (let i = 0; i < V; i++) {
+            
+            // i -> it, it-> i
+            for (let it of adj[i]) {
+                
+                // Add the edge to reversed graph
+                adjRev[it].push(i);
+            }
+        }
+        
+        /* Return the topological 
+        sort of the given graph */
+        let result = this.topoSort(V, adjRev);
+        
+        // Sort the result
+        result.sort((a, b) => a - b);
+        
+        // Return the result
+        return result;
+    }
+}
+
+// Example usage
+const V = 7;
+const adj = [
+    [1, 2],
+    [2, 3],
+    [5],
+    [0],
+    [5],
+    [],
+    []
+];
+
+const sol = new Solution();
+const ans = sol.eventualSafeNodes(V, adj);
+
+// Output
+console.log("The eventually safe nodes in the graph are:");
+console.log(ans.join(" "));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program {
+    public static void Main(string[] args) {
+        // Read V
+        int V = int.Parse(Console.ReadLine());
+
+        // Read adj
+        List<int>[] adj = new List<int>[V];
+        for (int i = 0; i < V; i++) {
+            adj[i] = new List<int>();
+            string line = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(line)) {
+                string[] neighbors = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                foreach (string neighborStr in neighbors) {
+                    adj[i].Add(int.Parse(neighborStr));
+                }
+            }
+        }
+
+        Solution sol = new Solution();
+        List<int> ans = sol.EventualSafeNodes(V, adj);
+
+        // Output
+        Console.WriteLine("The eventually safe nodes in the graph are:");
+        Console.WriteLine(string.Join(" ", ans));
+    }
+}
+
+class Solution {
+    /* Function to return the topological
+     sorting of given graph */
+    private List<int> TopoSort(int V, List<int>[] adj) {
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        // Update the in-degrees of nodes
+        for (int i = 0; i < V; i++) {
+            
+            foreach(int it in adj[i]) {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        List<int> ans = new List<int>();
+        
+        // Queue to facilitate BFS
+        Queue<int> q = new Queue<int>();
+        
+        // Add the nodes with no in-degree to queue
+        for(int i = 0; i < V; i++) {
+            if(inDegree[i] == 0) q.Enqueue(i);
+        }
+        
+        // Until the queue is empty
+        while(q.Count > 0) {
+            
+            // Get the node
+            int node = q.Dequeue();
+            
+            // Add it to the answer
+            ans.Add(node);
+            
+            // Traverse the neighbours
+            foreach(int it in adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.Enqueue(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+    
+    /* Function to get the
+    eventually safe nodes */
+    public List<int> EventualSafeNodes(int V, List<int>[] adj) {
+        
+        // To store the reverse graph
+        List<int>[] adjRev = new List<int>[V];
+        for (int i = 0; i < V; i++) {
+            adjRev[i] = new List<int>();
+        }
+        
+        // Reversing the edges
+        for (int i = 0; i < V; i++) {
+            
+            // i -> it, it-> i
+            foreach (int it in adj[i]) {
+                
+                // Add the edge to reversed graph
+                adjRev[it].Add(i);
+            }
+        }
+        
+        /* Return the topological 
+        sort of the given graph */
+        List<int> result = this.TopoSort(V, adjRev);
+        
+        // Sort the result
+        result.Sort();
+        
+        // Return the result
+        return result;
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// topoSort returns the topological sorting of the given graph using Kahn's Algorithm
+func topoSort(V int, adj [][]int) []int {
+
+	// To store the In-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Update the in-degrees of nodes
+	for i := 0; i < V; i++ {
+		for _, it := range adj[i] {
+			// Update the in-degree
+			inDegree[it]++
+		}
+	}
+
+	// To store the result
+	ans := []int{}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i < V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) > 0 {
+		// Get the node
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+			// Decrement the in-degree
+			inDegree[it]--
+
+			/* Add the node to queue if
+			its in-degree becomes zero */
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+// eventualSafeNodes returns the eventually safe nodes in the graph
+func eventualSafeNodes(V int, adj [][]int) []int {
+
+	// To store the reverse graph
+	adjRev := make([][]int, V)
+	for i := range adjRev {
+		adjRev[i] = []int{}
+	}
+
+	// Reversing the edges
+	for i := 0; i < V; i++ {
+		// i -> it, it -> i
+		for _, it := range adj[i] {
+			// Add the edge to reversed graph
+			adjRev[it] = append(adjRev[it], i)
+		}
+	}
+
+	/* Return the topological
+	sort of the given graph */
+	result := topoSort(V, adjRev)
+
+	// Sort the result
+	sort.Ints(result)
+
+	// Return the result
+	return result
+}
+
+func main() {
+
+	V := 7
+	adj := [][]int{
+		{1, 2},
+		{2, 3},
+		{5},
+		{0},
+		{5},
+		{},
+		{},
+	}
+
+	// Function call to get the eventually safe nodes in the given graph
+	ans := eventualSafeNodes(V, adj)
+
+	// Output
+	fmt.Println("The eventually safe nodes in the graph are:")
+	for _, v := range ans {
+		fmt.Print(v, " ")
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E) + O(V*logV)</strong> (where V and E represents the number of nodes and edges in the given graph) <br>
+    </p><ul>
+        <li>Reversing the graph takes O(E) time.</li>
+        <li>Finding topological sort using Kahn's algorithm takes O(V+E) time.</li>
+        <li>Sorting the nodes takes O(N*logN) time (where N is the number of safe nodes, which can go up to V in worst-case).</li>
+    </ul>
+<p></p>
+
+<p><strong>Space Complexity: O(V+E)</strong> <br>
+</p><ul>
+    <li>Storing the reversed graph takes O(E) space.</li>
+    <li>Topological sorting algorithm uses extra O(V) space because of in-degrees array and queue data structure.</li>
+</ul>
+<p></p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    /* Function to perform DFS traversal 
+    while checking for safe nodes */
+    bool dfsCheck(int node, vector&lt;int&gt; adj[], 
+                  vector&lt;int&gt; &amp;vis, 
+                  vector&lt;int&gt; &amp;pathVis, 
+                  vector&lt;int&gt; &amp;check) {
+                      
+        // Mark the node as visited
+		vis[node] = 1;
+		
+		// Add the node to current path
+		pathVis[node] = 1;
+		
+		// Mark the node as potentially unsafe
+		check[node] = 0;
+		
+		
+		// Traverse for adjacent nodes
+		for (auto it : adj[node]) {
+		    
+			// When the node is not visited
+			if (!vis[it]) {
+			    
+			    /* Perform DFS recursively and if 
+			    a cycle is found, return false */
+    			if (dfsCheck(it, adj, vis, pathVis, check)) {
+    			        
+    			        /* Return true since a 
+    			        cycle was detected */
+    					return true;
+    				}
+
+			}
+			
+			/* Else if the node has been previously 
+			visited in the same path*/
+			else if (pathVis[it]) {
+				
+				/* Return true since a 
+		        cycle was detected */
+				return true;
+			}
+		}
+		
+		/* If the current node neither exist 
+		in a cycle nor points to a cycle, 
+		it can be marked as a safe node */
+		check[node] = 1;
+		
+		// Remove the node from the current path
+		pathVis[node] = 0;
+		
+		// Return false since no cycle was found
+		return false;
+	}
+    
+public:
+
+	/* Function to get the
+	eventually safe nodes */
+	vector&lt;int&gt; eventualSafeNodes(int V, 
+	                vector&lt;int&gt; adj[]) {
+	   
+	    // Visited array
+	    vector&lt;int&gt; vis(V, false);
+	    
+	    // Path Visited array
+	    vector&lt;int&gt; pathVis(V, false);
+	    
+	    // To keep a check of safe nodes
+	    vector&lt;int&gt; check(V, false);
+	    
+	    /* Traverse the graph and 
+	    check for safe nodes */
+		for (int i = 0; i &lt; V; i++) {
+			if (!vis[i]) {
+			    
+			    // Start DFS traversal
+				dfsCheck(i, adj, vis, pathVis, check);
+			}
+		}
+		
+		// To store the result
+		vector&lt;int&gt; ans;
+		
+		// Add the safe nodes to the result
+		for (int i = 0; i &lt; V; i++) {
+			if (check[i] == 1) 
+			    ans.push_back(i);
+		}
+		
+		// Return the result
+		return ans;
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    // Function to perform DFS traversal 
+    // while checking for safe nodes
+    private bool dfsCheck(int node, List&lt;int&gt;[] adj, bool[] vis, bool[] pathVis, bool[] check) {
+        // Mark the node as visited
+        vis[node] = true;
+        
+        // Add the node to current path
+        pathVis[node] = true;
+        
+        // Mark the node as potentially unsafe
+        check[node] = false;
+        
+        // Traverse for adjacent nodes
+        foreach (int it in adj[node]) {
+            
+            // When the node is not visited
+            if (!vis[it]) {
+                
+                // Perform DFS recursively and if 
+                // a cycle is found, return false
+                if (dfsCheck(it, adj, vis, pathVis, check)) {
+                    
+                    // Return true since a 
+                    // cycle was detected
+                    return true;
+                }
+
+            }
+            
+            // Else if the node has been previously 
+            // visited in the same path
+            else if (pathVis[it]) {
+                
+                // Return true since a 
+                // cycle was detected
+                return true;
+            }
+        }
+        
+        // If the current node neither exist 
+        // in a cycle nor points to a cycle, 
+        // it can be marked as a safe node
+        check[node] = true;
+        
+        // Remove the node from the current path
+        pathVis[node] = false;
+        
+        // Return false since no cycle was found
+        return false;
+    }
+
+    public List&lt;int&gt; EventualSafeNodes(int V, List&lt;int&gt;[] adj) {
+       // Visited array
+        bool[] vis = new bool[V];
+        
+        // Path Visited array
+        bool[] pathVis = new bool[V];
+        
+        // To keep a check of safe nodes
+        bool[] check = new bool[V];
+        
+        // Traverse the graph and 
+        // check for safe nodes
+        for (int i = 0; i &lt; V; i++) {
+            if (!vis[i]) {
+                
+                // Start DFS traversal
+                dfsCheck(i, adj, vis, pathVis, check);
+            }
+        }
+        
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+        
+        // Add the safe nodes to the result
+        for (int i = 0; i &lt; V; i++) {
+            if (check[i]) 
+                ans.Add(i);
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// dfsCheck performs DFS traversal while checking for safe nodes
+func dfsCheck(node int, adj [][]int, vis, pathVis, check []int) bool {
+
+	// Mark the node as visited
+	vis[node] = 1
+
+	// Add the node to current path
+	pathVis[node] = 1
+
+	// Mark the node as potentially unsafe
+	check[node] = 0
+
+	// Traverse for adjacent nodes
+	for _, it := range adj[node] {
+
+		// When the node is not visited
+		if vis[it] == 0 {
+
+			/* Perform DFS recursively and if
+			a cycle is found, return true */
+			if dfsCheck(it, adj, vis, pathVis, check) {
+
+				/* Return true since a
+				cycle was detected */
+				return true
+			}
+
+		} else if pathVis[it] == 1 {
+			/* Else if the node has been previously
+			visited in the same path, return true */
+			return true
+		}
+	}
+
+	/* If the current node neither exists
+	in a cycle nor points to a cycle,
+	it can be marked as a safe node */
+	check[node] = 1
+
+	// Remove the node from the current path
+	pathVis[node] = 0
+
+	// Return false since no cycle was found
+	return false
+}
+
+// eventualSafeNodes returns the eventually safe nodes in the graph
+func eventualSafeNodes(V int, adj [][]int) []int {
+
+	// Visited array
+	vis := make([]int, V)
+
+	// Path Visited array
+	pathVis := make([]int, V)
+
+	// To keep a check of safe nodes
+	check := make([]int, V)
+
+	/* Traverse the graph and
+	check for safe nodes */
+	for i := 0; i &lt; V; i++ {
+		if vis[i] == 0 {
+			// Start DFS traversal
+			dfsCheck(i, adj, vis, pathVis, check)
+		}
+	}
+
+	// To store the result
+	ans := []int{}
+
+	// Add the safe nodes to the result
+	for i := 0; i &lt; V; i++ {
+		if check[i] == 1 {
+			ans = append(ans, i)
+		}
+	}
+
+	// Return the result
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    /* Function to perform DFS traversal 
+    while checking for safe nodes */
+    private boolean dfsCheck(int node, int[][] adj, 
+                             boolean[] vis, 
+                             boolean[] pathVis, 
+                             boolean[] check) {
+                                 
+        // Mark the node as visited
+        vis[node] = true;
+        
+        // Add the node to current path
+        pathVis[node] = true;
+        
+        // Mark the node as potentially unsafe
+        check[node] = false;
+        
+        // Traverse for adjacent nodes
+        for (int it : adj[node]) {
+            
+            // When the node is not visited
+            if (!vis[it]) {
+                
+                /* Perform DFS recursively and if 
+                a cycle is found, return false */
+                if (dfsCheck(it, adj, vis, pathVis, check)) {
+                    
+                    /* Return true since a 
+                    cycle was detected */
+                    return true;
+                }
+
+            }
+            
+            /* Else if the node has been previously 
+            visited in the same path*/
+            else if (pathVis[it]) {
+                
+                /* Return true since a 
+                cycle was detected */
+                return true;
+            }
+        }
+        
+        /* If the current node neither exist 
+        in a cycle nor points to a cycle, 
+        it can be marked as a safe node */
+        check[node] = true;
+        
+        // Remove the node from the current path
+        pathVis[node] = false;
+        
+        // Return false since no cycle was found
+        return false;
+    }
+    
+    // Function to get the eventually safe nodes
+    public int[] eventualSafeNodes(int V, int[][] adj) {
+        
+        // Visited array
+        boolean[] vis = new boolean[V];
+        
+        // Path Visited array
+        boolean[] pathVis = new boolean[V];
+        
+        // To keep a check of safe nodes
+        boolean[] check = new boolean[V];
+        
+        /* Traverse the graph and 
+        check for safe nodes */
+        for (int i = 0; i &lt; V; i++) {
+            if (!vis[i]) {
+                
+                // Start DFS traversal
+                dfsCheck(i, adj, vis, pathVis, check);
+            }
+        }
+        
+        // To store the result
+        List&lt;Integer&gt; temp = new ArrayList&lt;&gt;();
+        
+        // Add the safe nodes to the result
+        for (int i = 0; i &lt; V; i++) {
+            if (check[i]) 
+                temp.add(i);
+        }
+        
+        // Convert List to array
+        int[] ans = new int[temp.size()];
+        for (int i = 0; i &lt; temp.size(); i++) {
+            ans[i] = temp.get(i);
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to perform DFS traversal 
+    // while checking for safe nodes
+    dfsCheck(node, adj, vis, pathVis, check) {
+        // Mark the node as visited
+        vis[node] = true;
+        
+        // Add the node to current path
+        pathVis[node] = true;
+        
+        // Mark the node as potentially unsafe
+        check[node] = false;
+        
+        // Traverse for adjacent nodes
+        for (let it of adj[node]) {
+            
+            // When the node is not visited
+            if (!vis[it]) {
+                
+                // Perform DFS recursively and if 
+                // a cycle is found, return false
+                if (this.dfsCheck(it, adj, vis, pathVis, check)) {
+                    
+                    // Return true since a 
+                    // cycle was detected
+                    return true;
+                }
+
+            }
+            
+            // Else if the node has been previously 
+            // visited in the same path
+            else if (pathVis[it]) {
+                
+                // Return true since a 
+                // cycle was detected
+                return true;
+            }
+        }
+        
+        // If the current node neither exist 
+        // in a cycle nor points to a cycle, 
+        // it can be marked as a safe node
+        check[node] = true;
+        
+        // Remove the node from the current path
+        pathVis[node] = false;
+        
+        // Return false since no cycle was found
+        return false;
+    }
+
+    // Function to get the eventually safe nodes
+    eventualSafeNodes(V, adj) {
+        
+        // Visited array
+        let vis = new Array(V).fill(false);
+        
+        // Path Visited array
+        let pathVis = new Array(V).fill(false);
+        
+        // To keep a check of safe nodes
+        let check = new Array(V).fill(false);
+        
+        // Traverse the graph and 
+        // check for safe nodes
+        for (let i = 0; i &lt; V; i++) {
+            if (!vis[i]) {
+                
+                // Start DFS traversal
+                this.dfsCheck(i, adj, vis, pathVis, check);
+            }
+        }
+        
+        // To store the result
+        let ans = [];
+        
+        // Add the safe nodes to the result
+        for (let i = 0; i &lt; V; i++) {
+            if (check[i]) 
+                ans.push(i);
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    
+    # Function to perform DFS traversal 
+    # while checking for safe nodes
+    def dfsCheck(self, node: int, adj: List[List[int]], 
+                 vis: List[bool], 
+                 pathVis: List[bool], 
+                 check: List[bool]) -&gt; bool:
+                      
+        # Mark the node as visited
+        vis[node] = True
+        
+        # Add the node to current path
+        pathVis[node] = True
+        
+        # Mark the node as potentially unsafe
+        check[node] = False
+        
+        # Traverse for adjacent nodes
+        for it in adj[node]:
+            
+            # When the node is not visited
+            if not vis[it]:
+                
+                # Perform DFS recursively and if 
+                # a cycle is found, return false
+                if self.dfsCheck(it, adj, vis, pathVis, check):
+                    
+                    # Return true since a 
+                    # cycle was detected
+                    return True
+
+            # Else if the node has been previously 
+            # visited in the same path
+            elif pathVis[it]:
+                
+                # Return true since a 
+                # cycle was detected
+                return True
+        
+        # If the current node neither exist 
+        # in a cycle nor points to a cycle, 
+        # it can be marked as a safe node
+        check[node] = True
+        
+        # Remove the node from the current path
+        pathVis[node] = False
+        
+        # Return false since no cycle was found
+        return False
+
+    # Function to get the eventually safe nodes
+    def eventualSafeNodes(self, V, adj):
+        
+        # Visited array
+        vis = [False] * V
+        
+        # Path Visited array
+        pathVis = [False] * V
+        
+        # To keep a check of safe nodes
+        check = [False] * V
+        
+        # Traverse the graph and 
+        # check for safe nodes
+        for i in range(V):
+            if not vis[i]:
+                
+                # Start DFS traversal
+                self.dfsCheck(i, adj, vis, pathVis, check)
+        
+        # To store the result
+        ans = []
+        
+        # Add the safe nodes to the result
+        for i in range(V):
+            if check[i]:
+                ans.append(i)
+        
+        # Return the result
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    /* Function to return the topological
+     sorting of given graph */
+    vector&lt;int&gt; topoSort(int V, vector&lt;int&gt; adj[]) {
+	    
+        // To store the In-degrees of nodes
+	    vector&lt;int&gt; inDegree(V, 0);
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i &lt; V; i++) {
+		    
+			for(auto it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+	    
+	    // Queue to facilitate BFS
+	    queue&lt;int&gt; q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i&lt;V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+    
+public:
+
+	/* Function to get the
+	eventually safe nodes */
+	vector&lt;int&gt; eventualSafeNodes(int V, 
+	                vector&lt;int&gt; adj[]) {
+	    
+	    // To store the reverse graph
+	    vector&lt;int&gt; adjRev[V];
+	    
+	    // Reversing the edges
+	    for (int i = 0; i &lt; V; i++) {
+		    
+			// i -&gt; it, it-&gt; i
+			for (auto it : adj[i]) {
+			    
+			    // Add the edge to reversed graph
+				adjRev[it].push_back(i);
+			}
+		}
+		
+	    /* Return the topological 
+	    sort of the given graph */
+	    vector&lt;int&gt; result = topoSort(V, adjRev);
+	    
+	    // Sort the result
+	    sort(result.begin(), result.end());
+	    
+	    // Return the result
+	    return result;
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    /* Function to return the topological
+     sorting of given graph */
+    private List&lt;int&gt; TopoSort(int V, List&lt;int&gt;[] adj) {
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        // Update the in-degrees of nodes
+        for (int i = 0; i &lt; V; i++) {
+            
+            foreach(int it in adj[i]) {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+        
+        // Queue to facilitate BFS
+        Queue&lt;int&gt; q = new Queue&lt;int&gt;();
+        
+        // Add the nodes with no in-degree to queue
+        for(int i = 0; i &lt; V; i++) {
+            if(inDegree[i] == 0) q.Enqueue(i);
+        }
+        
+        // Until the queue is empty
+        while(q.Count &gt; 0) {
+            
+            // Get the node
+            int node = q.Dequeue();
+            
+            // Add it to the answer
+            ans.Add(node);
+            
+            // Traverse the neighbours
+            foreach(int it in adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.Enqueue(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+    
+    /* Function to get the
+    eventually safe nodes */
+    public List&lt;int&gt; EventualSafeNodes(int V, List&lt;int&gt;[] adj) {
+       // To store the reverse graph
+        List&lt;int&gt;[] adjRev = new List&lt;int&gt;[V];
+        for (int i = 0; i &lt; V; i++) {
+            adjRev[i] = new List&lt;int&gt;();
+        }
+        
+        // Reversing the edges
+        for (int i = 0; i &lt; V; i++) {
+            
+            // i -&gt; it, it-&gt; i
+            foreach (int it in adj[i]) {
+                
+                // Add the edge to reversed graph
+                adjRev[it].Add(i);
+            }
+        }
+        
+        /* Return the topological 
+        sort of the given graph */
+        List&lt;int&gt; result = this.TopoSort(V, adjRev);
+        
+        // Sort the result
+        result.Sort();
+        
+        // Return the result
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// topoSort returns the topological sorting of the given graph using Kahn&#x27;s Algorithm
+func topoSort(V int, adj [][]int) []int {
+
+	// To store the In-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Update the in-degrees of nodes
+	for i := 0; i &lt; V; i++ {
+		for _, it := range adj[i] {
+			// Update the in-degree
+			inDegree[it]++
+		}
+	}
+
+	// To store the result
+	ans := []int{}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i &lt; V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) &gt; 0 {
+		// Get the node
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+			// Decrement the in-degree
+			inDegree[it]--
+
+			/* Add the node to queue if
+			its in-degree becomes zero */
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+// eventualSafeNodes returns the eventually safe nodes in the graph
+func eventualSafeNodes(V int, adj [][]int) []int {
+
+	// To store the reverse graph
+	adjRev := make([][]int, V)
+	for i := range adjRev {
+		adjRev[i] = []int{}
+	}
+
+	// Reversing the edges
+	for i := 0; i &lt; V; i++ {
+		// i -&gt; it, it -&gt; i
+		for _, it := range adj[i] {
+			// Add the edge to reversed graph
+			adjRev[it] = append(adjRev[it], i)
+		}
+	}
+
+	/* Return the topological
+	sort of the given graph */
+	result := topoSort(V, adjRev)
+
+	// Sort the result
+	sort.Ints(result)
+
+	// Return the result
+	return result
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to return the topological
+     sorting of given graph */
+    private int[] topoSort(int V, 
+            List&lt;Integer&gt;[] adj) {
+	    
+        // To store the In-degrees of nodes
+	    int[] inDegree = new int[V];
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i &lt; V; i++) {
+		    
+			for(int it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        // To store the result
+        int[] ans = new int[V];
+        int idx = 0;
+	    
+	    // Queue to facilitate BFS
+	    Queue&lt;Integer&gt; q = new LinkedList&lt;&gt;();
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i = 0; i &lt; V; i++) {
+	        if(inDegree[i] == 0) q.add(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.isEmpty()) {
+	        
+	        // Get the node
+	        int node = q.poll();
+	        
+	        // Add it to the answer
+	        ans[idx++] = node;
+	        
+	        // Traverse the neighbours
+	        for(int it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.add(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return Arrays.copyOfRange(ans, 0, idx);
+    }
+    
+    /* Function to get the
+	eventually safe nodes */
+    public int[] eventualSafeNodes(int V, 
+                            int[][] adj) {
+	    
+	    // To store the reverse graph
+	    ArrayList&lt;Integer&gt;[] adjRev = new ArrayList[V];
+	    for (int i = 0; i &lt; V; i++) 
+	        adjRev[i] = new ArrayList&lt;&gt;();
+	    
+	    // Reversing the edges
+	    for (int i = 0; i &lt; V; i++) {
+		    
+			// i -&gt; it, it-&gt; i
+			for (int it : adj[i]) {
+			    
+			    // Add the edge to reversed graph
+				adjRev[it].add(i);
+			}
+		}
+		
+	    /* Return the topological 
+	    sort of the given graph */
+	    int[] result = topoSort(V, adjRev);
+	    
+	    // Sort the result
+	    Arrays.sort(result);
+	    
+	    // Return the result
+	    return result;
+	}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to return the topological
+     sorting of given graph */
+    topoSort(V, adj) {
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        // Update the in-degrees of nodes
+        for (let i = 0; i &lt; V; i++) {
+            for(let it of adj[i]) {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        let ans = [];
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for(let i = 0; i &lt; V; i++) {
+            if(inDegree[i] == 0) q.push(i);
+        }
+        
+        // Until the queue is empty
+        while(q.length &gt; 0) {
+            
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for(let it of adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.push(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+    
+    /* Function to get the
+    eventually safe nodes */
+    eventualSafeNodes(V, adj) {
+        
+        // To store the reverse graph
+        let adjRev = new Array(V).fill().map(() =&gt; []);
+        
+        // Reversing the edges
+        for (let i = 0; i &lt; V; i++) {
+            // i -&gt; it, it-&gt; i
+            for (let it of adj[i]) {
+                // Add the edge to reversed graph
+                adjRev[it].push(i);
+            }
+        }
+        
+        /* Return the topological 
+        sort of the given graph */
+        let result = this.topoSort(V, adjRev);
+        
+        // Sort the result
+        result.sort((a, b) =&gt; a - b);
+        
+        // Return the result
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>from collections import deque
+
+class Solution:
+
+    # Function to return the topological
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Update the in-degrees of nodes
+        for i in range(V):
+            
+            for it in adj[i]:
+                # Update the in-degree
+                inDegree[it] += 1
+
+        # To store the result
+        ans = []
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+    # Function to get the
+    # eventually safe nodes
+    def eventualSafeNodes(self, V, adj):
+        
+        # To store the reverse graph
+        adjRev = [[] for _ in range(V)]
+        
+        # Reversing the edges
+        for i in range(V):
+            
+            # i -&gt; it, it-&gt; i
+            for it in adj[i]:
+                
+                # Add the edge to reversed graph
+                adjRev[it].append(i)
+        
+        # Return the topological 
+        # sort of the given graph
+        result = self.topoSort(V, adjRev)
+        
+        # Sort the result
+        result.sort()
+        
+        # Return the result
+        return result
+
+</code></pre></div>
+</body>
+</html>

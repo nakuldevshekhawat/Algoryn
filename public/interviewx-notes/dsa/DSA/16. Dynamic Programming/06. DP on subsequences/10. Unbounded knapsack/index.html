@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unbounded knapsack</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Unbounded knapsack</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two integer arrays, val and wt, each of size N, representing the values and weights of N items respectively, and an integer W, representing the maximum capacity of a knapsack, determine the maximum value achievable by selecting a subset of the items such that the total weight of the selected items does not exceed the knapsack capacity W. The goal is to <strong>maximize</strong> the sum of the values of the selected items while keeping the total weight within the knapsack's capacity.</p><p><br></p><p>An <strong>infinite</strong> supply of each item can be assumed.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ N ≤ 500</li><li>1 ≤ W ≤ 1000</li><li>1 ≤ wt[i] ≤ 500</li><li>1 ≤ val[i] ≤ 500</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> val = [5, 11, 13], wt = [2, 4, 6], W = 10</p><p><strong>Output: </strong>27</p><p><strong>Explanation:</strong> Select 2 items with weights 4 and 1 item with weight 2 for a total value of 11+11+5 = 27.</p><h3>Example 2</h3><p><strong>Input:</strong> val = [10, 40, 50, 70], wt = [1, 3, 4, 5], W = 8</p><p><strong>Output:</strong> 110</p><p><strong>Explanation:</strong> Select items with weights 3 and 5 for a total value of 40 + 70 = 110.</p><h3>Example 3</h3><p><strong>Input:</strong> val = [60, 100, 120], wt = [10, 20, 30], W = 60</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The knapsack problem is fundamental in resource allocation tasks and is widely applicable across numerous industries for decision making. A fun, practical example is in the world of video game design. In games where characters have limited carrying capacity, designers use the knapsack problem to create algorithms that help players automatically select the best items to carry for optimal game outcomes. Moreover, this problem is also used in file storage and network data packet transmission to achieve maximum efficiency within certain capacity constraints.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Why a Greedy Solution will not work:</strong></h5>
+<p>The first approach that comes to our mind is greedy. A greedy solution will fail in this problem because there is no ‘uniformity’ in data. While selecting a local better choice we may choose an item that will in long term give less value.</p>
+
+<p>As the greedy approach doesn’t work, we will try to generate all possible combinations using recursion and select the combination which gives us the maximum value in the given constraints.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Unbounded knapsack/-Bc5n7twt"><br>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes:</b>We are given ‘n’ items. Their weight is represented by the ‘wt’ array and value by the ‘val’ array. So clearly one parameter will be ‘ind’, i.e index upto which the array items are being considered. There is one more parameter “W”, to keep track of the capacity of the knapsack to decide whether we can pick an array item or not.</li>
+
+<p>So, initially we need to find f(n-1, W) where W is the overall capacity given to us. f(n-1, W) gives  the maximize the sum of the values of the selected items from index 0 to n-1  with capacity W of the knapsack.</p>
+
+<li><b>Try out all possible choices at a given index:</b>We need to generate all the subsequences. So, use the pick/non-pick technique. There are two choices for every index:</li>
+
+<p><b>Exclude the current element from the knapsack:</b> First try to find a solution without considering the current index item. If we exclude the current item, the capacity of the bag will not be affected and the value added will be 0 for the current item. So call the recursive function f(ind-1,W).</p>
+
+<p><b>Include the current element in the knapsack: </b>Try to find a solution by considering the current item to the knapsack. As we have included the item, the capacity of the knapsack will be updated to W-wt[ind] and the current item’s value (val[ind]) will also be added to the further recursive call answer.</p>
+
+<p>Now here is the catch, as there is an unlimited supply of coins, we want to again form a solution with the same item value. So we will not recursively call for f(ind-1, W-wt[ind]) rather stay at that index only and call for f(ind, W-wt[ind]) to find the answer.</p>
+<p><b>Note:</b> Consider the current item in the knapsack only when the current element’s weight is less than or equal to the capacity ‘W’ of the knapsack, if it isn’t do not consider it.</p>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, W){
+    notTake = 0 + f(ind-1, W)
+    take = INT_MIN
+    if(wt[ind] <= W)
+         take = val + f(ind, W-wt[ind])
+}</code></pre></div></div></div>
+
+<li><b>Return the maximum of 'take' and 'notTake': </b>As we have to return the maximum amount of value, return the max of take and notTake as our answer.</li><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, W){
+    notTake = 0 + f(ind-1, W)
+    take = INT_MIN
+    if(wt[ind] <= W)
+         take = val + f(ind, W-wt[ind])
+    return max(notTake, take)
+}</code></pre></div></div></div>
+
+<li><b>Base Cases: </b>If ind==0, it means we are at the first item. Now, in an unbounded knapsack we can pick an item any number of times. As there is only one item left,  pick for W/wt[0] times because ultimately we want to maximize the value of items while respecting the constraint of weight of the knapsack. The value added will be the product of the number of items picked and value of the individual item. Therefore return (W/wt[0]) * val[0].</li>
+</ol><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    // Function to solve the unbounded knapsack problem
+    int func(vector<int>& wt, vector<int>& val, int ind, int W) {
+        // Base case: if we're at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+        
+        /* Calculate the maximum value
+        without taking the current item*/
+        int notTaken = 0 + func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = INT_MIN;
+        if (wt[ind] <= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind]);
+        
+        // Return the maximum value 
+        return max(notTaken, taken);
+    }
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector<int>& wt, vector<int>& val, int n, int W) {
+    
+        /* Call the utility function to 
+        calculate the maximum value*/
+        return func(wt, val, n - 1, W);
+    }
+};
+int main() {
+    vector<int> wt = {2, 4, 6}; 
+    vector<int> val = {5, 11, 13};
+    int W = 10;
+    int n = wt.size(); 
+    
+    // Create an instance of Solution class
+    Solution sol;
+    
+    cout << "The Maximum value of items the thief can steal is " << sol.unboundedKnapsack(wt, val, n, W) << endl;
+
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the unbounded knapsack problem
+    private int func(int[] wt, int[] val, int ind, int W) {
+        // Base case: if we're at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        int notTaken = func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = Integer.MIN_VALUE;
+        if (wt[ind] <= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind]);
+        
+        // Return the maximum value 
+        return Math.max(notTaken, taken);
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+    
+        /* Call the utility function
+        to calculate the maximum value*/
+        return func(wt, val, n - 1, W);
+    }
+
+    public static void main(String[] args) {
+        int[] wt = {2, 4, 6};
+        int[] val = {5, 11, 13};
+        int W = 10;
+        int n = wt.length;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        System.out.println("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    #Function to solve the unbounded knapsack problem
+    def func(self, wt, val, ind, W):
+        # Base case: if we're at the first item
+        if ind == 0:
+            """ Calculate and return the maximum
+            value for the given weight limit"""
+            return (W // wt[0]) * val[0]
+        
+        """ Calculate the maximum value 
+        without taking the current item"""
+        not_taken = self.func(wt, val, ind - 1, W)
+        
+        """ Calculate the maximum value
+        by taking the current item"""
+        taken = float('-inf')
+        if wt[ind] <= W:
+            taken = val[ind] + self.func(wt, val, ind, W - wt[ind])
+        
+        """ Store the maximum value in
+        the DP table and return it"""
+        return max(not_taken, taken)
+    
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        
+        """ Call the utility function 
+        to calculate the maximum value"""
+        return self.func(wt, val, n - 1, W)
+
+if __name__ == "__main__":
+    wt = [2, 4, 6]
+    val = [5, 11, 13]
+    W = 10
+    n = len(wt)
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    print("The Maximum value of items the thief can steal is", sol.unboundedKnapsack(wt, val, n, W))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the unbounded knapsack problem
+    func(wt, val, ind, W) {
+        // Base case: if we're at the first item
+        if (ind === 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return Math.floor(W / wt[0]) * val[0];
+        }
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        const notTaken = this.func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        let taken = -Infinity;
+        if (wt[ind] <= W) {
+            taken = val[ind] + this.func(wt, val, ind, W - wt[ind]);
+        }
+        
+        // Return the maximum value
+        return Math.max(notTaken, taken);
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(wt, val, n - 1, W);
+    }
+}
+
+const wt = [2, 4, 6];
+const val = [5, 11, 13];
+const W = 10;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+console.log("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    // Function to solve the unbounded knapsack problem
+    private int Func(int[] wt, int[] val, int ind, int W)
+    {
+        // Base case: if we're at the first item
+        if (ind == 0)
+        {
+            /* Calculate and return the maximum 
+            value for the given weight limit */
+            return (W / wt[0]) * val[0];
+        }
+
+        /* Calculate the maximum value
+        without taking the current item */
+        int notTaken = 0 + Func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item */
+        int taken = int.MinValue;
+        if (wt[ind] <= W)
+            taken = val[ind] + Func(wt, val, ind, W - wt[ind]);
+        
+        // Return the maximum value 
+        return Math.Max(notTaken, taken);
+    }
+
+    // Function to solve the unbounded knapsack problem
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W)
+    {
+        /* Call the utility function to 
+        calculate the maximum value */
+        return Func(wt, val, n - 1, W);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] wt = {2, 4, 6}; 
+        int[] val = {5, 11, 13};
+        int W = 10;
+        int n = wt.Length; 
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Output the maximum value of items the thief can steal
+        Console.WriteLine("The Maximum value of items the thief can steal is " + sol.UnboundedKnapsack(wt, val, n, W));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+)
+
+const INT_MIN = -1 << 31
+
+// Function to solve the unbounded knapsack problem
+func funcRec(wt []int, val []int, ind int, W int) int {
+    // Base case: if we're at the first item
+    if ind == 0 {
+        /* Calculate and return the maximum 
+            value for the given weight limit*/
+        return (W / wt[0]) * val[0]
+    }
+
+    /* Calculate the maximum value
+        without taking the current item*/
+    notTaken := 0 + funcRec(wt, val, ind-1, W)
+
+    /* Calculate the maximum value
+        by taking the current item*/
+    taken := INT_MIN
+    if wt[ind] <= W {
+        taken = val[ind] + funcRec(wt, val, ind, W-wt[ind])
+    }
+
+    // Return the maximum value 
+    if notTaken > taken {
+        return notTaken
+    }
+    return taken
+}
+
+// Function to solve the unbounded knapsack problem
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+
+    /* Call the utility function to 
+        calculate the maximum value*/
+    return funcRec(wt, val, n-1, W)
+}
+
+func main() {
+    wt := []int{2, 4, 6}
+    val := []int{5, 11, 13}
+    W := 10
+    n := len(wt)
+
+    // Print the result
+    fmt.Printf("The Maximum value of items the thief can steal is %d\n",
+        unboundedKnapsack(wt, val, n, W))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(2<sup>N</sup>), As each element has two choices and there are total N elements to be considered.<br></br>
+<strong>Space Complexity:</strong>O(N), As the maximum depth of the recursion stack can go upto N.</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Unbounded knapsack/-tu8jZW9a"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][W+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'W'. The maximum value 'ind' can attain is (n), where n is the size of array and for 'W', which denotes weight of the knapsack,  only values between 0 to W. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    // Function to solve the unbounded knapsack problem
+    int func(vector<int>& wt, vector<int>& val, int ind, int W, vector<vector<int>>& dp) {
+        // Base case: if we're at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+    
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind][W] != -1)
+            return dp[ind][W];
+        
+        /* Calculate the maximum value
+        without taking the current item*/
+        int notTaken = 0 + func(wt, val, ind - 1, W, dp);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = INT_MIN;
+        if (wt[ind] <= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind], dp);
+        
+        /* Store the maximum value in
+        the DP table and return it*/
+        return dp[ind][W] = max(notTaken, taken);
+    }
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector<int>& wt, vector<int>& val, int n, int W) {
+        vector<vector<int>> dp(n, vector<int>(W + 1, -1)); 
+    
+        /* Call the utility function to 
+        calculate the maximum value*/
+        return func(wt, val, n - 1, W, dp);
+    }
+};
+int main() {
+    vector<int> wt = {2, 4, 6}; 
+    vector<int> val = {5, 11, 13};
+    int W = 10;
+    int n = wt.size(); 
+    
+    // Create an instance of Solution class
+    Solution sol;
+    
+    cout << "The Maximum value of items the thief can steal is " << sol.unboundedKnapsack(wt, val, n, W) << endl;
+
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the unbounded knapsack problem
+    private int func(int[] wt, int[] val, int ind, int W, int[][] dp) {
+        // Base case: if we're at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+    
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind][W] != -1)
+            return dp[ind][W];
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        int notTaken = func(wt, val, ind - 1, W, dp);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = Integer.MIN_VALUE;
+        if (wt[ind] <= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind], dp);
+        
+        /* Store the maximum value in
+        the DP table and return it*/
+        return dp[ind][W] = Math.max(notTaken, taken);
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        int[][] dp = new int[n][W + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+    
+        /* Call the utility function
+        to calculate the maximum value*/
+        return func(wt, val, n - 1, W, dp);
+    }
+
+    public static void main(String[] args) {
+        int[] wt = {2, 4, 6};
+        int[] val = {5, 11, 13};
+        int W = 10;
+        int n = wt.length;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        System.out.println("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    #Function to solve the unbounded knapsack problem
+    def func(self, wt, val, ind, W, dp):
+        # Base case: if we're at the first item
+        if ind == 0:
+            """ Calculate and return the maximum
+            value for the given weight limit"""
+            return (W // wt[0]) * val[0]
+        
+        """ If the result for this index and weight
+        limit is already calculated, return it"""
+        if dp[ind][W] != -1:
+            return dp[ind][W]
+        
+        """ Calculate the maximum value 
+        without taking the current item"""
+        not_taken = self.func(wt, val, ind - 1, W, dp)
+        
+        """ Calculate the maximum value
+        by taking the current item"""
+        taken = float('-inf')
+        if wt[ind] <= W:
+            taken = val[ind] + self.func(wt, val, ind, W - wt[ind], dp)
+        
+        """ Store the maximum value in
+        the DP table and return it"""
+        dp[ind][W] = max(not_taken, taken)
+        return dp[ind][W]
+    
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        dp = [[-1] * (W + 1) for _ in range(n)]
+        
+        """ Call the utility function 
+        to calculate the maximum value"""
+        return self.func(wt, val, n - 1, W, dp)
+
+if __name__ == "__main__":
+    wt = [2, 4, 6]
+    val = [5, 11, 13]
+    W = 10
+    n = len(wt)
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    print("The Maximum value of items the thief can steal is", sol.unboundedKnapsack(wt, val, n, W))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the unbounded knapsack problem
+    func(wt, val, ind, W, dp) {
+        // Base case: if we're at the first item
+        if (ind === 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return Math.floor(W / wt[0]) * val[0];
+        }
+    
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind][W] !== -1) {
+            return dp[ind][W];
+        }
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        const notTaken = this.func(wt, val, ind - 1, W, dp);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        let taken = -Infinity;
+        if (wt[ind] <= W) {
+            taken = val[ind] + this.func(wt, val, ind, W - wt[ind], dp);
+        }
+        
+        /* Store the maximum value in
+        the DP table and return it*/
+        dp[ind][W] = Math.max(notTaken, taken);
+        return dp[ind][W];
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        const dp = Array.from({ length: n }, () => Array(W + 1).fill(-1));
+        
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(wt, val, n - 1, W, dp);
+    }
+}
+
+const wt = [2, 4, 6];
+const val = [5, 11, 13];
+const W = 10;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+console.log("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Function to solve the unbounded knapsack problem
+    private int func(int[] wt, int[] val, int ind, int W, int[,] dp)
+    {
+        // Base case: if we're at the first item
+        if (ind == 0)
+        {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind, W] != -1)
+        {
+            return dp[ind, W];
+        }
+
+        /* Calculate the maximum value 
+        without taking the current item*/
+        int notTaken = func(wt, val, ind - 1, W, dp);
+
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = int.MinValue;
+        if (wt[ind] <= W)
+        {
+            taken = val[ind] + func(wt, val, ind, W - wt[ind], dp);
+        }
+
+        /* Store the maximum value in
+        the DP table and return it*/
+        dp[ind, W] = Math.Max(notTaken, taken);
+        return dp[ind, W];
+    }
+
+    // Function to solve the unbounded knapsack problem
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W)
+    {
+        int[,] dp = new int[n, W + 1];
+
+        // Initialize dp array with -1
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j <= W; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return func(wt, val, n - 1, W, dp);
+    }
+}
+
+public class EditorialProgram
+{
+    public static void Main(string[] args)
+    {
+        int[] wt = { 2, 4, 6 };
+        int[] val = { 5, 11, 13 };
+        int W = 10;
+        int n = wt.Length;
+
+        // Create an instance of Solution class
+        SolutionEditorial sol = new SolutionEditorial();
+
+        Console.WriteLine("The Maximum value of items the thief can steal is " + sol.UnboundedKnapsack(wt, val, n, W));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Helper function to get max of two integers
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+//functionto solve unbounded knapsack
+func funcRec(wt []int, val []int, ind int, W int, dp [][]int) int {
+	// Base case: if we're at the first item
+	if ind == 0 {
+	    /* Calculate and return the maximum 
+            value for the given weight limit*/
+		return (W / wt[0]) * val[0]
+	}
+
+    /* If the result for this index and weight
+    limit is already calculated, return it*/
+	if dp[ind][W] != -1 {
+		return dp[ind][W]
+	}
+
+	/* Calculate the maximum value
+        without taking the current item*/
+	notTaken := funcRec(wt, val, ind-1, W, dp)
+
+	/* Calculate the maximum value
+        by taking the current item*/
+	taken := -1000000000 // mimic INT_MIN
+	if wt[ind] <= W {
+		taken = val[ind] + funcRec(wt, val, ind, W-wt[ind], dp)
+	}
+
+	  /* Store the maximum value in
+        the DP table and return it*/
+	dp[ind][W] = max(notTaken, taken)
+	return dp[ind][W]
+}
+
+//Function to solve the unbounded knapsack problem
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+	// Initialize DP table with -1
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, W+1)
+		for j := 0; j <= W; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+    /* Call the utility function to 
+    calculate the maximum value*/
+	return funcRec(wt, val, n-1, W, dp)
+}
+
+func main() {
+	wt := []int{2, 4, 6}
+	val := []int{5, 11, 13}
+	W := 10
+	n := len(wt)
+
+	fmt.Println("The Maximum value of items the thief can steal is", unboundedKnapsack(wt, val, n, W))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*W), as there are N*W states therefore at max ‘N*W’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*W) + O(N), the stack space will be O(N) and  a 2D array of size N*W is used.</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li><b>Declare a dp array of size [n][W+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'W'.  The maximum value 'ind' can attain is (n) and including 0 its n, where n is the size of array, for 'W' can have any values between 0 to 'W'.  So we need a 2D dp array. Set its type as int and initialize it as 0.</li>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when 'ind' == 0, it means we were considering the first element. So for 'ind' == 0,  assign (i/wt[0]) * val[0] to the dp array, where i will iterate from 0 to W.</li>
+
+<li><b>Iterative Computation Using Loops: </b>As we are done for the first row(ind = 0) in the base case, so ‘ind’ variable will move from 1 to n-1, whereas ‘W’ variable will move from 0 to 'W'(weight). Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.</li>
+
+<li><b>Returning the answer: </b>At last dp[n-1][W] will hold the solution after the completion of whole process, as we are doing the calculations in bottom-up manner.</li>
+</ol><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector<int>& wt, vector<int>& val, int n, int W) {
+        vector<vector<int>> dp(n, vector<int>(W + 1, 0)); 
+
+        // Base Condition
+        for (int i = wt[0]; i <= W; i++) {
+            // Calculate maximum value for the first item
+            dp[0][i] = (i / wt[0]) * val[0];
+        }
+
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = 0; cap <= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = 0 + dp[ind - 1][cap]; 
+
+                int taken = INT_MIN;
+                if (wt[ind] <= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]]; 
+                
+                // Store the maximum value in the DP table
+                dp[ind][cap] = max(notTaken, taken); 
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return dp[n - 1][W]; 
+    }
+};
+
+int main() {
+    vector<int> wt = {2, 4, 6}; 
+    vector<int> val = {5, 11, 13}; 
+    int W = 10; 
+    int n = wt.size(); 
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Maximum value of items the thief can steal is " << sol.unboundedKnapsack(wt, val, n, W) << endl;
+
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        int[][] dp = new int[n][W + 1];
+
+        // Base Condition
+        for (int i = wt[0]; i <= W; i++) {
+            // Calculate maximum value for the first item
+            dp[0][i] = (i / wt[0]) * val[0];
+        }
+
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = 0; cap <= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = dp[ind - 1][cap];
+
+                int taken = Integer.MIN_VALUE;
+                if (wt[ind] <= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]];
+
+                // Store the maximum value in the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering 
+        all items and the knapsack capacity*/
+        return dp[n - 1][W];
+    }
+
+    public static void main(String[] args) {
+        int[] wt = {2, 4, 6};
+        int[] val = {5, 11, 13};
+        int W = 10;
+        int n = wt.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        dp = [[0] * (W + 1) for _ in range(n)]
+
+        # Base Condition
+        for i in range(wt[0], W + 1):
+            # Calculate maximum value for the first item
+            dp[0][i] = (i // wt[0]) * val[0]
+
+        for ind in range(1, n):
+            for cap in range(W + 1):
+                # Maximum value without taking current item
+                not_taken = dp[ind - 1][cap]
+
+                taken = float('-inf')
+                if wt[ind] <= cap:
+                    # Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]]
+
+                # Store the maximum value in the DP table
+                dp[ind][cap] = max(not_taken, taken)
+        
+        """ Return the maximum value considering
+        all items and the knapsack capacity"""
+        return dp[n - 1][W]
+
+if __name__ == "__main__":
+    wt = [2, 4, 6]
+    val = [5, 11, 13]
+    W = 10
+    n = len(wt)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Print the result
+    print("The Maximum value of items the thief can steal is", sol.unboundedKnapsack(wt, val, n, W))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        const dp = Array.from({ length: n }, () => Array(W + 1).fill(0));
+
+        // Base Condition
+        for (let i = wt[0]; i <= W; i++) {
+            // Calculate maximum value for the first item
+            dp[0][i] = Math.floor(i / wt[0]) * val[0];
+        }
+
+        for (let ind = 1; ind < n; ind++) {
+            for (let cap = 0; cap <= W; cap++) {
+                // Maximum value without taking current item
+                const notTaken = dp[ind - 1][cap];
+
+                let taken = -Infinity;
+                if (wt[ind] <= cap) {
+                    // Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]];
+                }
+
+                // Store the maximum value in the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering 
+        all items and the knapsack capacity*/
+        return dp[n - 1][W];
+    }
+}
+
+const wt = [2, 4, 6];
+const val = [5, 11, 13];
+const W = 10;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Solution sol = new Solution();
+
+        int[] wt = { 2, 4, 6 };
+        int[] val = { 5, 11, 13 };
+        int W = 10;
+        int n = wt.Length;
+
+        // Print the result
+        Console.WriteLine("The Maximum value of items the thief can steal is " + sol.UnboundedKnapsack(wt, val, n, W));
+    }
+}
+
+public class Solution
+{
+    // Function to solve the unbounded knapsack problem
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W)
+    {
+        // const dp = Array.from({ length: n }, () => Array(W + 1).fill(0));
+        // C# equivalent for a 2D array initialized to 0s
+        int[,] dp = new int[n, W + 1];
+
+        // Base Condition
+        // for (let i = wt[0]; i <= W; i++) {
+        //     // Calculate maximum value for the first item
+        //     dp[0][i] = Math.floor(i / wt[0]) * val[0];
+        // }
+        for (int i = wt[0]; i <= W; i++)
+        {
+            // Integer division in C# for positive numbers is equivalent to Math.floor
+            dp[0, i] = (i / wt[0]) * val[0];
+        }
+
+        // for (let ind = 1; ind < n; ind++) {
+        //     for (let cap = 0; cap <= W; cap++) {
+        //         // Maximum value without taking current item
+        //         const notTaken = dp[ind - 1][cap];
+        //
+        //         let taken = -Infinity;
+        //         if (wt[ind] <= cap) {
+        //             // Maximum value by taking current item
+        //             taken = val[ind] + dp[ind][cap - wt[ind]];
+        //         }
+        //
+        //         // Store the maximum value in the DP table
+        //         dp[ind][cap] = Math.Max(notTaken, taken);
+        //     }
+        // }
+        for (int ind = 1; ind < n; ind++)
+        {
+            for (int cap = 0; cap <= W; cap++)
+            {
+                // Maximum value without taking current item
+                int notTaken = dp[ind - 1, cap];
+
+                int taken = int.MinValue; // Equivalent to -Infinity for integers
+                if (wt[ind] <= cap)
+                {
+                    // Maximum value by taking current item
+                    taken = val[ind] + dp[ind, cap - wt[ind]];
+                }
+
+                // Store the maximum value in the DP table
+                dp[ind, cap] = Math.Max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering 
+        all items and the knapsack capacity*/
+        // return dp[n - 1][W];
+        return dp[n - 1, W];
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// unboundedKnapsack solves the unbounded knapsack problem using tabulation
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+	// Initialize DP table with zeros
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, W+1)
+	}
+
+	// Base Condition: Fill dp for the first item
+	for i := wt[0]; i <= W; i++ {
+		dp[0][i] = (i / wt[0]) * val[0]
+	}
+
+	// Fill the DP table for all items and capacities
+	for ind := 1; ind < n; ind++ {
+		for cap := 0; cap <= W; cap++ {
+			// Maximum value without taking current item
+			notTaken := dp[ind-1][cap]
+
+			// Maximum value by taking current item (if possible)
+			taken := -1 << 31 // Minimum int value for int type (simulate math.MinInt32)
+			if wt[ind] <= cap {
+				taken = val[ind] + dp[ind][cap-wt[ind]]
+			}
+
+			// Store the maximum value in the DP table
+			if notTaken > taken {
+				dp[ind][cap] = notTaken
+			} else {
+				dp[ind][cap] = taken
+			}
+		}
+	}
+
+	// Return the maximum value considering all items and capacity
+	return dp[n-1][W]
+}
+
+func main() {
+	wt := []int{2, 4, 6}
+	val := []int{5, 11, 13}
+	W := 10
+	n := len(wt)
+
+	fmt.Println("The Maximum value of items the thief can steal is", unboundedKnapsack(wt, val, n, W))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*W),  There are two nested loops which accounts for N*W.<br><br>
+<strong>Space Complexity:</strong>O(N*W), as a 2D array of size N*W is used.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we observe the relation obtained in the tabulation approach, dp[ind][cap] =  max(dp[ind-1][cap] ,dp[ind][cap-wt[ind]]. We find that to calculate a value of a cell of the dp array, only the previous row values (say prev) are needed. So, we don’t need to store an entire array. Hence we can space optimize it. We will be space optimizing this solution using only one row.</p>
+
+<h5><strong>Understanding:</strong></h5>
+
+<p>In the relation, dp[ind-1][cap] and dp[ind-1][cap - wt[ind]], if we are at a column, only the same column value from previous row is required and other values will be from the current row itself. So we do not  need to store an entire array for it.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Unbounded knapsack/-yJ0fhxhX"><br>
+
+<p>We can use the 'cur' row itself to store the required value in the following way:</p>
+<ol>
+<li>Somehow make sure that the previous value( say preValue) is available to us in some manner ( we will discuss later how we got the value).
+</li><li>Now, let us say that we want to find the value of cell cur[3], by going through the relation we find that we need a 'preValue' and one value from the 'cur' row.
+</li><li>To calculate the cur[3] element, we need only a single variable (preValue). The catch is that we can initially place this preValue at the position cur[3] (before finding its updated value) and later while calculating for the current row’s cell cur[3], the value present there automatically serves as the preValue and we can use it to find the required cur[3] value.
+</li><li>After calculating the cur[3] value we store it at the cur[3] position so this cur[3] will automatically serve as preValue for the next row. In this way, we space-optimize the tabulation approach by just using one row.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector<int>& wt, vector<int>& val, int n, int W) {
+        // Create a vector to store current DP state
+        vector<int> cur(W + 1, 0); 
+
+        // Base Condition
+        for (int i = wt[0]; i <= W; i++) {
+            // Calculate the maximum value for first item
+            cur[i] = (i / wt[0]) * val[0]; 
+        }
+
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = 0; cap <= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = cur[cap];  
+
+                int taken = INT_MIN;
+                if (wt[ind] <= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]]; 
+
+                /* Store the maximum value 
+                in the current DP state*/
+                cur[cap] = max(notTaken, taken); 
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return cur[W]; 
+    }
+};
+
+int main() {
+    vector<int> wt = {2, 4, 6}; 
+    vector<int> val = {5, 11, 13}; 
+    int W = 10; 
+    int n = wt.size(); 
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Maximum value of items the thief can steal is " << sol.unboundedKnapsack(wt, val, n, W) << endl;
+
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        // Create a vector to store current DP state
+        int[] cur = new int[W + 1];
+
+        // Base Condition
+        for (int i = wt[0]; i <= W; i++) {
+            // Calculate the maximum value for first item
+            cur[i] = (i / wt[0]) * val[0];
+        }
+
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = 0; cap <= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = cur[cap];
+
+                int taken = Integer.MIN_VALUE;
+                if (wt[ind] <= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]];
+
+                /* Store the maximum value 
+                in the current DP state*/
+                cur[cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return cur[W];
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        int[] wt = {2, 4, 6};
+        int[] val = {5, 11, 13};
+        int W = 10;
+        int n = wt.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        # Create a list to store current DP state
+        cur = [0] * (W + 1)
+
+        # Base Condition
+        for i in range(wt[0], W + 1):
+            # Calculate the maximum value for first item
+            cur[i] = (i // wt[0]) * val[0]
+
+        for ind in range(1, n):
+            for cap in range(W + 1):
+                # Maximum value without taking current item
+                notTaken = cur[cap]
+
+                taken = float('-inf')
+                if wt[ind] <= cap:
+                    # Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]]
+
+                # Store the maximum value in the current DP state
+                cur[cap] = max(notTaken, taken)
+
+        """ Return the maximum value considering 
+        all items and the knapsack capacity"""
+        return cur[W]
+
+if __name__ == "__main__":
+    wt = [2, 4, 6]
+    val = [5, 11, 13]
+    W = 10
+    n = len(wt)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Print the result
+    print("The Maximum value of items the thief can steal is", sol.unboundedKnapsack(wt, val, n, W))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        // Create an array to store current DP state
+        let cur = new Array(W + 1).fill(0);
+
+        // Base Condition
+        for (let i = wt[0]; i <= W; i++) {
+            // Calculate the maximum value for first item
+            cur[i] = Math.floor(i / wt[0]) * val[0];
+        }
+
+        for (let ind = 1; ind < n; ind++) {
+            for (let cap = 0; cap <= W; cap++) {
+                // Maximum value without taking current item
+                let notTaken = cur[cap];
+
+                let taken = Number.MIN_SAFE_INTEGER;
+                if (wt[ind] <= cap) {
+                    // Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]];
+                }
+
+                // Store the maximum value in the current DP state
+                cur[cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return cur[W];
+    }
+}
+
+const wt = [2, 4, 6];
+const val = [5, 11, 13];
+const W = 10;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log("The Maximum value of items the thief can steal is " + sol.unboundedKnapsack(wt, val, n, W));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution {
+    // Function to solve the unbounded knapsack problem
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        // Create an array to store current DP state
+        int[] cur = new int[W + 1];
+
+        // Base Condition
+        for (int i = wt[0]; i <= W; i++) {
+            // Calculate the maximum value for first item
+            cur[i] = (i / wt[0]) * val[0];
+        }
+
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = 0; cap <= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = cur[cap];
+
+                int taken = int.MinValue;
+                if (wt[ind] <= cap) {
+                    // Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]];
+                }
+
+                // Store the maximum value in the current DP state
+                cur[cap] = Math.Max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return cur[W];
+    }
+}
+
+public class Program {
+    public static void Main(string[] args) {
+        int[] wt = {2, 4, 6};
+        int[] val = {5, 11, 13};
+        int W = 10;
+        int n = wt.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Maximum value of items the thief can steal is " + sol.UnboundedKnapsack(wt, val, n, W));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// unboundedKnapsack solves the unbounded knapsack problem using a 1D DP array
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+	// Create a slice to store current DP state
+	cur := make([]int, W+1)
+
+	// Base Condition
+	for i := wt[0]; i <= W; i++ {
+		// Calculate the maximum value for first item
+		cur[i] = (i / wt[0]) * val[0]
+	}
+
+	for ind := 1; ind < n; ind++ {
+		for cap := 0; cap <= W; cap++ {
+			// Maximum value without taking current item
+			notTaken := cur[cap]
+
+			taken := -1 << 31 // simulate INT_MIN
+			if wt[ind] <= cap {
+				// Maximum value by taking current item
+				taken = val[ind] + cur[cap-wt[ind]]
+			}
+
+			// Store the maximum value in the current DP state
+			if notTaken > taken {
+				cur[cap] = notTaken
+			} else {
+				cur[cap] = taken
+			}
+		}
+	}
+
+	// Return the maximum value considering all items and the knapsack capacity
+	return cur[W]
+}
+
+func main() {
+	wt := []int{2, 4, 6}
+	val := []int{5, 11, 13}
+	W := 10
+	n := len(wt)
+
+	// Print the result
+	fmt.Println("The Maximum value of items the thief can steal is", unboundedKnapsack(wt, val, n, W))
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*W),  There are two nested loops which accounts for N*W.<br><br>
+<strong>Space Complexity:</strong>O(W), We are using an external array of size ‘W+1’ to store only one row.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    // Function to solve the unbounded knapsack problem
+    int func(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int ind, int W) {
+        // Base case: if we&#x27;re at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+        
+        /* Calculate the maximum value
+        without taking the current item*/
+        int notTaken = 0 + func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = INT_MIN;
+        if (wt[ind] &lt;= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind]);
+        
+        // Return the maximum value 
+        return max(notTaken, taken);
+    }
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int n, int W) {
+    
+        /* Call the utility function to 
+        calculate the maximum value*/
+        return func(wt, val, n - 1, W);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to solve the unbounded knapsack problem
+    private int Func(int[] wt, int[] val, int ind, int W)
+    {
+        // Base case: if we&#x27;re at the first item
+        if (ind == 0)
+        {
+            /* Calculate and return the maximum 
+            value for the given weight limit */
+            return (W / wt[0]) * val[0];
+        }
+
+        /* Calculate the maximum value
+        without taking the current item */
+        int notTaken = 0 + Func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item */
+        int taken = int.MinValue;
+        if (wt[ind] &lt;= W)
+            taken = val[ind] + Func(wt, val, ind, W - wt[ind]);
+        
+        // Return the maximum value 
+        return Math.Max(notTaken, taken);
+    }
+
+    // Function to solve the unbounded knapsack problem
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W)
+    {
+        /* Call the utility function to 
+        calculate the maximum value */
+        return Func(wt, val, n - 1, W);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const INT_MIN = -1 &lt;&lt; 31
+
+// Function to solve the unbounded knapsack problem
+func funcRec(wt []int, val []int, ind int, W int) int {
+    // Base case: if we&#x27;re at the first item
+    if ind == 0 {
+        /* Calculate and return the maximum 
+            value for the given weight limit*/
+        return (W / wt[0]) * val[0]
+    }
+
+    /* Calculate the maximum value
+        without taking the current item*/
+    notTaken := 0 + funcRec(wt, val, ind-1, W)
+
+    /* Calculate the maximum value
+        by taking the current item*/
+    taken := INT_MIN
+    if wt[ind] &lt;= W {
+        taken = val[ind] + funcRec(wt, val, ind, W-wt[ind])
+    }
+
+    // Return the maximum value 
+    if notTaken &gt; taken {
+        return notTaken
+    }
+    return taken
+}
+
+// Function to solve the unbounded knapsack problem
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+
+    /* Call the utility function to 
+        calculate the maximum value*/
+    return funcRec(wt, val, n-1, W)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the unbounded knapsack problem
+    private int func(int[] wt, int[] val, int ind, int W) {
+        // Base case: if we&#x27;re at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        int notTaken = func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = Integer.MIN_VALUE;
+        if (wt[ind] &lt;= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind]);
+        
+        // Return the maximum value 
+        return Math.max(notTaken, taken);
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+    
+        /* Call the utility function
+        to calculate the maximum value*/
+        return func(wt, val, n - 1, W);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the unbounded knapsack problem
+    func(wt, val, ind, W) {
+        // Base case: if we&#x27;re at the first item
+        if (ind === 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return Math.floor(W / wt[0]) * val[0];
+        }
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        const notTaken = this.func(wt, val, ind - 1, W);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        let taken = -Infinity;
+        if (wt[ind] &lt;= W) {
+            taken = val[ind] + this.func(wt, val, ind, W - wt[ind]);
+        }
+        
+        // Return the maximum value
+        return Math.max(notTaken, taken);
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(wt, val, n - 1, W);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the unbounded knapsack problem
+    def func(self, wt, val, ind, W):
+        # Base case: if we&#x27;re at the first item
+        if ind == 0:
+            &quot;&quot;&quot; Calculate and return the maximum
+            value for the given weight limit&quot;&quot;&quot;
+            return (W // wt[0]) * val[0]
+        
+        &quot;&quot;&quot; Calculate the maximum value 
+        without taking the current item&quot;&quot;&quot;
+        not_taken = self.func(wt, val, ind - 1, W)
+        
+        &quot;&quot;&quot; Calculate the maximum value
+        by taking the current item&quot;&quot;&quot;
+        taken = float(&#x27;-inf&#x27;)
+        if wt[ind] &lt;= W:
+            taken = val[ind] + self.func(wt, val, ind, W - wt[ind])
+        
+        &quot;&quot;&quot; Store the maximum value in
+        the DP table and return it&quot;&quot;&quot;
+        return max(not_taken, taken)
+    
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        &quot;&quot;&quot; Call the utility function 
+        to calculate the maximum value&quot;&quot;&quot;
+        return self.func(wt, val, n - 1, W)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    // Function to solve the unbounded knapsack problem
+    int func(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int ind, int W, vector&lt;vector&lt;int&gt;&gt;&amp; dp) {
+        // Base case: if we&#x27;re at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+    
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind][W] != -1)
+            return dp[ind][W];
+        
+        /* Calculate the maximum value
+        without taking the current item*/
+        int notTaken = 0 + func(wt, val, ind - 1, W, dp);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = INT_MIN;
+        if (wt[ind] &lt;= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind], dp);
+        
+        /* Store the maximum value in
+        the DP table and return it*/
+        return dp[ind][W] = max(notTaken, taken);
+    }
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int n, int W) {
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(W + 1, -1)); 
+    
+        /* Call the utility function to 
+        calculate the maximum value*/
+        return func(wt, val, n - 1, W, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to solve the unbounded knapsack problem
+    private int func(int[] wt, int[] val, int ind, int W, int[,] dp)
+    {
+        // Base case: if we&#x27;re at the first item
+        if (ind == 0)
+        {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind, W] != -1)
+        {
+            return dp[ind, W];
+        }
+
+        /* Calculate the maximum value 
+        without taking the current item*/
+        int notTaken = func(wt, val, ind - 1, W, dp);
+
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = int.MinValue;
+        if (wt[ind] &lt;= W)
+        {
+            taken = val[ind] + func(wt, val, ind, W - wt[ind], dp);
+        }
+
+        /* Store the maximum value in
+        the DP table and return it*/
+        dp[ind, W] = Math.Max(notTaken, taken);
+        return dp[ind, W];
+    }
+
+    // Function to solve the unbounded knapsack problem
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W)
+    {
+        int[,] dp = new int[n, W + 1];
+
+        // Initialize dp array with -1
+        for (int i = 0; i &lt; n; i++)
+        {
+            for (int j = 0; j &lt;= W; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return func(wt, val, n - 1, W, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to get max of two integers
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+//functionto solve unbounded knapsack
+func funcRec(wt []int, val []int, ind int, W int, dp [][]int) int {
+	// Base case: if we&#x27;re at the first item
+	if ind == 0 {
+	    /* Calculate and return the maximum 
+            value for the given weight limit*/
+		return (W / wt[0]) * val[0]
+	}
+
+    /* If the result for this index and weight
+    limit is already calculated, return it*/
+	if dp[ind][W] != -1 {
+		return dp[ind][W]
+	}
+
+	/* Calculate the maximum value
+        without taking the current item*/
+	notTaken := funcRec(wt, val, ind-1, W, dp)
+
+	/* Calculate the maximum value
+        by taking the current item*/
+	taken := -1000000000 // mimic INT_MIN
+	if wt[ind] &lt;= W {
+		taken = val[ind] + funcRec(wt, val, ind, W-wt[ind], dp)
+	}
+
+	  /* Store the maximum value in
+        the DP table and return it*/
+	dp[ind][W] = max(notTaken, taken)
+	return dp[ind][W]
+}
+
+//Function to solve the unbounded knapsack problem
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+	// Initialize DP table with -1
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, W+1)
+		for j := 0; j &lt;= W; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+    /* Call the utility function to 
+    calculate the maximum value*/
+	return funcRec(wt, val, n-1, W, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the unbounded knapsack problem
+    private int func(int[] wt, int[] val, int ind, int W, int[][] dp) {
+        // Base case: if we&#x27;re at the first item
+        if (ind == 0) {
+            /* Calculate and return the maximum
+            value for the given weight limit*/
+            return (W / wt[0]) * val[0];
+        }
+    
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind][W] != -1)
+            return dp[ind][W];
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        int notTaken = func(wt, val, ind - 1, W, dp);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        int taken = Integer.MIN_VALUE;
+        if (wt[ind] &lt;= W)
+            taken = val[ind] + func(wt, val, ind, W - wt[ind], dp);
+        
+        /* Store the maximum value in
+        the DP table and return it*/
+        return dp[ind][W] = Math.max(notTaken, taken);
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        int[][] dp = new int[n][W + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+    
+        /* Call the utility function
+        to calculate the maximum value*/
+        return func(wt, val, n - 1, W, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the unbounded knapsack problem
+    func(wt, val, ind, W, dp) {
+        // Base case: if we&#x27;re at the first item
+        if (ind === 0) {
+            /* Calculate and return the maximum 
+            value for the given weight limit*/
+            return Math.floor(W / wt[0]) * val[0];
+        }
+    
+        /* If the result for this index and weight
+        limit is already calculated, return it*/
+        if (dp[ind][W] !== -1) {
+            return dp[ind][W];
+        }
+        
+        /* Calculate the maximum value 
+        without taking the current item*/
+        const notTaken = this.func(wt, val, ind - 1, W, dp);
+    
+        /* Calculate the maximum value
+        by taking the current item*/
+        let taken = -Infinity;
+        if (wt[ind] &lt;= W) {
+            taken = val[ind] + this.func(wt, val, ind, W - wt[ind], dp);
+        }
+        
+        /* Store the maximum value in
+        the DP table and return it*/
+        dp[ind][W] = Math.max(notTaken, taken);
+        return dp[ind][W];
+    }
+    
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        const dp = Array.from({ length: n }, () =&gt; Array(W + 1).fill(-1));
+        
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(wt, val, n - 1, W, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    #Function to solve the unbounded knapsack problem
+    def func(self, wt, val, ind, W, dp):
+        # Base case: if we&#x27;re at the first item
+        if ind == 0:
+            &quot;&quot;&quot; Calculate and return the maximum
+            value for the given weight limit&quot;&quot;&quot;
+            return (W // wt[0]) * val[0]
+        
+        &quot;&quot;&quot; If the result for this index and weight
+        limit is already calculated, return it&quot;&quot;&quot;
+        if dp[ind][W] != -1:
+            return dp[ind][W]
+        
+        &quot;&quot;&quot; Calculate the maximum value 
+        without taking the current item&quot;&quot;&quot;
+        not_taken = self.func(wt, val, ind - 1, W, dp)
+        
+        &quot;&quot;&quot; Calculate the maximum value
+        by taking the current item&quot;&quot;&quot;
+        taken = float(&#x27;-inf&#x27;)
+        if wt[ind] &lt;= W:
+            taken = val[ind] + self.func(wt, val, ind, W - wt[ind], dp)
+        
+        &quot;&quot;&quot; Store the maximum value in
+        the DP table and return it&quot;&quot;&quot;
+        dp[ind][W] = max(not_taken, taken)
+        return dp[ind][W]
+    
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        dp = [[-1] * (W + 1) for _ in range(n)]
+        
+        &quot;&quot;&quot; Call the utility function 
+        to calculate the maximum value&quot;&quot;&quot;
+        return self.func(wt, val, n - 1, W, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int n, int W) {
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(W + 1, 0)); 
+
+        // Base Condition
+        for (int i = wt[0]; i &lt;= W; i++) {
+            // Calculate maximum value for the first item
+            dp[0][i] = (i / wt[0]) * val[0];
+        }
+
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int cap = 0; cap &lt;= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = 0 + dp[ind - 1][cap]; 
+
+                int taken = INT_MIN;
+                if (wt[ind] &lt;= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]]; 
+                
+                // Store the maximum value in the DP table
+                dp[ind][cap] = max(notTaken, taken); 
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return dp[n - 1][W]; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System;
+using System.Linq;
+
+public class Solution {
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        // unbounded knapsack problem using dynamic programming
+        
+        // dp[i] will store the maximum value for a knapsack of capacity i
+        int[] dp = new int[W + 1];
+        
+        // Initialize dp array with 0 (already done by default for int arrays)
+        // dp[0] = 0;
+        
+        // Iterate through all possible capacities from 1 to W
+        for (int w = 1; w &lt;= W; w++) {
+            // For each capacity, iterate through all items
+            for (int i = 0; i &lt; n; i++) {
+                // If the current item&#x27;s weight is less than or equal to the current capacity
+                if (wt[i] &lt;= w) {
+                    // Calculate the value if we include this item
+                    // It&#x27;s the value of this item plus the maximum value achievable for the remaining capacity (w - wt[i])
+                    // Since we can use items multiple times, we can use dp[w - wt[i]]
+                    int potentialValue = dp[w - wt[i]] + val[i];
+                    
+                    // Update the maximum value for the current capacity w
+                    dp[w] = Math.Max(dp[w], potentialValue);
+                }
+            }
+        }
+        
+        // The maximum value for the entire capacity W is stored in dp[W]
+        return dp[W];
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// unboundedKnapsack solves the unbounded knapsack problem using tabulation
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+	// Initialize DP table with zeros
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, W+1)
+	}
+
+	// Base Condition: Fill dp for the first item
+	for i := wt[0]; i &lt;= W; i++ {
+		dp[0][i] = (i / wt[0]) * val[0]
+	}
+
+	// Fill the DP table for all items and capacities
+	for ind := 1; ind &lt; n; ind++ {
+		for cap := 0; cap &lt;= W; cap++ {
+			// Maximum value without taking current item
+			notTaken := dp[ind-1][cap]
+
+			// Maximum value by taking current item (if possible)
+			taken := -1 &lt;&lt; 31 // Minimum int value for int type (simulate math.MinInt32)
+			if wt[ind] &lt;= cap {
+				taken = val[ind] + dp[ind][cap-wt[ind]]
+			}
+
+			// Store the maximum value in the DP table
+			if notTaken &gt; taken {
+				dp[ind][cap] = notTaken
+			} else {
+				dp[ind][cap] = taken
+			}
+		}
+	}
+
+	// Return the maximum value considering all items and capacity
+	return dp[n-1][W]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        int[][] dp = new int[n][W + 1];
+
+        // Base Condition
+        for (int i = wt[0]; i &lt;= W; i++) {
+            // Calculate maximum value for the first item
+            dp[0][i] = (i / wt[0]) * val[0];
+        }
+
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int cap = 0; cap &lt;= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = dp[ind - 1][cap];
+
+                int taken = Integer.MIN_VALUE;
+                if (wt[ind] &lt;= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]];
+
+                // Store the maximum value in the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering 
+        all items and the knapsack capacity*/
+        return dp[n - 1][W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        const dp = Array.from({ length: n }, () =&gt; Array(W + 1).fill(0));
+
+        // Base Condition
+        for (let i = wt[0]; i &lt;= W; i++) {
+            // Calculate maximum value for the first item
+            dp[0][i] = Math.floor(i / wt[0]) * val[0];
+        }
+
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let cap = 0; cap &lt;= W; cap++) {
+                // Maximum value without taking current item
+                const notTaken = dp[ind - 1][cap];
+
+                let taken = -Infinity;
+                if (wt[ind] &lt;= cap) {
+                    // Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]];
+                }
+
+                // Store the maximum value in the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering 
+        all items and the knapsack capacity*/
+        return dp[n - 1][W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        dp = [[0] * (W + 1) for _ in range(n)]
+
+        # Base Condition
+        for i in range(wt[0], W + 1):
+            # Calculate maximum value for the first item
+            dp[0][i] = (i // wt[0]) * val[0]
+
+        for ind in range(1, n):
+            for cap in range(W + 1):
+                # Maximum value without taking current item
+                not_taken = dp[ind - 1][cap]
+
+                taken = float(&#x27;-inf&#x27;)
+                if wt[ind] &lt;= cap:
+                    # Maximum value by taking current item
+                    taken = val[ind] + dp[ind][cap - wt[ind]]
+
+                # Store the maximum value in the DP table
+                dp[ind][cap] = max(not_taken, taken)
+        
+        &quot;&quot;&quot; Return the maximum value considering
+        all items and the knapsack capacity&quot;&quot;&quot;
+        return dp[n - 1][W]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    // Function to solve the unbounded knapsack problem
+    int unboundedKnapsack(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int n, int W) {
+        // Create a vector to store current DP state
+        vector&lt;int&gt; cur(W + 1, 0); 
+
+        // Base Condition
+        for (int i = wt[0]; i &lt;= W; i++) {
+            // Calculate the maximum value for first item
+            cur[i] = (i / wt[0]) * val[0]; 
+        }
+
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int cap = 0; cap &lt;= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = cur[cap];  
+
+                int taken = INT_MIN;
+                if (wt[ind] &lt;= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]]; 
+
+                /* Store the maximum value 
+                in the current DP state*/
+                cur[cap] = max(notTaken, taken); 
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return cur[W]; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System;
+using System.Linq;
+
+public class Solution {
+    public int UnboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        // unbounded knapsack problem using dynamic programming
+        
+        // dp[i] will store the maximum value for a knapsack of capacity i
+        int[] dp = new int[W + 1];
+        
+        // Initialize dp array with 0 (already done by default for int arrays)
+        // dp[0] = 0;
+        
+        // Iterate through all possible capacities from 1 to W
+        for (int w = 1; w &lt;= W; w++) {
+            // For each capacity, iterate through all items
+            for (int i = 0; i &lt; n; i++) {
+                // If the current item&#x27;s weight is less than or equal to the current capacity
+                if (wt[i] &lt;= w) {
+                    // Calculate the value if we include this item
+                    // It&#x27;s the value of this item plus the maximum value achievable for the remaining capacity (w - wt[i])
+                    // Since we can use items multiple times, we can use dp[w - wt[i]]
+                    int potentialValue = dp[w - wt[i]] + val[i];
+                    
+                    // Update the maximum value for the current capacity w
+                    dp[w] = Math.Max(dp[w], potentialValue);
+                }
+            }
+        }
+        
+        // The maximum value for the entire capacity W is stored in dp[W]
+        return dp[W];
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// unboundedKnapsack solves the unbounded knapsack problem using a 1D DP array
+func unboundedKnapsack(wt []int, val []int, n int, W int) int {
+	// Create a slice to store current DP state
+	cur := make([]int, W+1)
+
+	// Base Condition
+	for i := wt[0]; i &lt;= W; i++ {
+		// Calculate the maximum value for first item
+		cur[i] = (i / wt[0]) * val[0]
+	}
+
+	for ind := 1; ind &lt; n; ind++ {
+		for cap := 0; cap &lt;= W; cap++ {
+			// Maximum value without taking current item
+			notTaken := cur[cap]
+
+			taken := -1 &lt;&lt; 31 // simulate INT_MIN
+			if wt[ind] &lt;= cap {
+				// Maximum value by taking current item
+				taken = val[ind] + cur[cap-wt[ind]]
+			}
+
+			// Store the maximum value in the current DP state
+			if notTaken &gt; taken {
+				cur[cap] = notTaken
+			} else {
+				cur[cap] = taken
+			}
+		}
+	}
+
+	// Return the maximum value considering all items and the knapsack capacity
+	return cur[W]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the unbounded knapsack problem
+    public int unboundedKnapsack(int[] wt, int[] val, int n, int W) {
+        // Create a vector to store current DP state
+        int[] cur = new int[W + 1];
+
+        // Base Condition
+        for (int i = wt[0]; i &lt;= W; i++) {
+            // Calculate the maximum value for first item
+            cur[i] = (i / wt[0]) * val[0];
+        }
+
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int cap = 0; cap &lt;= W; cap++) {
+                // Maximum value without taking current item
+                int notTaken = cur[cap];
+
+                int taken = Integer.MIN_VALUE;
+                if (wt[ind] &lt;= cap)
+                    // Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]];
+
+                /* Store the maximum value 
+                in the current DP state*/
+                cur[cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return cur[W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the unbounded knapsack problem
+    unboundedKnapsack(wt, val, n, W) {
+        // Create an array to store current DP state
+        let cur = new Array(W + 1).fill(0);
+
+        // Base Condition
+        for (let i = wt[0]; i &lt;= W; i++) {
+            // Calculate the maximum value for first item
+            cur[i] = Math.floor(i / wt[0]) * val[0];
+        }
+
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let cap = 0; cap &lt;= W; cap++) {
+                // Maximum value without taking current item
+                let notTaken = cur[cap];
+
+                let taken = Number.MIN_SAFE_INTEGER;
+                if (wt[ind] &lt;= cap) {
+                    // Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]];
+                }
+
+                // Store the maximum value in the current DP state
+                cur[cap] = Math.max(notTaken, taken);
+            }
+        }
+        /* Return the maximum value considering
+        all items and the knapsack capacity*/
+        return cur[W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the unbounded knapsack problem
+    def unboundedKnapsack(self, wt, val, n, W):
+        # Create a list to store current DP state
+        cur = [0] * (W + 1)
+
+        # Base Condition
+        for i in range(wt[0], W + 1):
+            # Calculate the maximum value for first item
+            cur[i] = (i // wt[0]) * val[0]
+
+        for ind in range(1, n):
+            for cap in range(W + 1):
+                # Maximum value without taking current item
+                notTaken = cur[cap]
+
+                taken = float(&#x27;-inf&#x27;)
+                if wt[ind] &lt;= cap:
+                    # Maximum value by taking current item
+                    taken = val[ind] + cur[cap - wt[ind]]
+
+                # Store the maximum value in the current DP state
+                cur[cap] = max(notTaken, taken)
+
+        &quot;&quot;&quot; Return the maximum value considering 
+        all items and the knapsack capacity&quot;&quot;&quot;
+        return cur[W]</code></pre></div>
+</body>
+</html>

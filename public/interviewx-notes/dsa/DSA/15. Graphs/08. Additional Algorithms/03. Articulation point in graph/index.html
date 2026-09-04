@@ -1,0 +1,1683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Articulation point in graph</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Articulation point in graph</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Graph</span><span>Depth-First Search</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an undirected graph with V vertices and adjacency list adj. Find all the <strong>vertices</strong> removing which (and edges through it) would increase the number of connected components in the graph. The graph may be initially disconnected.. Return the vertices in <strong>ascending order</strong>. If there are no such vertices then returns a list containing -1.</p><p><br></p><p><strong>Note</strong>: Indexing is zero-based i.e nodes numbering from (0 to V-1). There might be loops present in the graph.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>E= Number of Edges</li><li>1 ≤ V, E ≤ 10<sup>4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-kfpw3bZG"></p><p><br></p><p><strong>Input:</strong> V = 7, adj=[[1,2,3], [0], [0,3,4,5], [2,0], [2,6], [2,6], [4,5]] </p><p><strong>Output:</strong> [0, 2]</p><p><strong>Explanation:</strong> If we remove node 0 or node 2, the graph will be divided into 2 or more components.</p><h3>Example 2</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-xysZGNeR"></p><p><br></p><p><strong>Input:</strong> V = 5, adj=[[1], [0,4], [3,4], [2,4], [1,2,3]] </p><p><strong>Output:</strong> [1, 4]</p><p><strong>Explanation: </strong>If we remove either node 1 or node 4, the graph breaks into multiple components.</p><h3>Example 3</h3><p>Input: V = 3, adj=[[1,2], [0,2], [0,1]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem involves finding "articulation points" or "cut vertices" in a network - which is critical in designing and maintaining efficient and resilient networks. For instance, failure of such points in internet networks can cause a complete shutdown of data transfer across different regions. Similar scenarios can be seen in social networks and power grids where one failure can lead to the disconnection of entire sections. Understanding these points allows for improved network robustness and better disaster recovery strategies.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><p>
+    <strong>Pre Requisites:</strong> <a href="/plus/dsa/problems/traversal-techniques?category=graph&subcategory=theory-and-traversals">DFS traversal technique</a> and <a href="/plus/dsa/problems/bridges-in-graph?category=graph&subcategory=additional-algorithms">Bridges in a graph</a>
+</p>
+
+<h3>Intuition:</h3> 
+<p>
+    A vertex of a graph is called a <strong>Articulation point</strong> when the component is divided into 2 or more components if that particular vertex is removed. Removing a vertex means to also remove all the edges that share the vertex.
+    </p><h6>Example:</h6>
+    Consider the following graph:
+    <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Articulation point in graph/-m--IZn-D">
+    For the above graph node 0 and node, 2 are the articulation points. If either of the two nodes is removed, the graph breaks into multiple components like the following:
+    <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Articulation point in graph/-uW7GdUOu"> <br><br>
+    Note that node 3 is not an articulation point as its removal does not break the graph into multiple components. 
+
+    To solve this problem, a modified depth-first search (DFS) will use used along with the concept of <strong>discovery</strong> and <strong>low</strong> times for nodes. 
+
+    <h6>Understanding:</h6>
+    Before moving to the algorithm, it is important to know about the two arrays that play a crucial role in the algorithm:
+    <ul>
+        <li><strong>Discovery time / Time of insertion Array:</strong> During the DFS call, the time when a node is visited first (discovered first), is called its time of insertion or discovery time. This array will store the discovery times of the nodes.
+            <ul> 
+                <li><strong>Usage: </strong>It helps keep track of when each node was first visited. This value is unique and incremental, meaning it increases as the DFS progresses.</li>
+            </ul>
+
+        </li><li><strong>Lowest time of insertion Array:</strong> In this case, the current node refers to all its adjacent nodes <strong>except the parent and the visited nodes</strong> and takes the minimum lowest time of insertion into account. This array stores the lowest time of insertion for all nodes.
+            <ul>
+                <li><strong>Usage: </strong> It helps determine whether a node can reach an ancestor via a back edge, which is essential for identifying articulation points.</li>
+            </ul>
+        </li>
+    </ul>
+
+    To find out the bridges in the bridge problem, checks were made inside the DFS, if there exists any alternative path from the adjacent node to the current node. But here the same cannot be done as in this case, we are trying to remove the current node along with all the edges linked to it. <br><br>
+    For that reason, here a check will be made if there exists any path from the adjacent node to the previous node of the current node. In addition to that, it must be ensured that the current node that we are trying to remove must not be the starting node. 
+
+    <h6>How the two arrays help in identifying the bridges in a graph?</h6>
+    Consider two nodes, node u and node v, where v is the neighbor of u. Let us assume that tin[u] represents the discovery time of node u and low[v] represents the lowest discovery time reachable from node v. <br><br>
+    <strong>If low[v] >= tin[u]: </strong><br>
+    It means that the subtree rooted at <i>it</i> cannot reach any node that was discovered before <i>node</i> (except through <it>node</it>). Therefore, if <it>node</it> is removed, the subtree rooted at <it>it</it> would be disconnected from the rest of the graph. <br><br>
+
+    Thus, when the DFS calls to the descendants are completed, this condition can be checked to identify the articulation points.
+<p></p>
+
+
+<h3>Edge Cases:</h3>
+<p>
+    Consider the following graph:
+    <img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Articulation point in graph/-bc-RspUd"> <br><br>
+    In the following graph, the starting node 0 has two adjacent nodes, but it is not an articulation point. To avoid this edge case, the number of children must be incremented only if the adjacent node is not previously visited. <br><br>
+    <strong>Note: </strong>A single node can be found as the articulation point multiple times. Thus, To avoid the storing of duplicate nodes, the nodes will be stored in a hash array instead of directly inserting them in a simple array.
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Prepare arrays to keep track of visited nodes, discovery times, low values (the lowest discovery time reachable), and articulation point markers. Initialize a timer to record the discovery times.</li>
+   <li>Perform a DFS traversal for each unvisited node. Mark the current node as visited and set its discovery and low values to the current timer value, then increment the timer.</li>
+   <li>Traverse all adjacent nodes of the current node. If an adjacent node is not visited, recursively perform DFS for that node. After returning from the DFS call, update the low value of the current node.</li>
+   <li>Check if the current node is an articulation point based on the conditions involving low and discovery values. If true, mark it as an articulation point.</li>
+   <li>If the current node is the root of the DFS tree and has more than one child, mark it as an articulation point. After the DFS traversal, compile a list of all marked articulation points.</li>
+   <li>Return the list of articulation points in ascending order. If no articulation points are found, return -1.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Articulation point in graph/last1.drawio.png-WPPw1pDm" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Articulation point in graph/last.drawio.png-zuXL7Ejq" alt="Image 2"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Articulation point in graph/last1.drawio.png-WPPw1pDm" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Additional Algorithms/Articulation point in graph/last.drawio.png-zuXL7Ejq" alt="Image 2"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+
+class Solution {
+private:
+    
+    // To store the current time during traversal
+    int timer = 1;
+    
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    void dfs(int node, int parent, vector<int> &vis, vector<int> &tin,
+             vector<int> &low, vector<int> &mark, vector<int>adj[]) {
+
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+        
+        // Increment the timer
+        timer++;
+        
+        // To count the number of children of the node
+        int child = 0;
+        
+        // Traverse all its neighbor
+        for (auto it : adj[node]) {
+            
+            // Skip the parent
+            if (it == parent) continue;
+            
+            // If a neighbor is not visited
+            if (!vis[it]) {
+                
+                // Make a recursive DFS call
+                dfs(it, node, vis, tin, low, mark, adj);
+                
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = min(low[node], low[it]);
+                
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] >= tin[node] && parent != -1) {
+                    
+                    // Mark the node as an articulation point
+                    mark[node] = 1;
+                }
+                
+                // Increment the child counter
+                child++;
+            }
+            
+            // Else if the neighbor is already visited
+            else {
+                
+                // Update the lowest time of insertion of the node
+                low[node] = min(low[node], tin[it]);
+            }
+        }
+        
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child > 1 && parent == -1) {
+            
+            // Mark the node as an articulation point
+            mark[node] = 1;
+        }
+    }
+public:
+
+    /* Function to determine the articulation 
+    points in the given graph */
+    vector<int> articulationPoints(int n, vector<int>adj[]) {
+        
+        // Visited array 
+        vector<int> vis(n, 0);
+        
+        // To store the time of insertion(discovery time) of nodes
+        vector<int> tin(n);
+        
+        // To store the lowest time of insert of the nodes
+        vector<int> low(n);
+        
+        // To mark if a node is an articulation point
+        vector<int> mark(n, 0);
+        
+        // Start DFS traversal of the graph
+        for (int i = 0; i < n; i++) {
+            
+            // If a node is not visited
+            if (!vis[i]) {
+                
+                //  Perform DFS starting from that node
+                dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+        
+        // To store the nodes that are articulation point
+        vector<int> ans;
+        
+        // Traverse all nodes 
+        for (int i = 0; i < n; i++) {
+            
+            // If the node is marked as an articulation point
+            if (mark[i] == 1) {
+                // Add it to the result
+                ans.push_back(i);
+            }
+        }
+        
+        // If there are no articulation points, return -1
+        if (ans.size() == 0) return { -1};
+        
+        // Return the result
+        return ans;
+    }
+};
+
+int main() {
+    int V = 7;
+    // Converting graph in adjacency list
+    vector<int> adj[V] = {
+        {1,2,3},
+        {0},
+        {0,3,4,5},
+        {2,0},
+        {2,6},
+        {2,6},
+        {4,5}
+    };
+    
+    // Creating an instance of Solution class
+    Solution obj;
+    
+    /* Function call to get all the 
+    articulation points in the given graph */
+    vector<int> nodes = obj.articulationPoints(V, adj);
+    
+    // Output
+    for (auto node : nodes) {
+        cout << node << " ";
+    }
+    cout << endl;
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private int timer = 1;
+
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    private void dfs(int node, int parent, boolean[] vis, 
+                     int[] tin, int[] low, boolean[] mark, 
+                     ArrayList<ArrayList<Integer>> adj) {
+
+        // Mark the node as visited
+        vis[node] = true;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+
+        // Increment the timer
+        timer++;
+
+        // To count the number of children of the node
+        int child = 0;
+
+        // Traverse all its neighbor
+        for (int it : adj.get(node)) {
+
+            // Skip the parent
+            if (it == parent) continue;
+
+            // If a neighbor is not visited
+            if (!vis[it]) {
+
+                // Make a recursive DFS call
+                dfs(it, node, vis, tin, low, mark, adj);
+
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = Math.min(low[node], low[it]);
+
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] >= tin[node] && parent != -1) {
+
+                    // Mark the node as an articulation point
+                    mark[node] = true;
+                }
+
+                // Increment the child counter
+                child++;
+            }
+
+            // Else if the neighbor is already visited
+            else {
+
+                // Update the lowest time of insertion of the node
+                low[node] = Math.min(low[node], tin[it]);
+            }
+        }
+
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child > 1 && parent == -1) {
+
+            // Mark the node as an articulation point
+            mark[node] = true;
+        }
+    }
+
+    /* Function to determine the articulation 
+    points in the given graph */
+    public ArrayList<Integer> articulationPoints(int n,
+            ArrayList<ArrayList<Integer>> adj) {
+
+        // Visited array 
+        boolean[] vis = new boolean[n];
+
+        // To store the time of insertion(discovery time) of nodes
+        int[] tin = new int[n];
+
+        // To store the lowest time of insert of the nodes
+        int[] low = new int[n];
+
+        // To mark if a node is an articulation point
+        boolean[] mark = new boolean[n];
+
+        // Start DFS traversal of the graph
+        for (int i = 0; i < n; i++) {
+
+            // If a node is not visited
+            if (!vis[i]) {
+
+                // Perform DFS starting from that node
+                dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+
+        // To store the nodes that are articulation point
+        ArrayList<Integer> ans = new ArrayList<>();
+
+        // Traverse all nodes 
+        for (int i = 0; i < n; i++) {
+
+            // If the node is marked as an articulation point
+            if (mark[i]) {
+                // Add it to the result
+                ans.add(i);
+            }
+        }
+
+        // If there are no articulation points, return -1
+        if (ans.size() == 0) 
+            return new ArrayList<>(Arrays.asList(-1));
+
+        // Return the result
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int V = 7;
+        // Converting graph in adjacency list
+        ArrayList<ArrayList<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+        adj.get(0).addAll(Arrays.asList(1, 2, 3));
+        adj.get(1).addAll(Arrays.asList(0));
+        adj.get(2).addAll(Arrays.asList(0, 3, 4, 5));
+        adj.get(3).addAll(Arrays.asList(2, 0));
+        adj.get(4).addAll(Arrays.asList(2, 6));
+        adj.get(5).addAll(Arrays.asList(2, 6));
+        adj.get(6).addAll(Arrays.asList(4, 5));
+
+        // Creating an instance of Solution class
+        Solution obj = new Solution();
+
+        /* Function call to get all the 
+        articulation points in the given graph */
+        ArrayList<Integer> nodes = obj.articulationPoints(V, adj);
+
+        // Output
+        for (int node : nodes) {
+            System.out.print(node + " ");
+        }
+        System.out.println();
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    
+    def __init__(self):
+        # To store the current time during traversal
+        self.timer = 1
+
+    # Helper function to make DFS calls while 
+    # identifying articulation points
+    def dfs(self, node, parent, vis, tin, low, mark, adj):
+
+        # Mark the node as visited
+        vis[node] = True
+
+        # Time of insertion and the lowest time of 
+        # insert for node will be the current time 
+        tin[node] = low[node] = self.timer
+
+        # Increment the timer
+        self.timer += 1
+
+        # To count the number of children of the node
+        child = 0
+
+        # Traverse all its neighbor
+        for it in adj[node]:
+
+            # Skip the parent
+            if it == parent:
+                continue
+
+            # If a neighbor is not visited
+            if not vis[it]:
+
+                # Make a recursive DFS call
+                self.dfs(it, node, vis, tin, low, mark, adj)
+
+                #  Once the recursive DFS call returns, upate
+                # the lowest time of insertion for the node 
+                low[node] = min(low[node], low[it])
+
+                #  If the lowest time of insertion of the node is 
+                # found to be greater than the time of insertion 
+                # of the neighbor and it is node the starting node
+                if low[it] >= tin[node] and parent != -1:
+
+                    # Mark the node as an articulation point
+                    mark[node] = True
+
+                # Increment the child counter
+                child += 1
+
+            # Else if the neighbor is already visited
+            else:
+
+                # Update the lowest time of insertion of the node
+                low[node] = min(low[node], tin[it])
+
+        # If the node is not a starting node 
+        # and has more than one child 
+        if child > 1 and parent == -1:
+
+            # Mark the node as an articulation point
+            mark[node] = True
+
+    # Function to determine the articulation 
+    # points in the given graph
+    def articulationPoints(self, n, adj):
+
+        # Visited array 
+        vis = [False] * n
+
+        # To store the time of insertion(discovery time) of nodes
+        tin = [-1] * n
+
+        # To store the lowest time of insert of the nodes
+        low = [-1] * n
+
+        # To mark if a node is an articulation point
+        mark = [False] * n
+
+        # Start DFS traversal of the graph
+        for i in range(n):
+
+            # If a node is not visited
+            if not vis[i]:
+
+                # Perform DFS starting from that node
+                self.dfs(i, -1, vis, tin, low, mark, adj)
+
+        # To store the nodes that are articulation point
+        ans = []
+
+        # Traverse all nodes 
+        for i in range(n):
+
+            # If the node is marked as an articulation point
+            if mark[i]:
+                # Add it to the result
+                ans.append(i)
+
+        # If there are no articulation points, return -1
+        if len(ans) == 0:
+            return [-1]
+
+        # Return the result
+        return ans
+
+
+if __name__ == "__main__":
+    V = 7
+    # Converting graph in adjacency list
+    adj = [
+        [1, 2, 3],
+        [0],
+        [0, 3, 4, 5],
+        [2, 0],
+        [2, 6],
+        [2, 6],
+        [4, 5]
+    ]
+
+    # Creating an instance of Solution class
+    obj = Solution()
+
+    # Function call to get all the 
+    # articulation points in the given graph
+    nodes = obj.articulationPoints(V, adj)
+
+    # Output
+    for node in nodes:
+        print(node, end=" ")
+    print()
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        // To store the current time during traversal
+        this.timer = 1;
+    }
+
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    dfs(node, parent, vis, tin, low, mark, adj) {
+        // Mark the node as visited
+        vis[node] = true;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = this.timer;
+
+        // Increment the timer
+        this.timer++;
+
+        // To count the number of children of the node
+        let child = 0;
+
+        // Traverse all its neighbor
+        for (let it of adj[node]) {
+
+            // Skip the parent
+            if (it === parent) continue;
+
+            // If a neighbor is not visited
+            if (!vis[it]) {
+
+                // Make a recursive DFS call
+                this.dfs(it, node, vis, tin, low, mark, adj);
+
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = Math.min(low[node], low[it]);
+
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] >= tin[node] && parent !== -1) {
+
+                    // Mark the node as an articulation point
+                    mark[node] = true;
+                }
+
+                // Increment the child counter
+                child++;
+            }
+
+            // Else if the neighbor is already visited
+            else {
+
+                // Update the lowest time of insertion of the node
+                low[node] = Math.min(low[node], tin[it]);
+            }
+        }
+
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child > 1 && parent === -1) {
+
+            // Mark the node as an articulation point
+            mark[node] = true;
+        }
+    }
+
+    /* Function to determine the articulation 
+    points in the given graph */
+    articulationPoints(n, adj) {
+        // Visited array 
+        let vis = new Array(n).fill(false);
+
+        // To store the time of insertion(discovery time) of nodes
+        let tin = new Array(n).fill(0);
+
+        // To store the lowest time of insert of the nodes
+        let low = new Array(n).fill(0);
+
+        // To mark if a node is an articulation point
+        let mark = new Array(n).fill(false);
+
+        // Start DFS traversal of the graph
+        for (let i = 0; i < n; i++) {
+
+            // If a node is not visited
+            if (!vis[i]) {
+
+                // Perform DFS starting from that node
+                this.dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+
+        // To store the nodes that are articulation point
+        let ans = [];
+
+        // Traverse all nodes 
+        for (let i = 0; i < n; i++) {
+
+            // If the node is marked as an articulation point
+            if (mark[i]) {
+                // Add it to the result
+                ans.push(i);
+            }
+        }
+
+        // If there are no articulation points, return -1
+        if (ans.length === 0) return [-1];
+
+        // Return the result
+        return ans;
+    }
+}
+
+// Main
+const V = 7;
+// Converting graph in adjacency list
+const adj = [
+    [1, 2, 3],
+    [0],
+    [0, 3, 4, 5],
+    [2, 0],
+    [2, 6],
+    [2, 6],
+    [4, 5]
+];
+
+// Creating an instance of Solution class
+const obj = new Solution();
+
+/* Function call to get all the 
+articulation points in the given graph */
+const nodes = obj.articulationPoints(V, adj);
+
+// Output
+for (const node of nodes) {
+    console.log(node);
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Main
+        const int V = 7;
+        // Converting graph in adjacency list
+        List<int>[] adj = new List<int>[V];
+        for (int i = 0; i < V; i++)
+        {
+            adj[i] = new List<int>();
+        }
+
+        // Manually populate the adjacency list based on the JavaScript example
+        adj[0].AddRange(new int[] { 1, 2, 3 });
+        adj[1].AddRange(new int[] { 0 });
+        adj[2].AddRange(new int[] { 0, 3, 4, 5 });
+        adj[3].AddRange(new int[] { 2, 0 });
+        adj[4].AddRange(new int[] { 2, 6 });
+        adj[5].AddRange(new int[] { 2, 6 });
+        adj[6].AddRange(new int[] { 4, 5 });
+
+        // Creating an instance of Solution class
+        Solution obj = new Solution();
+
+        /* Function call to get all the 
+        articulation points in the given graph */
+        List<int> nodes = obj.ArticulationPoints(V, adj);
+
+        // Output
+        foreach (int node in nodes)
+        {
+            Console.WriteLine(node);
+        }
+    }
+}
+
+class Solution
+{
+    // To store the current time during traversal
+    private int timer;
+
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    private void dfs(int node, int parent, bool[] vis, int[] tin, int[] low, bool[] mark, List<int>[] adj)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+
+        // Increment the timer
+        timer++;
+
+        // To count the number of children of the node
+        int child = 0;
+
+        // Traverse all its neighbor
+        foreach (int it in adj[node])
+        {
+
+            // Skip the parent
+            if (it == parent) continue;
+
+            // If a neighbor is not visited
+            if (!vis[it])
+            {
+
+                // Make a recursive DFS call
+                dfs(it, node, vis, tin, low, mark, adj);
+
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = Math.Min(low[node], low[it]);
+
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] >= tin[node] && parent != -1)
+                {
+
+                    // Mark the node as an articulation point
+                    mark[node] = true;
+                }
+
+                // Increment the child counter
+                child++;
+            }
+
+            // Else if the neighbor is already visited
+            else
+            {
+
+                // Update the lowest time of insertion of the node
+                low[node] = Math.Min(low[node], tin[it]);
+            }
+        }
+
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child > 1 && parent == -1)
+        {
+
+            // Mark the node as an articulation point
+            mark[node] = true;
+        }
+    }
+
+    /* Function to determine the articulation 
+    points in the given graph */
+    public List<int> ArticulationPoints(int n, List<int>[] adj)
+    {
+        // To store the current time during traversal
+        // Reset timer for each call to ArticulationPoints
+        timer = 1;
+
+        // Visited array 
+        bool[] vis = new bool[n]; // Default initialized to false
+
+        // To store the time of insertion(discovery time) of nodes
+        int[] tin = new int[n]; // Default initialized to 0
+
+        // To store the lowest time of insert of the nodes
+        int[] low = new int[n]; // Default initialized to 0
+
+        // To mark if a node is an articulation point
+        bool[] mark = new bool[n]; // Default initialized to false
+
+        // Start DFS traversal of the graph
+        for (int i = 0; i < n; i++)
+        {
+
+            // If a node is not visited
+            if (!vis[i])
+            {
+
+                // Perform DFS starting from that node
+                dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+
+        // To store the nodes that are articulation point
+        List<int> ans = new List<int>();
+
+        // Traverse all nodes 
+        for (int i = 0; i < n; i++)
+        {
+
+            // If the node is marked as an articulation point
+            if (mark[i])
+            {
+                // Add it to the result
+                ans.Add(i);
+            }
+        }
+
+        // If there are no articulation points, return -1
+        if (ans.Count == 0) return new List<int> { -1 };
+
+        // Return the result
+        return ans;
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// To store the current time during traversal
+var timer = 1
+
+// Helper function to make DFS calls while checking for articulation points
+func dfs(node, parent int, vis []int, tin []int, low []int, mark []int, adj [][]int) {
+
+	// Mark the node as visited
+	vis[node] = 1
+
+	// Time of insertion and the lowest time of insertion for node will be the current time
+	tin[node] = timer
+	low[node] = timer
+
+	// Increment the timer
+	timer++
+
+	// To count the number of children of the node
+	child := 0
+
+	// Traverse all its neighbors
+	for _, it := range adj[node] {
+
+		// Skip the parent
+		if it == parent {
+			continue
+		}
+
+		// If a neighbor is not visited
+		if vis[it] == 0 {
+
+			// Make a recursive DFS call
+			dfs(it, node, vis, tin, low, mark, adj)
+
+			// Once the recursive DFS call returns, update the lowest time of insertion for the node
+			low[node] = int(math.Min(float64(low[node]), float64(low[it])))
+
+			// If the lowest time of insertion of the node is found to be greater than the time of insertion of the neighbor and it is not the starting node
+			if low[it] >= tin[node] && parent != -1 {
+
+				// Mark the node as an articulation point
+				mark[node] = 1
+			}
+
+			// Increment the child counter
+			child++
+		} else {
+
+			// Else if the neighbor is already visited, update the lowest time of insertion of the node
+			low[node] = int(math.Min(float64(low[node]), float64(tin[it])))
+		}
+	}
+
+	// If the node is not a starting node and has more than one child
+	if child > 1 && parent == -1 {
+
+		// Mark the node as an articulation point
+		mark[node] = 1
+	}
+}
+
+// Function to determine the articulation points in the given graph
+func articulationPoints(n int, adj [][]int) []int {
+
+	// Visited array
+	vis := make([]int, n)
+
+	// To store the time of insertion (discovery time) of nodes
+	tin := make([]int, n)
+
+	// To store the lowest time of insert of the nodes
+	low := make([]int, n)
+
+	// To mark if a node is an articulation point
+	mark := make([]int, n)
+
+	// Start DFS traversal of the graph
+	for i := 0; i < n; i++ {
+
+		// If a node is not visited
+		if vis[i] == 0 {
+
+			// Perform DFS starting from that node
+			dfs(i, -1, vis, tin, low, mark, adj)
+		}
+	}
+
+	// To store the nodes that are articulation points
+	var ans []int
+
+	// Traverse all nodes
+	for i := 0; i < n; i++ {
+
+		// If the node is marked as an articulation point
+		if mark[i] == 1 {
+
+			// Add it to the result
+			ans = append(ans, i)
+		}
+	}
+
+	// If there are no articulation points, return -1
+	if len(ans) == 0 {
+		return []int{-1}
+	}
+
+	// Return the result
+	return ans
+}
+
+func main() {
+	V := 7
+	// Converting graph in adjacency list
+	adj := [][]int{
+		{1, 2, 3},
+		{0},
+		{0, 3, 4, 5},
+		{2, 0},
+		{2, 6},
+		{2, 6},
+		{4, 5},
+	}
+
+	// Function call to get all the articulation points in the given graph
+	nodes := articulationPoints(V, adj)
+
+	// Output
+	for _, node := range nodes {
+		fmt.Printf("%d ", node)
+	}
+	fmt.Println()
+}</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where E represents the number of edges in the graph) <br>
+    A DFS traversal is performed which takes O(V+E) time.   
+</p>
+
+<p><strong>Space Complexity: O(V)</strong> 
+   The algorithm uses two arrays to store the discovery time, lowest time of insertion taking O(V) space. A visited array is used taking O(V) space and an array is used to mark the nodes as articulation points taking O(V) space.
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    
+    // To store the current time during traversal
+    int timer = 1;
+    
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    void dfs(int node, int parent, vector&lt;int&gt; &amp;vis, vector&lt;int&gt; &amp;tin,
+             vector&lt;int&gt; &amp;low, vector&lt;int&gt; &amp;mark, vector&lt;int&gt;adj[]) {
+
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+        
+        // Increment the timer
+        timer++;
+        
+        // To count the number of children of the node
+        int child = 0;
+        
+        // Traverse all its neighbor
+        for (auto it : adj[node]) {
+            
+            // Skip the parent
+            if (it == parent) continue;
+            
+            // If a neighbor is not visited
+            if (!vis[it]) {
+                
+                // Make a recursive DFS call
+                dfs(it, node, vis, tin, low, mark, adj);
+                
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = min(low[node], low[it]);
+                
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] &gt;= tin[node] &amp;&amp; parent != -1) {
+                    
+                    // Mark the node as an articulation point
+                    mark[node] = 1;
+                }
+                
+                // Increment the child counter
+                child++;
+            }
+            
+            // Else if the neighbor is already visited
+            else {
+                
+                // Update the lowest time of insertion of the node
+                low[node] = min(low[node], tin[it]);
+            }
+        }
+        
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child &gt; 1 &amp;&amp; parent == -1) {
+            
+            // Mark the node as an articulation point
+            mark[node] = 1;
+        }
+    }
+public:
+
+    /* Function to determine the articulation 
+    points in the given graph */
+    vector&lt;int&gt; articulationPoints(int n, vector&lt;int&gt;adj[]) {
+        
+        // Visited array 
+        vector&lt;int&gt; vis(n, 0);
+        
+        // To store the time of insertion(discovery time) of nodes
+        vector&lt;int&gt; tin(n);
+        
+        // To store the lowest time of insert of the nodes
+        vector&lt;int&gt; low(n);
+        
+        // To mark if a node is an articulation point
+        vector&lt;int&gt; mark(n, 0);
+        
+        // Start DFS traversal of the graph
+        for (int i = 0; i &lt; n; i++) {
+            
+            // If a node is not visited
+            if (!vis[i]) {
+                
+                //  Perform DFS starting from that node
+                dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+        
+        // To store the nodes that are articulation point
+        vector&lt;int&gt; ans;
+        
+        // Traverse all nodes 
+        for (int i = 0; i &lt; n; i++) {
+            
+            // If the node is marked as an articulation point
+            if (mark[i] == 1) {
+                // Add it to the result
+                ans.push_back(i);
+            }
+        }
+        
+        // If there are no articulation points, return -1
+        if (ans.size() == 0) return { -1};
+        
+        // Return the result
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    // To store the current time during traversal
+    private int timer;
+
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    private void dfs(int node, int parent, bool[] vis, int[] tin, int[] low, bool[] mark, List&lt;int&gt;[] adj)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+
+        // Increment the timer
+        timer++;
+
+        // To count the number of children of the node
+        int child = 0;
+
+        // Traverse all its neighbor
+        foreach (int it in adj[node])
+        {
+
+            // Skip the parent
+            if (it == parent) continue;
+
+            // If a neighbor is not visited
+            if (!vis[it])
+            {
+
+                // Make a recursive DFS call
+                dfs(it, node, vis, tin, low, mark, adj);
+
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = Math.Min(low[node], low[it]);
+
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] &gt;= tin[node] &amp;&amp; parent != -1)
+                {
+
+                    // Mark the node as an articulation point
+                    mark[node] = true;
+                }
+
+                // Increment the child counter
+                child++;
+            }
+
+            // Else if the neighbor is already visited
+            else
+            {
+
+                // Update the lowest time of insertion of the node
+                low[node] = Math.Min(low[node], tin[it]);
+            }
+        }
+
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child &gt; 1 &amp;&amp; parent == -1)
+        {
+
+            // Mark the node as an articulation point
+            mark[node] = true;
+        }
+    }
+
+    public List&lt;int&gt; ArticulationPoints(int n, List&lt;int&gt;[] adj) {
+        // To store the current time during traversal
+        // Reset timer for each call to ArticulationPoints
+        timer = 1;
+
+        // Visited array 
+        bool[] vis = new bool[n]; // Default initialized to false
+
+        // To store the time of insertion(discovery time) of nodes
+        int[] tin = new int[n]; // Default initialized to 0
+
+        // To store the lowest time of insert of the nodes
+        int[] low = new int[n]; // Default initialized to 0
+
+        // To mark if a node is an articulation point
+        bool[] mark = new bool[n]; // Default initialized to false
+
+        // Start DFS traversal of the graph
+        for (int i = 0; i &lt; n; i++)
+        {
+
+            // If a node is not visited
+            if (!vis[i])
+            {
+
+                // Perform DFS starting from that node
+                dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+
+        // To store the nodes that are articulation point
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+
+        // Traverse all nodes 
+        for (int i = 0; i &lt; n; i++)
+        {
+
+            // If the node is marked as an articulation point
+            if (mark[i])
+            {
+                // Add it to the result
+                ans.Add(i);
+            }
+        }
+
+        // If there are no articulation points, return -1
+        if (ans.Count == 0) return new List&lt;int&gt; { -1 };
+
+        // Return the result
+        return ans;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;math&quot;)
+// To store the current time during traversal
+var timer = 1
+
+// Helper function to make DFS calls while checking for articulation points
+func dfs(node, parent int, vis []int, tin []int, low []int, mark []int, adj [][]int) {
+
+	// Mark the node as visited
+	vis[node] = 1
+
+	// Time of insertion and the lowest time of insertion for node will be the current time
+	tin[node] = timer
+	low[node] = timer
+
+	// Increment the timer
+	timer++
+
+	// To count the number of children of the node
+	child := 0
+
+	// Traverse all its neighbors
+	for _, it := range adj[node] {
+
+		// Skip the parent
+		if it == parent {
+			continue
+		}
+
+		// If a neighbor is not visited
+		if vis[it] == 0 {
+
+			// Make a recursive DFS call
+			dfs(it, node, vis, tin, low, mark, adj)
+
+			// Once the recursive DFS call returns, update the lowest time of insertion for the node
+			low[node] = int(math.Min(float64(low[node]), float64(low[it])))
+
+			// If the lowest time of insertion of the node is found to be greater than the time of insertion of the neighbor and it is not the starting node
+			if low[it] &gt;= tin[node] &amp;&amp; parent != -1 {
+
+				// Mark the node as an articulation point
+				mark[node] = 1
+			}
+
+			// Increment the child counter
+			child++
+		} else {
+
+			// Else if the neighbor is already visited, update the lowest time of insertion of the node
+			low[node] = int(math.Min(float64(low[node]), float64(tin[it])))
+		}
+	}
+
+	// If the node is not a starting node and has more than one child
+	if child &gt; 1 &amp;&amp; parent == -1 {
+
+		// Mark the node as an articulation point
+		mark[node] = 1
+	}
+}
+
+// Function to determine the articulation points in the given graph
+func articulationPoints(n int, adj [][]int) []int {
+
+	// Visited array
+	vis := make([]int, n)
+
+	// To store the time of insertion (discovery time) of nodes
+	tin := make([]int, n)
+
+	// To store the lowest time of insert of the nodes
+	low := make([]int, n)
+
+	// To mark if a node is an articulation point
+	mark := make([]int, n)
+
+	// Start DFS traversal of the graph
+	for i := 0; i &lt; n; i++ {
+
+		// If a node is not visited
+		if vis[i] == 0 {
+
+			// Perform DFS starting from that node
+			dfs(i, -1, vis, tin, low, mark, adj)
+		}
+	}
+
+	// To store the nodes that are articulation points
+	var ans []int
+
+	// Traverse all nodes
+	for i := 0; i &lt; n; i++ {
+
+		// If the node is marked as an articulation point
+		if mark[i] == 1 {
+
+			// Add it to the result
+			ans = append(ans, i)
+		}
+	}
+
+	// If there are no articulation points, return -1
+	if len(ans) == 0 {
+		return []int{-1}
+	}
+
+	// Return the result
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    private int timer = 1;
+
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    private void dfs(int node, int parent, boolean[] vis, 
+                     int[] tin, int[] low, boolean[] mark, 
+                     ArrayList&lt;ArrayList&lt;Integer&gt;&gt; adj) {
+
+        // Mark the node as visited
+        vis[node] = true;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = timer;
+
+        // Increment the timer
+        timer++;
+
+        // To count the number of children of the node
+        int child = 0;
+
+        // Traverse all its neighbor
+        for (int it : adj.get(node)) {
+
+            // Skip the parent
+            if (it == parent) continue;
+
+            // If a neighbor is not visited
+            if (!vis[it]) {
+
+                // Make a recursive DFS call
+                dfs(it, node, vis, tin, low, mark, adj);
+
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = Math.min(low[node], low[it]);
+
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] &gt;= tin[node] &amp;&amp; parent != -1) {
+
+                    // Mark the node as an articulation point
+                    mark[node] = true;
+                }
+
+                // Increment the child counter
+                child++;
+            }
+
+            // Else if the neighbor is already visited
+            else {
+
+                // Update the lowest time of insertion of the node
+                low[node] = Math.min(low[node], tin[it]);
+            }
+        }
+
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child &gt; 1 &amp;&amp; parent == -1) {
+
+            // Mark the node as an articulation point
+            mark[node] = true;
+        }
+    }
+
+    /* Function to determine the articulation 
+    points in the given graph */
+    public ArrayList&lt;Integer&gt; articulationPoints(int n,
+            ArrayList&lt;ArrayList&lt;Integer&gt;&gt; adj) {
+
+        // Visited array 
+        boolean[] vis = new boolean[n];
+
+        // To store the time of insertion(discovery time) of nodes
+        int[] tin = new int[n];
+
+        // To store the lowest time of insert of the nodes
+        int[] low = new int[n];
+
+        // To mark if a node is an articulation point
+        boolean[] mark = new boolean[n];
+
+        // Start DFS traversal of the graph
+        for (int i = 0; i &lt; n; i++) {
+
+            // If a node is not visited
+            if (!vis[i]) {
+
+                // Perform DFS starting from that node
+                dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+
+        // To store the nodes that are articulation point
+        ArrayList&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+
+        // Traverse all nodes 
+        for (int i = 0; i &lt; n; i++) {
+
+            // If the node is marked as an articulation point
+            if (mark[i]) {
+                // Add it to the result
+                ans.add(i);
+            }
+        }
+
+        // If there are no articulation points, return -1
+        if (ans.size() == 0) 
+            return new ArrayList&lt;&gt;(Arrays.asList(-1));
+
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        // To store the current time during traversal
+        this.timer = 1;
+    }
+
+    /* Helper function to make DFS calls while 
+    identifying articulation points */
+    dfs(node, parent, vis, tin, low, mark, adj) {
+        // Mark the node as visited
+        vis[node] = true;
+
+        /* Time of insertion and the lowest time of 
+        insert for node will be the current time */
+        tin[node] = low[node] = this.timer;
+
+        // Increment the timer
+        this.timer++;
+
+        // To count the number of children of the node
+        let child = 0;
+
+        // Traverse all its neighbor
+        for (let it of adj[node]) {
+
+            // Skip the parent
+            if (it === parent) continue;
+
+            // If a neighbor is not visited
+            if (!vis[it]) {
+
+                // Make a recursive DFS call
+                this.dfs(it, node, vis, tin, low, mark, adj);
+
+                /* Once the recursive DFS call returns, upate
+                the lowest time of insertion for the node */
+                low[node] = Math.min(low[node], low[it]);
+
+                /* If the lowest time of insertion of the node is 
+                found to be greater than the time of insertion 
+                of the neighbor and it is node the starting node */
+                if (low[it] &gt;= tin[node] &amp;&amp; parent !== -1) {
+
+                    // Mark the node as an articulation point
+                    mark[node] = true;
+                }
+
+                // Increment the child counter
+                child++;
+            }
+
+            // Else if the neighbor is already visited
+            else {
+
+                // Update the lowest time of insertion of the node
+                low[node] = Math.min(low[node], tin[it]);
+            }
+        }
+
+        /* If the node is not a starting node 
+        and has more than one child */
+        if (child &gt; 1 &amp;&amp; parent === -1) {
+
+            // Mark the node as an articulation point
+            mark[node] = true;
+        }
+    }
+
+    /* Function to determine the articulation 
+    points in the given graph */
+    articulationPoints(n, adj) {
+        // Visited array 
+        let vis = new Array(n).fill(false);
+
+        // To store the time of insertion(discovery time) of nodes
+        let tin = new Array(n).fill(0);
+
+        // To store the lowest time of insert of the nodes
+        let low = new Array(n).fill(0);
+
+        // To mark if a node is an articulation point
+        let mark = new Array(n).fill(false);
+
+        // Start DFS traversal of the graph
+        for (let i = 0; i &lt; n; i++) {
+
+            // If a node is not visited
+            if (!vis[i]) {
+
+                // Perform DFS starting from that node
+                this.dfs(i, -1, vis, tin, low, mark, adj);
+            }
+        }
+
+        // To store the nodes that are articulation point
+        let ans = [];
+
+        // Traverse all nodes 
+        for (let i = 0; i &lt; n; i++) {
+
+            // If the node is marked as an articulation point
+            if (mark[i]) {
+                // Add it to the result
+                ans.push(i);
+            }
+        }
+
+        // If there are no articulation points, return -1
+        if (ans.length === 0) return [-1];
+
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    
+    def __init__(self):
+        # To store the current time during traversal
+        self.timer = 1
+
+    # Helper function to make DFS calls while 
+    # identifying articulation points
+    def dfs(self, node, parent, vis, tin, low, mark, adj):
+
+        # Mark the node as visited
+        vis[node] = True
+
+        # Time of insertion and the lowest time of 
+        # insert for node will be the current time 
+        tin[node] = low[node] = self.timer
+
+        # Increment the timer
+        self.timer += 1
+
+        # To count the number of children of the node
+        child = 0
+
+        # Traverse all its neighbor
+        for it in adj[node]:
+
+            # Skip the parent
+            if it == parent:
+                continue
+
+            # If a neighbor is not visited
+            if not vis[it]:
+
+                # Make a recursive DFS call
+                self.dfs(it, node, vis, tin, low, mark, adj)
+
+                #  Once the recursive DFS call returns, upate
+                # the lowest time of insertion for the node 
+                low[node] = min(low[node], low[it])
+
+                #  If the lowest time of insertion of the node is 
+                # found to be greater than the time of insertion 
+                # of the neighbor and it is node the starting node
+                if low[it] &gt;= tin[node] and parent != -1:
+
+                    # Mark the node as an articulation point
+                    mark[node] = True
+
+                # Increment the child counter
+                child += 1
+
+            # Else if the neighbor is already visited
+            else:
+
+                # Update the lowest time of insertion of the node
+                low[node] = min(low[node], tin[it])
+
+        # If the node is not a starting node 
+        # and has more than one child 
+        if child &gt; 1 and parent == -1:
+
+            # Mark the node as an articulation point
+            mark[node] = True
+
+    # Function to determine the articulation 
+    # points in the given graph
+    def articulationPoints(self, n, adj):
+
+        # Visited array 
+        vis = [False] * n
+
+        # To store the time of insertion(discovery time) of nodes
+        tin = [-1] * n
+
+        # To store the lowest time of insert of the nodes
+        low = [-1] * n
+
+        # To mark if a node is an articulation point
+        mark = [False] * n
+
+        # Start DFS traversal of the graph
+        for i in range(n):
+
+            # If a node is not visited
+            if not vis[i]:
+
+                # Perform DFS starting from that node
+                self.dfs(i, -1, vis, tin, low, mark, adj)
+
+        # To store the nodes that are articulation point
+        ans = []
+
+        # Traverse all nodes 
+        for i in range(n):
+
+            # If the node is marked as an articulation point
+            if mark[i]:
+                # Add it to the result
+                ans.append(i)
+
+        # If there are no articulation points, return -1
+        if len(ans) == 0:
+            return [-1]
+
+        # Return the result
+        return ans</code></pre></div>
+</body>
+</html>

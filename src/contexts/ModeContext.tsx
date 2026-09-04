@@ -7,11 +7,14 @@ type Mode = 'dsa' | 'data-science' | 'interviewX';
 interface ModeContextType {
   activeMode: Mode;
   setMode: (mode: Mode) => void;
+  isFocusMode: boolean;
+  setIsFocusMode: (focus: boolean) => void;
 }
 
 const ModeContext = createContext<ModeContextType | undefined>(undefined);
 
 export function ModeProvider({ children }: { children: ReactNode }) {
+  const [isFocusMode, setIsFocusMode] = useState(false);
   const [activeMode, setActiveMode] = useState<Mode>(() => {
     const saved = localStorage.getItem('learning_mode');
     return (saved === 'dsa' || saved === 'data-science' || saved === 'interviewX') ? saved as Mode : 'data-science';
@@ -33,7 +36,7 @@ export function ModeProvider({ children }: { children: ReactNode }) {
   }, [activeMode]);
 
   return (
-    <ModeContext.Provider value={{ activeMode, setMode }}>
+    <ModeContext.Provider value={{ activeMode, setMode, isFocusMode, setIsFocusMode }}>
       {children}
     </ModeContext.Provider>
   );

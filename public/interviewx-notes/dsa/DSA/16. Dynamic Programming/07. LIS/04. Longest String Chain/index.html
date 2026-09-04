@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Longest String Chain</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Longest String Chain</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span><span>Hash Table</span><span>Sorting</span><span>String</span><span>Two Pointers</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>You are given an <strong>array </strong>of words where each word consists of lowercase English letters.</p><p><br></p><p>word<sub>A</sub> is a <strong>predecessor </strong>of word<sub>B</sub> if and only if we can insert <strong>exactly one letter</strong> anywhere in word<sub>A</sub> <strong>without changing the order of the other characters</strong> to make it equal to word<sub>B</sub>.</p><p><br></p><p>For example, "abc" is a predecessor of "ab<strong>a</strong>c", while "cba" is not a predecessor of "bca<strong>d</strong>".</p><p><br></p><p>A word chain is a sequence of words [word<sub>1</sub>, word<sub>2</sub>, ..., word<sub>k</sub>] with k >= 1, where word<sub>1</sub> is a predecessor of word<sub>2</sub>, word<sub>2</sub> is a predecessor of word<sub>3</sub>, and so on. A single word is trivially a word chain with k == 1.</p><p><br></p><p>Return the length of the<strong><em> longest possible word </em></strong>chain with words chosen from the given list of words.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= words.length <= 1000</li><li>1 <= words[i].length <= 20</li><li>words[i] only consists of lowercase English letters.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: words = ["a", "ab", "abc", "abcd", "abcde"]</p><p>Output: 5</p><p>Explanation: The longest chain is ["a", "ab", "abc", "abcd", "abcde"].</p><p>Each word in the chain is formed by adding exactly one character to the previous word.</p><h3>Example 2</h3><p>Input: words = ["dog", "dogs", "dots", "dot", "d", "do"]</p><p>Output: 4</p><p>Explanation: The longest chain is ["d", "do", "dot", "dots"].</p><p>Each word is formed by inserting one character into the previous word.</p><h3>Example 3</h3><p>Input: words = ["a", "aa", "aaa", "aaaa", "b", "bb", "bbb"]</p></div>
+
+<div class="section"><h2>Editorial: Solution</h2><p>
+    <strong>Pre-requisites:</strong> <a href="/plus/dsa/problems/longest-increasing-subsequence?category=dynamic-programming&subcategory=lis-dp" target="_blank">Longest Increasing Subsequence</a>. 
+</p>
+
+<h3>Intuition</h3>
+<p>The Intuition can be understood better from the following four points: 
+    <h5>1. Extending the LIS idea</h5>
+    The problem of finding the longest string chain is conceptually similar to the Longest Increasing Subsequence (LIS) problem. In LIS, the goal is to find the longest sequence of numbers where each number is greater than the previous one. This establishes a natural order among elements. In the string chain problem, instead of numbers, the elements are words, and the order is defined by a transformation rule — specifically, one word can follow another if it can be formed by inserting exactly one character into the previous word. <br>
+
+    <h5>2. Defining the Ordering Among Words</h5>
+    While LIS depends on a straightforward numeric comparison, the string chain problem requires a more complex relationship: each next word in the chain must be exactly one character longer and must contain all characters of the previous word plus one additional character. The problem establishes a chain based on the word length and the ability to derive the next word by insertion. <br>
+
+    <h5>3. Leveraging Sorting and Dynamic Relationships</h5>
+    Sorting the array of words by their lengths enables a structured approach, allowing iteration from shorter to longer words. This ordering mimics the increasing order in LIS. For each word, the algorithm looks back to find possible predecessors that are exactly one character shorter and can be transformed into the current word by adding a single character. The longest chain ending at the current word is then the maximum chain length of any valid predecessor plus one. 
+
+    <h5>4. Building the Longest Chain</h5>
+    By iterating through all words in ascending order of length and checking valid predecessors, the chain lengths can be computed incrementally. Maintaining the maximum chain length found so far gives the final answer. 
+</p>
+
+<h3>Approach</h3>
+<p>
+    <ul>
+        <li>Sort the words by their length in ascending order to ensure that when processing a word, all possible shorter predecessors have already been considered.</li>
+        <li>For each word, find all possible predecessors by removing one character at a time.</li>
+        <li>Check if the predecessor exists among the processed words.</li>
+        <li>Use dynamic programming to store and update the longest chain length ending at each word based on its valid predecessors.</li>
+        <li>Track the maximum chain length found during the iteration.</li>
+    </ul>
+</p>
+
+<h3>Solution</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    // Function to return the length of the longest string chain possible
+    int longestStringChain(vector<string>& words) {
+        int n = words.size(); // Size of the array 
+        sort(words.begin(), words.end(), compare);
+        vector<int> dp(n, 1); // DP array 
+
+        // To store the length of longest string chain
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for(int i = 0; i < n; i++) {
+
+            // For each previous index
+            for(int j = 0; j < i; j++) {
+                
+                /* If the element at index i can be 
+                included in the chain ending at index j */
+                if(checkPossible(words[i], words[j]) && dp[i] < dp[j] + 1) {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if(dp[i] > maxLen) maxLen = dp[i];
+        }
+        
+        return maxLen;
+    }
+    
+private:
+    // Custom comparator function 
+    bool static compare(string &s, string &t) {
+        return s.size() < t.size();
+    }
+    
+    // Function to check if the string can be added to the chain
+    bool checkPossible(string &s, string &t) {
+        //  Base case
+        if(s.size() != t.size() + 1) return false;
+        
+        int i = 0, j = 0; // Pointers
+        
+        // Traverse until the first string is exhausted
+        while(i < s.size()) {
+            
+            // Move both pointers if characters matches
+            if(j < t.size() && s[i] == t[j]) {
+                i++, j++;
+            }
+            // Otherwise 
+            else {
+                i++;
+            }
+        }
+        
+        // Return true if both the string gets exhausted
+        if(i == s.size() && j == t.size()) return true;
+        return false; // Return false otherwise
+    }
+};
+
+
+int main() {
+    vector<string> words = {"a", "ab", "abc", "abcd", "abcde"};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    int lengthOfLongestStringChain = sol.longestStrChain(words);
+    
+    cout << "The length of the Longest String Chain is: " << lengthOfLongestStringChain << endl;
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    public int longestStringChain(String[] words) {
+        int n = words.length; // Size of the array 
+        Arrays.sort(words, Comparator.comparingInt(String::length));
+        int[] dp = new int[n]; // DP array
+        Arrays.fill(dp, 1);
+
+        // To store the length of longest string chain
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for (int i = 0; i < n; i++) {
+
+            // For each previous index
+            for (int j = 0; j < i; j++) {
+
+                /* If the element at index i can be 
+                included in the chain ending at index j */
+                if (checkPossible(words[i], words[j]) && dp[i] < dp[j] + 1) {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if (dp[i] > maxLen) maxLen = dp[i];
+        }
+
+        return maxLen;
+    }
+
+    // Function to check if the string can be added to the chain
+    private boolean checkPossible(String s, String t) {
+        // Base case
+        if (s.length() != t.length() + 1) return false;
+
+        int i = 0, j = 0; // Pointers
+
+        // Traverse until the first string is exhausted
+        while (i < s.length()) {
+
+            // Move both pointers if characters matches
+            if (j < t.length() && s.charAt(i) == t.charAt(j)) {
+                i++;
+                j++;
+            }
+            // Otherwise 
+            else {
+                i++;
+            }
+        }
+
+        // Return true if both the string gets exhausted
+        return (i == s.length() && j == t.length());
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String[] words = {"a", "ab", "abc", "abcd", "abcde"};
+
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLongestStringChain = sol.longestStringChain(words);
+
+        System.out.println("The length of the Longest String Chain is: " + lengthOfLongestStringChain);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to return the length of the longest string chain possible
+    def longestStrChain(self, words):
+        n = len(words)  # Size of the array
+        words.sort(key=len)
+        dp = [1] * n  # DP array
+
+        # To store the length of longest string chain
+        maxLen = 0
+
+        # Computing the DP array 
+        for i in range(n):
+
+            # For each previous index
+            for j in range(i):
+                
+                """ If the element at index i can be 
+                included in the chain ending at index j """
+                if self.checkPossible(words[i], words[j]) and dp[i] < dp[j] + 1:
+                    dp[i] = dp[j] + 1  # Update the DP value
+
+            # If a longer chain is found, update the values
+            if dp[i] > maxLen:
+                maxLen = dp[i]
+        
+        return maxLen
+    
+    # Function to check if the string can be added to the chain
+    def checkPossible(self, s, t):
+        # Base case
+        if len(s) != len(t) + 1:
+            return False
+        
+        i, j = 0, 0  # Pointers
+        
+        # Traverse until the first string is exhausted
+        while i < len(s):
+            
+            # Move both pointers if characters matches
+            if j < len(t) and s[i] == t[j]:
+                i += 1
+                j += 1
+            # Otherwise 
+            else:
+                i += 1
+        
+        # Return true if both the string gets exhausted
+        if i == len(s) and j == len(t):
+            return True
+        return False  # Return false otherwise
+
+
+if __name__ == "__main__":
+    words = ["a", "ab", "abc", "abcd", "abcde"]
+
+    # Creating an object of Solution class
+    sol = Solution()
+    lengthOfLongestStringChain = sol.longestStrChain(words)
+
+    print("The length of the Longest String Chain is:", lengthOfLongestStringChain)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to return the length of the longest string chain possible
+    longestStringChain(words) {
+        const n = words.length; // Size of the array 
+        words.sort((a, b) => a.length - b.length);
+        const dp = new Array(n).fill(1); // DP array
+
+        // To store the length of longest string chain
+        let maxLen = 0;
+
+        // Computing the DP array 
+        for(let i = 0; i < n; i++) {
+
+            // For each previous index
+            for(let j = 0; j < i; j++) {
+                
+                /* If the element at index i can be 
+                included in the chain ending at index j */
+                if(this.checkPossible(words[i], words[j]) && dp[i] < dp[j] + 1) {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if(dp[i] > maxLen) maxLen = dp[i];
+        }
+        
+        return maxLen;
+    }
+    
+    // Function to check if the string can be added to the chain
+    checkPossible(s, t) {
+        //  Base case
+        if(s.length !== t.length + 1) return false;
+        
+        let i = 0, j = 0; // Pointers
+        
+        // Traverse until the first string is exhausted
+        while(i < s.length) {
+            
+            // Move both pointers if characters matches
+            if(j < t.length && s[i] === t[j]) {
+                i++; j++;
+            }
+            // Otherwise 
+            else {
+                i++;
+            }
+        }
+        
+        // Return true if both the string gets exhausted
+        if(i === s.length && j === t.length) return true;
+        return false; // Return false otherwise
+    }
+}
+
+// Example usage
+const words = ["a", "ab", "abc", "abcd", "abcde"];
+
+// Creating an object of Solution class
+const sol = new Solution();
+const lengthOfLongestStringChain = sol.longestStrChain(words);
+
+console.log("The length of the Longest String Chain is:", lengthOfLongestStringChain);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Function to return the length of the longest string chain possible
+    public int LongestStringChain(string[] words)
+    {
+        int n = words.Length; // Size of the array 
+
+        // Sort words by length using custom comparator
+        Array.Sort(words, Compare);
+
+        int[] dp = new int[n]; // DP array 
+        for (int i = 0; i < n; i++)
+            dp[i] = 1;
+
+        // To store the length of longest string chain
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for (int i = 0; i < n; i++)
+        {
+            // For each previous index
+            for (int j = 0; j < i; j++)
+            {
+                /* If the element at index i can be 
+                   included in the chain ending at index j */
+                if (CheckPossible(words[i], words[j]) && dp[i] < dp[j] + 1)
+                {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if (dp[i] > maxLen) maxLen = dp[i];
+        }
+
+        return maxLen;
+    }
+
+    // Custom comparator function 
+    private static int Compare(string s, string t)
+    {
+        return s.Length.CompareTo(t.Length);
+    }
+
+    // Function to check if the string can be added to the chain
+    private bool CheckPossible(string s, string t)
+    {
+        // Base case
+        if (s.Length != t.Length + 1) return false;
+
+        int i = 0, j = 0; // Pointers
+
+        // Traverse until the first string is exhausted
+        while (i < s.Length)
+        {
+            // Move both pointers if characters matches
+            if (j < t.Length && s[i] == t[j])
+            {
+                i++; j++;
+            }
+            // Otherwise 
+            else
+            {
+                i++;
+            }
+        }
+
+        // Return true if both the string gets exhausted
+        return (i == s.Length && j == t.Length);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        string[] words = { "a", "ab", "abc", "abcd", "abcde" };
+
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+
+        // Function call to get the length of longest string chain
+        int lengthOfLongestStringChain = sol.LongestStringChain(words);
+
+        Console.WriteLine("The length of the Longest String Chain is: " + lengthOfLongestStringChain);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// Function to return the length of the longest string chain possible
+func longestStringChain(words []string) int {
+	n := len(words) // Size of the array
+
+	// Sort words based on their length
+	sort.Slice(words, func(i, j int) bool {
+		return len(words[i]) < len(words[j])
+	})
+
+	dp := make([]int, n) // DP array
+	for i := 0; i < n; i++ {
+		dp[i] = 1
+	}
+
+	maxLen := 0 // To store the length of longest string chain
+
+	// Computing the DP array
+	for i := 0; i < n; i++ {
+
+		// For each previous index
+		for j := 0; j < i; j++ {
+
+			/* If the element at index i can be
+			   included in the chain ending at index j */
+			if checkPossible(words[i], words[j]) && dp[i] < dp[j]+1 {
+				dp[i] = dp[j] + 1 // Update the DP value
+			}
+		}
+
+		// If a longer chain is found, update the values
+		if dp[i] > maxLen {
+			maxLen = dp[i]
+		}
+	}
+
+	return maxLen
+}
+
+// Function to check if the string can be added to the chain
+func checkPossible(s, t string) bool {
+	// Base case
+	if len(s) != len(t)+1 {
+		return false
+	}
+
+	i, j := 0, 0 // Pointers
+
+	// Traverse until the first string is exhausted
+	for i < len(s) {
+		// Move both pointers if characters match
+		if j < len(t) && s[i] == t[j] {
+			i++
+			j++
+		} else {
+			i++
+		}
+	}
+
+	// Return true if both the strings get exhausted
+	if i == len(s) && j == len(t) {
+		return true
+	}
+	return false
+}
+
+func main() {
+	words := []string{"a", "ab", "abc", "abcd", "abcde"}
+
+	lengthOfLongestStringChain := longestStringChain(words)
+
+	fmt.Println("The length of the Longest String Chain is:", lengthOfLongestStringChain)
+}
+</code></pre></div></div></div>
+
+
+
+<h3>Complexity Analysis</h3>
+<p>
+    <strong>Time Complexity: O(N<sup>2</sup> × L)</strong>, where N and L represents the number of words and the maximum length of any word respectively. <br>
+    Sorting the words based on length takes <strong>O(NlogN)</strong> time. Computing the DP table takes <strong>O(N<sup>2</sup>)</strong> time. The <code><strong>checkPossible</strong></code> function compares both strings character by character, with a complexity proportional to the length of the longer string, which is at most <strong>O(L)</strong>. <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, due to the DP array used. 
+</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    // Function to return the length of the longest string chain possible
+    int longestStringChain(vector&lt;string&gt;&amp; words) {
+        int n = words.size(); // Size of the array 
+        sort(words.begin(), words.end(), compare);
+        vector&lt;int&gt; dp(n, 1); // DP array 
+
+        // To store the length of longest string chain
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for(int i = 0; i &lt; n; i++) {
+
+            // For each previous index
+            for(int j = 0; j &lt; i; j++) {
+                
+                /* If the element at index i can be 
+                included in the chain ending at index j */
+                if(checkPossible(words[i], words[j]) &amp;&amp; dp[i] &lt; dp[j] + 1) {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if(dp[i] &gt; maxLen) maxLen = dp[i];
+        }
+        
+        return maxLen;
+    }
+    
+private:
+    // Custom comparator function 
+    bool static compare(string &amp;s, string &amp;t) {
+        return s.size() &lt; t.size();
+    }
+    
+    // Function to check if the string can be added to the chain
+    bool checkPossible(string &amp;s, string &amp;t) {
+        //  Base case
+        if(s.size() != t.size() + 1) return false;
+        
+        int i = 0, j = 0; // Pointers
+        
+        // Traverse until the first string is exhausted
+        while(i &lt; s.size()) {
+            
+            // Move both pointers if characters matches
+            if(j &lt; t.size() &amp;&amp; s[i] == t[j]) {
+                i++, j++;
+            }
+            // Otherwise 
+            else {
+                i++;
+            }
+        }
+        
+        // Return true if both the string gets exhausted
+        if(i == s.size() &amp;&amp; j == t.size()) return true;
+        return false; // Return false otherwise
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Function to return the length of the longest string chain possible
+    public int LongestStringChain(string[] words)
+    {
+        int n = words.Length; // Size of the array 
+
+        // Sort words by length using custom comparator
+        Array.Sort(words, Compare);
+
+        int[] dp = new int[n]; // DP array 
+        for (int i = 0; i &lt; n; i++)
+            dp[i] = 1;
+
+        // To store the length of longest string chain
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for (int i = 0; i &lt; n; i++)
+        {
+            // For each previous index
+            for (int j = 0; j &lt; i; j++)
+            {
+                /* If the element at index i can be 
+                   included in the chain ending at index j */
+                if (CheckPossible(words[i], words[j]) &amp;&amp; dp[i] &lt; dp[j] + 1)
+                {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if (dp[i] &gt; maxLen) maxLen = dp[i];
+        }
+
+        return maxLen;
+    }
+
+    // Custom comparator function 
+    private static int Compare(string s, string t)
+    {
+        return s.Length.CompareTo(t.Length);
+    }
+
+    // Function to check if the string can be added to the chain
+    private bool CheckPossible(string s, string t)
+    {
+        // Base case
+        if (s.Length != t.Length + 1) return false;
+
+        int i = 0, j = 0; // Pointers
+
+        // Traverse until the first string is exhausted
+        while (i &lt; s.Length)
+        {
+            // Move both pointers if characters matches
+            if (j &lt; t.Length &amp;&amp; s[i] == t[j])
+            {
+                i++; j++;
+            }
+            // Otherwise 
+            else
+            {
+                i++;
+            }
+        }
+
+        // Return true if both the string gets exhausted
+        return (i == s.Length &amp;&amp; j == t.Length);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to return the length of the longest string chain possible
+func longestStringChain(words []string) int {
+	n := len(words) // Size of the array
+
+	// Sort words based on their length
+	sort.Slice(words, func(i, j int) bool {
+		return len(words[i]) &lt; len(words[j])
+	})
+
+	dp := make([]int, n) // DP array
+	for i := 0; i &lt; n; i++ {
+		dp[i] = 1
+	}
+
+	maxLen := 0 // To store the length of longest string chain
+
+	// Computing the DP array
+	for i := 0; i &lt; n; i++ {
+
+		// For each previous index
+		for j := 0; j &lt; i; j++ {
+
+			/* If the element at index i can be
+			   included in the chain ending at index j */
+			if checkPossible(words[i], words[j]) &amp;&amp; dp[i] &lt; dp[j]+1 {
+				dp[i] = dp[j] + 1 // Update the DP value
+			}
+		}
+
+		// If a longer chain is found, update the values
+		if dp[i] &gt; maxLen {
+			maxLen = dp[i]
+		}
+	}
+
+	return maxLen
+}
+
+// Function to check if the string can be added to the chain
+func checkPossible(s, t string) bool {
+	// Base case
+	if len(s) != len(t)+1 {
+		return false
+	}
+
+	i, j := 0, 0 // Pointers
+
+	// Traverse until the first string is exhausted
+	for i &lt; len(s) {
+		// Move both pointers if characters match
+		if j &lt; len(t) &amp;&amp; s[i] == t[j] {
+			i++
+			j++
+		} else {
+			i++
+		}
+	}
+
+	// Return true if both the strings get exhausted
+	if i == len(s) &amp;&amp; j == len(t) {
+		return true
+	}
+	return false
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    public int longestStringChain(String[] words) {
+        int n = words.length; // Size of the array 
+        Arrays.sort(words, Comparator.comparingInt(String::length));
+        int[] dp = new int[n]; // DP array
+        Arrays.fill(dp, 1);
+
+        // To store the length of longest string chain
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for (int i = 0; i &lt; n; i++) {
+
+            // For each previous index
+            for (int j = 0; j &lt; i; j++) {
+
+                /* If the element at index i can be 
+                included in the chain ending at index j */
+                if (checkPossible(words[i], words[j]) &amp;&amp; dp[i] &lt; dp[j] + 1) {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if (dp[i] &gt; maxLen) maxLen = dp[i];
+        }
+
+        return maxLen;
+    }
+
+    // Function to check if the string can be added to the chain
+    private boolean checkPossible(String s, String t) {
+        // Base case
+        if (s.length() != t.length() + 1) return false;
+
+        int i = 0, j = 0; // Pointers
+
+        // Traverse until the first string is exhausted
+        while (i &lt; s.length()) {
+
+            // Move both pointers if characters matches
+            if (j &lt; t.length() &amp;&amp; s.charAt(i) == t.charAt(j)) {
+                i++;
+                j++;
+            }
+            // Otherwise 
+            else {
+                i++;
+            }
+        }
+
+        // Return true if both the string gets exhausted
+        return (i == s.length() &amp;&amp; j == t.length());
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to return the length of the longest string chain possible
+    longestStringChain(words) {
+        const n = words.length; // Size of the array 
+        words.sort((a, b) =&gt; a.length - b.length);
+        const dp = new Array(n).fill(1); // DP array
+
+        // To store the length of longest string chain
+        let maxLen = 0;
+
+        // Computing the DP array 
+        for(let i = 0; i &lt; n; i++) {
+
+            // For each previous index
+            for(let j = 0; j &lt; i; j++) {
+                
+                /* If the element at index i can be 
+                included in the chain ending at index j */
+                if(this.checkPossible(words[i], words[j]) &amp;&amp; dp[i] &lt; dp[j] + 1) {
+                    dp[i] = dp[j] + 1; // Update the DP value
+                }
+            }
+
+            // If a longer chain is found, update the values
+            if(dp[i] &gt; maxLen) maxLen = dp[i];
+        }
+        
+        return maxLen;
+    }
+    
+    // Function to check if the string can be added to the chain
+    checkPossible(s, t) {
+        //  Base case
+        if(s.length !== t.length + 1) return false;
+        
+        let i = 0, j = 0; // Pointers
+        
+        // Traverse until the first string is exhausted
+        while(i &lt; s.length) {
+            
+            // Move both pointers if characters matches
+            if(j &lt; t.length &amp;&amp; s[i] === t[j]) {
+                i++; j++;
+            }
+            // Otherwise 
+            else {
+                i++;
+            }
+        }
+        
+        // Return true if both the string gets exhausted
+        if(i === s.length &amp;&amp; j === t.length) return true;
+        return false; // Return false otherwise
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to return the length of the longest string chain possible
+    def longestStringChain(self, words):
+        n = len(words)  # Size of the array
+        words.sort(key=len)
+        dp = [1] * n  # DP array
+
+        # To store the length of longest string chain
+        maxLen = 0
+
+        # Computing the DP array 
+        for i in range(n):
+
+            # For each previous index
+            for j in range(i):
+                
+                &quot;&quot;&quot; If the element at index i can be 
+                included in the chain ending at index j &quot;&quot;&quot;
+                if self.checkPossible(words[i], words[j]) and dp[i] &lt; dp[j] + 1:
+                    dp[i] = dp[j] + 1  # Update the DP value
+
+            # If a longer chain is found, update the values
+            if dp[i] &gt; maxLen:
+                maxLen = dp[i]
+        
+        return maxLen
+    
+    # Function to check if the string can be added to the chain
+    def checkPossible(self, s, t):
+        # Base case
+        if len(s) != len(t) + 1:
+            return False
+        
+        i, j = 0, 0  # Pointers
+        
+        # Traverse until the first string is exhausted
+        while i &lt; len(s):
+            
+            # Move both pointers if characters matches
+            if j &lt; len(t) and s[i] == t[j]:
+                i += 1
+                j += 1
+            # Otherwise 
+            else:
+                i += 1
+        
+        # Return true if both the string gets exhausted
+        if i == len(s) and j == len(t):
+            return True
+        return False  # Return false otherwise</code></pre></div>
+</body>
+</html>

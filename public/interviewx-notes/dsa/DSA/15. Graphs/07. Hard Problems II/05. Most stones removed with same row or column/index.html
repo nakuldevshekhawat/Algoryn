@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Most stones removed with same row or column</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Most stones removed with same row or column</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Depth-First Search</span><span>Graph</span><span>Hash Table</span><span>Union Find</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>There are n stones at integer coordinate points on a 2D plane, with at most one stone per coordinate point. Some stones need to be removed.A stone can be removed if it shares the same row or the same column as another stone that has not been removed.</p><p><br></p><p>Given an array of stones of length n where stones[i] = [x<sub>i</sub>, y<sub>i</sub>] represents the location of the ith stone, return the <strong>maximum</strong> possible number of stones that can be removed.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  1 <= n <=1000</li><li>  0 <= x[i], y[i]<= 10<sup>4</sup></li><li>  No two stones are at same position.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input : </strong>n=6, stones = [[0, 0],[ 0, 1], [1, 0],[1, 2],[2, 1],[2, 2]]</p><p><strong>Output:</strong> 5</p><p><strong>Explanation:</strong> One of the many ways to remove 5 stones is to remove the following stones:</p><p>[0,0], [1,0], [0,1], [2,1], [1,2]</p><h3>Example 2</h3><p><strong>Input :</strong> n = 6, stones = [[0, 0], [0, 2], [1, 3], [3, 1], [3, 2], [4, 3]]</p><p><strong>Output:</strong> 4</p><p><strong>Explanation:</strong> We can remove the following stones: [0,0], [0,2], [1,3], [3,1]</p><h3>Example 3</h3><p><strong>Input: </strong>n = 2, stones = [[0, 0], [0, 2]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem is useful in the domain of game development, computational geometry, and artificial intelligence. For instance, in strategy games like Go or Chess where stone (or piece) removal based on certain conditions is part of the game logic. The underlying concept can also be applied in spatial data processing, such as Geographic Information Systems (GIS) on tasks where you might want to remove some duplicate points from the same latitudes or longitudes. This problem helps program those types of scenarios effectively and efficiently.</p></div>
+<div class="section"><h2>Editorial: Solution</h2></div>
+
+<h3>Intuition:</h3> 
+<p>
+    <h6>Observation:</h6>
+    Consider the following example:
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Most stones removed with same row or column/-kLCTPQgf"> <br><br>
+    Here, there are two different groups of stones possible (assuming 0-based indexing):
+    <ul>
+        <li>The first group includes the stones at [0,0], [0,2], [2,2], and [2,1].</li>
+        <li>The second group includes stones at [1,3] and [4,3]</li>
+    </ul>
+    Note that each group consists of all stones that share either a row or column with another stone in the same group. For a particular group, all the stones can be removed from the group except one (as there will be no stones sharing a row or column for the last stone). <br><br>
+    If the stones are considered as nodes, the different groups will refer to the different components of the graph. 
+    <h6>How to identify the maximum number of nodes that can be removed?</h6>
+    Let's assume there are n stones in total. And these n stones have formed k different components each containing Xi no. of stones. This indicates the following:
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Most stones removed with same row or column/-emYO5sWZ">
+    Thus, the maximum number of stones that can be removed can be found if the number of connected components(k) in the graph is known.
+
+    <h6>How to get the number of connected components?</h6>
+    One way to find the number of connected components is by traversing the graph using one of the two traversal techniques. <br>
+    Another way is to use the <strong>Disjoint Set</strong> data structure, which will help in connecting the stones that belong to the same group(component). 
+
+    <h6>How to connect the cells containing stones to form a component?</h6>
+    To connect the cells it can be assumed that each entire row and column of the 2D plane is a particular node. Now, each row can be connected(united) with the corresponding column where the stones are located. However, the column number may be the same as the row number. <br>
+    To avoid this, each column number can be converted to <strong>(column no. + total no. of rows)</strong> and the union of row number and the converted column number i.e. (column no. + total no. of rows) can be performed as shown in the following example:
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Most stones removed with same row or column/-ano5jM31"><br>
+    For the above example, to connect the two stones in the cells [0, 0] and [0, 2] of the first row, firstly row number can be taken i.e. 0(because of 0-based indexing) as a node, and then the converted column numbers 0 to (0+5) and 2 to (2+5). Then, the union of (0 and 5) and (0 and 7) can be performed to form the connected components.
+
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Traverse the list of stones to find the maximum row and column indices. This helps in defining the size of the Disjoint Set data structure.</li>
+   <li>Create a Disjoint Set data structure large enough to accommodate all rows and columns. Each row and column is treated as a separate node.</li>
+   <li>For each stone, treat its row and column as nodes and unite them using the union by size method. This ensures that stones sharing the same row or column are in the same connected component.</li>
+   <li>Use a map to keep track of unique nodes that have stones. This helps in counting distinct connected components.</li>
+   <li>Iterate through the unique nodes and count how many distinct components there are by finding the ultimate parent of each node.</li>
+   <li>The maximum number of stones that can be removed is the total number of stones minus the number of connected components.</li>
+   <li>Return the calculated number of stones that can be removed.</li>
+</ol>
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/content/1771481800_06A9Zc9c.png" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/content/1771481800_rCuXG6UV.png" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/content/1771481800_unCTTvvi.png" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/content/1771481800_7NqtBViF.png" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/content/1771481800_DDQGJb1J.png" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/content/1771481800_HM35m7M4.png" alt="Image 6"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/content/1771481800_06A9Zc9c.png" alt="Image 1"><img src="https://static.takeuforward.org/content/1771481800_rCuXG6UV.png" alt="Image 2"><img src="https://static.takeuforward.org/content/1771481800_unCTTvvi.png" alt="Image 3"><img src="https://static.takeuforward.org/content/1771481800_7NqtBViF.png" alt="Image 4"><img src="https://static.takeuforward.org/content/1771481800_DDQGJb1J.png" alt="Image 5"><img src="https://static.takeuforward.org/content/1771481800_HM35m7M4.png" alt="Image 6"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector<int> rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+public:
+
+    // Function to remove maximum stones 
+    int maxRemove(vector<vector<int>>& stones, int n) {
+        
+        /* To store the maximum row 
+        and column having a stone */
+        int maxRow = 0;
+        int maxCol = 0;
+        
+        // Iterate on all the nodes
+        for (auto it : stones) {
+            maxRow = max(maxRow, it[0]);
+            maxCol = max(maxCol, it[1]);
+        }
+        
+        // Disjoint Set data structure
+        DisjointSet ds(maxRow + maxCol + 1);
+        
+        // To store the nodes having a stone in Disjoint Set
+        unordered_map<int, int> stoneNodes;
+        
+        // Iterate on all stones
+        for (auto it : stones) {
+            
+            // Row number
+            int nodeRow = it[0];
+            
+            // Converted column number
+            int nodeCol = it[1] + maxRow + 1;
+            
+            // United two nodes
+            ds.unionBySize(nodeRow, nodeCol);
+            
+            // Add the nodes to the map
+            stoneNodes[nodeRow] = 1;
+            stoneNodes[nodeCol] = 1;
+        }
+        
+        // To store the number of connected components
+        int k = 0;
+        
+        // Iterate on the set
+        for (auto it : stoneNodes) {
+            
+            /* Increment the count if 
+            a new component is found */
+            if (ds.findUPar(it.first) == it.first) {
+                k++;
+            }
+        }
+        
+        // Return the answer
+        return n - k;
+    }
+};
+
+
+int main() {
+    int n = 6;
+    vector<vector<int>> stones = {
+        {0, 0}, {0, 1}, {1, 0},
+        {1, 2}, {2, 1}, {2, 2}
+    };
+
+    // Creating instance of Solution class
+    Solution sol;
+    
+    /* Function call to get the 
+    size of the largest island */
+    int ans = sol.maxRemove(stones, n);
+    
+    // Output
+    cout << "The size of the largest island is: " << ans;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+
+// Solution class
+class Solution {
+    // Function to remove maximum stones
+    public int maxRemove(int[][] stones, int n) {
+        
+        /* To store the maximum row 
+        and column having a stone */
+        int maxRow = 0;
+        int maxCol = 0;
+
+        // Iterate on all the nodes
+        for (int[] stone : stones) {
+            maxRow = Math.max(maxRow, stone[0]);
+            maxCol = Math.max(maxCol, stone[1]);
+        }
+
+        // Disjoint Set data structure
+        DisjointSet ds = 
+            new DisjointSet(maxRow + maxCol + 1);
+
+        // To store the nodes having a stone in Disjoint Set
+        Map<Integer, Integer> stoneNodes = new HashMap<>();
+
+        // Iterate on all stones
+        for (int[] stone : stones) {
+            // Row number
+            int nodeRow = stone[0];
+
+            // Converted column number
+            int nodeCol = stone[1] + maxRow + 1;
+
+            // United two nodes
+            ds.unionBySize(nodeRow, nodeCol);
+
+            // Add the nodes to the map
+            stoneNodes.put(nodeRow, 1);
+            stoneNodes.put(nodeCol, 1);
+        }
+
+        // To store the number of connected components
+        int k = 0;
+
+        // Iterate on the set
+        for (int key : stoneNodes.keySet()) {
+            /* Increment the count if 
+            a new component is found */
+            if (ds.findUPar(key) == key) {
+                k++;
+            }
+        }
+
+        // Return the answer
+        return n - k;
+    }
+
+    public static void main(String[] args) {
+        int n = 6;
+        int[][] stones = {
+            {0, 0}, {0, 1}, {1, 0},
+            {1, 2}, {2, 1}, {2, 2}
+        };
+
+        // Creating instance of Solution class
+        Solution sol = new Solution();
+
+        /* Function call to get the 
+        size of the largest island */
+        int ans = sol.maxRemove(stones, n);
+
+        // Output
+        System.out.println("The size of the largest island is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class DisjointSet:
+    # To store the ranks, parents and 
+    # sizes of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = [i for i in range(n + 1)]
+        self.size = [1] * (n + 1)
+    
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+    
+    # Function to implement union by rank
+    def unionByRank(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.rank[ulp_u] < self.rank[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+        elif self.rank[ulp_v] < self.rank[ulp_u]:
+            self.parent[ulp_v] = ulp_u
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.rank[ulp_u] += 1
+    
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.size[ulp_u] < self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+
+# Solution class
+class Solution:
+    # Function to remove maximum stones 
+    def maxRemove(self, stones, n):
+        # To store the maximum row and column having a stone
+        maxRow = 0
+        maxCol = 0
+        
+        # Iterate on all the nodes
+        for it in stones:
+            maxRow = max(maxRow, it[0])
+            maxCol = max(maxCol, it[1])
+        
+        # Disjoint Set data structure
+        ds = DisjointSet(maxRow + maxCol + 1)
+        
+        # To store the nodes having a stone in Disjoint Set
+        stoneNodes = {}
+        
+        # Iterate on all stones
+        for it in stones:
+            # Row number
+            nodeRow = it[0]
+            
+            # Converted column number
+            nodeCol = it[1] + maxRow + 1
+            
+            # United two nodes
+            ds.unionBySize(nodeRow, nodeCol)
+            
+            # Add the nodes to the map
+            stoneNodes[nodeRow] = 1
+            stoneNodes[nodeCol] = 1
+        
+        # To store the number of connected components
+        k = 0
+        
+        # Iterate on the set
+        for key in stoneNodes:
+            # Increment the count if a new component is found
+            if ds.findUPar(key) == key:
+                k += 1
+        
+        # Return the answer
+        return n - k
+
+# Main function to test the Solution class
+if __name__ == "__main__":
+    n = 6
+    stones = [
+        [0, 0], [0, 1], [1, 0],
+        [1, 2], [2, 1], [2, 2]
+    ]
+
+    # Creating instance of Solution class
+    sol = Solution()
+    
+    # Function call to get the size of the largest island
+    ans = sol.maxRemove(stones, n)
+    
+    # Output
+    print("The size of the largest island is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class DisjointSet {
+    // Constructor
+    constructor(n) {
+        /* To store the ranks, parents and sizes 
+        of different set of vertices */
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) => i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node]) return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by rank
+    unionByRank(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.rank[ulp_u] < this.rank[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+            this.parent[ulp_v] = ulp_u;
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] < this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    // Function to remove maximum stones 
+    maxRemove(stones, n) {
+        // To store the maximum row and column having a stone
+        let maxRow = 0;
+        let maxCol = 0;
+        
+        // Iterate on all the nodes
+        for (const it of stones) {
+            maxRow = Math.max(maxRow, it[0]);
+            maxCol = Math.max(maxCol, it[1]);
+        }
+        
+        // Disjoint Set data structure
+        const ds = new DisjointSet(maxRow + maxCol + 1);
+        
+        // To store the nodes having a stone in Disjoint Set
+        const stoneNodes = new Map();
+        
+        // Iterate on all stones
+        for (const it of stones) {
+            // Row number
+            const nodeRow = it[0];
+            
+            // Converted column number
+            const nodeCol = it[1] + maxRow + 1;
+            
+            // United two nodes
+            ds.unionBySize(nodeRow, nodeCol);
+            
+            // Add the nodes to the map
+            stoneNodes.set(nodeRow, 1);
+            stoneNodes.set(nodeCol, 1);
+        }
+        
+        // To store the number of connected components
+        let k = 0;
+        
+        // Iterate on the set
+        for (const key of stoneNodes.keys()) {
+            // Increment the count if a new component is found
+            if (ds.findUPar(key) === key) {
+                k++;
+            }
+        }
+        
+        // Return the answer
+        return n - k;
+    }
+}
+
+// Main function to test the Solution class
+(function main() {
+    const n = 6;
+    const stones = [
+        [0, 0], [0, 1], [1, 0],
+        [1, 2], [2, 1], [2, 2]
+    ];
+
+    // Creating instance of Solution class
+    const sol = new Solution();
+    
+    // Function call to get the size of the largest island
+    const ans = sol.maxRemove(stones, n);
+    
+    // Output
+    console.log("The size of the largest island is: " + ans);
+})();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    public List<int> rank, parent, size;
+
+    // Constructor
+    public DisjointSet(int n) {
+        rank = new List<int>(new int[n + 1]);
+        parent = new List<int>(new int[n + 1]);
+        size = new List<int>(new int[n + 1]);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    public int findUPar(int node) {
+        if (node == parent[node]) return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by size
+    public void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        } else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+
+    // Function to remove maximum stones 
+    public int maxRemove(List<int[]> stones, int n) {
+
+        /* To store the maximum row 
+        and column having a stone */
+        int maxRow = 0, maxCol = 0;
+
+        // Iterate on all the nodes
+        foreach (var it in stones) {
+            maxRow = Math.Max(maxRow, it[0]);
+            maxCol = Math.Max(maxCol, it[1]);
+        }
+
+        // Disjoint Set data structure
+        DisjointSet ds = new DisjointSet(maxRow + maxCol + 1);
+
+        // To store the nodes having a stone in Disjoint Set
+        Dictionary<int, int> stoneNodes = new Dictionary<int, int>();
+
+        // Iterate on all stones
+        foreach (var it in stones) {
+            // Row number
+            int nodeRow = it[0];
+
+            // Converted column number
+            int nodeCol = it[1] + maxRow + 1;
+
+            // United two nodes
+            ds.unionBySize(nodeRow, nodeCol);
+
+            // Add the nodes to the map
+            stoneNodes[nodeRow] = 1;
+            stoneNodes[nodeCol] = 1;
+        }
+
+        // To store the number of connected components
+        int k = 0;
+
+        // Iterate on the set
+        foreach (var it in stoneNodes) {
+            /* Increment the count if 
+            a new component is found */
+            if (ds.findUPar(it.Key) == it.Key) k++;
+        }
+
+        // Return the answer
+        return n - k;
+    }
+}
+
+class Program {
+    static void Main() {
+        int n = 6;
+
+        List<int[]> stones = new List<int[]> {
+            new int[]{0,0}, new int[]{0,1}, new int[]{1,0},
+            new int[]{1,2}, new int[]{2,1}, new int[]{2,2}
+        };
+
+        // Creating instance of Solution class
+        Solution sol = new Solution();
+
+        /* Function call to get the 
+        size of the largest island */
+        int ans = sol.maxRemove(stones, n);
+
+        // Output
+        Console.WriteLine("The size of the largest island is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+/* To store the ranks, parents and 
+sizes of different set of vertices */
+var rankArr, parentArr, sizeArr []int
+
+// Constructor
+func initDSU(n int) {
+	rankArr = make([]int, n+1)
+	parentArr = make([]int, n+1)
+	sizeArr = make([]int, n+1)
+	for i := 0; i <= n; i++ {
+		parentArr[i] = i
+		sizeArr[i] = 1
+	}
+}
+
+// Function to find ultimate parent
+func findUPar(node int) int {
+	if node == parentArr[node] { return node }
+	parentArr[node] = findUPar(parentArr[node])
+	return parentArr[node]
+}
+
+// Function to implement union by size
+func unionBySize(u int, v int) {
+	ulp_u := findUPar(u)
+	ulp_v := findUPar(v)
+	if ulp_u == ulp_v { return }
+	if sizeArr[ulp_u] < sizeArr[ulp_v] {
+		parentArr[ulp_u] = ulp_v
+		sizeArr[ulp_v] += sizeArr[ulp_u]
+	} else {
+		parentArr[ulp_v] = ulp_u
+		sizeArr[ulp_u] += sizeArr[ulp_v]
+	}
+}
+
+// Function to remove maximum stones 
+func maxRemove(stones [][]int, n int) int {
+
+	/* To store the maximum row 
+	and column having a stone */
+	maxRow, maxCol := 0, 0
+
+	// Iterate on all the nodes
+	for _, it := range stones {
+		if it[0] > maxRow { maxRow = it[0] }
+		if it[1] > maxCol { maxCol = it[1] }
+	}
+
+	// Disjoint Set data structure
+	initDSU(maxRow + maxCol + 1)
+
+	// To store the nodes having a stone in Disjoint Set
+	stoneNodes := map[int]bool{}
+
+	// Iterate on all stones
+	for _, it := range stones {
+		// Row number
+		nodeRow := it[0]
+
+		// Converted column number
+		nodeCol := it[1] + maxRow + 1
+
+		// United two nodes
+		unionBySize(nodeRow, nodeCol)
+
+		// Add the nodes to the map
+		stoneNodes[nodeRow] = true
+		stoneNodes[nodeCol] = true
+	}
+
+	// To store the number of connected components
+	k := 0
+
+	// Iterate on the set
+	for node := range stoneNodes {
+		/* Increment the count if 
+		a new component is found */
+		if findUPar(node) == node { k++ }
+	}
+
+	// Return the answer
+	return n - k
+}
+
+func main() {
+	n := 6
+	stones := [][]int{
+		{0,0},{0,1},{1,0},
+		{1,2},{2,1},{2,2},
+	}
+
+	/* Function call to get the 
+	size of the largest island */
+	ans := maxRemove(stones, n)
+
+	// Output
+	fmt.Println("The size of the largest island is:", ans)
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N)</strong> The given stones array is traversed multiple times. Traversing the hashset will also take O(N) time.
+</p>
+
+<p><strong>Space Complexity: O(Max Row number + Max Column number)</strong> The Disjoint set will store the nodes using the parent and size/rank array which will take (2*number of nodes) space. Since, the number of nodes = max row number + max column number, the overall space complexity is O(Max Row number + Max Column number).
+   
+</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector&lt;int&gt; rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+public:
+
+    // Function to remove maximum stones 
+    int maxRemove(vector&lt;vector&lt;int&gt;&gt;&amp; stones, int n) {
+        
+        /* To store the maximum row 
+        and column having a stone */
+        int maxRow = 0;
+        int maxCol = 0;
+        
+        // Iterate on all the nodes
+        for (auto it : stones) {
+            maxRow = max(maxRow, it[0]);
+            maxCol = max(maxCol, it[1]);
+        }
+        
+        // Disjoint Set data structure
+        DisjointSet ds(maxRow + maxCol + 1);
+        
+        // To store the nodes having a stone in Disjoint Set
+        unordered_map&lt;int, int&gt; stoneNodes;
+        
+        // Iterate on all stones
+        for (auto it : stones) {
+            
+            // Row number
+            int nodeRow = it[0];
+            
+            // Converted column number
+            int nodeCol = it[1] + maxRow + 1;
+            
+            // United two nodes
+            ds.unionBySize(nodeRow, nodeCol);
+            
+            // Add the nodes to the map
+            stoneNodes[nodeRow] = 1;
+            stoneNodes[nodeCol] = 1;
+        }
+        
+        // To store the number of connected components
+        int k = 0;
+        
+        // Iterate on the set
+        for (auto it : stoneNodes) {
+            
+            /* Increment the count if 
+            a new component is found */
+            if (ds.findUPar(it.first) == it.first) {
+                k++;
+            }
+        }
+        
+        // Return the answer
+        return n - k;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    // DisjointSet class
+    public class DisjointSet
+    {
+        /* To store the ranks, parents and sizes 
+        of different set of vertices */
+        public int[] rank;
+        public int[] parent;
+        public int[] size;
+
+        // Constructor
+        public DisjointSet(int n)
+        {
+            rank = new int[n + 1];
+            parent = new int[n + 1];
+            size = new int[n + 1];
+            for (int i = 0; i &lt;= n; i++)
+            {
+                parent[i] = i;
+                size[i] = 1;
+            }
+        }
+
+        // Function to find ultimate parent
+        public int FindUPar(int node)
+        {
+            if (node == parent[node]) return node;
+            return parent[node] = FindUPar(parent[node]);
+        }
+
+        // Function to implement union by rank
+        public void UnionByRank(int u, int v)
+        {
+            int ulp_u = FindUPar(u);
+            int ulp_v = FindUPar(v);
+            if (ulp_u == ulp_v) return;
+            if (rank[ulp_u] &lt; rank[ulp_v])
+            {
+                parent[ulp_u] = ulp_v;
+            }
+            else if (rank[ulp_v] &lt; rank[ulp_u])
+            {
+                parent[ulp_v] = ulp_u;
+            }
+            else
+            {
+                parent[ulp_v] = ulp_u;
+                rank[ulp_u]++;
+            }
+        }
+
+        // Function to implement union by size
+        public void UnionBySize(int u, int v)
+        {
+            int ulp_u = FindUPar(u);
+            int ulp_v = FindUPar(v);
+            if (ulp_u == ulp_v) return;
+            if (size[ulp_u] &lt; size[ulp_v])
+            {
+                parent[ulp_u] = ulp_v;
+                size[ulp_v] += size[ulp_u];
+            }
+            else
+            {
+                parent[ulp_v] = ulp_u;
+                size[ulp_u] += size[ulp_v];
+            }
+        }
+    }
+
+    // Function to remove maximum stones 
+    public int MaxRemove(List&lt;int[]&gt; stones, int n) {
+        // To store the maximum row and column having a stone
+        int maxRow = 0;
+        int maxCol = 0;
+        
+        // Iterate on all the nodes
+        foreach (int[] it in stones) {
+            maxRow = Math.Max(maxRow, it[0]);
+            maxCol = Math.Max(maxCol, it[1]);
+        }
+        
+        // Disjoint Set data structure
+        DisjointSet ds = new DisjointSet(maxRow + maxCol + 1);
+        
+        // To store the nodes having a stone in Disjoint Set
+        System.Collections.Generic.Dictionary&lt;int, int&gt; stoneNodes = new System.Collections.Generic.Dictionary&lt;int, int&gt;();
+        
+        // Iterate on all stones
+        foreach (int[] it in stones) {
+            // Row number
+            int nodeRow = it[0];
+            
+            // Converted column number
+            int nodeCol = it[1] + maxRow + 1;
+            
+            // United two nodes
+            ds.UnionBySize(nodeRow, nodeCol);
+            
+            // Add the nodes to the map
+            stoneNodes[nodeRow] = 1;
+            stoneNodes[nodeCol] = 1;
+        }
+        
+        // To store the number of connected components
+        int k = 0;
+        
+        // Iterate on the set
+        foreach (int key in stoneNodes.Keys) {
+            // Increment the count if a new component is found
+            if (ds.FindUPar(key) == key) {
+                k++;
+            }
+        }
+        
+        // Return the answer
+        return n - k;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;math&quot;)
+// DisjointSet data structure to store the union-find operations
+type DisjointSet struct {
+	rank   []int
+	parent []int
+	size   []int
+}
+
+// Constructor for DisjointSet
+func NewDisjointSet(n int) *DisjointSet {
+	ds := &amp;DisjointSet{
+		rank:   make([]int, n+1),
+		parent: make([]int, n+1),
+		size:   make([]int, n+1),
+	}
+
+	// Initialize parent and size for each element
+	for i := 0; i &lt;= n; i++ {
+		ds.parent[i] = i
+		ds.size[i] = 1
+	}
+	return ds
+}
+
+// Function to find the ultimate parent of a node
+func (ds *DisjointSet) findUPar(node int) int {
+	if node == ds.parent[node] {
+		return node
+	}
+	ds.parent[node] = ds.findUPar(ds.parent[node]) // Path compression
+	return ds.parent[node]
+}
+
+// Function to perform union by size
+func (ds *DisjointSet) unionBySize(u, v int) {
+	ulp_u := ds.findUPar(u)
+	ulp_v := ds.findUPar(v)
+
+	if ulp_u == ulp_v {
+		return
+	}
+
+	if ds.size[ulp_u] &lt; ds.size[ulp_v] {
+		ds.parent[ulp_u] = ulp_v
+		ds.size[ulp_v] += ds.size[ulp_u]
+	} else {
+		ds.parent[ulp_v] = ulp_u
+		ds.size[ulp_u] += ds.size[ulp_v]
+	}
+}
+
+// Function to remove maximum stones
+func maxRemove(stones [][]int, n int) int {
+	// To store the maximum row and column having a stone
+	maxRow := 0
+	maxCol := 0
+
+	// Iterate on all the nodes
+	for _, it := range stones {
+		maxRow = int(math.Max(float64(maxRow), float64(it[0])))
+		maxCol = int(math.Max(float64(maxCol), float64(it[1])))
+	}
+
+	// Disjoint Set data structure
+	ds := NewDisjointSet(maxRow + maxCol + 1)
+
+	// To store the nodes having a stone in Disjoint Set
+	stoneNodes := make(map[int]int)
+
+	// Iterate on all stones
+	for _, it := range stones {
+		// Row number
+		nodeRow := it[0]
+
+		// Converted column number
+		nodeCol := it[1] + maxRow + 1
+
+		// United two nodes
+		ds.unionBySize(nodeRow, nodeCol)
+
+		// Add the nodes to the map
+		stoneNodes[nodeRow] = 1
+		stoneNodes[nodeCol] = 1
+	}
+
+	// To store the number of connected components
+	k := 0
+
+	// Iterate on the set
+	for it := range stoneNodes {
+		// Increment the count if a new component is found
+		if ds.findUPar(it) == it {
+			k++
+		}
+	}
+
+	// Return the answer
+	return n - k
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    // Function to remove maximum stones
+    public int maxRemove(int[][] stones, int n) {
+        
+        /* To store the maximum row 
+        and column having a stone */
+        int maxRow = 0;
+        int maxCol = 0;
+
+        // Iterate on all the nodes
+        for (int[] stone : stones) {
+            maxRow = Math.max(maxRow, stone[0]);
+            maxCol = Math.max(maxCol, stone[1]);
+        }
+
+        // Disjoint Set data structure
+        DisjointSet ds = 
+            new DisjointSet(maxRow + maxCol + 1);
+
+        // To store the nodes having a stone in Disjoint Set
+        Map&lt;Integer, Integer&gt; stoneNodes = new HashMap&lt;&gt;();
+
+        // Iterate on all stones
+        for (int[] stone : stones) {
+            // Row number
+            int nodeRow = stone[0];
+
+            // Converted column number
+            int nodeCol = stone[1] + maxRow + 1;
+
+            // United two nodes
+            ds.unionBySize(nodeRow, nodeCol);
+
+            // Add the nodes to the map
+            stoneNodes.put(nodeRow, 1);
+            stoneNodes.put(nodeCol, 1);
+        }
+
+        // To store the number of connected components
+        int k = 0;
+
+        // Iterate on the set
+        for (int key : stoneNodes.keySet()) {
+            /* Increment the count if 
+            a new component is found */
+            if (ds.findUPar(key) == key) {
+                k++;
+            }
+        }
+
+        // Return the answer
+        return n - k;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class DisjointSet {
+    // Constructor
+    constructor(n) {
+        /* To store the ranks, parents and sizes 
+        of different set of vertices */
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) =&gt; i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node]) return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] &lt; this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    // Function to remove maximum stones 
+    maxRemove(stones, n) {
+        // To store the maximum row and column having a stone
+        let maxRow = 0;
+        let maxCol = 0;
+        
+        // Iterate on all the nodes
+        for (const it of stones) {
+            maxRow = Math.max(maxRow, it[0]);
+            maxCol = Math.max(maxCol, it[1]);
+        }
+        
+        // Disjoint Set data structure
+        const ds = new DisjointSet(maxRow + maxCol + 1);
+        
+        // To store the nodes having a stone in Disjoint Set
+        const stoneNodes = new Map();
+        
+        // Iterate on all stones
+        for (const it of stones) {
+            // Row number
+            const nodeRow = it[0];
+            
+            // Converted column number
+            const nodeCol = it[1] + maxRow + 1;
+            
+            // United two nodes
+            ds.unionBySize(nodeRow, nodeCol);
+            
+            // Add the nodes to the map
+            stoneNodes.set(nodeRow, 1);
+            stoneNodes.set(nodeCol, 1);
+        }
+        
+        // To store the number of connected components
+        let k = 0;
+        
+        // Iterate on the set
+        for (const key of stoneNodes.keys()) {
+            // Increment the count if a new component is found
+            if (ds.findUPar(key) === key) {
+                k++;
+            }
+        }
+        
+        // Return the answer
+        return n - k;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class DisjointSet:
+    # To store the ranks, parents and 
+    # sizes of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = [i for i in range(n + 1)]
+        self.size = [1] * (n + 1)
+    
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+    
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.size[ulp_u] &lt; self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+
+# Solution class
+class Solution:
+    # Function to remove maximum stones 
+    def maxRemove(self, stones, n):
+        # To store the maximum row and column having a stone
+        maxRow = 0
+        maxCol = 0
+        
+        # Iterate on all the nodes
+        for it in stones:
+            maxRow = max(maxRow, it[0])
+            maxCol = max(maxCol, it[1])
+        
+        # Disjoint Set data structure
+        ds = DisjointSet(maxRow + maxCol + 1)
+        
+        # To store the nodes having a stone in Disjoint Set
+        stoneNodes = {}
+        
+        # Iterate on all stones
+        for it in stones:
+            # Row number
+            nodeRow = it[0]
+            
+            # Converted column number
+            nodeCol = it[1] + maxRow + 1
+            
+            # United two nodes
+            ds.unionBySize(nodeRow, nodeCol)
+            
+            # Add the nodes to the map
+            stoneNodes[nodeRow] = 1
+            stoneNodes[nodeCol] = 1
+        
+        # To store the number of connected components
+        k = 0
+        
+        # Iterate on the set
+        for key in stoneNodes:
+            # Increment the count if a new component is found
+            if ds.findUPar(key) == key:
+                k += 1
+        
+        # Return the answer
+        return n - k</code></pre></div>
+</body>
+</html>

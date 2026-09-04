@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trie Implementation and Operations</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Trie Implementation and Operations</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Trie</span><span>Implementation</span><span>Data Structures</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Implement the Trie class:</p><p><br></p><ul><li><strong>Trie():</strong> Initializes the trie object.</li></ul><p><br></p><ul><li><strong>void insert (String word):</strong> Inserts the string word into the trie.</li></ul><p><br></p><ul><li><strong>boolean search (String word):</strong> Returns true if the string word is in the trie (i.e., was inserted before), and false otherwise.</li></ul><p><br></p><ul><li><strong>boolean startsWith (String prefix):</strong> Returns true if there is a previously inserted string word that has the prefix prefix, and false otherwise.</li></ul>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= word.length , prefix.length <= 2000</li><li>word and prefix consist only of lowercase English letters.</li><li>At most 3*10<sup>4</sup> calls <strong>in total</strong> will be made to insert, search and startsWith.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> ["Trie", "insert", "search", "search", "startsWith", "insert", "search"]</p><p>[ [] , "apple", "apple", "app", "app", "app", "app" ]</p><p><br></p><p><strong>Output :</strong> [null, null, true, false, true, null, true]</p><p><br></p><p><strong>Explanation :</strong></p><p>Trie trie = new Trie()</p><p>trie.insert("apple")</p><p>trie.search("apple")  // return True</p><p>trie.search("app")   // return False</p><p>trie.startsWith("app") // return True</p><p>trie.insert("app")</p><p>trie.search("app")   // return True</p><h3>Example 2</h3><p><strong>Input :</strong> ["Trie" , "insert" , "insert" , "startsWith" , "search" ]</p><p>[ [] , "takeu" , "banana" , "bana" , "takeu" ]</p><p><br></p><p><strong>Output :</strong> [null, null, null, true, true]</p><p><br></p><p><strong>Explanation : </strong></p><p>Trie trie = new Trie()</p><p>trie.insert("takeu")</p><p>trie.insert("banana")</p><p>trie.startsWith("bana") // return True</p><p>trie.search("takeu")   // return True</p><h3>Example 3</h3><p><strong>Input :</strong> ["Trie" , "insert" , "insert" , "startsWith" , "search" ]</p><p>[ [] , "caterpiller" , "cat" , "cat" , "cat" ]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun fact: The Trie data structure is a popular data structure used in many applications in the software industry, including autocomplete features on search engines and text editors. Whenever you type in a search query or a piece of code, the system makes use of Tries to suggest potential completions based on the prefix of your input. This ability to make fast prefix queries makes Tries highly efficient for these kinds of functions.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition</h3>
+A Trie is a specialized tree-like data structure that organizes and stores words in an efficient manner. Each node in a Trie represents a single character of a word, allowing for efficient addition, retrieval, and deletion of words.
+<br>
+In simpler terms, a Trie is an advanced information retrieval data structure. It outperforms more conventional data structures like Hashmaps and Trees in terms of the time complexity for various operations, making it particularly useful for tasks involving large sets of strings or words.
+<br>
+The Trie data structure is designed to store and quickly retrieve a collection of strings.
+<br>
+It arranges strings so that shared prefixes are stored once, which makes it very efficient for operations like searching for words with a specific prefix. This ability to quickly find all strings that start with a given prefix makes Tries particularly useful for applications like autocomplete and predictive text.
+<strong>Trie Node Structure</strong>
+    <p>A Trie node is a fundamental element used to build a Trie. Each node consists of the following parts:</p>
+    <ul>
+        <li><strong>Child Node Links:</strong> A Trie node has an array of pointers, often referred to as "links" or "children pointers," for every letter of the lowercase alphabet. These pointers create connections to child nodes that represent each letter of the alphabet. For example, the link at index 0 corresponds to the child node for the letter 'a', the link at index 1 corresponds to 'b', and so on.</li>
+        <li><strong>End-of-Word Flag:</strong> Each Trie node includes a boolean flag that signifies whether the node marks the end of a word. This flag is crucial for differentiating between prefixes and full words stored in the Trie.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Operations/-dfZ4RA5S">
+<p>Each node in the Trie supports several key operations:</p>
+    <ul>
+        <li><strong>Contains Key:</strong> This operation checks if a specific letter (or key) exists as a child node of the current Trie node. It returns true if the letter is present, indicating a valid path in the Trie.</li>
+        <li><strong>Get Child Node:</strong> Given a letter, this operation retrieves the corresponding child node from the current Trie node. If the letter is present, it returns a pointer to the child node; otherwise, it returns null, indicating the letter is absent.</li>
+        <li><strong>Put Child Node:</strong> This operation creates a link between the current Trie node and a child node representing a specific letter. It sets the link at the corresponding index to point to the given child node.</li>
+        <li><strong>Set End Flag:</strong> This operation marks the current Trie node as the end of a word. This flag is essential for determining if a string stored in the Trie ends at this node, indicating a complete word.</li>
+        <li><strong>Is End of Word:</strong> This operation checks if the current Trie node marks the end of a word by examining the end flag. It returns true if the node signifies the end of a word; otherwise, it returns false.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Operations/-vWMe-N4m">
+<h3>Approach</h3>
+<h6>To insert a Node in The Trie</h6>
+ <ul>
+        <li>Begin at the root node.</li>
+        <li>For each character in the word:
+            <ul>
+                <li>Check if the current node has a child node for the character.</li>
+                <li>If the child node doesn't exist, create a new node and link it to the current node.</li>
+                <li>Move to the child node that corresponds to the character.</li>
+            </ul>
+        </li>
+        <li>After inserting all characters, mark the end of the word by setting the end flag of the last node to true.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Operations/-FIZtE1kN">
+<h6>To search for a word in Trie</h6>
+ <ul>
+        <li>Begin at the root node.</li>
+        <li>For each character in the word:
+            <ul>
+                <li>Verify if the current node has a child node for the character.</li>
+                <li>If not, the word is not present in the Trie.</li>
+                <li>Move to the child node corresponding to the character.</li>
+            </ul>
+        </li>
+        <li>After processing all characters, check if the end flag of the last node is set to true. If it is, the word is found; if not, the word is not in the Trie.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Operations/-dNmZEquc">
+<h6>Check if Trie contains Prefix</h6>
+<ul>
+        <li> Begin at the root node.</li>
+        <li>For each character in the prefix:
+            <ul>
+                <li>Check if the current node has a child node for the character.</li>
+                <li>If it doesn't, there is no word with the given prefix.</li>
+                <li>Move to the child node that corresponds to the character.</li>
+            </ul>
+        </li>
+        <li> If all characters of the prefix are found, return true to indicate that there are words with the given prefix.</li>
+    </ul>
+<img src="https://static.takeuforward.org/premium/Tries/Theory/Trie Implementation and Operations/-G3AnOSt0">
+<h3>Dry Run</h3>
+ <p>For more details, refer to the videos.</p>
+
+<h3>Solution</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Node Structure for Trie
+struct Node {
+    /* Array to store links to child nodes,
+    each index represents a letter */
+    Node* links[26] = {nullptr};  // Initialize all to nullptr
+
+    /* Flag indicating if 
+    the node marks the end 
+    of a word */
+    bool flag = false;
+
+    /* Check if the node contains
+    a specific key (letter) */
+    bool containsKey(char ch) {
+        return links[ch - 'a'] != nullptr;
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    void put(char ch, Node* node) {
+        links[ch - 'a'] = node;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    Node* get(char ch) {
+        return links[ch - 'a'];
+    }
+
+    /* Set the current node
+    as the end of a word */
+    void setEnd() {
+        flag = true;
+    }
+
+    /* Check if the 
+    current node marks 
+    the end of a word */
+    bool isEnd() {
+        return flag;
+    }
+
+    /* Node destructor to delete all child nodes recursively */
+    ~Node() {
+        for (int i = 0; i < 26; i++) {
+            if (links[i] != nullptr) {
+                delete links[i];
+                links[i] = nullptr;
+            }
+        }
+    }
+};
+
+// Trie class
+class Trie {
+private:
+    Node* root;
+
+public:
+    /* Constructor to 
+    initialize the
+    Trie with an 
+    empty root node */
+    Trie() {
+        root = new Node();
+    }
+
+    /* Trie destructor to cleanup the root */
+    ~Trie() {
+        delete root;
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    void insert(string word) {
+        Node* node = root;
+        for (char ch : word) {
+            if (!node->containsKey(ch)) {
+                /* Create a new node for
+                the letter if not present */
+                node->put(ch, new Node());
+            }
+            // Move to the next node
+            node = node->get(ch);
+        }
+        // Mark the end of the word
+        node->setEnd();
+    }
+
+    /* Returns if the word
+    is in the trie */
+    bool search(string word) {
+        Node* node = root;
+        for (char ch : word) {
+            if (!node->containsKey(ch)) {
+                /* If a letter is 
+                not found, the word 
+                is not in the Trie */
+                return false;
+            }
+            // Move to the next node
+            node = node->get(ch);
+        }
+        /* Check if the last node
+        marks the end of a word */
+        return node->isEnd();
+    }
+
+    /* Returns if there is any word in the
+    trie that starts with the given prefix */
+    bool startsWith(string prefix) {
+        Node* node = root;
+        for (char ch : prefix) {
+            if (!node->containsKey(ch)) {
+                /* If a letter is not 
+                found, there is
+                no word with the 
+                given prefix */
+                return false;
+            }
+            // Move to the next node
+            node = node->get(ch);
+        }
+        // Prefix Found
+        return true;
+    }
+};
+
+int main() {
+    Trie* trie = new Trie();
+    vector<string> operations = {"Trie", "insert", "search", "search", "startsWith", "insert", "search"};
+    vector<vector<string>> arguments = { {}, {"apple"}, {"apple"}, {"app"}, {"app"}, {"app"}, {"app"} };
+
+    vector<string> output;
+    for (int i = 0; i < operations.size(); i++) {
+        if (operations[i] == "Trie") {
+            output.push_back("null");
+        } else if (operations[i] == "insert") {
+            trie->insert(arguments[i][0]);
+            output.push_back("null");
+        } else if (operations[i] == "search") {
+            bool result = trie->search(arguments[i][0]);
+            output.push_back(result ? "true" : "false");
+        } else if (operations[i] == "startsWith") {
+            bool result = trie->startsWith(arguments[i][0]);
+            output.push_back(result ? "true" : "false");
+        }
+    }
+
+    for (string res : output) {
+        cout << res << endl;
+    }
+
+    delete trie;
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Node {
+    /* Array to store links to child nodes,
+    each index represents a letter */
+    Node[] links = new Node[26];
+
+    /* Flag indicating if 
+    the node marks the end 
+    of a word */
+    boolean flag = false;
+
+    /* Check if the node contains
+    a specific key (letter) */
+    boolean containsKey(char ch) {
+        return links[ch - 'a'] != null;
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    void put(char ch, Node node) {
+        links[ch - 'a'] = node;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    Node get(char ch) {
+        return links[ch - 'a'];
+    }
+
+    /* Set the current node
+    as the end of a word */
+    void setEnd() {
+        flag = true;
+    }
+
+    /* Check if the 
+    current node marks 
+    the end of a word */
+    boolean isEnd() {
+        return flag;
+    }
+}
+
+// Trie class
+class Trie {
+    private Node root;
+
+    /* Constructor to 
+    initialize the
+    Trie with an 
+    empty root node */
+    public Trie() {
+        root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    public void insert(String word) {
+        Node node = root;
+        for (char ch : word.toCharArray()) {
+            if (!node.containsKey(ch)) {
+                /* Create a new node for
+                the letter if not present */
+                node.put(ch, new Node());
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Mark the end of the word
+        node.setEnd();
+    }
+
+    /* Returns if the word
+    is in the trie */
+    public boolean search(String word) {
+        Node node = root;
+        for (char ch : word.toCharArray()) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is 
+                not found, the word 
+                is not in the Trie */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        /* Check if the last node
+        marks the end of a word */
+        return node.isEnd();
+    }
+
+    /* Returns if there is any word in the
+    trie that starts with the given prefix */
+    public boolean startsWith(String prefix) {
+        Node node = root;
+        for (char ch : prefix.toCharArray()) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is not 
+                found, there is
+                no word with the 
+                given prefix */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Prefix Found
+        return true;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        Trie trie = new Trie();
+        String[] operations = {"Trie", "insert", "search", "search", "startsWith", "insert", "search"};
+        String[][] arguments = {{}, {"apple"}, {"apple"}, {"app"}, {"app"}, {"app"}, {"app"}};
+
+        List<String> output = new ArrayList<>();
+        for (int i = 0; i < operations.length; i++) {
+            switch (operations[i]) {
+                case "Trie":
+                    output.add("null");
+                    break;
+                case "insert":
+                    trie.insert(arguments[i][0]);
+                    output.add("null");
+                    break;
+                case "search":
+                    output.add(trie.search(arguments[i][0]) ? "true" : "false");
+                    break;
+                case "startsWith":
+                    output.add(trie.startsWith(arguments[i][0]) ? "true" : "false");
+                    break;
+            }
+        }
+
+        for (String res : output) {
+            System.out.println(res);
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="python" class="language-python"># Node Structure for Trie
+class Node:
+    """ Array to store links to child nodes,
+    each index represents a letter """
+    def __init__(self):
+        self.links = [None] * 26
+
+        """ Flag indicating if 
+        the node marks the end 
+        of a word """
+        self.flag = False
+
+    """ Check if the node contains
+    a specific key (letter) """
+    def containsKey(self, ch):
+        return self.links[ord(ch) - ord('a')] is not None
+
+    """ Insert a new node with a specific
+    key (letter) into the Trie """
+    def put(self, ch, node):
+        self.links[ord(ch) - ord('a')] = node
+
+    """ Get the node with a specific
+    key (letter) from the Trie """
+    def get(self, ch):
+        return self.links[ord(ch) - ord('a')]
+
+    """ Set the current node
+    as the end of a word """
+    def setEnd(self):
+        self.flag = True
+
+    """ Check if the 
+    current node marks 
+    the end of a word """
+    def isEnd(self):
+        return self.flag
+
+# Trie class
+class Trie:
+    """ Constructor to 
+    initialize the
+    Trie with an 
+    empty root node """
+    def __init__(self):
+        self.root = Node()
+
+    """ Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word """
+    def insert(self, word):
+        node = self.root
+        for ch in word:
+            if not node.containsKey(ch):
+                """ Create a new node for
+                the letter if not present """
+                node.put(ch, Node())
+            # Move to the next node
+            node = node.get(ch)
+        # Mark the end of the word
+        node.setEnd()
+
+    """ Returns if the word
+    is in the trie """
+    def search(self, word):
+        node = self.root
+        for ch in word:
+            if not node.containsKey(ch):
+                """ If a letter is 
+                not found, the word 
+                is not in the Trie """
+                return False
+            # Move to the next node
+            node = node.get(ch)
+        """ Check if the last node
+        marks the end of a word """
+        return node.isEnd()
+
+    """ Returns if there is any word in the
+    trie that starts with the given prefix """
+    def startsWith(self, prefix):
+        node = self.root
+        for ch in prefix:
+            if not node.containsKey(ch):
+                """ If a letter is not 
+                found, there is
+                no word with the 
+                given prefix """
+                return False
+            # Move to the next node
+            node = node.get(ch)
+        # Prefix Found
+        return True
+
+# Driver Code
+trie = Trie()
+operations = ["Trie", "insert", "search", "search", "startsWith", "insert", "search"]
+arguments = [[], ["apple"], ["apple"], ["app"], ["app"], ["app"], ["app"]]
+
+output = []
+for i in range(len(operations)):
+    if operations[i] == "Trie":
+        output.append("null")
+    elif operations[i] == "insert":
+        trie.insert(arguments[i][0])
+        output.append("null")
+    elif operations[i] == "search":
+        result = trie.search(arguments[i][0])
+        output.append("true" if result else "false")
+    elif operations[i] == "startsWith":
+        result = trie.startsWith(arguments[i][0])
+        output.append("true" if result else "false")
+
+for res in output:
+    print(res)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Node Structure for Trie
+class Node {
+    constructor() {
+        /* Array to store links to child nodes,
+        each index represents a letter */
+        this.links = new Array(26).fill(null);
+
+        /* Flag indicating if 
+        the node marks the end 
+        of a word */
+        this.flag = false;
+    }
+
+    /* Check if the node contains
+    a specific key (letter) */
+    containsKey(ch) {
+        return this.links[ch.charCodeAt(0) - 'a'.charCodeAt(0)] !== null;
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    put(ch, node) {
+        this.links[ch.charCodeAt(0) - 'a'.charCodeAt(0)] = node;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    get(ch) {
+        return this.links[ch.charCodeAt(0) - 'a'.charCodeAt(0)];
+    }
+
+    /* Set the current node
+    as the end of a word */
+    setEnd() {
+        this.flag = true;
+    }
+
+    /* Check if the 
+    current node marks 
+    the end of a word */
+    isEnd() {
+        return this.flag;
+    }
+}
+
+// Trie class
+class Trie {
+    /* Constructor to 
+    initialize the
+    Trie with an 
+    empty root node */
+    constructor() {
+        this.root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    insert(word) {
+        let node = this.root;
+        for (let ch of word) {
+            if (!node.containsKey(ch)) {
+                /* Create a new node for
+                the letter if not present */
+                node.put(ch, new Node());
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Mark the end of the word
+        node.setEnd();
+    }
+
+    /* Returns if the word
+    is in the trie */
+    search(word) {
+        let node = this.root;
+        for (let ch of word) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is 
+                not found, the word 
+                is not in the Trie */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        /* Check if the last node
+        marks the end of a word */
+        return node.isEnd();
+    }
+
+    /* Returns if there is any word in the
+    trie that starts with the given prefix */
+    startsWith(prefix) {
+        let node = this.root;
+        for (let ch of prefix) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is not 
+                found, there is
+                no word with the 
+                given prefix */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Prefix Found
+        return true;
+    }
+}
+
+// Driver Code
+const trie = new Trie();
+const operations = ["Trie", "insert", "search", "search", "startsWith", "insert", "search"];
+const argumentsList = [[], ["apple"], ["apple"], ["app"], ["app"], ["app"], ["app"]];
+
+const output = [];
+for (let i = 0; i < operations.length; i++) {
+    if (operations[i] === "Trie") {
+        output.push("null");
+    } else if (operations[i] === "insert") {
+        trie.insert(argumentsList[i][0]);
+        output.push("null");
+    } else if (operations[i] === "search") {
+        output.push(trie.search(argumentsList[i][0]) ? "true" : "false");
+    } else if (operations[i] === "startsWith") {
+        output.push(trie.startsWith(argumentsList[i][0]) ? "true" : "false");
+    }
+}
+
+for (let res of output) {
+    console.log(res);
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Program
+{
+    // Node Structure for Trie
+    private class Node
+    {
+        /* Array to store links to child nodes,
+        each index represents a letter */
+        public Node[] Links;
+
+        /* Flag indicating if 
+        the node marks the end 
+        of a word */
+        public bool Flag;
+
+        public Node()
+        {
+            Links = new Node[26];
+            // By default, bool is false, Node[] elements are null
+        }
+
+        /* Check if the node contains
+        a specific key (letter) */
+        public bool ContainsKey(char ch)
+        {
+            return Links[ch - 'a'] != null;
+        }
+
+        /* Insert a new node with a specific
+        key (letter) into the Trie */
+        public void Put(char ch, Node node)
+        {
+            Links[ch - 'a'] = node;
+        }
+
+        /* Get the node with a specific
+        key (letter) from the Trie */
+        public Node Get(char ch)
+        {
+            return Links[ch - 'a'];
+        }
+
+        /* Set the current node
+        as the end of a word */
+        public void SetEnd()
+        {
+            Flag = true;
+        }
+
+        /* Check if the 
+        current node marks 
+        the end of a word */
+        public bool IsEnd()
+        {
+            return Flag;
+        }
+    }
+
+    // Trie class
+    public class Trie
+    {
+        /* Constructor to 
+        initialize the
+        Trie with an 
+        empty root node */
+        private Node root;
+
+        public Trie()
+        {
+            root = new Node();
+        }
+
+        /* Inserts a word into the Trie
+        Time Complexity O(len), where len
+        is the length of the word */
+        public void Insert(string word)
+        {
+            Node node = root;
+            foreach (char ch in word)
+            {
+                if (!node.ContainsKey(ch))
+                {
+                    /* Create a new node for
+                    the letter if not present */
+                    node.Put(ch, new Node());
+                }
+                // Move to the next node
+                node = node.Get(ch);
+            }
+            // Mark the end of the word
+            node.SetEnd();
+        }
+
+        /* Returns if the word
+        is in the trie */
+        public bool Search(string word)
+        {
+            Node node = root;
+            foreach (char ch in word)
+            {
+                if (!node.ContainsKey(ch))
+                {
+                    /* If a letter is 
+                    not found, the word 
+                    is not in the Trie */
+                    return false;
+                }
+                // Move to the next node
+                node = node.Get(ch);
+            }
+            /* Check if the last node
+            marks the end of a word */
+            return node.IsEnd();
+        }
+
+        /* Returns if there is any word in the
+        trie that starts with the given prefix */
+        public bool StartsWith(string prefix)
+        {
+            Node node = root;
+            foreach (char ch in prefix)
+            {
+                if (!node.ContainsKey(ch))
+                {
+                    /* If a letter is not 
+                    found, there is
+                    no word with the 
+                    given prefix */
+                    return false;
+                }
+                // Move to the next node
+                node = node.Get(ch);
+            }
+            // Prefix Found
+            return true;
+        }
+    }
+
+    // Driver Code
+    public static void Main(string[] args)
+    {
+        Trie trie = new Trie();
+        string[] operations = { "Trie", "insert", "search", "search", "startsWith", "insert", "search" };
+        List<string[]> argumentsList = new List<string[]>
+        {
+            new string[] { },
+            new string[] { "apple" },
+            new string[] { "apple" },
+            new string[] { "app" },
+            new string[] { "app" },
+            new string[] { "app" },
+            new string[] { "app" }
+        };
+
+        List<string> output = new List<string>();
+        for (int i = 0; i < operations.Length; i++)
+        {
+            if (operations[i] == "Trie")
+            {
+                output.Add("null");
+            }
+            else if (operations[i] == "insert")
+            {
+                trie.Insert(argumentsList[i][0]);
+                output.Add("null");
+            }
+            else if (operations[i] == "search")
+            {
+                output.Add(trie.Search(argumentsList[i][0]) ? "true" : "false");
+            }
+            else if (operations[i] == "startsWith")
+            {
+                output.Add(trie.StartsWith(argumentsList[i][0]) ? "true" : "false");
+            }
+        }
+
+        foreach (string res in output)
+        {
+            Console.WriteLine(res);
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Node Structure for Trie
+type Node struct {
+	// Array to store links to child nodes,
+	// each index represents a letter
+	links [26]*Node // Initialize all to nil
+
+	// Flag indicating if the node marks the end of a word
+	flag bool
+}
+
+// Check if the node contains a specific key (letter)
+func (n *Node) containsKey(ch byte) bool {
+	return n.links[ch-'a'] != nil
+}
+
+// Insert a new node with a specific key (letter) into the Trie
+func (n *Node) put(ch byte, node *Node) {
+	n.links[ch-'a'] = node
+}
+
+// Get the node with a specific key (letter) from the Trie
+func (n *Node) get(ch byte) *Node {
+	return n.links[ch-'a']
+}
+
+// Set the current node as the end of a word
+func (n *Node) setEnd() {
+	n.flag = true
+}
+
+// Check if the current node marks the end of a word
+func (n *Node) isEnd() bool {
+	return n.flag
+}
+
+// Node destructor to delete all child nodes recursively
+func (n *Node) delete() {
+	for i := 0; i < 26; i++ {
+		if n.links[i] != nil {
+			n.links[i].delete()
+			n.links[i] = nil
+		}
+	}
+}
+
+// Trie class
+type Trie struct {
+	root *Node
+}
+
+// Constructor to initialize the Trie with an empty root node
+func NewTrie() *Trie {
+	return &Trie{root: &Node{}}
+}
+
+// Trie destructor to clean up the root node
+func (t *Trie) delete() {
+	t.root.delete()
+}
+
+// Inserts a word into the Trie
+// Time Complexity O(len), where len is the length of the word
+func (t *Trie) Insert(word string) {
+	node := t.root
+	for i := 0; i < len(word); i++ {
+		ch := word[i]
+		if !node.containsKey(ch) {
+			// Create a new node for the letter if not present
+			node.put(ch, &Node{})
+		}
+		// Move to the next node
+		node = node.get(ch)
+	}
+	// Mark the end of the word
+	node.setEnd()
+}
+
+// Returns if the word is in the trie
+func (t *Trie) Search(word string) bool {
+	node := t.root
+	for i := 0; i < len(word); i++ {
+		ch := word[i]
+		if !node.containsKey(ch) {
+			// If a letter is not found, the word is not in the Trie
+			return false
+		}
+		// Move to the next node
+		node = node.get(ch)
+	}
+	// Check if the last node marks the end of a word
+	return node.isEnd()
+}
+
+// Returns if there is any word in the trie that starts with the given prefix
+func (t *Trie) StartsWith(prefix string) bool {
+	node := t.root
+	for i := 0; i < len(prefix); i++ {
+		ch := prefix[i]
+		if !node.containsKey(ch) {
+			// If a letter is not found, there is no word with the given prefix
+			return false
+		}
+		// Move to the next node
+		node = node.get(ch)
+	}
+	// Prefix Found
+	return true
+}
+
+func main() {
+	// Create instance of Trie class
+	trie := NewTrie()
+
+	// Input operations and arguments
+	operations := []string{"Trie", "insert", "search", "search", "startsWith", "insert", "search"}
+	arguments := [][]string{
+		{}, {"apple"}, {"apple"}, {"app"}, {"app"}, {"app"}, {"app"},
+	}
+
+	// Vector to store output
+	output := []string{}
+	for i := 0; i < len(operations); i++ {
+		if operations[i] == "Trie" {
+			output = append(output, "null")
+		} else if operations[i] == "insert" {
+			trie.Insert(arguments[i][0])
+			output = append(output, "null")
+		} else if operations[i] == "search" {
+			result := trie.Search(arguments[i][0])
+			if result {
+				output = append(output, "true")
+			} else {
+				output = append(output, "false")
+			}
+		} else if operations[i] == "startsWith" {
+			result := trie.StartsWith(arguments[i][0])
+			if result {
+				output = append(output, "true")
+			} else {
+				output = append(output, "false")
+			}
+		}
+	}
+
+	// Output the results
+	for _, res := range output {
+		fmt.Println(res)
+	}
+
+	// Cleanup
+	trie.delete()
+}
+</code></pre></div></div></div>
+
+<h3>Complexity Analysis</h3>
+<strong>Time Complexity:</strong> 
+<ul>
+        <li><strong>Insertion:</strong> O(N), where N is the length of the word being inserted. This is because we need to go through each letter of the word to either find its corresponding node or create a new node as needed.</li>
+        <li><strong>Search:</strong> O(N), where N is the length of the word being searched for. During a Trie search, we traverse each letter of the word starting from the root, checking if the current node has a child node at the position of the next letter. This continues until we either reach the end of the word or find a missing letter node.</li>
+        <li><strong>Prefix Search:</strong> O(N), where N is the length of the prefix being searched for. Just like in word search, we go through each letter of the prefix to find its corresponding node.</li>
+    </ul>
+<br>
+<br>
+<strong>Space Complexity: O(N) </strong> where N is the total number of characters across all unique words inserted into the Trie. For each character in a word, a new node might need to be created, resulting in space usage that is proportional to the total number of characters.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>// Node Structure for Trie
+struct Node {
+    /* Array to store links to child nodes,
+    each index represents a letter */
+    Node* links[26] = {nullptr};  // Initialize all to nullptr
+
+    /* Flag indicating if 
+    the node marks the end 
+    of a word */
+    bool flag = false;
+
+    /* Check if the node contains
+    a specific key (letter) */
+    bool containsKey(char ch) {
+        return links[ch - &#x27;a&#x27;] != nullptr;
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    void put(char ch, Node* node) {
+        links[ch - &#x27;a&#x27;] = node;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    Node* get(char ch) {
+        return links[ch - &#x27;a&#x27;];
+    }
+
+    /* Set the current node
+    as the end of a word */
+    void setEnd() {
+        flag = true;
+    }
+
+    /* Check if the 
+    current node marks 
+    the end of a word */
+    bool isEnd() {
+        return flag;
+    }
+
+    /* Node destructor to delete all child nodes recursively */
+    ~Node() {
+        for (int i = 0; i &lt; 26; i++) {
+            if (links[i] != nullptr) {
+                delete links[i];
+                links[i] = nullptr;
+            }
+        }
+    }
+};
+
+// Trie class
+class Trie {
+private:
+    Node* root;
+
+public:
+    /* Constructor to 
+    initialize the
+    Trie with an 
+    empty root node */
+    Trie() {
+        root = new Node();
+    }
+
+    /* Trie destructor to cleanup the root */
+    ~Trie() {
+        delete root;
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    void insert(string word) {
+        Node* node = root;
+        for (char ch : word) {
+            if (!node-&gt;containsKey(ch)) {
+                /* Create a new node for
+                the letter if not present */
+                node-&gt;put(ch, new Node());
+            }
+            // Move to the next node
+            node = node-&gt;get(ch);
+        }
+        // Mark the end of the word
+        node-&gt;setEnd();
+    }
+
+    /* Returns if the word
+    is in the trie */
+    bool search(string word) {
+        Node* node = root;
+        for (char ch : word) {
+            if (!node-&gt;containsKey(ch)) {
+                /* If a letter is 
+                not found, the word 
+                is not in the Trie */
+                return false;
+            }
+            // Move to the next node
+            node = node-&gt;get(ch);
+        }
+        /* Check if the last node
+        marks the end of a word */
+        return node-&gt;isEnd();
+    }
+
+    /* Returns if there is any word in the
+    trie that starts with the given prefix */
+    bool startsWith(string prefix) {
+        Node* node = root;
+        for (char ch : prefix) {
+            if (!node-&gt;containsKey(ch)) {
+                /* If a letter is not 
+                found, there is
+                no word with the 
+                given prefix */
+                return false;
+            }
+            // Move to the next node
+            node = node-&gt;get(ch);
+        }
+        // Prefix Found
+        return true;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Trie
+{
+    private class TrieNode
+    {
+        public TrieNode[] children = new TrieNode[26];
+        public bool isEndOfWord = false;
+
+        public TrieNode() {
+            for (int i = 0; i &lt; 26; i++)
+            {
+                children[i] = null;
+            }
+        }
+    }
+
+    private TrieNode root;
+
+    public Trie()
+    {
+        root = new TrieNode();
+    }
+
+    public void insert(string word)
+    {
+        TrieNode current = root;
+        for (int i = 0; i &lt; word.Length; i++)
+        {
+            int index = word[i] - &#x27;a&#x27;;
+            if (current.children[index] == null)
+            {
+                current.children[index] = new TrieNode();
+            }
+            current = current.children[index];
+        }
+        current.isEndOfWord = true;
+    }
+
+    public bool search(string word)
+    {
+        TrieNode current = root;
+        for (int i = 0; i &lt; word.Length; i++)
+        {
+            int index = word[i] - &#x27;a&#x27;;
+            if (current.children[index] == null)
+            {
+                return false;
+            }
+            current = current.children[index];
+        }
+        return current.isEndOfWord;
+    }
+
+    public bool startsWith(string prefix)
+    {
+        TrieNode current = root;
+        for (int i = 0; i &lt; prefix.Length; i++)
+        {
+            int index = prefix[i] - &#x27;a&#x27;;
+            if (current.children[index] == null)
+            {
+                return false;
+            }
+            current = current.children[index];
+        }
+        return true;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Node Structure for Trie
+type Node struct {
+	// Array to store links to child nodes,
+	// each index represents a letter
+	links [26]*Node // Initialize all to nil
+
+	// Flag indicating if the node marks the end of a word
+	flag bool
+}
+
+// Check if the node contains a specific key (letter)
+func (n *Node) containsKey(ch byte) bool {
+	return n.links[ch-&#x27;a&#x27;] != nil
+}
+
+// Insert a new node with a specific key (letter) into the Trie
+func (n *Node) put(ch byte, node *Node) {
+	n.links[ch-&#x27;a&#x27;] = node
+}
+
+// Get the node with a specific key (letter) from the Trie
+func (n *Node) get(ch byte) *Node {
+	return n.links[ch-&#x27;a&#x27;]
+}
+
+// Set the current node as the end of a word
+func (n *Node) setEnd() {
+	n.flag = true
+}
+
+// Check if the current node marks the end of a word
+func (n *Node) isEnd() bool {
+	return n.flag
+}
+
+// Node destructor to delete all child nodes recursively
+func (n *Node) delete() {
+	for i := 0; i &lt; 26; i++ {
+		if n.links[i] != nil {
+			n.links[i].delete()
+			n.links[i] = nil
+		}
+	}
+}
+
+// Trie class
+type Trie struct {
+	root *Node
+}
+
+// Constructor to initialize the Trie with an empty root node
+func NewTrie() *Trie {
+	return &amp;Trie{root: &amp;Node{}}
+}
+
+// Trie destructor to clean up the root node
+func (t *Trie) delete() {
+	t.root.delete()
+}
+
+// Inserts a word into the Trie
+// Time Complexity O(len), where len is the length of the word
+func (t *Trie) Insert(word string) {
+	node := t.root
+	for i := 0; i &lt; len(word); i++ {
+		ch := word[i]
+		if !node.containsKey(ch) {
+			// Create a new node for the letter if not present
+			node.put(ch, &amp;Node{})
+		}
+		// Move to the next node
+		node = node.get(ch)
+	}
+	// Mark the end of the word
+	node.setEnd()
+}
+
+// Returns if the word is in the trie
+func (t *Trie) Search(word string) bool {
+	node := t.root
+	for i := 0; i &lt; len(word); i++ {
+		ch := word[i]
+		if !node.containsKey(ch) {
+			// If a letter is not found, the word is not in the Trie
+			return false
+		}
+		// Move to the next node
+		node = node.get(ch)
+	}
+	// Check if the last node marks the end of a word
+	return node.isEnd()
+}
+
+// Returns if there is any word in the trie that starts with the given prefix
+func (t *Trie) StartsWith(prefix string) bool {
+	node := t.root
+	for i := 0; i &lt; len(prefix); i++ {
+		ch := prefix[i]
+		if !node.containsKey(ch) {
+			// If a letter is not found, there is no word with the given prefix
+			return false
+		}
+		// Move to the next node
+		node = node.get(ch)
+	}
+	// Prefix Found
+	return true
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Node {
+    /* Array to store links to child nodes,
+    each index represents a letter */
+    Node[] links = new Node[26];
+
+    /* Flag indicating if 
+    the node marks the end 
+    of a word */
+    boolean flag = false;
+
+    /* Check if the node contains
+    a specific key (letter) */
+    boolean containsKey(char ch) {
+        return links[ch - &#x27;a&#x27;] != null;
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    void put(char ch, Node node) {
+        links[ch - &#x27;a&#x27;] = node;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    Node get(char ch) {
+        return links[ch - &#x27;a&#x27;];
+    }
+
+    /* Set the current node
+    as the end of a word */
+    void setEnd() {
+        flag = true;
+    }
+
+    /* Check if the 
+    current node marks 
+    the end of a word */
+    boolean isEnd() {
+        return flag;
+    }
+}
+
+// Trie class
+class Trie {
+    private Node root;
+
+    /* Constructor to 
+    initialize the
+    Trie with an 
+    empty root node */
+    public Trie() {
+        root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    public void insert(String word) {
+        Node node = root;
+        for (char ch : word.toCharArray()) {
+            if (!node.containsKey(ch)) {
+                /* Create a new node for
+                the letter if not present */
+                node.put(ch, new Node());
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Mark the end of the word
+        node.setEnd();
+    }
+
+    /* Returns if the word
+    is in the trie */
+    public boolean search(String word) {
+        Node node = root;
+        for (char ch : word.toCharArray()) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is 
+                not found, the word 
+                is not in the Trie */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        /* Check if the last node
+        marks the end of a word */
+        return node.isEnd();
+    }
+
+    /* Returns if there is any word in the
+    trie that starts with the given prefix */
+    public boolean startsWith(String prefix) {
+        Node node = root;
+        for (char ch : prefix.toCharArray()) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is not 
+                found, there is
+                no word with the 
+                given prefix */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Prefix Found
+        return true;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>// Node Structure for Trie
+class Node {
+    constructor() {
+        /* Array to store links to child nodes,
+        each index represents a letter */
+        this.links = new Array(26).fill(null);
+
+        /* Flag indicating if 
+        the node marks the end 
+        of a word */
+        this.flag = false;
+    }
+
+    /* Check if the node contains
+    a specific key (letter) */
+    containsKey(ch) {
+        return this.links[ch.charCodeAt(0) - &#x27;a&#x27;.charCodeAt(0)] !== null;
+    }
+
+    /* Insert a new node with a specific
+    key (letter) into the Trie */
+    put(ch, node) {
+        this.links[ch.charCodeAt(0) - &#x27;a&#x27;.charCodeAt(0)] = node;
+    }
+
+    /* Get the node with a specific
+    key (letter) from the Trie */
+    get(ch) {
+        return this.links[ch.charCodeAt(0) - &#x27;a&#x27;.charCodeAt(0)];
+    }
+
+    /* Set the current node
+    as the end of a word */
+    setEnd() {
+        this.flag = true;
+    }
+
+    /* Check if the 
+    current node marks 
+    the end of a word */
+    isEnd() {
+        return this.flag;
+    }
+}
+
+// Trie class
+class Trie {
+    /* Constructor to 
+    initialize the
+    Trie with an 
+    empty root node */
+    constructor() {
+        this.root = new Node();
+    }
+
+    /* Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word */
+    insert(word) {
+        let node = this.root;
+        for (let ch of word) {
+            if (!node.containsKey(ch)) {
+                /* Create a new node for
+                the letter if not present */
+                node.put(ch, new Node());
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Mark the end of the word
+        node.setEnd();
+    }
+
+    /* Returns if the word
+    is in the trie */
+    search(word) {
+        let node = this.root;
+        for (let ch of word) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is 
+                not found, the word 
+                is not in the Trie */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        /* Check if the last node
+        marks the end of a word */
+        return node.isEnd();
+    }
+
+    /* Returns if there is any word in the
+    trie that starts with the given prefix */
+    startsWith(prefix) {
+        let node = this.root;
+        for (let ch of prefix) {
+            if (!node.containsKey(ch)) {
+                /* If a letter is not 
+                found, there is
+                no word with the 
+                given prefix */
+                return false;
+            }
+            // Move to the next node
+            node = node.get(ch);
+        }
+        // Prefix Found
+        return true;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code># Node Structure for Trie
+class Node:
+    &quot;&quot;&quot; Array to store links to child nodes,
+    each index represents a letter &quot;&quot;&quot;
+    def __init__(self):
+        self.links = [None] * 26
+
+        &quot;&quot;&quot; Flag indicating if 
+        the node marks the end 
+        of a word &quot;&quot;&quot;
+        self.flag = False
+
+    &quot;&quot;&quot; Check if the node contains
+    a specific key (letter) &quot;&quot;&quot;
+    def containsKey(self, ch):
+        return self.links[ord(ch) - ord(&#x27;a&#x27;)] is not None
+
+    &quot;&quot;&quot; Insert a new node with a specific
+    key (letter) into the Trie &quot;&quot;&quot;
+    def put(self, ch, node):
+        self.links[ord(ch) - ord(&#x27;a&#x27;)] = node
+
+    &quot;&quot;&quot; Get the node with a specific
+    key (letter) from the Trie &quot;&quot;&quot;
+    def get(self, ch):
+        return self.links[ord(ch) - ord(&#x27;a&#x27;)]
+
+    &quot;&quot;&quot; Set the current node
+    as the end of a word &quot;&quot;&quot;
+    def setEnd(self):
+        self.flag = True
+
+    &quot;&quot;&quot; Check if the 
+    current node marks 
+    the end of a word &quot;&quot;&quot;
+    def isEnd(self):
+        return self.flag
+
+# Trie class
+class Trie:
+    &quot;&quot;&quot; Constructor to 
+    initialize the
+    Trie with an 
+    empty root node &quot;&quot;&quot;
+    def __init__(self):
+        self.root = Node()
+
+    &quot;&quot;&quot; Inserts a word into the Trie
+    Time Complexity O(len), where len
+    is the length of the word &quot;&quot;&quot;
+    def insert(self, word):
+        node = self.root
+        for ch in word:
+            if not node.containsKey(ch):
+                &quot;&quot;&quot; Create a new node for
+                the letter if not present &quot;&quot;&quot;
+                node.put(ch, Node())
+            # Move to the next node
+            node = node.get(ch)
+        # Mark the end of the word
+        node.setEnd()
+
+    &quot;&quot;&quot; Returns if the word
+    is in the trie &quot;&quot;&quot;
+    def search(self, word):
+        node = self.root
+        for ch in word:
+            if not node.containsKey(ch):
+                &quot;&quot;&quot; If a letter is 
+                not found, the word 
+                is not in the Trie &quot;&quot;&quot;
+                return False
+            # Move to the next node
+            node = node.get(ch)
+        &quot;&quot;&quot; Check if the last node
+        marks the end of a word &quot;&quot;&quot;
+        return node.isEnd()
+
+    &quot;&quot;&quot; Returns if there is any word in the
+    trie that starts with the given prefix &quot;&quot;&quot;
+    def startsWith(self, prefix):
+        node = self.root
+        for ch in prefix:
+            if not node.containsKey(ch):
+                &quot;&quot;&quot; If a letter is not 
+                found, there is
+                no word with the 
+                given prefix &quot;&quot;&quot;
+                return False
+            # Move to the next node
+            node = node.get(ch)
+        # Prefix Found
+        return True</code></pre></div>
+</body>
+</html>

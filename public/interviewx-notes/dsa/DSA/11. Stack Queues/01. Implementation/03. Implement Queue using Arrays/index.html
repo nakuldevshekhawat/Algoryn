@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Implement Queue using Arrays</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Implement Queue using Arrays</h1>
+<div class="meta">
+  <span class="badge difficulty-Easy">Easy</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Queue</span><span>Data Structures</span><span>Array</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Implement a First-In-First-Out (FIFO) queue using an array. The implemented queue should support the following operations: push, peek, pop, and isEmpty.</p><p><br></p><p>Implement the ArrayQueue class:</p><p><br></p><p>void push(int x): Adds element x to the end of the queue.</p><p>int pop(): Removes and returns the front element of the queue.</p><p>int peek(): Returns the front element of the queue without removing it.</p><p>boolean isEmpty(): Returns true if the queue is empty, false otherwise.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= numbers of calls made <= 100</li><li>1 <= x <= 100</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input:</p><p>["ArrayQueue", "push", "push", "peek", "pop", "isEmpty"]</p><p>[[], [5], [10], [], [], []]</p><p>Output: [null, null, null, 5, 5, false]</p><p>Explanation:</p><p>ArrayQueue queue = new ArrayQueue();</p><p>queue.push(5);</p><p>queue.push(10);</p><p>queue.peek(); // returns 5</p><p>queue.pop(); // returns 5</p><p>queue.isEmpty(); // returns false</p><h3>Example 2</h3><p>Input:</p><p>["ArrayQueue", "isEmpty"]</p><p>[[]]</p><p>Output:[null, true]</p><p>Explanation:</p><p>ArrayQueue queue = new ArrayQueue();</p><p>queue.isEmpty(); // returns true</p><h3>Example 3</h3><p>Input:</p><p>["ArrayQueue", "push", "pop", "isEmpty"]</p><p>[[], [1], [], []]</p></div>
+
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition :</h3>
+<p>Imagine you're managing a ticket counter at a busy theater. You have a limited number of tickets to sell, and you want to ensure the process is efficient and fair. To do this, you use a special system to keep track of which tickets have been sold and which are available, without having to rearrange them constantly. This system operates like a circular queue. <br><br>
+
+<strong>The Ticket Counter (Queue):</strong> You have a counter with a fixed number of ticket slots, say 5 slots, arranged in a circle. Each slot can hold one ticket. <br><br>
+
+<strong>Selling a Ticket (Enqueue Operation):</strong> When a customer arrives to buy a ticket, you place the ticket in the next available slot. Keep track of the position where the next ticket should be placed using a variable called rear. For example, if you have sold tickets to 3 customers, your counter might look like this: [T1, T2, T3, _, _], where T1, T2, and T3 represent sold tickets, and the next ticket will be placed in the fourth slot. <br><br>
+
+
+<strong>Customer Leaving with a Ticket (Dequeue Operation):</strong> When a customer takes a ticket, you remove it from the slot at the front of the queue. Instead of shifting all the tickets forward, you just move the front pointer to the next slot. Continuing with our example, if the first customer takes their ticket, your counter now looks like this: [_, T2, T3, _, _], with the front pointing to the second slot. <br><br>
+
+<strong>Handling Wrap-Around (Circular Array):</strong> When the rear or front reaches the end of the array, it wraps around to the beginning. This ensures that you make efficient use of the available slots without needing to shift tickets around. If you sell more tickets and the rear reaches the end, it wraps around like this: [T4, T5, T3, _, T1] with the rear and front properly adjusted using modular arithmetic. <br><br>
+
+<strong>Checking Availability (IsEmpty and IsFull Operations):</strong> You need to check if there are any tickets left or if your counter is full. These checks ensure you manage the tickets efficiently. </p>
+<h3>Approach :</h3>
+<p>
+ </p><ul>
+<li><strong>Declare an Array of a Particular Size:</strong> Declare an array to store the elements of the queue. The size of this array is determined when the queue is initialized.
+</li>
+<li><strong>Define Variables:</strong> 
+<ul>
+<li>start: Tracks the index of the front element. </li>
+<li>end: Tracks the index of the last element. </li>
+<li>size: Keeps the current number of elements in the queue. </li>
+<li>capacity: The maximum number of elements the queue can hold. </li>
+</ul>
+</li>
+
+<li><strong>Push Operation (push(int x)):</strong> Check if the queue is full by comparing size and capacity. If not full, increment the rear using modular arithmetic to wrap around if necessary, then insert the element at the rear index. Increment the size.
+</li>
+
+<li><strong>Pop Operation (pop()):</strong> Check if the queue is empty by comparing the size with 0. If not empty, return the element at the front index, then increment the front using modular arithmetic to wrap around if necessary. Decrement the size.
+</li>
+
+<li><strong>Peek Operation (peek()):</strong> Check if the queue is empty. If not empty, return the element at the front index.
+</li>
+
+<li><strong>IsEmpty Operation (isEmpty()):</strong> Check if the size is 0 to determine if the queue is empty.</li>
+    </ul>
+<p></p>
+
+<h3>Dry Run:</h3>
+For a dry run refer to the video.
+
+<h3>Solution:</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Class implementing Queue using Arrays
+class ArrayQueue {
+    // Array to store queue elements
+    int* arr;
+    // Indices for start and end of the queue
+    int start, end;
+    // Current size and maximum size of the queue
+    int currSize, maxSize;
+
+public:
+    // Constructor
+    ArrayQueue() {
+        arr = new int[10];
+        start = -1;
+        end = -1;
+        currSize = 0;
+        maxSize = 10;
+    }
+
+    // Method to push an element into the queue
+    void push(int x) {
+        // Check if the queue is full
+        if (currSize == maxSize) {
+            cout << "Queue is full\nExiting..." << endl;
+            exit(1);
+        }
+        
+        // If the queue is empty, initialize start and end
+        if (end == -1) {
+            start = 0;
+            end = 0;
+        } 
+        else {
+            // Circular increment of end
+            end = (end + 1) % maxSize;
+        }
+            
+        arr[end] = x;
+        currSize++;
+    }
+
+    // Method to pop an element from the queue
+    int pop() {
+        // Check if the queue is empty
+        if (start == -1) {
+            cout << "Queue Empty\nExiting..." << endl;
+            exit(1);
+        }
+        int popped = arr[start];
+        
+        // If the queue has only one element, reset start and end
+        if (currSize == 1) {
+            start = -1;
+            end = -1;
+        }
+        else {
+            // Circular increment of start
+            start = (start + 1) % maxSize;
+        }
+        
+        currSize--;
+        return popped;
+    }
+
+    // Method to get the front element of the queue
+    int peek() {
+        // Check if the queue is empty
+        if (start == -1) {
+            cout << "Queue is Empty" << endl;
+            exit(1);
+        }
+        return arr[start];
+    }
+
+    // Method to determine whether the queue is empty
+    bool isEmpty() {
+        return (currSize == 0);
+    }
+};
+
+int main() {
+    ArrayQueue queue;
+    vector<string> commands = {"ArrayQueue", "push", "push", 
+                               "peek", "pop", "isEmpty"};
+    vector<vector<int>> inputs = {{}, {5}, {10}, {}, {}, {}};
+
+    for (int i = 0; i < commands.size(); ++i) {
+        if (commands[i] == "push") {
+            queue.push(inputs[i][0]);
+            cout << "null ";
+        } else if (commands[i] == "pop") {
+            cout << queue.pop() << " ";
+        } else if (commands[i] == "peek") {
+            cout << queue.peek() << " ";
+        } else if (commands[i] == "isEmpty") {
+            cout << (queue.isEmpty() ? "true" : "false") << " ";
+        } else if (commands[i] == "ArrayQueue") {
+            cout << "null ";
+        }
+    }
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+// Class implementing Queue using Arrays
+class ArrayQueue {
+    // Array to store queue elements
+    int[] arr;
+    // Indices for start and end of the queue
+    int start, end;
+    // Current size and maximum size of the queue
+    int currSize, maxSize;
+
+    // Constructor
+    public ArrayQueue() {
+        arr = new int[10];
+        start = -1;
+        end = -1;
+        currSize = 0;
+        maxSize = 10;
+    }
+
+    // Method to push an element into the queue
+    public void push(int x) {
+        // Check if the queue is full
+        if (currSize == maxSize) {
+            System.out.println("Queue is full\nExiting...");
+            System.exit(1);
+        }
+
+        // If the queue is empty, initialize start and end
+        if (end == -1) {
+            start = 0;
+            end = 0;
+        } 
+        else {
+            // Circular increment of end
+            end = (end + 1) % maxSize;
+        }
+
+        arr[end] = x;
+        currSize++;
+    }
+
+    // Method to pop an element from the queue
+    public int pop() {
+        // Check if the queue is empty
+        if (start == -1) {
+            System.out.println("Queue Empty\nExiting...");
+            System.exit(1);
+        }
+        int popped = arr[start];
+
+        // If the queue has only one element, reset start and end
+        if (currSize == 1) {
+            start = -1;
+            end = -1;
+        } 
+        else {
+            // Circular increment of start
+            start = (start + 1) % maxSize;
+        }
+
+        currSize--;
+        return popped;
+    }
+
+    // Method to get the front element of the queue
+    public int peek() {
+        // Check if the queue is empty
+        if (start == -1) {
+            System.out.println("Queue is Empty");
+            System.exit(1);
+        }
+        return arr[start];
+    }
+
+    // Method to determine whether the queue is empty
+    public boolean isEmpty() {
+        return (currSize == 0);
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        ArrayQueue queue = new ArrayQueue();
+
+        String[] commands = {"ArrayQueue", "push", "push", 
+                             "peek", "pop", "isEmpty"};
+        int[][] inputs = {{}, {5}, {10}, {}, {}, {}};
+
+        for (int i = 0; i < commands.length; ++i) {
+            switch (commands[i]) {
+                case "push":
+                    queue.push(inputs[i][0]);
+                    System.out.print("null ");
+                    break;
+                case "pop":
+                    System.out.print(queue.pop() + " ");
+                    break;
+                case "peek":
+                    System.out.print(queue.peek() + " ");
+                    break;
+                case "isEmpty":
+                    System.out.print(queue.isEmpty() ? "true " : "false ");
+                    break;
+                case "ArrayQueue":
+                    System.out.print("null ");
+                    break;
+            }
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="python" class="language-python"># Class implementing Queue using Arrays
+class ArrayQueue:
+    # Constructor
+    def __init__(self):
+        # Array to store queue elements
+        self.arr = [0] * 10
+        # Indices for start and end of the queue
+        self.start = -1
+        self.end = -1
+        # Current size and maximum size of the queue
+        self.currSize = 0
+        self.maxSize = 10
+
+    # Method to push an element into the queue
+    def push(self, x):
+        # Check if the queue is full
+        if self.currSize == self.maxSize:
+            print("Queue is full\nExiting...")
+            exit(1)
+
+        # If the queue is empty, initialize start and end
+        if self.end == -1:
+            self.start = 0
+            self.end = 0
+        else:
+            # Circular increment of end
+            self.end = (self.end + 1) % self.maxSize
+
+        self.arr[self.end] = x
+        self.currSize += 1
+
+    # Method to pop an element from the queue
+    def pop(self):
+        # Check if the queue is empty
+        if self.start == -1:
+            print("Queue Empty\nExiting...")
+            exit(1)
+        popped = self.arr[self.start]
+
+        # If the queue has only one element, reset start and end
+        if self.currSize == 1:
+            self.start = -1
+            self.end = -1
+        else:
+            # Circular increment of start
+            self.start = (self.start + 1) % self.maxSize
+
+        self.currSize -= 1
+        return popped
+
+    # Method to get the front element of the queue
+    def peek(self):
+        # Check if the queue is empty
+        if self.start == -1:
+            print("Queue is Empty")
+            exit(1)
+        return self.arr[self.start]
+
+    # Method to determine whether the queue is empty
+    def isEmpty(self):
+        return self.currSize == 0
+
+
+if __name__ == "__main__":
+    queue = ArrayQueue()
+    commands = ["ArrayQueue", "push", "push", "peek", "pop", "isEmpty"]
+    inputs = [[], [5], [10], [], [], []]
+
+    for i in range(len(commands)):
+        if commands[i] == "push":
+            queue.push(inputs[i][0])
+            print("null", end=" ")
+        elif commands[i] == "pop":
+            print(queue.pop(), end=" ")
+        elif commands[i] == "peek":
+            print(queue.peek(), end=" ")
+        elif commands[i] == "isEmpty":
+            print("true" if queue.isEmpty() else "false", end=" ")
+        elif commands[i] == "ArrayQueue":
+            print("null", end=" ")</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Class implementing Queue using Arrays
+class ArrayQueue {
+    // Constructor
+    constructor() {
+        // Array to store queue elements
+        this.arr = new Array(10);
+        // Indices for start and end of the queue
+        this.start = -1;
+        this.end = -1;
+        // Current size and maximum size of the queue
+        this.currSize = 0;
+        this.maxSize = 10;
+    }
+
+    // Method to push an element into the queue
+    push(x) {
+        // Check if the queue is full
+        if (this.currSize === this.maxSize) {
+            console.log("Queue is full\nExiting...");
+            process.exit(1);
+        }
+
+        // If the queue is empty, initialize start and end
+        if (this.end === -1) {
+            this.start = 0;
+            this.end = 0;
+        } 
+        else {
+            // Circular increment of end
+            this.end = (this.end + 1) % this.maxSize;
+        }
+
+        this.arr[this.end] = x;
+        this.currSize++;
+    }
+
+    // Method to pop an element from the queue
+    pop() {
+        // Check if the queue is empty
+        if (this.start === -1) {
+            console.log("Queue Empty\nExiting...");
+            process.exit(1);
+        }
+        let popped = this.arr[this.start];
+
+        // If the queue has only one element, reset start and end
+        if (this.currSize === 1) {
+            this.start = -1;
+            this.end = -1;
+        } 
+        else {
+            // Circular increment of start
+            this.start = (this.start + 1) % this.maxSize;
+        }
+
+        this.currSize--;
+        return popped;
+    }
+
+    // Method to get the front element of the queue
+    peek() {
+        // Check if the queue is empty
+        if (this.start === -1) {
+            console.log("Queue is Empty");
+            process.exit(1);
+        }
+        return this.arr[this.start];
+    }
+
+    // Method to determine whether the queue is empty
+    isEmpty() {
+        return this.currSize === 0;
+    }
+}
+
+const queue = new ArrayQueue();
+const commands = ["ArrayQueue", "push", "push", "peek", "pop", "isEmpty"];
+const inputs = [[], [5], [10], [], [], []];
+
+for (let i = 0; i < commands.length; ++i) {
+    if (commands[i] === "push") {
+        queue.push(inputs[i][0]);
+        console.log("null ");
+    } else if (commands[i] === "pop") {
+        console.log(queue.pop() + " ");
+    } else if (commands[i] === "peek") {
+        console.log(queue.peek() + " ");
+    } else if (commands[i] === "isEmpty") {
+        console.log(queue.isEmpty() ? "true " : "false ");
+    } else if (commands[i] === "ArrayQueue") {
+        console.log("null ");
+    }
+}</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">// Class implementing Queue using Arrays
+using System;
+using System.Collections.Generic;
+
+class ArrayQueue
+{
+    // Array to store queue elements
+    private int[] arr;
+    // Indices for start and end of the queue
+    private int start;
+    private int end;
+    // Current size and maximum size of the queue
+    private int currSize;
+    private int maxSize;
+
+    // Constructor
+    public ArrayQueue()
+    {
+        // Array to store queue elements
+        this.arr = new int[10];
+        // Indices for start and end of the queue
+        this.start = -1;
+        this.end = -1;
+        // Current size and maximum size of the queue
+        this.currSize = 0;
+        this.maxSize = 10;
+    }
+
+    // Method to push an element into the queue
+    public void Push(int x)
+    {
+        // Check if the queue is full
+        if (this.currSize == this.maxSize)
+        {
+            Console.WriteLine("Queue is full\nExiting...");
+            Environment.Exit(1);
+        }
+
+        // If the queue is empty, initialize start and end
+        if (this.end == -1)
+        {
+            this.start = 0;
+            this.end = 0;
+        }
+        else
+        {
+            // Circular increment of end
+            this.end = (this.end + 1) % this.maxSize;
+        }
+
+        this.arr[this.end] = x;
+        this.currSize++;
+    }
+
+    // Method to pop an element from the queue
+    public int Pop()
+    {
+        // Check if the queue is empty
+        if (this.start == -1)
+        {
+            Console.WriteLine("Queue Empty\nExiting...");
+            Environment.Exit(1);
+        }
+        int popped = this.arr[this.start];
+
+        // If the queue has only one element, reset start and end
+        if (this.currSize == 1)
+        {
+            this.start = -1;
+            this.end = -1;
+        }
+        else
+        {
+            // Circular increment of start
+            this.start = (this.start + 1) % this.maxSize;
+        }
+
+        this.currSize--;
+        return popped;
+    }
+
+    // Method to get the front element of the queue
+    public int Peek()
+    {
+        // Check if the queue is empty
+        if (this.start == -1)
+        {
+            Console.WriteLine("Queue is Empty");
+            Environment.Exit(1);
+        }
+        return this.arr[this.start];
+    }
+
+    // Method to determine whether the queue is empty
+    public bool IsEmpty()
+    {
+        return this.currSize == 0;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        ArrayQueue queue = new ArrayQueue();
+        List<string> commands = new List<string> { "ArrayQueue", "push", "push", "peek", "pop", "isEmpty" };
+        List<List<int>> inputs = new List<List<int>> { new List<int>(), new List<int> { 5 }, new List<int> { 10 }, new List<int>(), new List<int>(), new List<int>() };
+
+        for (int i = 0; i < commands.Count; ++i)
+        {
+            if (commands[i] == "push")
+            {
+                queue.Push(inputs[i][0]);
+                Console.Write("null ");
+            }
+            else if (commands[i] == "pop")
+            {
+                Console.Write(queue.Pop() + " ");
+            }
+            else if (commands[i] == "peek")
+            {
+                Console.Write(queue.Peek() + " ");
+            }
+            else if (commands[i] == "isEmpty")
+            {
+                Console.Write(queue.IsEmpty() ? "true " : "false ");
+            }
+            else if (commands[i] == "ArrayQueue")
+            {
+                Console.Write("null ");
+            }
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+	"os"
+)
+type ArrayQueue struct {
+	arr      []int // Array to store queue elements
+	start    int   // Index of start of the queue
+	end      int   // Index of end of the queue
+	currSize int   // Current size of the queue
+	maxSize  int   // Maximum size of the queue
+}
+
+// Constructor
+func NewArrayQueue() *ArrayQueue {
+	return &ArrayQueue{
+		arr:      make([]int, 10),
+		start:    -1,
+		end:      -1,
+		currSize: 0,
+		maxSize:  10,
+	}
+}
+
+// Method to push an element into the queue
+func (q *ArrayQueue) Push(x int) {
+	// Check if the queue is full
+	if q.currSize == q.maxSize {
+		fmt.Println("Queue is full\nExiting...")
+		os.Exit(1)
+	}
+
+	// If the queue is empty, initialize start and end
+	if q.end == -1 {
+		q.start = 0
+		q.end = 0
+	} else {
+		// Circular increment of end
+		q.end = (q.end + 1) % q.maxSize
+	}
+
+	q.arr[q.end] = x
+	q.currSize++
+}
+
+// Method to pop an element from the queue
+func (q *ArrayQueue) Pop() int {
+	// Check if the queue is empty
+	if q.start == -1 {
+		fmt.Println("Queue Empty\nExiting...")
+		os.Exit(1)
+	}
+
+	popped := q.arr[q.start]
+
+	// If the queue has only one element, reset start and end
+	if q.currSize == 1 {
+		q.start = -1
+		q.end = -1
+	} else {
+		// Circular increment of start
+		q.start = (q.start + 1) % q.maxSize
+	}
+
+	q.currSize--
+	return popped
+}
+
+// Method to get the front element of the queue
+func (q *ArrayQueue) Peek() int {
+	// Check if the queue is empty
+	if q.start == -1 {
+		fmt.Println("Queue is Empty")
+		os.Exit(1)
+	}
+	return q.arr[q.start]
+}
+
+// Method to determine whether the queue is empty
+func (q *ArrayQueue) IsEmpty() bool {
+	return q.currSize == 0
+}
+
+func main() {
+	queue := NewArrayQueue()
+	commands := []string{"ArrayQueue", "push", "push", "peek", "pop", "isEmpty"}
+	inputs := [][]int{{}, {5}, {10}, {}, {}, {}}
+
+	for i, cmd := range commands {
+		switch cmd {
+		case "push":
+			queue.Push(inputs[i][0])
+			fmt.Print("null ")
+		case "pop":
+			fmt.Printf("%d ", queue.Pop())
+		case "peek":
+			fmt.Printf("%d ", queue.Peek())
+		case "isEmpty":
+			if queue.IsEmpty() {
+				fmt.Print("true ")
+			} else {
+				fmt.Print("false ")
+			}
+		case "ArrayQueue":
+			fmt.Print("null ")
+		}
+	}
+
+	fmt.Println()
+}</code></pre></div></div></div>
+
+<h3>Complexity Analysis:</h3>
+<strong>Time Complexity:  O(1)</strong> as all individual queue operations are taking constant time. 
+<br>
+<br>
+<strong>Space Complexity: O(1)</strong> as the implementation uses a fixed size array.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class ArrayQueue {
+    // Array to store queue elements
+    int* arr;
+    // Indices for start and end of the queue
+    int start, end;
+    // Current size and maximum size of the queue
+    int currSize, maxSize;
+
+public:
+    // Constructor
+    ArrayQueue() {
+        arr = new int[10];
+        start = -1;
+        end = -1;
+        currSize = 0;
+        maxSize = 10;
+    }
+
+    // Method to push an element into the queue
+    void push(int x) {
+        // Check if the queue is full
+        if (currSize == maxSize) {
+            cout &lt;&lt; &quot;Queue is full\nExiting...&quot; &lt;&lt; endl;
+            exit(1);
+        }
+        
+        // If the queue is empty, initialize start and end
+        if (end == -1) {
+            start = 0;
+            end = 0;
+        } 
+        else {
+            // Circular increment of end
+            end = (end + 1) % maxSize;
+        }
+            
+        arr[end] = x;
+        currSize++;
+    }
+
+    // Method to pop an element from the queue
+    int pop() {
+        // Check if the queue is empty
+        if (start == -1) {
+            cout &lt;&lt; &quot;Queue Empty\nExiting...&quot; &lt;&lt; endl;
+            exit(1);
+        }
+        int popped = arr[start];
+        
+        // If the queue has only one element, reset start and end
+        if (currSize == 1) {
+            start = -1;
+            end = -1;
+        }
+        else {
+            // Circular increment of start
+            start = (start + 1) % maxSize;
+        }
+        
+        currSize--;
+        return popped;
+    }
+
+    // Method to get the front element of the queue
+    int peek() {
+        // Check if the queue is empty
+        if (start == -1) {
+            cout &lt;&lt; &quot;Queue is Empty&quot; &lt;&lt; endl;
+            exit(1);
+        }
+        return arr[start];
+    }
+
+    // Method to determine whether the queue is empty
+    bool isEmpty() {
+        return (currSize == 0);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class ArrayQueue
+{
+    // Array to store queue elements
+    private int[] arr;
+    // Indices for start and end of the queue
+    private int start;
+    private int end;
+    // Current size and maximum size of the queue
+    private int currSize;
+    private int maxSize;
+
+    public ArrayQueue()
+    {
+        // Array to store queue elements
+        this.arr = new int[10];
+        // Indices for start and end of the queue
+        this.start = -1;
+        this.end = -1;
+        // Current size and maximum size of the queue
+        this.currSize = 0;
+        this.maxSize = 10;
+    }
+
+   
+    public void Push(int x)
+    {
+        // Check if the queue is full
+        if (this.currSize == this.maxSize)
+        {
+            throw new System.InvalidOperationException(&quot;Queue is full&quot;);
+        }
+
+        // If the queue is empty, initialize start and end
+        if (this.end == -1)
+        {
+            this.start = 0;
+            this.end = 0;
+        } 
+        else
+        {
+            // Circular increment of end
+            this.end = (this.end + 1) % this.maxSize;
+        }
+
+        this.arr[this.end] = x;
+        this.currSize++;
+    }
+
+    public int Pop()
+    {
+        // Check if the queue is empty
+        if (this.start == -1)
+        {
+            throw new System.InvalidOperationException(&quot;Queue Empty&quot;);
+        }
+        int popped = this.arr[this.start];
+
+        // If the queue has only one element, reset start and end
+        if (this.currSize == 1)
+        {
+            this.start = -1;
+            this.end = -1;
+        } 
+        else
+        {
+            // Circular increment of start
+            this.start = (this.start + 1) % this.maxSize;
+        }
+
+        this.currSize--;
+        return popped;
+    }
+
+    public int Peek()
+    {
+        // Check if the queue is empty
+        if (this.start == -1)
+        {
+            throw new System.InvalidOperationException(&quot;Queue is Empty&quot;);
+        }
+        return this.arr[this.start];
+    }
+
+    public bool IsEmpty()
+    {
+        return this.currSize == 0;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>type ArrayQueue struct {
+	arr      []int // Array to store queue elements
+	start    int   // Index of start of the queue
+	end      int   // Index of end of the queue
+	currSize int   // Current size of the queue
+	maxSize  int   // Maximum size of the queue
+}
+
+// Constructor
+func NewArrayQueue() *ArrayQueue {
+	return &amp;ArrayQueue{
+		arr:      make([]int, 10),
+		start:    -1,
+		end:      -1,
+		currSize: 0,
+		maxSize:  10,
+	}
+}
+
+// Method to push an element into the queue
+func (q *ArrayQueue) Push(x int) {
+	// Check if the queue is full
+	if q.currSize == q.maxSize {
+		fmt.Println(&quot;Queue is full\nExiting...&quot;)
+		os.Exit(1)
+	}
+
+	// If the queue is empty, initialize start and end
+	if q.end == -1 {
+		q.start = 0
+		q.end = 0
+	} else {
+		// Circular increment of end
+		q.end = (q.end + 1) % q.maxSize
+	}
+
+	q.arr[q.end] = x
+	q.currSize++
+}
+
+// Method to pop an element from the queue
+func (q *ArrayQueue) Pop() int {
+	// Check if the queue is empty
+	if q.start == -1 {
+		fmt.Println(&quot;Queue Empty\nExiting...&quot;)
+		os.Exit(1)
+	}
+
+	popped := q.arr[q.start]
+
+	// If the queue has only one element, reset start and end
+	if q.currSize == 1 {
+		q.start = -1
+		q.end = -1
+	} else {
+		// Circular increment of start
+		q.start = (q.start + 1) % q.maxSize
+	}
+
+	q.currSize--
+	return popped
+}
+
+// Method to get the front element of the queue
+func (q *ArrayQueue) Peek() int {
+	// Check if the queue is empty
+	if q.start == -1 {
+		fmt.Println(&quot;Queue is Empty&quot;)
+		os.Exit(1)
+	}
+	return q.arr[q.start]
+}
+
+// Method to determine whether the queue is empty
+func (q *ArrayQueue) IsEmpty() bool {
+	return q.currSize == 0
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class ArrayQueue {
+    // Array to store queue elements
+    int[] arr;
+    // Indices for start and end of the queue
+    int start, end;
+    // Current size and maximum size of the queue
+    int currSize, maxSize;
+
+    // Constructor
+    public ArrayQueue() {
+        arr = new int[10];
+        start = -1;
+        end = -1;
+        currSize = 0;
+        maxSize = 10;
+    }
+
+    // Method to push an element into the queue
+    public void push(int x) {
+        // Check if the queue is full
+        if (currSize == maxSize) {
+            System.out.println(&quot;Queue is full\nExiting...&quot;);
+            System.exit(1);
+        }
+
+        // If the queue is empty, initialize start and end
+        if (end == -1) {
+            start = 0;
+            end = 0;
+        } 
+        else {
+            // Circular increment of end
+            end = (end + 1) % maxSize;
+        }
+
+        arr[end] = x;
+        currSize++;
+    }
+
+    // Method to pop an element from the queue
+    public int pop() {
+        // Check if the queue is empty
+        if (start == -1) {
+            System.out.println(&quot;Queue Empty\nExiting...&quot;);
+            System.exit(1);
+        }
+        int popped = arr[start];
+
+        // If the queue has only one element, reset start and end
+        if (currSize == 1) {
+            start = -1;
+            end = -1;
+        } 
+        else {
+            // Circular increment of start
+            start = (start + 1) % maxSize;
+        }
+
+        currSize--;
+        return popped;
+    }
+
+    // Method to get the front element of the queue
+    public int peek() {
+        // Check if the queue is empty
+        if (start == -1) {
+            System.out.println(&quot;Queue is Empty&quot;);
+            System.exit(1);
+        }
+        return arr[start];
+    }
+
+    // Method to determine whether the queue is empty
+    public boolean isEmpty() {
+        return (currSize == 0);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class ArrayQueue {
+    // Constructor
+    constructor() {
+        // Array to store queue elements
+        this.arr = new Array(10);
+        // Indices for start and end of the queue
+        this.start = -1;
+        this.end = -1;
+        // Current size and maximum size of the queue
+        this.currSize = 0;
+        this.maxSize = 10;
+    }
+
+    // Method to push an element into the queue
+    push(x) {
+        // Check if the queue is full
+        if (this.currSize === this.maxSize) {
+            console.log(&quot;Queue is full\nExiting...&quot;);
+            process.exit(1);
+        }
+
+        // If the queue is empty, initialize start and end
+        if (this.end === -1) {
+            this.start = 0;
+            this.end = 0;
+        } 
+        else {
+            // Circular increment of end
+            this.end = (this.end + 1) % this.maxSize;
+        }
+
+        this.arr[this.end] = x;
+        this.currSize++;
+    }
+
+    // Method to pop an element from the queue
+    pop() {
+        // Check if the queue is empty
+        if (this.start === -1) {
+            console.log(&quot;Queue Empty\nExiting...&quot;);
+            process.exit(1);
+        }
+        let popped = this.arr[this.start];
+
+        // If the queue has only one element, reset start and end
+        if (this.currSize === 1) {
+            this.start = -1;
+            this.end = -1;
+        } 
+        else {
+            // Circular increment of start
+            this.start = (this.start + 1) % this.maxSize;
+        }
+
+        this.currSize--;
+        return popped;
+    }
+
+    // Method to get the front element of the queue
+    peek() {
+        // Check if the queue is empty
+        if (this.start === -1) {
+            console.log(&quot;Queue is Empty&quot;);
+            process.exit(1);
+        }
+        return this.arr[this.start];
+    }
+
+    // Method to determine whether the queue is empty
+    isEmpty() {
+        return this.currSize === 0;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class ArrayQueue:
+    # Constructor
+    def __init__(self):
+        # Array to store queue elements
+        self.arr = [0] * 10
+        # Indices for start and end of the queue
+        self.start = -1
+        self.end = -1
+        # Current size and maximum size of the queue
+        self.currSize = 0
+        self.maxSize = 10
+
+    # Method to push an element into the queue
+    def push(self, x):
+        # Check if the queue is full
+        if self.currSize == self.maxSize:
+            print(&quot;Queue is full\nExiting...&quot;)
+            exit(1)
+
+        # If the queue is empty, initialize start and end
+        if self.end == -1:
+            self.start = 0
+            self.end = 0
+        else:
+            # Circular increment of end
+            self.end = (self.end + 1) % self.maxSize
+
+        self.arr[self.end] = x
+        self.currSize += 1
+
+    # Method to pop an element from the queue
+    def pop(self):
+        # Check if the queue is empty
+        if self.start == -1:
+            print(&quot;Queue Empty\nExiting...&quot;)
+            exit(1)
+        popped = self.arr[self.start]
+
+        # If the queue has only one element, reset start and end
+        if self.currSize == 1:
+            self.start = -1
+            self.end = -1
+        else:
+            # Circular increment of start
+            self.start = (self.start + 1) % self.maxSize
+
+        self.currSize -= 1
+        return popped
+
+    # Method to get the front element of the queue
+    def peek(self):
+        # Check if the queue is empty
+        if self.start == -1:
+            print(&quot;Queue is Empty&quot;)
+            exit(1)
+        return self.arr[self.start]
+
+    # Method to determine whether the queue is empty
+    def isEmpty(self):
+        return self.currSize == 0</code></pre></div>
+</body>
+</html>

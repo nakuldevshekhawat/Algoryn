@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Find the city with the smallest number of neighbors</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Find the city with the smallest number of neighbors</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span><span>Graph</span><span>Shortest Path</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>There are n cities numbered from 0 to n-1. Given the array edges where edges[i] = [from<sub>i</sub>, to<sub>i</sub>,weight<sub>i</sub>] represents a bidirectional and weighted edge between cities from<sub>i</sub> and to<sub>i</sub>, and given the integer distance <strong>Threshold</strong>. Find out a city with the <strong>smallest</strong> number of cities that are <strong>reachable</strong> through some path and whose distance is at most Threshold Distance.</p><p><br></p><p>If there are multiple such cities, our answer will be the city with the greatest number.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ n ≤ 100</li><li>1 <= m <= n*(n-1)/2</li><li>length(edges[i]) == 3</li><li>0 <= from<sub>i</sub> < to<sub>i </sub>< n</li><li>1 <= weight<sub>i </sub>, distanceThreshold <= 10<sup>4</sup></li><li>All pairs (from<sub>i</sub>, to<sub>i</sub>) are distinct</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-3lnXghBY"></p><p>Input : N=4, M=4, edges = [[0,1,3],[1,2,1],[1,3,4],[2,3,1]], distanceThreshold = 4</p><p><br></p><p>Output: 3</p><p><br></p><p>Explanation: </p><p>The adjacent cities for each city at a distanceThreshold are =</p><p>City 0 →[City 1, City 2]</p><p>City 1 →[City 0, City 2, City 3]</p><p>City 2 →[City 0, City 1, City 3]</p><p>City 3 →[City 1, City 2]</p><p>Here, City 0 and City 3 have a minimum number of cities </p><p>i.e. 2 within distanceThreshold. So, the result will be the </p><p>city with the largest number. So, the answer is City 3.</p><h3>Example 2</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-NA0WoMB8"></p><p>Input : N=3, M=2, edges = [[0,1,1],[0,2,3]], distanceThreshold = 2</p><p><br></p><p>Output: 2</p><p><br></p><p>Explanation: </p><p>City 0 -> City 1,</p><p>City 1 → City 0,</p><p>City 2 → no City</p><p>Hence, 2 is the answer.</p><h3>Example 3</h3><p>Input: N = 3, M = 3, edges = [[0,1,2],[1,2,1],[0,2,4]], distanceThreshold = 2</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem mimics the core concept of routing in the field of computer networks and telecommunications. In real world, think of these cities as 'nodes' and the connections between them as 'edges'. This type of problem is solved using algorithms like Dijkstra's or the Floyd-Warshall algorithm in the design of routing protocols for networks, where it is crucial to determine the nearest or least-cost path from one node to another. While it's not about finding a city with the smallest number of reachable cities, the method to find shortest paths in a network is definitely a practical application of this problem. It's a routine part of the functionality of essential tech parts, such as Internet routers, Google Maps, GPS systems, and more.</p></div>
+<div class="section"><h2>Editorial: Solution</h2>
+<h3>Intuition:</h3> 
+<p>
+    To find out which city is having the smallest number of cities that are reachable with at most <b>Threshold distance</b>, we firstly need to find the distance betweeen every two pair of nodes(cities) possible then it can be compared with the threshold distance to get the answer. <br><br>
+    In order to find the distance between every two pair of nodes, the <strong>Floyd Warshall Algorithm</strong> can be used. Once the 2D distance matrix(that contains the shortest paths) is generated, for each node(city), we can count the number of nodes(cities) that can be reached with a distance lesser or equal to the <b>Threshold distance</b>.
+
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Represent the cities and the bidirectional weighted edges using an adjacency matrix. Initialize all distances to a large value (infinity) except for the direct edges between cities.</li>
+   <li> Apply the Floyd-Warshall algorithm to compute the shortest paths between all pairs of cities. This algorithm iteratively updates the distance between any two cities through an intermediate city if it offers a shorter path.</li>
+   <li>For each city, count the number of cities that are reachable within the given distance threshold.</li>
+   <li>Identify the city with the smallest number of reachable cities within the threshold. If multiple cities have the same number of reachable cities, choose the city with the greater index.</li> 
+</ol>
+
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m1.drawio.png-ZoDl8Vgo" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m3.drawio.png-_sEP2ncf" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m4.drawio.png--zI2ArP-" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m4.drawio (1).png-z9D5IquE" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m1.drawio.png-ZoDl8Vgo" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m3.drawio.png-_sEP2ncf" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m4.drawio.png--zI2ArP-" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Find the city with the smallest number of neighbors/m4.drawio (1).png-z9D5IquE" alt="Image 4"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    int findCity(int n, int m, vector<vector<int>>& edges,
+	             int distanceThreshold) {
+		
+		// Adjacency matrix to store the graph
+        vector<vector<int>> adjMat(n, vector<int>(n, 1e9));
+        
+        // Filling up the adjacency matrix
+        for(auto it : edges) {
+            adjMat[it[0]][it[1]] = it[2];
+            adjMat[it[1]][it[0]] = it[2];
+        }
+        
+        // Applying Floyd Warshall Algorithm
+        
+        // For intermediate node k
+        for(int k=0; k<n; k++) {
+            
+            // node i ---> node j
+            for(int i=0; i<n; i++) {
+                for(int j=0; j<n; j++) {
+                    adjMat[i][j] = 
+                        min(adjMat[i][j], adjMat[i][k] + adjMat[k][j]);
+                }
+            }
+        }   
+        
+        // To store the minimum count of neighbors 
+        int minCount = 1e9;
+        
+        /* To store the answer (city having 
+        smallest number of neighbors) */
+        int ans;
+        
+        // Check every city
+        for(int i=0; i<n; i++) {
+            
+            /* To count the neighbors of given city 
+            having distance lesser than threshold */
+            int count = 0;
+
+            // City i ---> City j
+            for(int j=0; j<n; j++) {
+                
+                /* If the distance to reach city j from 
+                city i is less than threshold */
+                if(i != j && adjMat[i][j] <= distanceThreshold) {
+                    
+                    // Increment count
+                    count++;
+                }
+            }
+            
+            // if current count is less than minimum count
+            if(count < minCount) {
+                
+                // Update minimum count
+                minCount = count;
+                
+                // Store the answer
+                ans = i;
+            }
+            
+            /* Else if current count is 
+            equal to minimum count */
+            else if(count == minCount) {
+                
+                /* Update the answer (to store 
+                city with greater number) */
+                ans = i;
+            }
+        }
+        
+        // Return the resulting city as answer
+        return ans;
+	}
+};
+
+int main() {
+    int N=4, M=4;
+    vector<vector<int>> edges ={
+        {0,1,3},{1,2,1},
+        {1,3,4},{2,3,1}
+    };
+    int distanceThreshold = 4;
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    int ans = sol.findCity(N, M, edges, distanceThreshold);
+    
+    // Output
+    cout << "The city with smallest number of neighbors (with given threshold) is: " << ans;
+ 
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    public int findCity(int n, int m, int[][] edges, 
+                        int distanceThreshold) {
+        
+        // Adjacency matrix to store the graph
+        int[][] adjMat = new int[n][n];
+        for (int[] row : adjMat) Arrays.fill(row, (int)1e9);
+        
+        // Filling up the adjacency matrix
+        for(int[] it : edges) {
+            adjMat[it[0]][it[1]] = it[2];
+            adjMat[it[1]][it[0]] = it[2];
+        }
+        
+        // Applying Floyd Warshall Algorithm
+        
+        // For intermediate node k
+        for(int k = 0; k < n; k++) {
+            
+            // node i ---> node j
+            for(int i = 0; i < n; i++) {
+                for(int j = 0; j < n; j++) {
+                    adjMat[i][j] = 
+                        Math.min(adjMat[i][j], adjMat[i][k] + adjMat[k][j]);
+                }
+            }
+        }
+        
+        // To store the minimum count of neighbors 
+        int minCount = (int)1e9;
+        
+        /* To store the answer (city having 
+        smallest number of neighbors) */
+        int ans = -1;
+        
+        // Check every city
+        for(int i = 0; i < n; i++) {
+            
+            /* To count the neighbors of given city 
+            having distance lesser than threshold */
+            int count = 0;
+
+            // City i ---> City j
+            for(int j = 0; j < n; j++) {
+                
+                /* If the distance to reach city j from 
+                city i is less than threshold */
+                if(i != j && adjMat[i][j] <= distanceThreshold) {
+                    
+                    // Increment count
+                    count++;
+                }
+            }
+            
+            // if current count is less than minimum count
+            if(count < minCount) {
+                
+                // Update minimum count
+                minCount = count;
+                
+                // Store the answer
+                ans = i;
+            }
+            
+            /* Else if current count is 
+            equal to minimum count */
+            else if(count == minCount) {
+                
+                /* Update the answer (to store 
+                city with greater number) */
+                ans = i;
+            }
+        }
+        
+        // Return the resulting city as answer
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int N = 4, M = 4;
+        int[][] edges = {
+            {0, 1, 3}, {1, 2, 1},
+            {1, 3, 4}, {2, 3, 1}
+        };
+        int distanceThreshold = 4;
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function to find the city with 
+        the smallest number of neighbors. */
+        int ans = sol.findCity(N, M, edges, distanceThreshold);
+        
+        // Output
+        System.out.println("The city with smallest number of neighbors (with given threshold) is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    
+    # Function to find the city with 
+    # the smallest number of neighbors.
+    def findCity(self, n, m, edges, distanceThreshold):
+        
+        # Adjacency matrix to store the graph
+        adjMat = [[1e9] * n for _ in range(n)]
+        
+        # Filling up the adjacency matrix
+        for it in edges:
+            adjMat[it[0]][it[1]] = it[2]
+            adjMat[it[1]][it[0]] = it[2]
+        
+        # Applying Floyd Warshall Algorithm
+        
+        # For intermediate node k
+        for k in range(n):
+            
+            # node i ---> node j
+            for i in range(n):
+                for j in range(n):
+                    adjMat[i][j] = min(adjMat[i][j], adjMat[i][k] + adjMat[k][j])
+        
+        # To store the minimum count of neighbors 
+        minCount = int(1e9)
+        
+        # To store the answer (city having 
+        # smallest number of neighbors)
+        ans = -1
+        
+        # Check every city
+        for i in range(n):
+            
+            # To count the neighbors of given city 
+            # having distance lesser than threshold
+            count = 0
+
+            # City i ---> City j
+            for j in range(n):
+                
+                # If the distance to reach city j from 
+                # city i is less than threshold
+                if i != j and adjMat[i][j] <= distanceThreshold:
+                    
+                    # Increment count
+                    count += 1
+            
+            # if current count is less than minimum count
+            if count < minCount:
+                
+                # Update minimum count
+                minCount = count
+                
+                # Store the answer
+                ans = i
+            
+            # Else if current count is 
+            # equal to minimum count
+            elif count == minCount:
+                
+                # Update the answer (to store 
+                # city with greater number)
+                ans = i
+        
+        # Return the resulting city as answer
+        return ans
+
+# Main function to test the solution
+if __name__ == "__main__":
+    N, M = 4, 4
+    edges = [
+        [0, 1, 3], [1, 2, 1],
+        [1, 3, 4], [2, 3, 1]
+    ]
+    distanceThreshold = 4
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function to find the city with 
+    # the smallest number of neighbors.
+    ans = sol.findCity(N, M, edges, distanceThreshold)
+    
+    # Output
+    print("The city with smallest number of neighbors (with given threshold) is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    findCity(n, m, edges, distanceThreshold) {
+        
+        // Adjacency matrix to store the graph
+        let adjMat = Array.from({ length: n }, () => Array(n).fill(1e9));
+        
+        // Filling up the adjacency matrix
+        for (let it of edges) {
+            adjMat[it[0]][it[1]] = it[2];
+            adjMat[it[1]][it[0]] = it[2];
+        }
+        
+        // Applying Floyd Warshall Algorithm
+        
+        // For intermediate node k
+        for (let k = 0; k < n; k++) {
+            
+            // node i ---> node j
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    adjMat[i][j] = 
+                        Math.min(adjMat[i][j], 
+                            adjMat[i][k] + adjMat[k][j]
+                        );
+                }
+            }
+        }
+        
+        // To store the minimum count of neighbors 
+        let minCount = 1e9;
+        
+        /* To store the answer (city having 
+        smallest number of neighbors) */
+        let ans;
+        
+        // Check every city
+        for (let i = 0; i < n; i++) {
+            
+            /* To count the neighbors of given city 
+            having distance lesser than threshold */
+            let count = 0;
+
+            // City i ---> City j
+            for (let j = 0; j < n; j++) {
+                
+                /* If the distance to reach city j from 
+                city i is less than threshold */
+                if (i !== j && adjMat[i][j] <= distanceThreshold) {
+                    
+                    // Increment count
+                    count++;
+                }
+            }
+            
+            // if current count is less than minimum count
+            if (count < minCount) {
+                
+                // Update minimum count
+                minCount = count;
+                
+                // Store the answer
+                ans = i;
+            }
+            
+            /* Else if current count is 
+            equal to minimum count */
+            else if (count === minCount) {
+                
+                /* Update the answer (to store 
+                city with greater number) */
+                ans = i;
+            }
+        }
+        
+        // Return the resulting city as answer
+        return ans;
+    }
+}
+
+// Main function to test the solution
+const main = () => {
+    const N = 4, M = 4;
+    const edges = [
+        [0, 1, 3], [1, 2, 1],
+        [1, 3, 4], [2, 3, 1]
+    ];
+    const distanceThreshold = 4;
+    
+    /* Creating an instance of 
+    Solution class */
+    const sol = new Solution();
+    
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    const ans = sol.findCity(N, M, edges, distanceThreshold);
+    
+    // Output
+    console.log("The city with smallest number of neighbors (with given threshold) is:", ans);
+};
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    public int FindCity(int n, int m, List<List<int>> edges, int distanceThreshold)
+    {
+        // Adjacency matrix to store the graph
+        const int INF = (int)1e9;
+        int[,] adjMat = new int[n, n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                adjMat[i, j] = INF;
+
+        // Filling up the adjacency matrix
+        foreach (var it in edges)
+        {
+            int u = it[0], v = it[1], w = it[2];
+            adjMat[u, v] = w;
+            adjMat[v, u] = w;
+        }
+
+        // Applying Floyd Warshall Algorithm
+
+        // For intermediate node k
+        for (int k = 0; k < n; k++)
+        {
+            // node i ---> node j
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (adjMat[i, k] + adjMat[k, j] < adjMat[i, j])
+                        adjMat[i, j] = adjMat[i, k] + adjMat[k, j];
+                }
+            }
+        }
+
+        // To store the minimum count of neighbors 
+        int minCount = INF;
+        /* To store the answer (city having 
+           smallest number of neighbors) */
+        int ans = 0;
+
+        // Check every city
+        for (int i = 0; i < n; i++)
+        {
+            /* To count the neighbors of given city 
+               having distance lesser than threshold */
+            int count = 0;
+
+            // City i ---> City j
+            for (int j = 0; j < n; j++)
+            {
+                /* If the distance to reach city j from 
+                   city i is less than threshold */
+                if (i != j && adjMat[i, j] <= distanceThreshold)
+                {
+                    // Increment count
+                    count++;
+                }
+            }
+
+            // if current count is less than minimum count
+            if (count < minCount)
+            {
+                // Update minimum count
+                minCount = count;
+                // Store the answer
+                ans = i;
+            }
+            /* Else if current count is 
+               equal to minimum count */
+            else if (count == minCount)
+            {
+                /* Update the answer (to store 
+                   city with greater number) */
+                ans = i;
+            }
+        }
+
+        // Return the resulting city as answer
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int N = 4, M = 4;
+        var edges = new List<List<int>>
+        {
+            new List<int> {0, 1, 3},
+            new List<int> {1, 2, 1},
+            new List<int> {1, 3, 4},
+            new List<int> {2, 3, 1}
+        };
+        int distanceThreshold = 4;
+
+        /* Creating an instance of 
+           Solution class */
+        var sol = new Solution();
+
+        /* Function to find the city with 
+           the smallest number of neighbors. */
+        int ans = sol.FindCity(N, M, edges, distanceThreshold);
+
+        // Output
+        Console.WriteLine("The city with smallest number of neighbors (with given threshold) is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Function to find the city with the smallest number of neighbors.
+func findCity(n int, m int, edges [][]int, distanceThreshold int) int {
+
+	// Adjacency matrix to store the graph
+	adjMat := make([][]int, n)
+	for i := range adjMat {
+		adjMat[i] = make([]int, n)
+		for j := range adjMat[i] {
+			adjMat[i][j] = int(1e9) // Initialize to a large value (infinity)
+		}
+	}
+
+	// Filling up the adjacency matrix
+	for _, it := range edges {
+		adjMat[it[0]][it[1]] = it[2]
+		adjMat[it[1]][it[0]] = it[2]
+	}
+
+	// Applying Floyd-Warshall Algorithm to find shortest paths between all pairs of nodes
+	for k := 0; k < n; k++ {
+		for i := 0; i < n; i++ {
+			for j := 0; j < n; j++ {
+				adjMat[i][j] = int(math.Min(float64(adjMat[i][j]), float64(adjMat[i][k]+adjMat[k][j])))
+			}
+		}
+	}
+
+	// To store the minimum count of neighbors
+	minCount := int(1e9)
+
+	// To store the answer (city having smallest number of neighbors)
+	var ans int
+
+	// Check every city
+	for i := 0; i < n; i++ {
+		// To count the neighbors of given city having distance lesser than threshold
+		count := 0
+
+		// City i ---> City j
+		for j := 0; j < n; j++ {
+			// If the distance to reach city j from city i is less than threshold
+			if i != j && adjMat[i][j] <= distanceThreshold {
+				// Increment count
+				count++
+			}
+		}
+
+		// If current count is less than minimum count
+		if count < minCount {
+			// Update minimum count
+			minCount = count
+
+			// Store the answer
+			ans = i
+		} else if count == minCount {
+			// Else if current count is equal to minimum count
+			// Update the answer (to store city with greater number)
+			ans = i
+		}
+	}
+
+	// Return the resulting city as answer
+	return ans
+}
+
+func main() {
+	// Test case
+	n := 4
+	m := 4
+	edges := [][]int{
+		{0, 1, 3}, {1, 2, 1},
+		{1, 3, 4}, {2, 3, 1},
+	}
+	distanceThreshold := 4
+
+	// Function call to determine the city with the smallest number of neighbors.
+	ans := findCity(n, m, edges, distanceThreshold)
+
+	// Output the result
+	fmt.Println("The city with smallest number of neighbors (with given threshold) is:", ans)
+}
+</code></pre></div></div></div>
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N<sup>3</sup>)</strong> (where N is the number of nodes(cities) in graph)<br>
+    <ul>
+        <li>The Floyd Warshall algorithm takes O(N<sup>3</sup>) time to compute shortest distance between every pair of nodes.</li>
+        <li>Finding the city having smallest number of neighbors takes O(N<sup>2</sup>) time.</li>
+    </ul>
+</p>
+
+<p><strong>Space Complexity: O(N<sup>2</sup>)</strong>  <br>
+    The only space used is for the distance matrix taking O(N<sup>2</sup>) space and for a couple of variables taking O(1) space.
+</p>
+</div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    int findCity(int n, int m, vector&lt;vector&lt;int&gt;&gt;&amp; edges,
+	             int distanceThreshold) {
+		
+		// Adjacency matrix to store the graph
+        vector&lt;vector&lt;int&gt;&gt; adjMat(n, vector&lt;int&gt;(n, 1e9));
+        
+        // Filling up the adjacency matrix
+        for(auto it : edges) {
+            adjMat[it[0]][it[1]] = it[2];
+            adjMat[it[1]][it[0]] = it[2];
+        }
+        
+        // Applying Floyd Warshall Algorithm
+        
+        // For intermediate node k
+        for(int k=0; k&lt;n; k++) {
+            
+            // node i ---&gt; node j
+            for(int i=0; i&lt;n; i++) {
+                for(int j=0; j&lt;n; j++) {
+                    adjMat[i][j] = 
+                        min(adjMat[i][j], adjMat[i][k] + adjMat[k][j]);
+                }
+            }
+        }   
+        
+        // To store the minimum count of neighbors 
+        int minCount = 1e9;
+        
+        /* To store the answer (city having 
+        smallest number of neighbors) */
+        int ans;
+        
+        // Check every city
+        for(int i=0; i&lt;n; i++) {
+            
+            /* To count the neighbors of given city 
+            having distance lesser than threshold */
+            int count = 0;
+
+            // City i ---&gt; City j
+            for(int j=0; j&lt;n; j++) {
+                
+                /* If the distance to reach city j from 
+                city i is less than threshold */
+                if(i != j &amp;&amp; adjMat[i][j] &lt;= distanceThreshold) {
+                    
+                    // Increment count
+                    count++;
+                }
+            }
+            
+            // if current count is less than minimum count
+            if(count &lt; minCount) {
+                
+                // Update minimum count
+                minCount = count;
+                
+                // Store the answer
+                ans = i;
+            }
+            
+            /* Else if current count is 
+            equal to minimum count */
+            else if(count == minCount) {
+                
+                /* Update the answer (to store 
+                city with greater number) */
+                ans = i;
+            }
+        }
+        
+        // Return the resulting city as answer
+        return ans;
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    public int FindCity(int n, int m, List&lt;List&lt;int&gt;&gt; edges, int distanceThreshold)
+    {
+        // Adjacency matrix to store the graph
+        const int INF = (int)1e9;
+        int[,] adjMat = new int[n, n];
+        for (int i = 0; i &lt; n; i++)
+            for (int j = 0; j &lt; n; j++)
+                adjMat[i, j] = INF;
+
+        // Filling up the adjacency matrix
+        foreach (var it in edges)
+        {
+            int u = it[0], v = it[1], w = it[2];
+            adjMat[u, v] = w;
+            adjMat[v, u] = w;
+        }
+
+        // Applying Floyd Warshall Algorithm
+
+        // For intermediate node k
+        for (int k = 0; k &lt; n; k++)
+        {
+            // node i ---&gt; node j
+            for (int i = 0; i &lt; n; i++)
+            {
+                for (int j = 0; j &lt; n; j++)
+                {
+                    if (adjMat[i, k] + adjMat[k, j] &lt; adjMat[i, j])
+                        adjMat[i, j] = adjMat[i, k] + adjMat[k, j];
+                }
+            }
+        }
+
+        // To store the minimum count of neighbors 
+        int minCount = INF;
+        /* To store the answer (city having 
+           smallest number of neighbors) */
+        int ans = 0;
+
+        // Check every city
+        for (int i = 0; i &lt; n; i++)
+        {
+            /* To count the neighbors of given city 
+               having distance lesser than threshold */
+            int count = 0;
+
+            // City i ---&gt; City j
+            for (int j = 0; j &lt; n; j++)
+            {
+                /* If the distance to reach city j from 
+                   city i is less than threshold */
+                if (i != j &amp;&amp; adjMat[i, j] &lt;= distanceThreshold)
+                {
+                    // Increment count
+                    count++;
+                }
+            }
+
+            // if current count is less than minimum count
+            if (count &lt; minCount)
+            {
+                // Update minimum count
+                minCount = count;
+                // Store the answer
+                ans = i;
+            }
+            /* Else if current count is 
+               equal to minimum count */
+            else if (count == minCount)
+            {
+                /* Update the answer (to store 
+                   city with greater number) */
+                ans = i;
+            }
+        }
+
+        // Return the resulting city as answer
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;math&quot;)
+// Function to find the city with the smallest number of neighbors.
+func findCity(n int, m int, edges [][]int, distanceThreshold int) int {
+
+	// Adjacency matrix to store the graph
+	adjMat := make([][]int, n)
+	for i := range adjMat {
+		adjMat[i] = make([]int, n)
+		for j := range adjMat[i] {
+			adjMat[i][j] = int(1e9) // Initialize to a large value (infinity)
+		}
+	}
+
+	// Filling up the adjacency matrix
+	for _, it := range edges {
+		adjMat[it[0]][it[1]] = it[2]
+		adjMat[it[1]][it[0]] = it[2]
+	}
+
+	// Applying Floyd-Warshall Algorithm to find shortest paths between all pairs of nodes
+	for k := 0; k &lt; n; k++ {
+		for i := 0; i &lt; n; i++ {
+			for j := 0; j &lt; n; j++ {
+				adjMat[i][j] = int(math.Min(float64(adjMat[i][j]), float64(adjMat[i][k]+adjMat[k][j])))
+			}
+		}
+	}
+
+	// To store the minimum count of neighbors
+	minCount := int(1e9)
+
+	// To store the answer (city having smallest number of neighbors)
+	var ans int
+
+	// Check every city
+	for i := 0; i &lt; n; i++ {
+		// To count the neighbors of given city having distance lesser than threshold
+		count := 0
+
+		// City i ---&gt; City j
+		for j := 0; j &lt; n; j++ {
+			// If the distance to reach city j from city i is less than threshold
+			if i != j &amp;&amp; adjMat[i][j] &lt;= distanceThreshold {
+				// Increment count
+				count++
+			}
+		}
+
+		// If current count is less than minimum count
+		if count &lt; minCount {
+			// Update minimum count
+			minCount = count
+
+			// Store the answer
+			ans = i
+		} else if count == minCount {
+			// Else if current count is equal to minimum count
+			// Update the answer (to store city with greater number)
+			ans = i
+		}
+	}
+
+	// Return the resulting city as answer
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    public int findCity(int n, int m, int[][] edges, 
+                        int distanceThreshold) {
+        
+        // Adjacency matrix to store the graph
+        int[][] adjMat = new int[n][n];
+        for (int[] row : adjMat) Arrays.fill(row, (int)1e9);
+        
+        // Filling up the adjacency matrix
+        for(int[] it : edges) {
+            adjMat[it[0]][it[1]] = it[2];
+            adjMat[it[1]][it[0]] = it[2];
+        }
+        
+        // Applying Floyd Warshall Algorithm
+        
+        // For intermediate node k
+        for(int k = 0; k &lt; n; k++) {
+            
+            // node i ---&gt; node j
+            for(int i = 0; i &lt; n; i++) {
+                for(int j = 0; j &lt; n; j++) {
+                    adjMat[i][j] = 
+                        Math.min(adjMat[i][j], adjMat[i][k] + adjMat[k][j]);
+                }
+            }
+        }
+        
+        // To store the minimum count of neighbors 
+        int minCount = (int)1e9;
+        
+        /* To store the answer (city having 
+        smallest number of neighbors) */
+        int ans = -1;
+        
+        // Check every city
+        for(int i = 0; i &lt; n; i++) {
+            
+            /* To count the neighbors of given city 
+            having distance lesser than threshold */
+            int count = 0;
+
+            // City i ---&gt; City j
+            for(int j = 0; j &lt; n; j++) {
+                
+                /* If the distance to reach city j from 
+                city i is less than threshold */
+                if(i != j &amp;&amp; adjMat[i][j] &lt;= distanceThreshold) {
+                    
+                    // Increment count
+                    count++;
+                }
+            }
+            
+            // if current count is less than minimum count
+            if(count &lt; minCount) {
+                
+                // Update minimum count
+                minCount = count;
+                
+                // Store the answer
+                ans = i;
+            }
+            
+            /* Else if current count is 
+            equal to minimum count */
+            else if(count == minCount) {
+                
+                /* Update the answer (to store 
+                city with greater number) */
+                ans = i;
+            }
+        }
+        
+        // Return the resulting city as answer
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the city with 
+    the smallest number of neighbors. */
+    findCity(n, m, edges, distanceThreshold) {
+        
+        // Adjacency matrix to store the graph
+        let adjMat = Array.from({ length: n }, () =&gt; Array(n).fill(1e9));
+        
+        // Filling up the adjacency matrix
+        for (let it of edges) {
+            adjMat[it[0]][it[1]] = it[2];
+            adjMat[it[1]][it[0]] = it[2];
+        }
+        
+        // Applying Floyd Warshall Algorithm
+        
+        // For intermediate node k
+        for (let k = 0; k &lt; n; k++) {
+            
+            // node i ---&gt; node j
+            for (let i = 0; i &lt; n; i++) {
+                for (let j = 0; j &lt; n; j++) {
+                    adjMat[i][j] = 
+                        Math.min(adjMat[i][j], 
+                            adjMat[i][k] + adjMat[k][j]
+                        );
+                }
+            }
+        }
+        
+        // To store the minimum count of neighbors 
+        let minCount = 1e9;
+        
+        /* To store the answer (city having 
+        smallest number of neighbors) */
+        let ans;
+        
+        // Check every city
+        for (let i = 0; i &lt; n; i++) {
+            
+            /* To count the neighbors of given city 
+            having distance lesser than threshold */
+            let count = 0;
+
+            // City i ---&gt; City j
+            for (let j = 0; j &lt; n; j++) {
+                
+                /* If the distance to reach city j from 
+                city i is less than threshold */
+                if (i !== j &amp;&amp; adjMat[i][j] &lt;= distanceThreshold) {
+                    
+                    // Increment count
+                    count++;
+                }
+            }
+            
+            // if current count is less than minimum count
+            if (count &lt; minCount) {
+                
+                // Update minimum count
+                minCount = count;
+                
+                // Store the answer
+                ans = i;
+            }
+            
+            /* Else if current count is 
+            equal to minimum count */
+            else if (count === minCount) {
+                
+                /* Update the answer (to store 
+                city with greater number) */
+                ans = i;
+            }
+        }
+        
+        // Return the resulting city as answer
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the city with 
+    # the smallest number of neighbors.
+    def findCity(self, n, m, edges, distanceThreshold):
+        
+        # Adjacency matrix to store the graph
+        adjMat = [[1e9] * n for _ in range(n)]
+        
+        # Filling up the adjacency matrix
+        for it in edges:
+            adjMat[it[0]][it[1]] = it[2]
+            adjMat[it[1]][it[0]] = it[2]
+        
+        # Applying Floyd Warshall Algorithm
+        
+        # For intermediate node k
+        for k in range(n):
+            
+            # node i ---&gt; node j
+            for i in range(n):
+                for j in range(n):
+                    adjMat[i][j] = min(adjMat[i][j], adjMat[i][k] + adjMat[k][j])
+        
+        # To store the minimum count of neighbors 
+        minCount = int(1e9)
+        
+        # To store the answer (city having 
+        # smallest number of neighbors)
+        ans = -1
+        
+        # Check every city
+        for i in range(n):
+            
+            # To count the neighbors of given city 
+            # having distance lesser than threshold
+            count = 0
+
+            # City i ---&gt; City j
+            for j in range(n):
+                
+                # If the distance to reach city j from 
+                # city i is less than threshold
+                if i != j and adjMat[i][j] &lt;= distanceThreshold:
+                    
+                    # Increment count
+                    count += 1
+            
+            # if current count is less than minimum count
+            if count &lt; minCount:
+                
+                # Update minimum count
+                minCount = count
+                
+                # Store the answer
+                ans = i
+            
+            # Else if current count is 
+            # equal to minimum count
+            elif count == minCount:
+                
+                # Update the answer (to store 
+                # city with greater number)
+                ans = i
+        
+        # Return the resulting city as answer
+        return ans</code></pre></div>
+</body>
+</html>

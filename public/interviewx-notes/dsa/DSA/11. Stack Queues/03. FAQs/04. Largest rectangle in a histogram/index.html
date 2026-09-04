@@ -1,0 +1,2466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Largest rectangle in a histogram</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Largest rectangle in a histogram</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Monotonic Stack</span><span>Stack</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array of integers heights representing the histogram's bar height where the width of each bar is 1 return the area of the largest rectangle in the histogram.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  1 <= heights.length <= 10<sup>5</sup></li><li>  0 <= heights[i] <= 10<sup>4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: heights = [2, 1, 5, 6, 2, 3]</p><p><img src="https://static.takeuforward.org/content/ProblemSetter-UDZmhgUB"></p><p>Output: 10</p><p><br></p><p>Explanation: The largest rectangle is highlighted, which has an area of 5*2 = 10 units.</p><h3>Example 2</h3><p>Input: heights = [3, 5, 1, 7, 5, 9]</p><p><br></p><p>Output: 15</p><p><br></p><p>Explanation: The largest rectangle has an area of 5*3 = 15 units.</p><h3>Example 3</h3><p>Input: heights = [2,4]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem and its underlying concept are integral to numerous real-world applications including image processing, where you might need to find the largest rectangle in a histogram to optimize cropping strategies. Additionally, such problems are used in statistical data analysis, allowing developers to identify the most significant data ranges in large datasets. Furthermore, it is also an underlying concept for allocation of screen space in some User Interface (UI) design algorithms for maintaining proper layout and to provide better visual aesthetics.</p></div>
+<div class="section"><h2>Editorial: Brute Force Approach</h2><html><head></head><body><p><strong>Pre requisite:</strong> <a href="/plus/dsa/problems/next-greater-element?category=stack-and-queues&subcategory=monotonic-stack" target="_blank">Next greater element</a></p>
+
+<h3>Intuition:</h3> 
+<p>
+    One way to get the maximum rectangle area possible is by considering all the rectangles and then finding the maximum area out of those. To find the area of a rectangle, its height and width must be known. Already given the heights in the question, the only task remaining is to find the width of the rectangle. <br><br>
+    The width of a rectangle of current height will depend on the number of rectangles on the left and right having a height greater than or equal to the current height. <br>
+
+    </p><h6>Understanding:</h6>
+    Consider the following example: <br>
+    <img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/illustration-ehAmzwBR" style="margin: 0px auto;" alt=""> <br>
+    Hence, the width of the rectangle can be found using the concept of <strong>Previous/Next Smaller Elements</strong>. The formula for the same is: <br>
+    <pre>       width = nse[ind] - pse[ind] - 1</pre>
+    where, pse[ind] and nse[ind] represent the indices of the previous and next smaller element for the current index. <br><br>
+
+    Thus, the indices of the previous and next smaller elements can be precomputed. This will help in finding the area of possible individual rectangles, out of which the maximum can be returned as the answer.
+
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Find the indices of Next smaller elements and Previous smaller elements using Monotonic stack. For elements having no previous smaller element, use -1 as the index. For elements having no next smaller elements, use the size of the array as the index.</li>
+   <li>Use the precomputed NSE and PSE arrays to determine the width of the rectangle that each bar can form.</li>
+   <li>For each bar, calculate the area using its height and the distance between the NSE and PSE indices.</li>
+   <li>Keep track of the maximum area encountered during this process.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/1.png-BgrBSYtb" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/2.png-5liUJ6Y5" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/3.png-Moo9AXzO" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/4.png-6YMLhbLv" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/5.png-pw-z59mh" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/6.png-CATCApQ7" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/7.png-sA4Bs9Ku" alt="Image 7"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/8.png-JsjTcOok" alt="Image 8"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/1.png-BgrBSYtb" alt="Image 1"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/2.png-5liUJ6Y5" alt="Image 2"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/3.png-Moo9AXzO" alt="Image 3"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/4.png-6YMLhbLv" alt="Image 4"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/5.png-pw-z59mh" alt="Image 5"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/6.png-CATCApQ7" alt="Image 6"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/7.png-sA4Bs9Ku" alt="Image 7"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/8.png-JsjTcOok" alt="Image 8"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to find the indices of 
+    next smaller elements */
+    vector<int> findNSE(vector<int> &arr) {
+        
+        // Size of array
+        int n = arr.size();
+        
+        // To store the answer
+        vector<int> ans(n);
+        
+        // Stack 
+        stack<int> st;
+        
+        // Start traversing from the back
+        for(int i = n - 1; i >= 0; i--) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            element is not the smaller element */
+            while(!st.empty() && arr[st.top()] >= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = !st.empty() ? st.top() : n;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    /* Function to find the indices of 
+    previous smaller elements */
+    vector<int> findPSE(vector<int> &arr) {
+        
+        // Size of array
+        int n = arr.size();
+        
+        // To store the answer
+        vector<int> ans(n);
+        
+        // Stack 
+        stack<int> st;
+        
+        // Traverse on the array
+        for(int i=0; i < n; i++) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(!st.empty() && arr[st.top()] >= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = !st.empty() ? st.top() : -1;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+public:
+    
+    // Function to find the largest rectangle area
+    int largestRectangleArea(vector<int> &heights) {
+        
+        /* Determine the next and 
+        previous smaller elements */
+        vector<int> nse = findNSE(heights);
+        vector<int> pse = findPSE(heights);
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        // Traverse on the array
+        for(int i=0; i < heights.size(); i++) {
+            
+            // Calculate current area
+            area = heights[i] * (nse[i] - pse[i] - 1);
+            
+            // Update largest area
+            largestArea = max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+};
+
+int main() {
+    vector<int> heights = {2, 1, 5, 6, 2, 3};
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    // Function call to find the largest rectangle area
+    int ans = sol.largestRectangleArea(heights);
+    
+    cout << "The largest rectangle area is: " << ans;
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the indices of 
+    next smaller elements */
+    private int[] findNSE(int[] arr) {
+        
+        // Size of array
+        int n = arr.length;
+        
+        // To store the answer
+        int[] ans = new int[n];
+        
+        // Stack 
+        Stack<Integer> st = new Stack<>();
+        
+        // Start traversing from the back
+        for(int i = n - 1; i >= 0; i--) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            element is not the smaller element */
+            while(!st.isEmpty() && 
+                  arr[st.peek()] >= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = !st.isEmpty() ? st.peek() : n;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    /* Function to find the indices of 
+    previous smaller elements */
+    private int[] findPSE(int[] arr) {
+        
+        // Size of array
+        int n = arr.length;
+        
+        // To store the answer
+        int[] ans = new int[n];
+        
+        // Stack 
+        Stack<Integer> st = new Stack<>();
+        
+        // Traverse on the array
+        for(int i=0; i < n; i++) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(!st.isEmpty() && 
+                  arr[st.peek()] >= arr[i]){
+
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = !st.isEmpty() ? st.peek() : -1;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    // Function to find the largest rectangle area
+    public int largestRectangleArea(int[] heights) {
+        
+        /* Determine the next and 
+        previous smaller elements */
+        int[] nse = findNSE(heights);
+        int[] pse = findPSE(heights);
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        // Traverse on the array
+        for(int i=0; i < heights.length; i++) {
+            
+            // Calculate current area
+            area = heights[i] * (nse[i]-pse[i]-1);
+            
+            // Update largest area
+            largestArea = Math.max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+    
+    public static void main(String[] args) {
+        int[] heights = {2, 1, 5, 6, 2, 3};
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution(); 
+        
+        // Function call to find the largest rectangle area
+        int ans = sol.largestRectangleArea(heights);
+        
+        System.out.println("The largest rectangle area is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the indices of 
+    # next smaller elements
+    def findNSE(self, arr):
+        
+        # Size of array
+        n = len(arr)
+        
+        # To store the answer
+        ans = [0] * n
+        
+        # Stack 
+        st = []
+        
+        # Start traversing from the back
+        for i in range(n - 1, -1, -1):
+            
+            # Get the current element
+            currEle = arr[i]
+            
+            # Pop the elements in the stack until 
+            # the stack is not empty and the top 
+            # element is not the smaller element
+            while st and arr[st[-1]] >= arr[i]:
+                st.pop()
+            
+            # Update the answer
+            ans[i] = st[-1] if st else n
+            
+            # Push the index of current 
+            # element in the stack
+            st.append(i)
+        
+        # Return the answer
+        return ans
+    
+    # Function to find the indices of 
+    # previous smaller elements
+    def findPSE(self, arr):
+        
+        # Size of array
+        n = len(arr)
+        
+        # To store the answer
+        ans = [0] * n
+        
+        # Stack 
+        st = []
+        
+        # Traverse on the array
+        for i in range(n):
+            
+            # Get the current element
+            currEle = arr[i]
+            
+            # Pop the elements in the stack until 
+            # the stack is not empty and the top 
+            # elements is not the smaller element
+            while st and arr[st[-1]] >= arr[i]:
+                st.pop()
+            
+            # Update the answer
+            ans[i] = st[-1] if st else -1
+            
+            # Push the index of current 
+            # element in the stack
+            st.append(i)
+        
+        # Return the answer
+        return ans
+    
+    # Function to find the largest rectangle area
+    def largestRectangleArea(self, heights):
+        
+        # Determine the next and 
+        # previous smaller elements
+        nse = self.findNSE(heights)
+        pse = self.findPSE(heights)
+        
+        # To store largest area
+        largestArea = 0
+        
+        # To store current area
+        area = 0
+        
+        # Traverse on the array
+        for i in range(len(heights)):
+            
+            # Calculate current area
+            area = heights[i] * (nse[i]-pse[i]-1)
+            
+            # Update largest area
+            largestArea = max(largestArea, area)
+        
+        # Return largest area found
+        return largestArea
+
+# Example usage
+if __name__ == "__main__":
+    heights = [2, 1, 5, 6, 2, 3]
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to find the largest rectangle area
+    ans = sol.largestRectangleArea(heights)
+    
+    print("The largest rectangle area is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the indices of 
+    next smaller elements */
+    findNSE(arr) {
+        
+        // Size of array
+        let n = arr.length;
+        
+        // To store the answer
+        let ans = new Array(n);
+        
+        // Stack 
+        let st = [];
+        
+        // Start traversing from the back
+        for(let i = n - 1; i >= 0; i--) {
+            
+            // Get the current element
+            let currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            element is not the smaller element */
+            while(st.length && 
+                  arr[st[st.length - 1]] >= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.length ? st[st.length - 1] : n;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    /* Function to find the indices of 
+    previous smaller elements */
+    findPSE(arr) {
+        
+        // Size of array
+        let n = arr.length;
+        
+        // To store the answer
+        let ans = new Array(n);
+        
+        // Stack 
+        let st = [];
+        
+        // Traverse on the array
+        for(let i = 0; i < n; i++) {
+            
+            // Get the current element
+            let currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(st.length && 
+                  arr[st[st.length - 1]] >= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.length ? st[st.length - 1] : -1;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    // Function to find the largest rectangle area
+    largestRectangleArea(heights) {
+        
+        /* Determine the next and 
+        previous smaller elements */
+        let nse = this.findNSE(heights);
+        let pse = this.findPSE(heights);
+        
+        // To store largest area
+        let largestArea = 0;
+        
+        // To store current area
+        let area = 0;
+        
+        // Traverse on the array
+        for(let i = 0; i < heights.length; i++) {
+            
+            // Calculate current area
+            area = heights[i] * (nse[i]-pse[i]-1);
+            
+            // Update largest area
+            largestArea = Math.max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+}
+
+// Example usage
+const heights = [2, 1, 5, 6, 2, 3];
+
+// Creating an instance of Solution class
+const sol = new Solution();
+
+// Function call to find the largest rectangle area
+const ans = sol.largestRectangleArea(heights);
+
+console.log("The largest rectangle area is:", ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    /* Function to find the indices of 
+    next smaller elements */
+    private int[] FindNSE(List<int> arr)
+    {
+        // Size of array
+        int n = arr.Count;
+        
+        // To store the answer
+        int[] ans = new int[n];
+        
+        // Stack 
+        Stack<int> st = new Stack<int>();
+        
+        // Start traversing from the back
+        for(int i = n - 1; i >= 0; i--) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            element is not the smaller element */
+            while(st.Count > 0 && 
+                  arr[st.Peek()] >= arr[i]){
+                st.Pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.Count > 0 ? st.Peek() : n;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.Push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    /* Function to find the indices of 
+    previous smaller elements */
+    private int[] FindPSE(List<int> arr)
+    {
+        
+        // Size of array
+        int n = arr.Count;
+        
+        // To store the answer
+        int[] ans = new int[n];
+        
+        // Stack 
+        Stack<int> st = new Stack<int>();
+        
+        // Traverse on the array
+        for(int i = 0; i < n; i++) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(st.Count > 0 && 
+                  arr[st.Peek()] >= arr[i]){
+                st.Pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.Count > 0 ? st.Peek() : -1;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.Push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    // Function to find the largest rectangle area
+    public int LargestRectangleArea(List<int> heights)
+    {
+        
+        /* Determine the next and 
+        previous smaller elements */
+        int[] nse = this.FindNSE(heights);
+        int[] pse = this.FindPSE(heights);
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area = 0;
+        
+        // Traverse on the array
+        for(int i = 0; i < heights.Count; i++) {
+            
+            // Calculate current area
+            area = heights[i] * (nse[i]-pse[i]-1);
+            
+            // Update largest area
+            largestArea = Math.Max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        List<int> heights = new List<int> { 2, 1, 5, 6, 2, 3 };
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to find the largest rectangle area
+        int ans = sol.LargestRectangleArea(heights);
+
+        Console.WriteLine("The largest rectangle area is: " + ans);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to find the indices of next smaller elements
+func findNSE(arr []int) []int {
+
+	// Size of array
+	n := len(arr)
+
+	// To store the answer
+	ans := make([]int, n)
+
+	// Stack (stores indices)
+	st := []int{}
+
+	// Start traversing from the back
+	for i := n - 1; i >= 0; i-- {
+
+		// Pop the elements in the stack until
+		// the stack is not empty and the top
+		// element is not the smaller element
+		for len(st) > 0 && arr[st[len(st)-1]] >= arr[i] {
+			st = st[:len(st)-1]
+		}
+
+		// Update the answer
+		if len(st) > 0 {
+			ans[i] = st[len(st)-1]
+		} else {
+			ans[i] = n
+		}
+
+		// Push the index of current element in the stack
+		st = append(st, i)
+	}
+
+	// Return the answer
+	return ans
+}
+
+// Function to find the indices of previous smaller elements
+func findPSE(arr []int) []int {
+
+	// Size of array
+	n := len(arr)
+
+	// To store the answer
+	ans := make([]int, n)
+
+	// Stack (stores indices)
+	st := []int{}
+
+	// Traverse on the array
+	for i := 0; i < n; i++ {
+
+		// Pop the elements in the stack until
+		// the stack is not empty and the top
+		// element is not the smaller element
+		for len(st) > 0 && arr[st[len(st)-1]] >= arr[i] {
+			st = st[:len(st)-1]
+		}
+
+		// Update the answer
+		if len(st) > 0 {
+			ans[i] = st[len(st)-1]
+		} else {
+			ans[i] = -1
+		}
+
+		// Push the index of current element in the stack
+		st = append(st, i)
+	}
+
+	// Return the answer
+	return ans
+}
+
+// Function to find the largest rectangle area
+func largestRectangleArea(heights []int) int {
+
+	/* Determine the next and
+	previous smaller elements */
+	nse := findNSE(heights)
+	pse := findPSE(heights)
+
+	// To store largest area
+	largestArea := 0
+
+	// Traverse on the array
+	for i := 0; i < len(heights); i++ {
+
+		// Calculate current area
+		area := heights[i] * (nse[i] - pse[i] - 1)
+
+		// Update largest area
+		if area > largestArea {
+			largestArea = area
+		}
+	}
+
+	// Return largest area found
+	return largestArea
+}
+
+func main() {
+	heights := []int{2, 1, 5, 6, 2, 3}
+
+	// Function call to find the largest rectangle area
+	ans := largestRectangleArea(heights)
+
+	fmt.Println("The largest rectangle area is:", ans)
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N)</strong> (where N is the size of the given array)
+    </p><ul>
+        <li>Precomputing PSE and NSE arrays take O(2N) time each.</li>
+        <li>Traversing the given histogram once to find the maximum area takes O(N) time.</li>
+    </ul>
+<p></p>
+
+<p><strong>Space Complexity: O(N)</strong> <br>
+    </p><ul>
+        <li>Finding the PSE and NSE arrays uses stack that takes O(N) space each.</li>
+        <li>Storing the PSE and NSE arrays take O(N) space each.</li>
+    </ul>
+   
+<p></p>
+</body></html></div>
+<div class="section"><h2>Editorial: Optimal Approach</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    In the earlier solution, precomputing the PSE and NSE arrays was contributing to multiple traversals. This can be avoided by finding the PSE on the go. But the question of finding the NSE still remains. 
+
+    </p><h6>Understanding:</h6>
+    Consider the following dry run for finding the indices of previous smaller elements using Stack: <br>
+    <img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/illustration-JLuGsYwR" alt="" style="margin: 0px auto;"> <br>
+    Hence, the index of NSE is known while popping the elements from the stack, serving as a backward traversal. Hence, knowing the PSE and NSE, the width of the rectangle can be determined using the formula:<br>
+    <pre>       width = nse[ind] - pse[ind] - 1</pre>
+    where, pse[ind] and nse[ind] represent the indices of the previous and next smaller element for the current index. <br><br>
+
+    <h6>Handling remaining bars:</h6>
+    Since the areas of only those rectangles are considered that are popped from the stack, to ensure all the possible heights are considered for areas, all the elements must be popped from the stack even after the traversal of the array is complete. For such elements (that remain in the stack after traversal), the index of the next smaller element will be set to the size of the array, as there is no next smaller element.
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Initialize an empty stack to store indices of the histogram bars. For each height in the histogram, maintain a stack of indices where the heights are in increasing order.</li>
+   <li>If the current height is shorter than the height at the top of the stack, it means the rectangle with the height at the top of the stack ends at the current bar. 
+</li>
+   <li>For each popped bar from the stack, calculate the width using the current index as the next smaller element (NSE) and the index of the new top of the stack as the previous smaller element (PSE).</li>
+   <li>Compute the area and update the maximum area found. After the traversal, the remaining bars in the stack have their NSE as the end of the array.</li>
+   <li>Calculate the area for these bars similarly and update the maximum area.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/1.png-mk3E_3N1" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/2.png-dYLkPx6K" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/3.png-X9z4Q39S" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/4.png-Y3R6RQvG" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/5.png-I1BPDxKZ" alt="Image 5"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/1.png-mk3E_3N1" alt="Image 1"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/2.png-dYLkPx6K" alt="Image 2"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/3.png-X9z4Q39S" alt="Image 3"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/4.png-Y3R6RQvG" alt="Image 4"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/Largest rectangle in a histogram/5.png-I1BPDxKZ" alt="Image 5"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    
+    // Function to find the largest rectangle area
+    int largestRectangleArea(vector<int> &heights) {
+        
+        int n = heights.size(); // Size of array
+        
+        // Stack 
+        stack<int> st;
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        /* To store the indices of next 
+        and previous smaller elements */
+        int nse, pse;
+        
+        // Traverse on the array
+        for(int i=0; i < n; i++) {
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(!st.empty() && 
+                  heights[st.top()] >= heights[i]){
+                      
+                // Get the index of top of stack
+                int ind = st.top(); 
+                st.pop();
+                
+                /* Update the index of 
+                previous smaller element */
+                pse = st.empty() ? -1 : st.top();
+                
+                /* Next smaller element index for 
+                the popped element is current index */
+                nse = i;
+                
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse-pse-1);
+                
+                // Update the maximum area
+                largestArea = max(largestArea, area);
+            }
+            
+            // Push the current index in stack
+            st.push(i);
+        }
+        
+        // For elements that are not popped from stack
+        while(!st.empty()) {
+            
+            // NSE for such elements is size of array
+            nse = n;
+            
+            // Get the index of top of stack
+            int ind = st.top(); 
+            st.pop();
+            
+            // Update the previous smaller element
+            pse = st.empty() ? -1 : st.top();
+            
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse-pse-1);
+            
+            // Update the maximum area
+            largestArea = max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+};
+
+int main() {
+    vector<int> heights = {2, 1, 5, 6, 2, 3};
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    // Function call to find the largest rectangle area
+    int ans = sol.largestRectangleArea(heights);
+    
+    cout << "The largest rectangle area is: " << ans;
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the largest rectangle area
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length; // Size of array
+        
+        // Stack 
+        Stack<Integer> st = new Stack<>();
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        /* To store the indices of next 
+        and previous smaller elements */
+        int nse, pse;
+        
+        // Traverse on the array
+        for(int i = 0; i < n; i++) {
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(!st.isEmpty() && 
+                  heights[st.peek()] >= heights[i]) {
+                
+                // Get the index of top of stack
+                int ind = st.pop();
+                
+                /* Update the index of 
+                previous smaller element */
+                pse = st.isEmpty() ? -1 : st.peek();
+                
+                /* Next smaller element index for 
+                the popped element is current index */
+                nse = i;
+                
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1);
+                
+                // Update the maximum area
+                largestArea = Math.max(largestArea, area);
+            }
+            
+            // Push the current index in stack
+            st.push(i);
+        }
+        
+        // For elements that are not popped from stack
+        while(!st.isEmpty()) {
+            
+            // NSE for such elements is size of array
+            nse = n;
+            
+            // Get the index of top of stack
+            int ind = st.pop();
+            
+            // Update the previous smaller element
+            pse = st.isEmpty() ? -1 : st.peek();
+            
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1);
+            
+            // Update the maximum area
+            largestArea = Math.max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+    
+    public static void main(String[] args) {
+        int[] heights = {2, 1, 5, 6, 2, 3};
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        // Function call to find the largest rectangle area
+        int ans = sol.largestRectangleArea(heights);
+        
+        System.out.println("The largest rectangle area is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the largest rectangle area
+    def largestRectangleArea(self, heights):
+        n = len(heights)  # Size of array
+        
+        # Stack 
+        st = []
+        
+        # To store largest area
+        largestArea = 0
+        
+        # To store current area
+        area = 0
+        
+        # To store the indices of next 
+        # and previous smaller elements
+        nse = pse = 0
+        
+        # Traverse on the array
+        for i in range(n):
+            
+            # Pop the elements in the stack until 
+            # the stack is not empty and the top 
+            # elements is not the smaller element
+            while st and heights[st[-1]] >= heights[i]:
+                
+                # Get the index of top of stack
+                ind = st.pop()
+                
+                # Update the index of previous smaller element
+                pse = st[-1] if st else -1
+                
+                # Next smaller element index for \
+                # the popped element is current index
+                nse = i
+                
+                # Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1)
+                
+                # Update the maximum area
+                largestArea = max(largestArea, area)
+            
+            # Push the current index in stack
+            st.append(i)
+        
+        # For elements that are not popped from stack
+        while st:
+            
+            # NSE for such elements is size of array
+            nse = n
+            
+            # Get the index of top of stack
+            ind = st.pop()
+            
+            # Update the previous smaller element
+            pse = st[-1] if st else -1
+            
+            # Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1)
+            
+            # Update the maximum area
+            largestArea = max(largestArea, area)
+        
+        # Return largest area found
+        return largestArea
+
+# Example usage
+if __name__ == "__main__":
+    heights = [2, 1, 5, 6, 2, 3]
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to find the largest rectangle area
+    ans = sol.largestRectangleArea(heights)
+    
+    print("The largest rectangle area is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the largest rectangle area
+    largestRectangleArea(heights) {
+        let n = heights.length; // Size of array
+        
+        // Stack 
+        let st = [];
+        
+        // To store largest area
+        let largestArea = 0;
+        
+        // To store current area
+        let area;
+        
+        /* To store the indices of next and 
+        previous smaller elements */
+        let nse, pse;
+        
+        // Traverse on the array
+        for(let i = 0; i < n; i++) {
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(st.length && 
+                  heights[st[st.length - 1]] >= heights[i]) {
+                
+                // Get the index of top of stack
+                let ind = st.pop();
+                
+                /* Update the index of 
+                previous smaller element */
+                pse = st.length ? st[st.length - 1] : -1;
+                
+                /* Next smaller element index for 
+                the popped element is current index */
+                nse = i;
+                
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1);
+                
+                // Update the maximum area
+                largestArea = Math.max(largestArea, area);
+            }
+            
+            // Push the current index in stack
+            st.push(i);
+        }
+        
+        // For elements that are not popped from stack
+        while(st.length) {
+            
+            // NSE for such elements is size of array
+            nse = n;
+            
+            // Get the index of top of stack
+            let ind = st.pop();
+            
+            // Update the previous smaller element
+            pse = st.length ? st[st.length - 1] : -1;
+            
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1);
+            
+            // Update the maximum area
+            largestArea = Math.max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+}
+
+// Example usage
+const heights = [2, 1, 5, 6, 2, 3];
+
+// Creating an instance of Solution class
+const sol = new Solution();
+
+// Function call to find the largest rectangle area
+const ans = sol.largestRectangleArea(heights);
+
+console.log("The largest rectangle area is:", ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // Function to find the largest rectangle area
+    public int LargestRectangleArea(List<int> heights)
+    {
+        int n = heights.Count; // Size of array
+        
+        // Stack 
+        Stack<int> st = new Stack<int>();
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        /* To store the indices of next and 
+        previous smaller elements */
+        int nse, pse;
+        
+        // Traverse on the array
+        for(int i = 0; i < n; i++) {
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(st.Count > 0 && 
+                  heights[st.Peek()] >= heights[i]) {
+                
+                // Get the index of top of stack
+                int ind = st.Pop();
+                
+                /* Update the index of 
+                previous smaller element */
+                pse = st.Count > 0 ? st.Peek() : -1;
+                
+                /* Next smaller element index for 
+                the popped element is current index */
+                nse = i;
+                
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1);
+                
+                // Update the maximum area
+                largestArea = Math.Max(largestArea, area);
+            }
+            
+            // Push the current index in stack
+            st.Push(i);
+        }
+        
+        // For elements that are not popped from stack
+        while(st.Count > 0) {
+            
+            // NSE for such elements is size of array
+            nse = n;
+            
+            // Get the index of top of stack
+            int ind = st.Pop();
+            
+            // Update the previous smaller element
+            pse = st.Count > 0 ? st.Peek() : -1;
+            
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1);
+            
+            // Update the maximum area
+            largestArea = Math.Max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        // For production quality, you might read from Console.ReadLine()
+        // and parse the input string into a List<int>.
+        // For this example, we use the hardcoded input from the original snippet.
+        List<int> heights = new List<int> { 2, 1, 5, 6, 2, 3 };
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to find the largest rectangle area
+        int ans = sol.LargestRectangleArea(heights);
+
+        Console.WriteLine("The largest rectangle area is: " + ans);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to find the largest rectangle area
+func largestRectangleArea(heights []int) int {
+
+	n := len(heights) // Size of array
+
+	// Stack (stores indices)
+	st := []int{}
+
+	// To store largest area
+	largestArea := 0
+
+	// To store current area
+	area := 0
+
+	/* To store the indices of next
+	and previous smaller elements */
+	nse, pse := 0, 0
+
+	// Traverse on the array
+	for i := 0; i < n; i++ {
+
+		/* Pop the elements in the stack until
+		the stack is not empty and the top
+		element is not the smaller element */
+		for len(st) > 0 && heights[st[len(st)-1]] >= heights[i] {
+
+			// Get the index of top of stack
+			ind := st[len(st)-1]
+			st = st[:len(st)-1]
+
+			/* Update the index of
+			previous smaller element */
+			if len(st) == 0 {
+				pse = -1
+			} else {
+				pse = st[len(st)-1]
+			}
+
+			/* Next smaller element index for
+			the popped element is current index */
+			nse = i
+
+			// Calculate the area of the popped element
+			area = heights[ind] * (nse - pse - 1)
+
+			// Update the maximum area
+			if area > largestArea {
+				largestArea = area
+			}
+		}
+
+		// Push the current index in stack
+		st = append(st, i)
+	}
+
+	// For elements that are not popped from stack
+	for len(st) > 0 {
+
+		// NSE for such elements is size of array
+		nse = n
+
+		// Get the index of top of stack
+		ind := st[len(st)-1]
+		st = st[:len(st)-1]
+
+		// Update the previous smaller element
+		if len(st) == 0 {
+			pse = -1
+		} else {
+			pse = st[len(st)-1]
+		}
+
+		// Calculate the area of the popped element
+		area = heights[ind] * (nse - pse - 1)
+
+		// Update the maximum area
+		if area > largestArea {
+			largestArea = area
+		}
+	}
+
+	// Return largest area found
+	return largestArea
+}
+
+func main() {
+	heights := []int{2, 1, 5, 6, 2, 3}
+
+	// Function call to find the largest rectangle area
+	ans := largestRectangleArea(heights)
+
+	fmt.Println("The largest rectangle area is:", ans)
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N)</strong> (where N is the size of the given array)
+    </p><ul><li>Traversing all the elements of array takes O(N) time.</li>
+    <li>All the elements are pushed in and popped out from the stack once taking O(N) time.</li>
+    </ul>
+<p></p>
+
+<p><strong>Space Complexity: O(N)</strong> <br>
+    The stack space used to find the previous smaller element during traversal can go up to O(N).
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to find the indices of 
+    next smaller elements */
+    vector&lt;int&gt; findNSE(vector&lt;int&gt; &amp;arr) {
+        
+        // Size of array
+        int n = arr.size();
+        
+        // To store the answer
+        vector&lt;int&gt; ans(n);
+        
+        // Stack 
+        stack&lt;int&gt; st;
+        
+        // Start traversing from the back
+        for(int i = n - 1; i &gt;= 0; i--) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            element is not the smaller element */
+            while(!st.empty() &amp;&amp; arr[st.top()] &gt;= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = !st.empty() ? st.top() : n;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    /* Function to find the indices of 
+    previous smaller elements */
+    vector&lt;int&gt; findPSE(vector&lt;int&gt; &amp;arr) {
+        
+        // Size of array
+        int n = arr.size();
+        
+        // To store the answer
+        vector&lt;int&gt; ans(n);
+        
+        // Stack 
+        stack&lt;int&gt; st;
+        
+        // Traverse on the array
+        for(int i=0; i &lt; n; i++) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(!st.empty() &amp;&amp; arr[st.top()] &gt;= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = !st.empty() ? st.top() : -1;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+public:
+    
+    // Function to find the largest rectangle area
+    int largestRectangleArea(vector&lt;int&gt; &amp;heights) {
+        
+        /* Determine the next and 
+        previous smaller elements */
+        vector&lt;int&gt; nse = findNSE(heights);
+        vector&lt;int&gt; pse = findPSE(heights);
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        // Traverse on the array
+        for(int i=0; i &lt; heights.size(); i++) {
+            
+            // Calculate current area
+            area = heights[i] * (nse[i] - pse[i] - 1);
+            
+            // Update largest area
+            largestArea = max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the indices of 
+    next smaller elements */
+    private int[] FindNSE(List&lt;int&gt; arr)
+    {
+        // Size of array
+        int n = arr.Count;
+        
+        // To store the answer
+        int[] ans = new int[n];
+        
+        // Stack 
+        Stack&lt;int&gt; st = new Stack&lt;int&gt;();
+        
+        // Start traversing from the back
+        for(int i = n - 1; i &gt;= 0; i--) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            element is not the smaller element */
+            while(st.Count &gt; 0 &amp;&amp; 
+                  arr[st.Peek()] &gt;= arr[i]){
+                st.Pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.Count &gt; 0 ? st.Peek() : n;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.Push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    /* Function to find the indices of 
+    previous smaller elements */
+    private int[] FindPSE(List&lt;int&gt; arr)
+    {
+        
+        // Size of array
+        int n = arr.Count;
+        
+        // To store the answer
+        int[] ans = new int[n];
+        
+        // Stack 
+        Stack&lt;int&gt; st = new Stack&lt;int&gt;();
+        
+        // Traverse on the array
+        for(int i = 0; i &lt; n; i++) {
+            
+            // Get the current element
+            int currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(st.Count &gt; 0 &amp;&amp; 
+                  arr[st.Peek()] &gt;= arr[i]){
+                st.Pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.Count &gt; 0 ? st.Peek() : -1;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.Push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    public int LargestRectangleArea(List&lt;int&gt; heights)
+    {
+        
+        /* Determine the next and 
+        previous smaller elements */
+        int[] nse = this.FindNSE(heights);
+        int[] pse = this.FindPSE(heights);
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area = 0;
+        
+        // Traverse on the array
+        for(int i = 0; i &lt; heights.Count; i++) {
+            
+            // Calculate current area
+            area = heights[i] * (nse[i]-pse[i]-1);
+            
+            // Update largest area
+            largestArea = System.Math.Max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the indices of next smaller elements
+func findNSE(arr []int) []int {
+
+	// Size of array
+	n := len(arr)
+
+	// To store the answer
+	ans := make([]int, n)
+
+	// Stack (stores indices)
+	st := []int{}
+
+	// Start traversing from the back
+	for i := n - 1; i &gt;= 0; i-- {
+
+		// Pop the elements in the stack until
+		// the stack is not empty and the top
+		// element is not the smaller element
+		for len(st) &gt; 0 &amp;&amp; arr[st[len(st)-1]] &gt;= arr[i] {
+			st = st[:len(st)-1]
+		}
+
+		// Update the answer
+		if len(st) &gt; 0 {
+			ans[i] = st[len(st)-1]
+		} else {
+			ans[i] = n
+		}
+
+		// Push the index of current element in the stack
+		st = append(st, i)
+	}
+
+	// Return the answer
+	return ans
+}
+
+// Function to find the indices of previous smaller elements
+func findPSE(arr []int) []int {
+
+	// Size of array
+	n := len(arr)
+
+	// To store the answer
+	ans := make([]int, n)
+
+	// Stack (stores indices)
+	st := []int{}
+
+	// Traverse on the array
+	for i := 0; i &lt; n; i++ {
+
+		// Pop the elements in the stack until
+		// the stack is not empty and the top
+		// element is not the smaller element
+		for len(st) &gt; 0 &amp;&amp; arr[st[len(st)-1]] &gt;= arr[i] {
+			st = st[:len(st)-1]
+		}
+
+		// Update the answer
+		if len(st) &gt; 0 {
+			ans[i] = st[len(st)-1]
+		} else {
+			ans[i] = -1
+		}
+
+		// Push the index of current element in the stack
+		st = append(st, i)
+	}
+
+	// Return the answer
+	return ans
+}
+
+// Function to find the largest rectangle area
+func largestRectangleArea(heights []int) int {
+
+	/* Determine the next and
+	previous smaller elements */
+	nse := findNSE(heights)
+	pse := findPSE(heights)
+
+	// To store largest area
+	largestArea := 0
+
+	// Traverse on the array
+	for i := 0; i &lt; len(heights); i++ {
+
+		// Calculate current area
+		area := heights[i] * (nse[i] - pse[i] - 1)
+
+		// Update largest area
+		if area &gt; largestArea {
+			largestArea = area
+		}
+	}
+
+	// Return largest area found
+	return largestArea
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+/* Function to find the indices of 
+next smaller elements */
+private int[] findNSE(int[] arr) {
+    
+    // Size of array
+    int n = arr.length;
+    
+    // To store the answer
+    int[] ans = new int[n];
+    
+    // Stack 
+    Stack&lt;Integer&gt; st = new Stack&lt;&gt;();
+    
+    // Start traversing from the back
+    for(int i = n - 1; i &gt;= 0; i--) {
+        
+        // Get the current element
+        int currEle = arr[i];
+        
+        /* Pop the elements in the stack until 
+        the stack is not empty and the top 
+        element is not the smaller element */
+        while(!st.isEmpty() &amp;&amp; 
+              arr[st.peek()] &gt;= arr[i]){
+            st.pop();
+        }
+        
+        // Update the answer
+        ans[i] = !st.isEmpty() ? st.peek() : n;
+        
+        /* Push the index of current 
+        element in the stack */
+        st.push(i);
+    }
+    
+    // Return the answer
+    return ans;
+}
+
+/* Function to find the indices of 
+previous smaller elements */
+private int[] findPSE(int[] arr) {
+    
+    // Size of array
+    int n = arr.length;
+    
+    // To store the answer
+    int[] ans = new int[n];
+    
+    // Stack 
+    Stack&lt;Integer&gt; st = new Stack&lt;&gt;();
+    
+    // Traverse on the array
+    for(int i=0; i &lt; n; i++) {
+        
+        // Get the current element
+        int currEle = arr[i];
+        
+        /* Pop the elements in the stack until 
+        the stack is not empty and the top 
+        elements is not the smaller element */
+        while(!st.isEmpty() &amp;&amp; 
+              arr[st.peek()] &gt;= arr[i]){
+
+            st.pop();
+        }
+        
+        // Update the answer
+        ans[i] = !st.isEmpty() ? st.peek() : -1;
+        
+        /* Push the index of current 
+        element in the stack */
+        st.push(i);
+    }
+    
+    // Return the answer
+    return ans;
+}
+
+// Function to find the largest rectangle area
+public int largestRectangleArea(int[] heights) {
+    
+    /* Determine the next and 
+    previous smaller elements */
+    int[] nse = findNSE(heights);
+    int[] pse = findPSE(heights);
+    
+    // To store largest area
+    int largestArea = 0;
+    
+    // To store current area
+    int area;
+    
+    // Traverse on the array
+    for(int i=0; i &lt; heights.length; i++) {
+        
+        // Calculate current area
+        area = heights[i] * (nse[i]-pse[i]-1);
+        
+        // Update largest area
+        largestArea = Math.max(largestArea, area);
+    }
+    
+    // Return largest area found
+    return largestArea;
+      }
+};
+</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the indices of 
+    next smaller elements */
+    findNSE(arr) {
+        
+        // Size of array
+        let n = arr.length;
+        
+        // To store the answer
+        let ans = new Array(n);
+        
+        // Stack 
+        let st = [];
+        
+        // Start traversing from the back
+        for(let i = n - 1; i &gt;= 0; i--) {
+            
+            // Get the current element
+            let currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            element is not the smaller element */
+            while(st.length &amp;&amp; 
+                  arr[st[st.length - 1]] &gt;= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.length ? st[st.length - 1] : n;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    /* Function to find the indices of 
+    previous smaller elements */
+    findPSE(arr) {
+        
+        // Size of array
+        let n = arr.length;
+        
+        // To store the answer
+        let ans = new Array(n);
+        
+        // Stack 
+        let st = [];
+        
+        // Traverse on the array
+        for(let i = 0; i &lt; n; i++) {
+            
+            // Get the current element
+            let currEle = arr[i];
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(st.length &amp;&amp; 
+                  arr[st[st.length - 1]] &gt;= arr[i]){
+                st.pop();
+            }
+            
+            // Update the answer
+            ans[i] = st.length ? st[st.length - 1] : -1;
+            
+            /* Push the index of current 
+            element in the stack */
+            st.push(i);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+    
+    // Function to find the largest rectangle area
+    largestRectangleArea(heights) {
+        
+        /* Determine the next and 
+        previous smaller elements */
+        let nse = this.findNSE(heights);
+        let pse = this.findPSE(heights);
+        
+        // To store largest area
+        let largestArea = 0;
+        
+        // To store current area
+        let area = 0;
+        
+        // Traverse on the array
+        for(let i = 0; i &lt; heights.length; i++) {
+            
+            // Calculate current area
+            area = heights[i] * (nse[i]-pse[i]-1);
+            
+            // Update largest area
+            largestArea = Math.max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the indices of 
+    # next smaller elements
+    def findNSE(self, arr):
+        
+        # Size of array
+        n = len(arr)
+        
+        # To store the answer
+        ans = [0] * n
+        
+        # Stack 
+        st = []
+        
+        # Start traversing from the back
+        for i in range(n - 1, -1, -1):
+            
+            # Get the current element
+            currEle = arr[i]
+            
+            # Pop the elements in the stack until 
+            # the stack is not empty and the top 
+            # element is not the smaller element
+            while st and arr[st[-1]] &gt;= arr[i]:
+                st.pop()
+            
+            # Update the answer
+            ans[i] = st[-1] if st else n
+            
+            # Push the index of current 
+            # element in the stack
+            st.append(i)
+        
+        # Return the answer
+        return ans
+    
+    # Function to find the indices of 
+    # previous smaller elements
+    def findPSE(self, arr):
+        
+        # Size of array
+        n = len(arr)
+        
+        # To store the answer
+        ans = [0] * n
+        
+        # Stack 
+        st = []
+        
+        # Traverse on the array
+        for i in range(n):
+            
+            # Get the current element
+            currEle = arr[i]
+            
+            # Pop the elements in the stack until 
+            # the stack is not empty and the top 
+            # elements is not the smaller element
+            while st and arr[st[-1]] &gt;= arr[i]:
+                st.pop()
+            
+            # Update the answer
+            ans[i] = st[-1] if st else -1
+            
+            # Push the index of current 
+            # element in the stack
+            st.append(i)
+        
+        # Return the answer
+        return ans
+    
+    # Function to find the largest rectangle area
+    def largestRectangleArea(self, heights):
+        
+        # Determine the next and 
+        # previous smaller elements
+        nse = self.findNSE(heights)
+        pse = self.findPSE(heights)
+        
+        # To store largest area
+        largestArea = 0
+        
+        # To store current area
+        area = 0
+        
+        # Traverse on the array
+        for i in range(len(heights)):
+            
+            # Calculate current area
+            area = heights[i] * (nse[i]-pse[i]-1)
+            
+            # Update largest area
+            largestArea = max(largestArea, area)
+        
+        # Return largest area found
+        return largestArea</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    
+    // Function to find the largest rectangle area
+    int largestRectangleArea(vector&lt;int&gt; &amp;heights) {
+        
+        int n = heights.size(); // Size of array
+        
+        // Stack 
+        stack&lt;int&gt; st;
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        /* To store the indices of next 
+        and previous smaller elements */
+        int nse, pse;
+        
+        // Traverse on the array
+        for(int i=0; i &lt; n; i++) {
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(!st.empty() &amp;&amp; 
+                  heights[st.top()] &gt;= heights[i]){
+                      
+                // Get the index of top of stack
+                int ind = st.top(); 
+                st.pop();
+                
+                /* Update the index of 
+                previous smaller element */
+                pse = st.empty() ? -1 : st.top();
+                
+                /* Next smaller element index for 
+                the popped element is current index */
+                nse = i;
+                
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse-pse-1);
+                
+                // Update the maximum area
+                largestArea = max(largestArea, area);
+            }
+            
+            // Push the current index in stack
+            st.push(i);
+        }
+        
+        // For elements that are not popped from stack
+        while(!st.empty()) {
+            
+            // NSE for such elements is size of array
+            nse = n;
+            
+            // Get the index of top of stack
+            int ind = st.top(); 
+            st.pop();
+            
+            // Update the previous smaller element
+            pse = st.empty() ? -1 : st.top();
+            
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse-pse-1);
+            
+            // Update the maximum area
+            largestArea = max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    public int LargestRectangleArea(List&lt;int&gt; heights)
+    {
+        int n = heights.Count; // Size of array
+
+        // Stack
+        Stack&lt;int&gt; st = new Stack&lt;int&gt;();
+
+        // To store largest area
+        int largestArea = 0;
+
+        // To store current area
+        int area;
+
+        /* To store the indices of next and
+        previous smaller elements */
+        int nse, pse;
+
+        // Traverse on the array
+        for (int i = 0; i &lt; n; i++)
+        {
+
+            /* Pop the elements in the stack until
+            the stack is not empty and the top
+            elements is not the smaller element */
+            while (st.Count &gt; 0 &amp;&amp;
+                   heights[st.Peek()] &gt;= heights[i])
+            {
+
+                // Get the index of top of stack
+                int ind = st.Pop();
+
+                /* Update the index of
+                previous smaller element */
+                pse = st.Count &gt; 0 ? st.Peek() : -1;
+
+                /* Next smaller element index for
+                the popped element is current index */
+                nse = i;
+
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1);
+
+                // Update the maximum area
+                largestArea = Math.Max(largestArea, area);
+            }
+
+            // Push the current index in stack
+            st.Push(i);
+        }
+
+        // For elements that are not popped from stack
+        while (st.Count &gt; 0)
+        {
+
+            // NSE for such elements is size of array
+            nse = n;
+
+            // Get the index of top of stack
+            int ind = st.Pop();
+
+            // Update the previous smaller element
+            pse = st.Count &gt; 0 ? st.Peek() : -1;
+
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1);
+
+            // Update the maximum area
+            largestArea = Math.Max(largestArea, area);
+        }
+
+        // Return largest area found
+        return largestArea;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the largest rectangle area
+func largestRectangleArea(heights []int) int {
+
+	n := len(heights) // Size of array
+
+	// Stack (stores indices)
+	st := []int{}
+
+	// To store largest area
+	largestArea := 0
+
+	// To store current area
+	area := 0
+
+	/* To store the indices of next
+	and previous smaller elements */
+	nse, pse := 0, 0
+
+	// Traverse on the array
+	for i := 0; i &lt; n; i++ {
+
+		/* Pop the elements in the stack until
+		the stack is not empty and the top
+		element is not the smaller element */
+		for len(st) &gt; 0 &amp;&amp; heights[st[len(st)-1]] &gt;= heights[i] {
+
+			// Get the index of top of stack
+			ind := st[len(st)-1]
+			st = st[:len(st)-1]
+
+			/* Update the index of
+			previous smaller element */
+			if len(st) == 0 {
+				pse = -1
+			} else {
+				pse = st[len(st)-1]
+			}
+
+			/* Next smaller element index for
+			the popped element is current index */
+			nse = i
+
+			// Calculate the area of the popped element
+			area = heights[ind] * (nse - pse - 1)
+
+			// Update the maximum area
+			if area &gt; largestArea {
+				largestArea = area
+			}
+		}
+
+		// Push the current index in stack
+		st = append(st, i)
+	}
+
+	// For elements that are not popped from stack
+	for len(st) &gt; 0 {
+
+		// NSE for such elements is size of array
+		nse = n
+
+		// Get the index of top of stack
+		ind := st[len(st)-1]
+		st = st[:len(st)-1]
+
+		// Update the previous smaller element
+		if len(st) == 0 {
+			pse = -1
+		} else {
+			pse = st[len(st)-1]
+		}
+
+		// Calculate the area of the popped element
+		area = heights[ind] * (nse - pse - 1)
+
+		// Update the maximum area
+		if area &gt; largestArea {
+			largestArea = area
+		}
+	}
+
+	// Return largest area found
+	return largestArea
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to find the largest rectangle area
+    public int largestRectangleArea(int[] heights) {
+        int n = heights.length; // Size of array
+        
+        // Stack 
+        Stack&lt;Integer&gt; st = new Stack&lt;&gt;();
+        
+        // To store largest area
+        int largestArea = 0;
+        
+        // To store current area
+        int area;
+        
+        /* To store the indices of next 
+        and previous smaller elements */
+        int nse, pse;
+        
+        // Traverse on the array
+        for(int i = 0; i &lt; n; i++) {
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(!st.isEmpty() &amp;&amp; 
+                  heights[st.peek()] &gt;= heights[i]) {
+                
+                // Get the index of top of stack
+                int ind = st.pop();
+                
+                /* Update the index of 
+                previous smaller element */
+                pse = st.isEmpty() ? -1 : st.peek();
+                
+                /* Next smaller element index for 
+                the popped element is current index */
+                nse = i;
+                
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1);
+                
+                // Update the maximum area
+                largestArea = Math.max(largestArea, area);
+            }
+            
+            // Push the current index in stack
+            st.push(i);
+        }
+        
+        // For elements that are not popped from stack
+        while(!st.isEmpty()) {
+            
+            // NSE for such elements is size of array
+            nse = n;
+            
+            // Get the index of top of stack
+            int ind = st.pop();
+            
+            // Update the previous smaller element
+            pse = st.isEmpty() ? -1 : st.peek();
+            
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1);
+            
+            // Update the maximum area
+            largestArea = Math.max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the largest rectangle area
+    largestRectangleArea(heights) {
+        let n = heights.length; // Size of array
+        
+        // Stack 
+        let st = [];
+        
+        // To store largest area
+        let largestArea = 0;
+        
+        // To store current area
+        let area;
+        
+        /* To store the indices of next and 
+        previous smaller elements */
+        let nse, pse;
+        
+        // Traverse on the array
+        for(let i = 0; i &lt; n; i++) {
+            
+            /* Pop the elements in the stack until 
+            the stack is not empty and the top 
+            elements is not the smaller element */
+            while(st.length &amp;&amp; 
+                  heights[st[st.length - 1]] &gt;= heights[i]) {
+                
+                // Get the index of top of stack
+                let ind = st.pop();
+                
+                /* Update the index of 
+                previous smaller element */
+                pse = st.length ? st[st.length - 1] : -1;
+                
+                /* Next smaller element index for 
+                the popped element is current index */
+                nse = i;
+                
+                // Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1);
+                
+                // Update the maximum area
+                largestArea = Math.max(largestArea, area);
+            }
+            
+            // Push the current index in stack
+            st.push(i);
+        }
+        
+        // For elements that are not popped from stack
+        while(st.length) {
+            
+            // NSE for such elements is size of array
+            nse = n;
+            
+            // Get the index of top of stack
+            let ind = st.pop();
+            
+            // Update the previous smaller element
+            pse = st.length ? st[st.length - 1] : -1;
+            
+            // Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1);
+            
+            // Update the maximum area
+            largestArea = Math.max(largestArea, area);
+        }
+        
+        // Return largest area found
+        return largestArea;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the largest rectangle area
+    def largestRectangleArea(self, heights):
+        n = len(heights)  # Size of array
+        
+        # Stack 
+        st = []
+        
+        # To store largest area
+        largestArea = 0
+        
+        # To store current area
+        area = 0
+        
+        # To store the indices of next 
+        # and previous smaller elements
+        nse = pse = 0
+        
+        # Traverse on the array
+        for i in range(n):
+            
+            # Pop the elements in the stack until 
+            # the stack is not empty and the top 
+            # elements is not the smaller element
+            while st and heights[st[-1]] &gt;= heights[i]:
+                
+                # Get the index of top of stack
+                ind = st.pop()
+                
+                # Update the index of previous smaller element
+                pse = st[-1] if st else -1
+                
+                # Next smaller element index for \
+                # the popped element is current index
+                nse = i
+                
+                # Calculate the area of the popped element
+                area = heights[ind] * (nse - pse - 1)
+                
+                # Update the maximum area
+                largestArea = max(largestArea, area)
+            
+            # Push the current index in stack
+            st.append(i)
+        
+        # For elements that are not popped from stack
+        while st:
+            
+            # NSE for such elements is size of array
+            nse = n
+            
+            # Get the index of top of stack
+            ind = st.pop()
+            
+            # Update the previous smaller element
+            pse = st[-1] if st else -1
+            
+            # Calculate the area of the popped element
+            area = heights[ind] * (nse - pse - 1)
+            
+            # Update the maximum area
+            largestArea = max(largestArea, area)
+        
+        # Return largest area found
+        return largestArea</code></pre></div>
+</body>
+</html>

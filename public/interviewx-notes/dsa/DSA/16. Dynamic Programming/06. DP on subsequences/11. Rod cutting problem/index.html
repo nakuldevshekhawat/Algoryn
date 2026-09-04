@@ -1,0 +1,2668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rod cutting problem</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Rod cutting problem</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a rod of length N inches and an array price[] where price[i] denotes the value of a piece of rod of length i inches (1-based indexing). Determine the <strong>maximum value</strong> obtainable by cutting up the rod and selling the pieces. Make any number of cuts, or none at all, and sell the resulting pieces.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ N ≤ 1000</li><li>1 ≤ price[i] ≤ 10<sup>5</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> price = [1, 6, 8, 9, 10, 19, 7, 20], N = 8</p><p><strong>Output:</strong> 25</p><p><strong>Explanation:</strong> Cut the rod into lengths of 2 and 6 for a total price of 6 + 19= 25.</p><h3>Example 2</h3><p><strong>Input:</strong> price = [1, 5, 8, 9], N = 4</p><p><strong>Output:</strong> 10</p><p><strong>Explanation:</strong> Cut the rod into lengths of 2 and 2 for a total price of 5 + 5 = 10.</p><h3>Example 3</h3><p><strong>Input:</strong> price = [5, 5, 8, 9, 10, 17, 17, 20], N = 8</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This algorithm, also known as Rod Cutting Problem, is a classic example of Dynamic Programming. It's a practical real-world issue utilized in industries like manufacturing and construction, where the efficient use of resources is crucial. For example, it could be used in a steel plant to determine the best way to cut steel rods to minimize waste while maximizing profit. Similarly, in software development, it is used in resource allocation problems, optimizing network routing, or even in managing cloud resources to lower costs by optimizing the way the resources are used.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+
+<h5><strong>Understanding:</strong></h5>
+<p>In order to solve the problem, we can build the intuition in a bit different way. Instead of cutting the rod into pieces, try to think that we need to make a rod of length 'N'(as given in the problem). Then the question becomes quite similar to unbounded knapsack problem that we did earlier, where we were doing similar work of filling up the knapsack of certain weight 'W'.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Rod cutting problem/-7Szpx2tb"><br>
+<p>Try to pick various length in all possible ways and sum them up to make a rod of length 'N'. As we need to think of all possible ways, recursion can be used to solve this problem.</p>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes: </b>We are given ‘n’ items, where n is the size of the array. Their price is represented by the ‘price’ array. So clearly one parameter will be ‘ind’, i.e index upto which the array items are being considered. There is one more parameter 'N'. It keeps track of the total length of the rod that needs to be cut into parts.</li>
+
+<p>So initially, we need to find f(n-1, N) where N is the total length of the rod given to us. f(n-1, N) will give the maximum value that can be acquired by cutting the rod with  values from index 0 to n-1 and length of the rod N.</p>
+
+<li><b>Try out all possible choices at a given index: </b>As all the length needs to be explored, we will use the pick/non-pick technique.There will be two choices in each function call:</li>
+<p><b>Do not include the current element in the subset: </b>First try to find a length without considering the current index element. For this, make a recursive call to f(ind-1,target).</p>
+<p><b>Include the current element in the subset: </b>Now try to make the rod by considering the current index element as part of rod. As the current element(arr[ind]) is included, the remaining target length will be target - arr[ind]. Therefore, make a function call of f(ind,target-arr[ind]). As there are infinite supply of rods, we can stand at the same index after picking the element at an index.</p>
+<p><b>Note: </b>Consider the current element in the length of the rod only when the current length is less or equal to the 'N'.</p>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, N){
+    not pick = 0+f(ind-1, N)
+    pick = INT_MIN
+    rod length = ind+1
+    if( rod length <= N){
+        pick = price[ind] + f(ind, N - rod length)
+    }
+           
+}</code></pre></div></div></div><br>
+
+<li><b>Return max(pick  and not pick): </b>As we are looking for maximum price that we can get, so take maximum of both the choices.</li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, N){
+    not pick = 0+f(ind-1, N)
+    pick = INT_MIN
+    rod length = ind+1
+    if(rod length <= N){
+        pick = price[ind] + f(ind, N - rod length)
+    }
+    return max(pick, not pick)
+}</code></pre></div></div></div><br>
+
+
+
+<li><b>Base cases: </b>
+<p>If ind==0, it means for now the rod length will  be 1(ind+1).  In order to make a rod length of 'N' we can take the rod of length '1' for 'N' times. So the total price will be N*price[0] and we will return this for the base case.</ol></p>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to solve the rod 
+    cutting problem using recursion*/
+    int func(int ind, int n, vector<int> &price) {
+        /* Base case: If there is only one
+        rod piece, its value is price[0] * n */
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking
+        the current rod piece as very small*/
+        int taken = INT_MIN;
+        
+        /* If the rod length is less than or equal to
+        the remaining length, consider taking it*/
+        if (rodLength <= n) {
+            taken = price[ind] + func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value
+        return max(notTaken, taken);
+    }
+
+public:
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    int rodCutting(vector<int>& price, int n) {
+
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price);
+    }
+};
+
+int main() {
+    vector<int> price = {2, 4, 6, 8};
+    int n = price.size(); 
+
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Maximum value is " << sol.rodCutting(price, n) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to solve the rod 
+    cutting problem using recursion*/
+    private int func(int ind, int n, int[] price) {
+        /* Base case: If there is only one
+        rod piece, its value is price[0] * n*/
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        int taken = Integer.MIN_VALUE;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength <= n) {
+            taken = price[ind] + func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value 
+        return Math.max(notTaken, taken);
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    public int rodCutting(int[] price, int n) {
+
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        int[] price = {2, 4, 6, 8};
+        int n = price.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Maximum value is " + sol.rodCutting(price, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to solve the rod 
+    cutting problem using memoization"""
+    def func(self, ind, n, price):
+        """ Base case: If there is only one rod 
+        piece, its value is price[0] * n"""
+        if ind == 0:
+            return price[0] * n
+
+        """ Calculate the maximum value by
+        not taking the current rod piece"""
+        not_taken = self.func(ind - 1, n, price)
+
+        """ Calculate the length of the rod 
+        corresponding to the current index"""
+        rod_length = ind + 1
+
+        """ Initialize the value for taking the
+        current rod piece as very small"""
+        taken = float('-inf')
+        
+        """ If the rod length is less than or equal 
+        to the remaining length, consider taking it"""
+        if rod_length <= n:
+            taken = price[ind] + self.func(ind, n - rod_length, price)
+
+        # Return the maximum value 
+        return max(not_taken, taken)
+
+    """ Function to initialize the DP table
+    and start the rod cutting process"""
+    def rod_cutting(self, price, n):
+
+        """ Call the utility function to
+        calculate the maximum value"""
+        return self.func(n - 1, n, price)
+
+if __name__ == "__main__":
+    # Example price array
+    price = [2, 4, 6, 8]
+    n = len(price)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Print the result
+    print("The Maximum value is", sol.rod_cutting(price, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    func(ind, n, price) {
+        /* Base case: If there is only one rod
+        piece, its value is price[0] * n*/
+        if (ind === 0) {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        const notTaken = this.func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        const rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        let taken = Number.NEGATIVE_INFINITY;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength <= n) {
+            taken = price[ind] + this.func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value 
+        return Math.max(notTaken, taken);
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    rodCutting(price, n) {
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(n - 1, n, price);
+    }
+}
+
+const price = [2, 4, 6, 8];
+const n = price.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log("The Maximum value is", sol.rodCutting(price, n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    /* Function to solve the rod 
+       cutting problem using recursion */
+    private int Func(int ind, int n, int[] price)
+    {
+        /* Base case: If there is only one
+           rod piece, its value is price[0] * n */
+        if (ind == 0)
+        {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+           not taking the current rod piece */
+        int notTaken = Func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+           corresponding to the current index */
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking
+           the current rod piece as very small */
+        int taken = int.MinValue;
+
+        /* If the rod length is less than or equal to
+           the remaining length, consider taking it */
+        if (rodLength <= n)
+        {
+            taken = price[ind] + Func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value
+        return Math.Max(notTaken, taken);
+    }
+
+    /* Function to initialize the DP table
+       and start the rod cutting process */
+    public int RodCutting(int[] price, int n)
+    {
+        /* Call the utility function 
+           to calculate the maximum value */
+        return Func(n - 1, n, price);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] price = { 2, 4, 6, 8 };
+        int n = price.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Maximum value is " + sol.RodCutting(price, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// INT_MIN mimics C++ INT_MIN (32-bit)
+const INT_MIN = -1 << 31
+
+/* Function to solve the rod 
+    cutting problem using recursion*/
+func funcRec(ind int, n int, price []int) int {
+    /* Base case: If there is only one
+        rod piece, its value is price[0] * n */
+    if ind == 0 {
+        /* Calculate and return the maximum 
+        value for the given weight limit*/
+        return price[0] * n
+    }
+
+    /* Calculate the maximum value by
+        not taking the current rod piece*/
+    notTaken := funcRec(ind-1, n, price)
+
+    /* Calculate the length of the rod
+        corresponding to the current index*/
+    rodLength := ind + 1
+
+    /* Initialize the value for taking
+        the current rod piece as very small*/
+    taken := INT_MIN
+
+    /* If the rod length is less than or equal to
+        the remaining length, consider taking it*/
+    if rodLength <= n {
+        taken = price[ind] + funcRec(ind, n-rodLength, price)
+    }
+
+    // Return the maximum value
+    if notTaken > taken {
+        return notTaken
+    }
+    return taken
+}
+
+/* Function to initialize the DP table
+    and start the rod cutting process*/
+func RodCutting(price []int, n int) int {
+    
+    /* Call the utility function 
+        to calculate the maximum value*/
+    return funcRec(n-1, n, price)
+}
+
+func main() {
+    price := []int{2, 4, 6, 8}
+    n := len(price)
+    result := RodCutting(price, n)
+    fmt.Printf("The Maximum value is %d\n", result)
+}
+</code></pre></div></div></div>
+
+
+
+
+
+<strong>Time Complexity: </strong>O(2<sup>(N)</sup>), where N is the length of the array. As, for each index, ther are two possible options.<br><br>
+<strong>Space Complexity:</strong>O(N), at maximum the depth of the recursive stack can go upto N.</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Rod cutting problem/-3mD69Ifr"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][N+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'W'. The maximum value 'ind' can attain is (n), where n is the size of array and for 'N', which denotes length of the rod,  only values between 0 to N are possible. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    int func(int ind, int n, vector<int> &price, vector<vector<int>>& dp) {
+        /*Base case: If there is only one
+       rod piece, its value is price[0] * n*/
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][n] != -1) {
+            return dp[ind][n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking
+        the current rod piece as very small*/
+        int taken = INT_MIN;
+        
+        /* If the rod length is less than or equal to
+        the remaining length, consider taking it*/
+        if (rodLength <= n) {
+            taken = price[ind] + func(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in
+        the DP table and return it*/
+        return dp[ind][n] = max(notTaken, taken);
+    }
+
+public:
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    int rodCutting(vector<int>& price, int n) {
+        /* Initialize DP table with 
+        -1 (indicating uncalculated states)*/
+        vector<vector<int>> dp(n, vector<int>(n + 1, -1));
+
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price, dp);
+    }
+};
+
+int main() {
+    vector<int> price = {2, 4, 6, 8};
+    int n = price.size(); 
+
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Maximum value is " << sol.rodCutting(price, n) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    private int func(int ind, int n, int[] price, int[][] dp) {
+        /* Base case: If there is only one
+        rod piece, its value is price[0] * n*/
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][n] != -1) {
+            return dp[ind][n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        int taken = Integer.MIN_VALUE;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength <= n) {
+            taken = price[ind] + func(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in 
+        the DP table and return it*/
+        dp[ind][n] = Math.max(notTaken, taken);
+        return dp[ind][n];
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    public int rodCutting(int[] price, int n) {
+        /* Initialize DP table with 
+        -1 (indicating uncalculated states)*/
+        int[][] dp = new int[n][n + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price, dp);
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        int[] price = {2, 4, 6, 8};
+        int n = price.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Maximum value is " + sol.rodCutting(price, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to solve the rod 
+    cutting problem using memoization"""
+    def func(self, ind, n, price, dp):
+        """ Base case: If there is only one rod 
+        piece, its value is price[0] * n"""
+        if ind == 0:
+            return price[0] * n
+
+        """ If the result for this state is
+        already calculated, return it"""
+        if dp[ind][n] != -1:
+            return dp[ind][n]
+
+        """ Calculate the maximum value by
+        not taking the current rod piece"""
+        not_taken = self.func(ind - 1, n, price, dp)
+
+        """ Calculate the length of the rod 
+        corresponding to the current index"""
+        rod_length = ind + 1
+
+        """ Initialize the value for taking the
+        current rod piece as very small"""
+        taken = float('-inf')
+        
+        """ If the rod length is less than or equal 
+        to the remaining length, consider taking it"""
+        if rod_length <= n:
+            taken = price[ind] + self.func(ind, n - rod_length, price, dp)
+
+        """ Store the maximum value in 
+        the DP table and return it"""
+        dp[ind][n] = max(not_taken, taken)
+        return dp[ind][n]
+
+    """ Function to initialize the DP table
+    and start the rod cutting process"""
+    def rod_cutting(self, price, n):
+        """ Initialize DP table with 
+        -1 (indicating uncalculated states)"""
+        dp = [[-1] * (n + 1) for _ in range(n)]
+
+        """ Call the utility function to
+        calculate the maximum value"""
+        return self.func(n - 1, n, price, dp)
+
+if __name__ == "__main__":
+    # Example price array
+    price = [2, 4, 6, 8]
+    n = len(price)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Print the result
+    print("The Maximum value is", sol.rod_cutting(price, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    func(ind, n, price, dp) {
+        /* Base case: If there is only one rod
+        piece, its value is price[0] * n*/
+        if (ind === 0) {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][n] !== -1) {
+            return dp[ind][n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        const notTaken = this.func(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        const rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        let taken = Number.NEGATIVE_INFINITY;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength <= n) {
+            taken = price[ind] + this.func(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in 
+        the DP table and return it*/
+        dp[ind][n] = Math.max(notTaken, taken);
+        return dp[ind][n];
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    rodCutting(price, n) {
+        /* Initialize DP table with -1
+        (indicating uncalculated states)*/
+        const dp = Array.from({ length: n }, () => Array(n + 1).fill(-1));
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(n - 1, n, price, dp);
+    }
+}
+
+const price = [2, 4, 6, 8];
+const n = price.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log("The Maximum value is", sol.rodCutting(price, n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    private int MemoizedRodCutting(int ind, int n, int[] price, int[,] dp)
+    {
+        /* Base case: If there is only one rod
+        piece, its value is price[0] * n*/
+        if (ind == 0)
+        {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind, n] != -1)
+        {
+            return dp[ind, n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = MemoizedRodCutting(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        int taken = int.MinValue;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength <= n)
+        {
+            taken = price[ind] + MemoizedRodCutting(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in 
+        the DP table and return it*/
+        dp[ind, n] = Math.Max(notTaken, taken);
+        return dp[ind, n];
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    public int RodCutting(int[] price, int n)
+    {
+        /* Initialize DP table with -1
+        (indicating uncalculated states)*/
+        int[,] dp = new int[n, n + 1];
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j <= n; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return MemoizedRodCutting(n - 1, n, price, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] price = { 2, 4, 6, 8 };
+        int n = price.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Maximum value is " + sol.RodCutting(price, n));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function for max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Function to solve the rod cutting problem using memoization
+func funcRod(ind int, n int, price []int, dp [][]int) int {
+	/* Base case: If there is only one
+	rod piece, its value is price[0] * n */
+	if ind == 0 {
+		return price[0] * n
+	}
+
+	/* If the result for this state is
+	already calculated, return it */
+	if dp[ind][n] != -1 {
+		return dp[ind][n]
+	}
+
+	/* Calculate the maximum value by
+	not taking the current rod piece */
+	notTaken := funcRod(ind-1, n, price, dp)
+
+	/* Calculate the length of the rod
+	corresponding to the current index */
+	rodLength := ind + 1
+
+	/* Initialize the value for taking
+	the current rod piece as very small */
+	taken := -1 << 31 // equivalent to INT_MIN in Go
+
+	/* If the rod length is less than or equal to
+	the remaining length, consider taking it */
+	if rodLength <= n {
+		taken = price[ind] + funcRod(ind, n-rodLength, price, dp)
+	}
+
+	/* Store the maximum value in
+	the DP table and return it */
+	dp[ind][n] = max(notTaken, taken)
+	return dp[ind][n]
+}
+
+// Function to initialize the DP table and start the rod cutting process
+func RodCutting(price []int, n int) int {
+	/* Initialize DP table with
+	-1 (indicating uncalculated states) */
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, n+1)
+		for j := 0; j <= n; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	/* Call the utility function
+	to calculate the maximum value */
+	return funcRod(n-1, n, price, dp)
+}
+
+func main() {
+	price := []int{2, 4, 6, 8}
+	n := len(price)
+
+	// Print the result
+	fmt.Println("The Maximum value is", RodCutting(price, n))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*Rod length), where N is the size of the array. As there are N*(rod length) states therefore at max ‘N*(rod length)’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*rod length) + O(N), the stack space will be O(N) and  a 2D array of size N*(rod length) is used.</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li><b>Declare a dp array of size [n][N+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'N'.  The maximum value 'ind' can attain is (n) and including 0 its n, where n is the size of array, for 'N' can have any values between 0 to 'N'.  So we need a 2D dp array. Set its type as int and initialize it as 0.</li>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when 'ind' == 0, it means we were considering the first element. So for 'ind' == 0,  assign (N * price[0]) to the dp array, as discussed in the recursive code.</li>
+
+<li><b>Iterative Computation Using Loops: </b>As we are done for the first row(ind = 0) in the base case, so ‘ind’ variable will move from 1 to n-1, whereas ‘N’ variable will move from 0 to 'N'(length). Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.</li>
+
+<li><b>Returning the answer: </b>At last dp[n-1][N] will hold the solution after the completion of whole process, as we are doing the calculations in bottom-up manner.</li>
+</ol><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    // Function to solve the rod cutting problem
+    int rodCutting(vector<int>& price, int n) {
+        // Initialize DP table with dimensions [n][n + 1]
+        vector<vector<int>> dp(n, vector<int>(n + 1, 0));
+        
+        for(int length = 0; length <= n; length++){
+            dp[0][length] = price[0]*length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind < n; ++ind) { 
+            for (int length = 1; length <= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = 0+dp[ind - 1][length];
+                
+                // Case when the piece is taken
+                int taken = INT_MIN;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength <= length) {
+                    taken = price[ind] + dp[ind][length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum of 
+                including or not including the current piece*/
+                dp[ind][length] = max(notTaken, taken);
+            }
+        }
+        
+        // Return the result 
+        return dp[n - 1][n];
+    }
+};
+
+int main() {
+    vector<int> price = {2, 4, 6, 8};
+    int n = price.size();
+
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Maximum value is " << sol.rodCutting(price, n) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the rod cutting problem
+    public int rodCutting(int[] price, int n) {
+        // Initialize DP table with dimensions [n][n + 1]
+        int[][] dp = new int[n][n + 1];
+        
+        for (int length = 0; length <= n; length++) {
+            dp[0][length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind < n; ++ind) { 
+            for (int length = 1; length <= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = dp[ind - 1][length];
+                
+                // Case when the piece is taken
+                int taken = Integer.MIN_VALUE;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength <= length) {
+                    taken = price[ind] + dp[ind][length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum of
+                including or not including the current piece*/
+                dp[ind][length] = Math.max(notTaken, taken);
+            }
+        }
+        
+        // Return the result
+        return dp[n - 1][n];
+    }
+
+    public static void main(String[] args) {
+        int[] price = {2, 4, 6, 8};
+        int n = price.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Maximum value is " + sol.rodCutting(price, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the rod cutting problem
+    def rodCutting(self, price, n):
+        # Initialize DP table with dimensions [n][n + 1]
+        dp = [[0] * (n + 1) for _ in range(n)]
+        
+        for length in range(n + 1):
+            dp[0][length] = price[0] * length
+        
+        # Fill the DP table
+        for ind in range(1, n): 
+            for length in range(1, n + 1): 
+                
+                # Case when the piece is not taken
+                notTaken = dp[ind - 1][length]
+                
+                # Case when the piece is taken
+                taken = float('-inf')
+                
+                """ Length of the rod piece 
+                corresponding to the current index"""
+                rodLength = ind + 1
+                
+                # Check if the piece can be taken
+                if rodLength <= length:
+                    taken = price[ind] + dp[ind][length - rodLength]
+                
+                """ Update dp[ind][length] with the maximum of
+                including or not including the current piece"""
+                dp[ind][length] = max(notTaken, taken)
+        
+        # Return the result
+        return dp[n - 1][n]
+
+if __name__ == "__main__":
+    price = [2, 4, 6, 8]
+    n = len(price)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Print the result
+    print("The Maximum value is", sol.rodCutting(price, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the rod cutting problem
+    rodCutting(price, n) {
+        // Initialize DP table with dimensions [n][n + 1]
+        let dp = Array.from({ length: n }, () => Array(n + 1).fill(0));
+        
+        for (let length = 0; length <= n; length++) {
+            dp[0][length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (let ind = 1; ind < n; ++ind) { 
+            for (let length = 1; length <= n; ++length) { 
+                
+                // Case when the piece is not taken
+                let notTaken = dp[ind - 1][length];
+                
+                // Case when the piece is taken
+                let taken = -Infinity;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                let rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength <= length) {
+                    taken = price[ind] + dp[ind][length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum 
+                of including or not including the current piece*/
+                dp[ind][length] = Math.max(notTaken, taken);
+            }
+        }
+        
+        // Return the result
+        return dp[n - 1][n];
+    }
+}
+    const price = [2, 4, 6, 8];
+    const n = price.length;
+
+    // Create an instance of Solution class
+    const sol = new Solution();
+
+    // Print the result
+    console.log("The Maximum value is " + sol.rodCutting(price, n));
+
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Function to solve the rod cutting problem
+    public int RodCutting(int[] price, int n)
+    {
+        // Initialize DP table with dimensions [n][n + 1]
+        int[,] dp = new int[n, n + 1];
+        
+        for (int length = 0; length <= n; length++)
+        {
+            dp[0, length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind < n; ++ind) 
+        {
+            for (int length = 1; length <= n; ++length) 
+            {
+                
+                // Case when the piece is not taken
+                int notTaken = dp[ind - 1, length];
+                
+                // Case when the piece is taken
+                int taken = int.MinValue;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength <= length)
+                {
+                    taken = price[ind] + dp[ind, length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum 
+                of including or not including the current piece*/
+                dp[ind, length] = Math.Max(notTaken, taken);
+            }
+        }
+        
+        // Return the result
+        return dp[n - 1, n];
+    }
+
+    public static void Main(string[] args)
+    {
+        int[] price = { 2, 4, 6, 8 };
+        int n = price.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Maximum value is " + sol.RodCutting(price, n));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function for max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Function to solve the rod cutting problem
+func RodCutting(price []int, n int) int {
+	// Initialize DP table with dimensions [n][n + 1]
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, n+1)
+	}
+
+	// Base initialization
+	for length := 0; length <= n; length++ {
+		dp[0][length] = price[0] * length
+	}
+
+	// Fill the DP table
+	for ind := 1; ind < n; ind++ {
+		for length := 1; length <= n; length++ {
+
+			// Case when the piece is not taken
+			notTaken := dp[ind-1][length]
+
+			// Case when the piece is taken
+			taken := -1 << 31 // equivalent to INT_MIN in Go
+
+			/* Length of the rod piece
+			corresponding to the current index */
+			rodLength := ind + 1
+
+			// Check if the piece can be taken
+			if rodLength <= length {
+				taken = price[ind] + dp[ind][length-rodLength]
+			}
+
+			/* Update dp[ind][length] with the maximum of
+			including or not including the current piece */
+			dp[ind][length] = max(notTaken, taken)
+		}
+	}
+
+	// Return the result
+	return dp[n-1][n]
+}
+
+func main() {
+	price := []int{2, 4, 6, 8}
+	n := len(price)
+
+	// Print the result
+	fmt.Println("The Maximum value is", RodCutting(price, n))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*(rod length),  where N is the size of the array. There are two nested loops which accounts for N*(rod length).<br><br>
+<strong>Space Complexity:</strong>O(N*(rod length)), as a 2D array of size N*(rod length) is used.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we observe the relation obtained in the tabulation approach, dp[ind][cap] =  max(dp[ind-1][cap] ,dp[ind][cap-wt[ind]]. We find that to calculate a value of a cell of the dp array, only the previous row values (say prev) are needed. So, we don’t need to store an entire array. Hence we can space optimize it. We will be space optimizing this solution using only one row.</p>
+
+<h5><strong>Understanding:</strong></h5>
+
+<p>In the relation, dp[ind-1][cap] and dp[ind-1][cap - wt[ind]], if we are at a column, only the same column value from previous row is required and other values will be from the current row itself. So we do not  need to store an entire array for it.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Rod cutting problem/-UvhYqJQa"><br>
+
+<p>We can use the 'cur' row itself to store the required value in the following way:</p>
+<ol>
+<li>Somehow make sure that the previous value( say preValue) is available to us in some manner ( we will discuss later how we got the value).
+</li><li>Now, let us say that we want to find the value of cell cur[3], by going through the relation we find that we need a 'preValue' and one value from the 'cur' row.
+</li><li>To calculate the cur[3] element, we need only a single variable (preValue). The catch is that we can initially place this preValue at the position cur[3] (before finding its updated value) and later while calculating for the current row’s cell cur[3], the value present there automatically serves as the preValue and we can use it to find the required cur[3] value.
+</li><li>After calculating the cur[3] value we store it at the cur[3] position so this cur[3] will automatically serve as preValue for the next row. In this way, we space-optimize the tabulation approach by just using one row.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    // Function to solve the rod cutting problem
+    int rodCutting(vector<int>& price, int n) {
+        // Initialize DP table with dimensions [n + 1]
+        vector<int> prev(n+1, 0), cur(n+1, 0);
+        
+        for(int length = 0; length <= n; length++){
+            prev[length] = price[0]*length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind < n; ++ind) { 
+            for (int length = 1; length <= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = 0+prev[length];
+                
+                // Case when the piece is taken
+                int taken = INT_MIN;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength <= length) {
+                    taken = price[ind] + cur[length - rodLength];
+                }
+                
+                /* Update cur[length] with the maximum of 
+                including or not including the current piece*/
+                cur[length] = max(notTaken, taken);
+            }
+            prev = cur;
+        }
+        
+        // Return the result 
+        return prev[n];
+    }
+};
+
+int main() {
+    vector<int> price = {2, 4, 6, 8};
+    int n = price.size();
+
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Maximum value is " << sol.rodCutting(price, n) << endl;
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the rod cutting problem
+    public int rodCutting(int[] price, int n) {
+        // Initialize DP table with dimensions [n + 1]
+        int[] prev = new int[n + 1];
+        int[] cur = new int[n + 1];
+        
+        for (int length = 0; length <= n; length++) {
+            prev[length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind < n; ++ind) { 
+            for (int length = 1; length <= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = prev[length];
+                
+                // Case when the piece is taken
+                int taken = Integer.MIN_VALUE;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength <= length) {
+                    taken = price[ind] + cur[length - rodLength];
+                }
+                
+                /* Update cur[length] with the maximum of 
+                including or not including the current piece*/
+                cur[length] = Math.max(notTaken, taken);
+            }
+            // Copy cur to prev
+            System.arraycopy(cur, 0, prev, 0, n + 1);
+        }
+        
+        // Return the result
+        return prev[n];
+    }
+
+    public static void main(String[] args) {
+        int[] price = {2, 4, 6, 8};
+        int n = price.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Maximum value is " + sol.rodCutting(price, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the rod cutting problem
+    def rodCutting(self, price, n):
+        # Initialize DP table with dimensions [n + 1]
+        prev = [0] * (n + 1)
+        cur = [0] * (n + 1)
+        
+        for length in range(n + 1):
+            prev[length] = price[0] * length
+        
+        # Fill the DP table
+        for ind in range(1, n): 
+            for length in range(1, n + 1): 
+                
+                # Case when the piece is not taken
+                notTaken = prev[length]
+                
+                # Case when the piece is taken
+                taken = float('-inf')
+                
+                """ Length of the rod piece 
+                corresponding to the current index"""
+                rodLength = ind + 1
+                
+                # Check if the piece can be taken
+                if rodLength <= length:
+                    taken = price[ind] + cur[length - rodLength]
+                
+                """ Update cur[length] with the maximum of 
+                including or not including the current piece"""
+                cur[length] = max(notTaken, taken)
+            
+            # Copy cur to prev
+            prev = cur[:]
+        
+        # Return the result
+        return prev[n]
+
+if __name__ == "__main__":
+    price = [2, 4, 6, 8]
+    n = len(price)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Print the result
+    print("The Maximum value is", sol.rodCutting(price, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the rod cutting problem
+    rodCutting(price, n) {
+        // Initialize DP table with dimensions [n + 1]
+        let prev = new Array(n + 1).fill(0);
+        let cur = new Array(n + 1).fill(0);
+        
+        for (let length = 0; length <= n; length++) {
+            prev[length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (let ind = 1; ind < n; ++ind) { 
+            for (let length = 1; length <= n; ++length) { 
+                
+                // Case when the piece is not taken
+                let notTaken = prev[length];
+                
+                // Case when the piece is taken
+                let taken = -Infinity;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                let rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength <= length) {
+                    taken = price[ind] + cur[length - rodLength];
+                }
+                
+                /* Update cur[length] with the maximum of 
+                including or not including the current piece*/
+                cur[length] = Math.max(notTaken, taken);
+            }
+            // Copy cur to prev
+            for (let i = 0; i <= n; i++) {
+                prev[i] = cur[i];
+            }
+        }
+        
+        // Return the result
+        return prev[n];
+    }
+}
+    const price = [2, 4, 6, 8];
+    const n = price.length;
+
+    // Create an instance of Solution class
+    const sol = new Solution();
+
+    // Print the result
+    console.log("The Maximum value is " + sol.rodCutting(price, n));
+
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Program
+{
+    public class Solution
+    {
+        // Function to solve the rod cutting problem
+        public int RodCutting(int[] price, int n)
+        {
+            // Initialize DP table with dimensions [n + 1]
+            int[] prev = new int[n + 1];
+            int[] cur = new int[n + 1];
+
+            for (int length = 0; length <= n; length++)
+            {
+                prev[length] = price[0] * length;
+            }
+
+            // Fill the DP table
+            for (int ind = 1; ind < n; ++ind)
+            {
+                for (int length = 1; length <= n; ++length)
+                {
+
+                    // Case when the piece is not taken
+                    int notTaken = prev[length];
+
+                    // Case when the piece is taken
+                    int taken = int.MinValue;
+
+                    /* Length of the rod piece 
+                    corresponding to the current index*/
+                    int rodLength = ind + 1;
+
+                    // Check if the piece can be taken
+                    if (rodLength <= length)
+                    {
+                        taken = price[ind] + cur[length - rodLength];
+                    }
+
+                    /* Update cur[length] with the maximum of 
+                    including or not including the current piece*/
+                    cur[length] = Math.Max(notTaken, taken);
+                }
+                // Copy cur to prev
+                for (int i = 0; i <= n; i++)
+                {
+                    prev[i] = cur[i];
+                }
+            }
+
+            // Return the result
+            return prev[n];
+        }
+    }
+
+    public static void Main(string[] args)
+    {
+        int[] price = { 2, 4, 6, 8 };
+        int n = price.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Maximum value is " + sol.RodCutting(price, n));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function for max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Function to solve the rod cutting problem
+func RodCutting(price []int, n int) int {
+	// Initialize DP table with dimensions [n + 1]
+	prev := make([]int, n+1)
+	cur := make([]int, n+1)
+
+	// Base initialization
+	for length := 0; length <= n; length++ {
+		prev[length] = price[0] * length
+	}
+
+	// Fill the DP table
+	for ind := 1; ind < n; ind++ {
+		for length := 1; length <= n; length++ {
+
+			// Case when the piece is not taken
+			notTaken := prev[length]
+
+			// Case when the piece is taken
+			taken := -1 << 31 // Equivalent to INT_MIN in Go
+
+			/* Length of the rod piece
+			corresponding to the current index */
+			rodLength := ind + 1
+
+			// Check if the piece can be taken
+			if rodLength <= length {
+				taken = price[ind] + cur[length-rodLength]
+			}
+
+			/* Update cur[length] with the maximum of
+			including or not including the current piece */
+			cur[length] = max(notTaken, taken)
+		}
+		// Update prev for the next iteration
+		copy(prev, cur)
+	}
+
+	// Return the result
+	return prev[n]
+}
+
+func main() {
+	price := []int{2, 4, 6, 8}
+	n := len(price)
+
+	// Print the result
+	fmt.Println("The Maximum value is", RodCutting(price, n))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N*(rod length),  where N is the size of the array. There are two nested loops which accounts for N*(rod length).<br><br>
+<strong>Space Complexity:</strong>O(rod length), as arrays of size (rod length+1) are used.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to solve the rod 
+    cutting problem using recursion*/
+    int func(int ind, int n, vector&lt;int&gt; &amp;price) {
+        /* Base case: If there is only one
+        rod piece, its value is price[0] * n */
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking
+        the current rod piece as very small*/
+        int taken = INT_MIN;
+        
+        /* If the rod length is less than or equal to
+        the remaining length, consider taking it*/
+        if (rodLength &lt;= n) {
+            taken = price[ind] + func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value
+        return max(notTaken, taken);
+    }
+
+public:
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    int rodCutting(vector&lt;int&gt;&amp; price, int n) {
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Function to solve the rod 
+       cutting problem using recursion */
+    private int Func(int ind, int n, int[] price)
+    {
+        /* Base case: If there is only one
+           rod piece, its value is price[0] * n */
+        if (ind == 0)
+        {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+           not taking the current rod piece */
+        int notTaken = Func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+           corresponding to the current index */
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking
+           the current rod piece as very small */
+        int taken = int.MinValue;
+
+        /* If the rod length is less than or equal to
+           the remaining length, consider taking it */
+        if (rodLength &lt;= n)
+        {
+            taken = price[ind] + Func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value
+        return Math.Max(notTaken, taken);
+    }
+
+    /* Function to initialize the DP table
+       and start the rod cutting process */
+    public int RodCutting(int[] price, int n)
+    {
+        /* Call the utility function 
+           to calculate the maximum value */
+        return Func(n - 1, n, price);
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// INT_MIN mimics C++ INT_MIN (32-bit)
+const INT_MIN = -1 &lt;&lt; 31
+
+/* Function to solve the rod 
+    cutting problem using recursion*/
+func funcRec(ind int, n int, price []int) int {
+    /* Base case: If there is only one
+        rod piece, its value is price[0] * n */
+    if ind == 0 {
+        /* Calculate and return the maximum 
+        value for the given weight limit*/
+        return price[0] * n
+    }
+
+    /* Calculate the maximum value by
+        not taking the current rod piece*/
+    notTaken := funcRec(ind-1, n, price)
+
+    /* Calculate the length of the rod
+        corresponding to the current index*/
+    rodLength := ind + 1
+
+    /* Initialize the value for taking
+        the current rod piece as very small*/
+    taken := INT_MIN
+
+    /* If the rod length is less than or equal to
+        the remaining length, consider taking it*/
+    if rodLength &lt;= n {
+        taken = price[ind] + funcRec(ind, n-rodLength, price)
+    }
+
+    // Return the maximum value
+    if notTaken &gt; taken {
+        return notTaken
+    }
+    return taken
+}
+
+/* Function to initialize the DP table
+    and start the rod cutting process*/
+func RodCutting(price []int, n int) int {
+
+    /* Call the utility function 
+        to calculate the maximum value*/
+    return funcRec(n-1, n, price)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to solve the rod 
+    cutting problem using recursion*/
+    private int func(int ind, int n, int[] price) {
+        /* Base case: If there is only one
+        rod piece, its value is price[0] * n*/
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        int taken = Integer.MIN_VALUE;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength &lt;= n) {
+            taken = price[ind] + func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value 
+        return Math.max(notTaken, taken);
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    public int RodCutting(int[] price, int n) {
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    func(ind, n, price) {
+        /* Base case: If there is only one rod
+        piece, its value is price[0] * n*/
+        if (ind === 0) {
+            return price[0] * n;
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        const notTaken = this.func(ind - 1, n, price);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        const rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        let taken = Number.NEGATIVE_INFINITY;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength &lt;= n) {
+            taken = price[ind] + this.func(ind, n - rodLength, price);
+        }
+
+        // Return the maximum value 
+        return Math.max(notTaken, taken);
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    RodCutting(price, n) {
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(n - 1, n, price);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to solve the rod 
+    cutting problem using memoization&quot;&quot;&quot;
+    def func(self, ind, n, price):
+        &quot;&quot;&quot; Base case: If there is only one rod 
+        piece, its value is price[0] * n&quot;&quot;&quot;
+        if ind == 0:
+            return price[0] * n
+
+        &quot;&quot;&quot; Calculate the maximum value by
+        not taking the current rod piece&quot;&quot;&quot;
+        not_taken = self.func(ind - 1, n, price)
+
+        &quot;&quot;&quot; Calculate the length of the rod 
+        corresponding to the current index&quot;&quot;&quot;
+        rod_length = ind + 1
+
+        &quot;&quot;&quot; Initialize the value for taking the
+        current rod piece as very small&quot;&quot;&quot;
+        taken = float(&#x27;-inf&#x27;)
+        
+        &quot;&quot;&quot; If the rod length is less than or equal 
+        to the remaining length, consider taking it&quot;&quot;&quot;
+        if rod_length &lt;= n:
+            taken = price[ind] + self.func(ind, n - rod_length, price)
+
+        # Return the maximum value 
+        return max(not_taken, taken)
+
+    &quot;&quot;&quot; Function to initialize the DP table
+    and start the rod cutting process&quot;&quot;&quot;
+    def RodCutting(self, price, n):
+        &quot;&quot;&quot; Call the utility function to
+        calculate the maximum value&quot;&quot;&quot;
+        return self.func(n - 1, n, price)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    int func(int ind, int n, vector&lt;int&gt; &amp;price, vector&lt;vector&lt;int&gt;&gt;&amp; dp) {
+        /*Base case: If there is only one
+       rod piece, its value is price[0] * n*/
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][n] != -1) {
+            return dp[ind][n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking
+        the current rod piece as very small*/
+        int taken = INT_MIN;
+        
+        /* If the rod length is less than or equal to
+        the remaining length, consider taking it*/
+        if (rodLength &lt;= n) {
+            taken = price[ind] + func(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in
+        the DP table and return it*/
+        return dp[ind][n] = max(notTaken, taken);
+    }
+
+public:
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    int rodCutting(vector&lt;int&gt;&amp; price, int n) {
+        /* Initialize DP table with 
+        -1 (indicating uncalculated states)*/
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(n + 1, -1));
+
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    private int MemoizedRodCutting(int ind, int n, int[] price, int[,] dp)
+    {
+        /* Base case: If there is only one rod
+        piece, its value is price[0] * n*/
+        if (ind == 0)
+        {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind, n] != -1)
+        {
+            return dp[ind, n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = MemoizedRodCutting(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        int taken = int.MinValue;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength &lt;= n)
+        {
+            taken = price[ind] + MemoizedRodCutting(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in 
+        the DP table and return it*/
+        dp[ind, n] = System.Math.Max(notTaken, taken);
+        return dp[ind, n];
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    public int RodCutting(int[] price, int n)
+    {
+        /* Initialize DP table with -1
+        (indicating uncalculated states)*/
+        int[,] dp = new int[n, n + 1];
+        for (int i = 0; i &lt; n; i++)
+        {
+            for (int j = 0; j &lt;= n; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return MemoizedRodCutting(n - 1, n, price, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function for max
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+// Function to solve the rod cutting problem using memoization
+func funcRod(ind int, n int, price []int, dp [][]int) int {
+	/* Base case: If there is only one
+	rod piece, its value is price[0] * n */
+	if ind == 0 {
+		return price[0] * n
+	}
+
+	/* If the result for this state is
+	already calculated, return it */
+	if dp[ind][n] != -1 {
+		return dp[ind][n]
+	}
+
+	/* Calculate the maximum value by
+	not taking the current rod piece */
+	notTaken := funcRod(ind-1, n, price, dp)
+
+	/* Calculate the length of the rod
+	corresponding to the current index */
+	rodLength := ind + 1
+
+	/* Initialize the value for taking
+	the current rod piece as very small */
+	taken := -1 &lt;&lt; 31 // equivalent to INT_MIN in Go
+
+	/* If the rod length is less than or equal to
+	the remaining length, consider taking it */
+	if rodLength &lt;= n {
+		taken = price[ind] + funcRod(ind, n-rodLength, price, dp)
+	}
+
+	/* Store the maximum value in
+	the DP table and return it */
+	dp[ind][n] = max(notTaken, taken)
+	return dp[ind][n]
+}
+
+// Function to initialize the DP table and start the rod cutting process
+func RodCutting(price []int, n int) int {
+	/* Initialize DP table with
+	-1 (indicating uncalculated states) */
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, n+1)
+		for j := 0; j &lt;= n; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	/* Call the utility function
+	to calculate the maximum value */
+	return funcRod(n-1, n, price, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    private int func(int ind, int n, int[] price, int[][] dp) {
+        /* Base case: If there is only one
+        rod piece, its value is price[0] * n*/
+        if (ind == 0) {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][n] != -1) {
+            return dp[ind][n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        int notTaken = func(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        int rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        int taken = Integer.MIN_VALUE;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength &lt;= n) {
+            taken = price[ind] + func(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in 
+        the DP table and return it*/
+        dp[ind][n] = Math.max(notTaken, taken);
+        return dp[ind][n];
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    public int RodCutting(int[] price, int n) {
+        /* Initialize DP table with 
+        -1 (indicating uncalculated states)*/
+        int[][] dp = new int[n][n + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        /* Call the utility function 
+        to calculate the maximum value*/
+        return func(n - 1, n, price, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to solve the rod 
+    cutting problem using memoization*/
+    func(ind, n, price, dp) {
+        /* Base case: If there is only one rod
+        piece, its value is price[0] * n*/
+        if (ind === 0) {
+            return price[0] * n;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][n] !== -1) {
+            return dp[ind][n];
+        }
+
+        /* Calculate the maximum value by
+        not taking the current rod piece*/
+        const notTaken = this.func(ind - 1, n, price, dp);
+
+        /* Calculate the length of the rod
+        corresponding to the current index*/
+        const rodLength = ind + 1;
+
+        /* Initialize the value for taking 
+        the current rod piece as very small*/
+        let taken = Number.NEGATIVE_INFINITY;
+        
+        /* If the rod length is less than or equal
+        to the remaining length, consider taking it*/
+        if (rodLength &lt;= n) {
+            taken = price[ind] + this.func(ind, n - rodLength, price, dp);
+        }
+
+        /* Store the maximum value in 
+        the DP table and return it*/
+        dp[ind][n] = Math.max(notTaken, taken);
+        return dp[ind][n];
+    }
+
+    /* Function to initialize the DP table
+    and start the rod cutting process*/
+    RodCutting(price, n) {
+        /* Initialize DP table with -1
+        (indicating uncalculated states)*/
+        const dp = Array.from({ length: n }, () =&gt; Array(n + 1).fill(-1));
+
+        /* Call the utility function to
+        calculate the maximum value*/
+        return this.func(n - 1, n, price, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to solve the rod 
+    cutting problem using memoization&quot;&quot;&quot;
+    def func(self, ind, n, price, dp):
+        &quot;&quot;&quot; Base case: If there is only one rod 
+        piece, its value is price[0] * n&quot;&quot;&quot;
+        if ind == 0:
+            return price[0] * n
+
+        &quot;&quot;&quot; If the result for this state is
+        already calculated, return it&quot;&quot;&quot;
+        if dp[ind][n] != -1:
+            return dp[ind][n]
+
+        &quot;&quot;&quot; Calculate the maximum value by
+        not taking the current rod piece&quot;&quot;&quot;
+        not_taken = self.func(ind - 1, n, price, dp)
+
+        &quot;&quot;&quot; Calculate the length of the rod 
+        corresponding to the current index&quot;&quot;&quot;
+        rod_length = ind + 1
+
+        &quot;&quot;&quot; Initialize the value for taking the
+        current rod piece as very small&quot;&quot;&quot;
+        taken = float(&#x27;-inf&#x27;)
+        
+        &quot;&quot;&quot; If the rod length is less than or equal 
+        to the remaining length, consider taking it&quot;&quot;&quot;
+        if rod_length &lt;= n:
+            taken = price[ind] + self.func(ind, n - rod_length, price, dp)
+
+        &quot;&quot;&quot; Store the maximum value in 
+        the DP table and return it&quot;&quot;&quot;
+        dp[ind][n] = max(not_taken, taken)
+        return dp[ind][n]
+
+    &quot;&quot;&quot; Function to initialize the DP table
+    and start the rod cutting process&quot;&quot;&quot;
+    def RodCutting(self, price, n):
+        &quot;&quot;&quot; Initialize DP table with 
+        -1 (indicating uncalculated states)&quot;&quot;&quot;
+        dp = [[-1] * (n + 1) for _ in range(n)]
+
+        &quot;&quot;&quot; Call the utility function to
+        calculate the maximum value&quot;&quot;&quot;
+        return self.func(n - 1, n, price, dp)
+</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    // Function to solve the rod cutting problem
+    int rodCutting(vector&lt;int&gt;&amp; price, int n) {
+        // Initialize DP table with dimensions [n][n + 1]
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(n + 1, 0));
+        
+        for(int length = 0; length &lt;= n; length++){
+            dp[0][length] = price[0]*length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind &lt; n; ++ind) { 
+            for (int length = 1; length &lt;= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = 0+dp[ind - 1][length];
+                
+                // Case when the piece is taken
+                int taken = INT_MIN;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength &lt;= length) {
+                    taken = price[ind] + dp[ind][length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum of 
+                including or not including the current piece*/
+                dp[ind][length] = max(notTaken, taken);
+            }
+        }
+        
+        // Return the result 
+        return dp[n - 1][n];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int RodCutting(int[] price, int n)
+    {
+        // Initialize DP table with dimensions [n][n + 1]
+        int[,] dp = new int[n, n + 1];
+        
+        for (int length = 0; length &lt;= n; length++)
+        {
+            dp[0, length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind &lt; n; ++ind) 
+        {
+            for (int length = 1; length &lt;= n; ++length) 
+            {
+                
+                // Case when the piece is not taken
+                int notTaken = dp[ind - 1, length];
+                
+                // Case when the piece is taken
+                int taken = int.MinValue;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength &lt;= length)
+                {
+                    taken = price[ind] + dp[ind, length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum 
+                of including or not including the current piece*/
+                dp[ind, length] = System.Math.Max(notTaken, taken);
+            }
+        }
+        
+        // Return the result
+        return dp[n - 1, n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function for max
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+// Function to solve the rod cutting problem
+func RodCutting(price []int, n int) int {
+	// Initialize DP table with dimensions [n][n + 1]
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, n+1)
+	}
+
+	// Base initialization
+	for length := 0; length &lt;= n; length++ {
+		dp[0][length] = price[0] * length
+	}
+
+	// Fill the DP table
+	for ind := 1; ind &lt; n; ind++ {
+		for length := 1; length &lt;= n; length++ {
+
+			// Case when the piece is not taken
+			notTaken := dp[ind-1][length]
+
+			// Case when the piece is taken
+			taken := -1 &lt;&lt; 31 // equivalent to INT_MIN in Go
+
+			/* Length of the rod piece
+			corresponding to the current index */
+			rodLength := ind + 1
+
+			// Check if the piece can be taken
+			if rodLength &lt;= length {
+				taken = price[ind] + dp[ind][length-rodLength]
+			}
+
+			/* Update dp[ind][length] with the maximum of
+			including or not including the current piece */
+			dp[ind][length] = max(notTaken, taken)
+		}
+	}
+
+	// Return the result
+	return dp[n-1][n]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the rod cutting problem
+    public int RodCutting(int[] price, int n) {
+        // Initialize DP table with dimensions [n][n + 1]
+        int[][] dp = new int[n][n + 1];
+        
+        for (int length = 0; length &lt;= n; length++) {
+            dp[0][length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind &lt; n; ++ind) { 
+            for (int length = 1; length &lt;= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = dp[ind - 1][length];
+                
+                // Case when the piece is taken
+                int taken = Integer.MIN_VALUE;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength &lt;= length) {
+                    taken = price[ind] + dp[ind][length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum of
+                including or not including the current piece*/
+                dp[ind][length] = Math.max(notTaken, taken);
+            }
+        }
+        
+        // Return the result
+        return dp[n - 1][n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the rod cutting problem
+    RodCutting(price, n) {
+        // Initialize DP table with dimensions [n][n + 1]
+        let dp = Array.from({ length: n }, () =&gt; Array(n + 1).fill(0));
+        
+        for (let length = 0; length &lt;= n; length++) {
+            dp[0][length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (let ind = 1; ind &lt; n; ++ind) { 
+            for (let length = 1; length &lt;= n; ++length) { 
+                
+                // Case when the piece is not taken
+                let notTaken = dp[ind - 1][length];
+                
+                // Case when the piece is taken
+                let taken = -Infinity;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                let rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength &lt;= length) {
+                    taken = price[ind] + dp[ind][length - rodLength];
+                }
+                
+                /* Update dp[ind][length] with the maximum 
+                of including or not including the current piece*/
+                dp[ind][length] = Math.max(notTaken, taken);
+            }
+        }
+        
+        // Return the result
+        return dp[n - 1][n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the rod cutting problem
+    def RodCutting(self, price, n):
+        # Initialize DP table with dimensions [n][n + 1]
+        dp = [[0] * (n + 1) for _ in range(n)]
+        
+        for length in range(n + 1):
+            dp[0][length] = price[0] * length
+        
+        # Fill the DP table
+        for ind in range(1, n): 
+            for length in range(1, n + 1): 
+                
+                # Case when the piece is not taken
+                notTaken = dp[ind - 1][length]
+                
+                # Case when the piece is taken
+                taken = float(&#x27;-inf&#x27;)
+                
+                &quot;&quot;&quot; Length of the rod piece 
+                corresponding to the current index&quot;&quot;&quot;
+                rodLength = ind + 1
+                
+                # Check if the piece can be taken
+                if rodLength &lt;= length:
+                    taken = price[ind] + dp[ind][length - rodLength]
+                
+                &quot;&quot;&quot; Update dp[ind][length] with the maximum of
+                including or not including the current piece&quot;&quot;&quot;
+                dp[ind][length] = max(notTaken, taken)
+        
+        # Return the result
+        return dp[n - 1][n]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    // Function to solve the rod cutting problem
+    int rodCutting(vector&lt;int&gt;&amp; price, int n) {
+        // Initialize DP table with dimensions [n + 1]
+        vector&lt;int&gt; prev(n+1, 0), cur(n+1, 0);
+        
+        for(int length = 0; length &lt;= n; length++){
+            prev[length] = price[0]*length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind &lt; n; ++ind) { 
+            for (int length = 1; length &lt;= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = 0+prev[length];
+                
+                // Case when the piece is taken
+                int taken = INT_MIN;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength &lt;= length) {
+                    taken = price[ind] + cur[length - rodLength];
+                }
+                
+                /* Update cur[length] with the maximum of 
+                including or not including the current piece*/
+                cur[length] = max(notTaken, taken);
+            }
+            prev = cur;
+        }
+        
+        // Return the result 
+        return prev[n];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int RodCutting(int[] price, int n)
+    {
+        // Initialize DP table with dimensions [n + 1]
+        int[] prev = new int[n + 1];
+        int[] cur = new int[n + 1];
+
+        for (int length = 0; length &lt;= n; length++)
+        {
+            prev[length] = price[0] * length;
+        }
+
+        // Fill the DP table
+        for (int ind = 1; ind &lt; n; ++ind)
+        {
+            for (int length = 1; length &lt;= n; ++length)
+            {
+
+                // Case when the piece is not taken
+                int notTaken = prev[length];
+
+                // Case when the piece is taken
+                int taken = int.MinValue;
+
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+
+                // Check if the piece can be taken
+                if (rodLength &lt;= length)
+                {
+                    taken = price[ind] + cur[length - rodLength];
+                }
+
+                /* Update cur[length] with the maximum of 
+                including or not including the current piece*/
+                cur[length] = Math.Max(notTaken, taken);
+            }
+            // Copy cur to prev
+            for (int i = 0; i &lt;= n; i++)
+            {
+                prev[i] = cur[i];
+            }
+        }
+
+        // Return the result
+        return prev[n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function for max
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+// Function to solve the rod cutting problem
+func RodCutting(price []int, n int) int {
+	// Initialize DP table with dimensions [n + 1]
+	prev := make([]int, n+1)
+	cur := make([]int, n+1)
+
+	// Base initialization
+	for length := 0; length &lt;= n; length++ {
+		prev[length] = price[0] * length
+	}
+
+	// Fill the DP table
+	for ind := 1; ind &lt; n; ind++ {
+		for length := 1; length &lt;= n; length++ {
+
+			// Case when the piece is not taken
+			notTaken := prev[length]
+
+			// Case when the piece is taken
+			taken := -1 &lt;&lt; 31 // Equivalent to INT_MIN in Go
+
+			/* Length of the rod piece
+			corresponding to the current index */
+			rodLength := ind + 1
+
+			// Check if the piece can be taken
+			if rodLength &lt;= length {
+				taken = price[ind] + cur[length-rodLength]
+			}
+
+			/* Update cur[length] with the maximum of
+			including or not including the current piece */
+			cur[length] = max(notTaken, taken)
+		}
+		// Update prev for the next iteration
+		copy(prev, cur)
+	}
+
+	// Return the result
+	return prev[n]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the rod cutting problem
+    public int RodCutting(int[] price, int n) {
+        // Initialize DP table with dimensions [n + 1]
+        int[] prev = new int[n + 1];
+        int[] cur = new int[n + 1];
+        
+        for (int length = 0; length &lt;= n; length++) {
+            prev[length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (int ind = 1; ind &lt; n; ++ind) { 
+            for (int length = 1; length &lt;= n; ++length) { 
+                
+                // Case when the piece is not taken
+                int notTaken = prev[length];
+                
+                // Case when the piece is taken
+                int taken = Integer.MIN_VALUE;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                int rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength &lt;= length) {
+                    taken = price[ind] + cur[length - rodLength];
+                }
+                
+                /* Update cur[length] with the maximum of 
+                including or not including the current piece*/
+                cur[length] = Math.max(notTaken, taken);
+            }
+            // Copy cur to prev
+            System.arraycopy(cur, 0, prev, 0, n + 1);
+        }
+        
+        // Return the result
+        return prev[n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the rod cutting problem
+    RodCutting(price, n) {
+        // Initialize DP table with dimensions [n + 1]
+        let prev = new Array(n + 1).fill(0);
+        let cur = new Array(n + 1).fill(0);
+        
+        for (let length = 0; length &lt;= n; length++) {
+            prev[length] = price[0] * length;
+        }
+        
+        // Fill the DP table
+        for (let ind = 1; ind &lt; n; ++ind) { 
+            for (let length = 1; length &lt;= n; ++length) { 
+                
+                // Case when the piece is not taken
+                let notTaken = prev[length];
+                
+                // Case when the piece is taken
+                let taken = -Infinity;
+                
+                /* Length of the rod piece 
+                corresponding to the current index*/
+                let rodLength = ind + 1;
+                
+                // Check if the piece can be taken
+                if (rodLength &lt;= length) {
+                    taken = price[ind] + cur[length - rodLength];
+                }
+                
+                /* Update cur[length] with the maximum of 
+                including or not including the current piece*/
+                cur[length] = Math.max(notTaken, taken);
+            }
+            // Copy cur to prev
+            for (let i = 0; i &lt;= n; i++) {
+                prev[i] = cur[i];
+            }
+        }
+        
+        // Return the result
+        return prev[n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the rod cutting problem
+    def RodCutting(self, price, n):
+        # Initialize DP table with dimensions [n + 1]
+        prev = [0] * (n + 1)
+        cur = [0] * (n + 1)
+        
+        for length in range(n + 1):
+            prev[length] = price[0] * length
+        
+        # Fill the DP table
+        for ind in range(1, n): 
+            for length in range(1, n + 1): 
+                
+                # Case when the piece is not taken
+                notTaken = prev[length]
+                
+                # Case when the piece is taken
+                taken = float(&#x27;-inf&#x27;)
+                
+                &quot;&quot;&quot; Length of the rod piece 
+                corresponding to the current index&quot;&quot;&quot;
+                rodLength = ind + 1
+                
+                # Check if the piece can be taken
+                if rodLength &lt;= length:
+                    taken = price[ind] + cur[length - rodLength]
+                
+                &quot;&quot;&quot; Update cur[length] with the maximum of 
+                including or not including the current piece&quot;&quot;&quot;
+                cur[length] = max(notTaken, taken)
+            
+            # Copy cur to prev
+            prev = cur[:]
+        
+        # Return the result
+        return prev[n]</code></pre></div>
+</body>
+</html>

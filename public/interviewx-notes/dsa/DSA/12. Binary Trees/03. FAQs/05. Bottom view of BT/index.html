@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bottom view of BT</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Bottom view of BT</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Tree</span><span>Data Structures</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given root of binary tree, return the<strong> bottom view</strong> of the binary tree.</p><p><br></p><p>The bottom view of a binary tree is the set of nodes visible when the tree is viewed from the bottom. Return nodes from the leftmost node to the rightmost node. Also if 2 nodes are outside the shadow of the tree and are at the same position then consider the node that appears later in level traversal.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= Number of Nodes <= 10<sup>4</sup></li><li>-10<sup>3</sup> <= Node.val <= 10<sup>3</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> root = [20, 8, 22, 5, 3, null, 25, null, null, 10 ,14]</p><p><strong>Output :</strong> [5, 10, 3, 14, 25]</p><p><strong>Explanation :</strong> From left to right the path is as follows :</p><p>First we encounter node with value 5.</p><p>Then we have nodes 8 , 10 but from bottom only 10 will be visible.</p><p>Next we have 20 , 3 but from bottom only 3 will be visible.</p><p>Next we have 14 , 22 but from bottom only 14 will be visible.</p><p>Then we encounter node with value 25.</p><p><br></p><p><img src="https://static.takeuforward.org/content/aptitude_1768096166392_Group 21.png"></p><h3>Example 2</h3><p><strong>Input :</strong> root = [20, 8, 22, 5, 3, 4, 25, null, null, 10 ,14]</p><p><strong>Output :</strong> [5, 10, 4, 14, 25]</p><p><strong>Explanation : </strong>From left to right the path is as follows :</p><p>First we encounter node with value 5.</p><p>Then we have nodes 8 , 10 but from bottom only 10 will be visible.</p><p>Next we have 20 , 3 and 4. The 3 and 4 will be nodes visible from bottom but as the node 4 appears later from left to right , so only node 4 will be considered visible.</p><p>Next we have 14 , 22 but from bottom only 14 will be visible.</p><p>Then we encounter node with value 25.</p><p><br></p><p><img src="https://static.takeuforward.org/content/aptitude_1768096346490_Group 21 (1).png"></p><h3>Example 3</h3><p><strong>Input:</strong> root = [10, 20, 30, 40, 60]</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-7-5v46eF"></p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun fact: This problem is not just a theoretical one but has practical usage in software development too, especially in graphical user interface (GUI) applications and game development. In these areas, constructing and traversing trees, as well as deciding which node (or element) to showcase when two nodes overlap, are common scenarios. For instance, a game might use this concept to decide which character or object to highlight when two characters are at the same position on the Y-axis but at different depths (Z-axis).-which is akin to viewing from the bottom. The concepts used to solve this problem are also integral to data visualization, database systems, and machine learning algorithms for decision trees.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h2>Intuition</h2>
+<p>
+To determine the bottom view of a binary tree, we need to capture the nodes that are visible when observing the tree from below. This involves identifying nodes that appear at the lowest vertical level for each horizontal distance from the root. A Breadth-First Search (BFS) traversal is well-suited for this task, as it processes nodes level by level. By tracking the horizontal distance of each node from the root and storing the most recent node encountered at each distance in a map, we can accurately capture the bottom view. The horizontal distance helps in maintaining the vertical alignment of nodes, ensuring that we only keep the nodes that are visible from the bottom.
+</p>
+
+<h2>Approach</h2>
+<ul>
+  <li>Begin by initializing an empty vector to hold the final result of the bottom view.</li>
+  <li>If the tree is empty (i.e., the root is null), immediately return the empty result vector.</li>
+  <li>Create a map to store nodes based on their horizontal distances from the root. The map's key will be the horizontal distance, and the value will be the node's data, ensuring that only the latest node for each distance is recorded.</li>
+  <li>Set up a queue to facilitate BFS traversal. Each entry in the queue will be a pair consisting of a node and its corresponding horizontal distance.</li>
+  <li>Start the BFS traversal by enqueuing the root node with a horizontal distance of 0.</li>
+  <li>While the queue contains elements, execute the following steps:
+    <ul>
+      <li>Dequeue the front element to retrieve the node and its associated horizontal distance.</li>
+      <li>Update the map with the node's value for the current horizontal distance, ensuring that only the most recent node at each distance is stored.</li>
+      <li>If the node has a left child, enqueue this child with a horizontal distance one less than the current node's distance.</li>
+      <li>If the node has a right child, enqueue this child with a horizontal distance one more than the current node's distance.</li>
+    </ul>
+  </li>
+  <li>After completing the BFS traversal, extract the values from the map in ascending order of their horizontal distances and store them in the result vector.</li>
+  <li>Return the result vector, which now contains the bottom view of the binary tree.</li>
+</ul>
+
+
+<h3> Dry Run </h3>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 1.png-Rt2vHgwc" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 2.png-F5gNQBop" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 3.png-GVOe3pqg" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 4.png--gyVhSi8" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 5.png-8Gs4Jm-U" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 6.png-NObQzAUQ" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 7.png-utf8Po31" alt="Image 7"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 8.png-4V5qwDXg" alt="Image 8"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 1.png-Rt2vHgwc" alt="Image 1"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 2.png-F5gNQBop" alt="Image 2"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 3.png-GVOe3pqg" alt="Image 3"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 4.png--gyVhSi8" alt="Image 4"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 5.png-8Gs4Jm-U" alt="Image 5"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 6.png-NObQzAUQ" alt="Image 6"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 7.png-utf8Po31" alt="Image 7"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Bottom view of BT/Bottom view - 8.png-4V5qwDXg" alt="Image 8"></div></div>
+
+<h3> Solution </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Definition for a binary tree node.
+struct TreeNode {
+    int data;
+    TreeNode *left;
+    TreeNode *right;
+    TreeNode(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+class Solution {
+  public:
+    vector<int> bottomView(TreeNode *root) {
+        // Vector to store the result
+        vector<int> ans;
+        
+        // Check if the tree is empty
+        if (root == nullptr) {
+            return ans;
+        }
+        
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        map<int, int> mpp;
+        
+        // Queue for BFS traversal, each
+        // element is a pair containing node
+        // and its vertical position
+        queue<pair<TreeNode*, int>> q;
+        
+        // Push the root node with its vertical
+        // position (0) into the queue
+        q.push({root, 0});
+        
+        // BFS traversal
+        while (!q.empty()) {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            auto it = q.front();
+            q.pop();
+            TreeNode* node = it.first;
+            int line = it.second;
+            
+            // Update the map with the node's data
+            // for the current vertical position
+            mpp[line] = node->data;
+            
+            // Process left child
+            if (node->left != nullptr) {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.push({node->left, line - 1});
+            }
+            
+            // Process right child
+            if (node->right != nullptr) {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.push({node->right, line + 1});
+            }
+        }
+        
+        // Transfer values from the
+        // map to the result vector
+        for (auto it : mpp) {
+            ans.push_back(it.second);
+        }
+        
+        return ans;
+    }
+};
+
+int main() {
+    // Creating a sample binary tree
+    TreeNode* root = new TreeNode(1);
+    root->left = new TreeNode(2);
+    root->left->left = new TreeNode(4);
+    root->left->right = new TreeNode(10);
+    root->left->left->right = new TreeNode(5);
+    root->left->left->right->right = new TreeNode(6);
+    root->right = new TreeNode(3);
+    root->right->right = new TreeNode(10);
+    root->right->left = new TreeNode(9);
+
+    Solution solution;
+
+    // Get the Bottom View traversal
+    vector<int> bottomView = solution.bottomView(root);
+
+    // Print the result
+    cout << "Bottom View Traversal: " << endl;
+    for (auto node : bottomView) {
+        cout << node << " ";
+    }
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class TreeNode {
+    int data;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode(int val) {
+        data = val;
+        left = null;
+        right = null;
+    }
+}
+
+class Solution {
+    public List<Integer> bottomView(TreeNode root) {
+        // List to store the result
+        List<Integer> ans = new ArrayList<>();
+
+        // Check if the tree is empty
+        if (root == null) {
+            return ans;
+        }
+
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        Map<Integer, Integer> mpp = new TreeMap<>();
+
+        // Queue for BFS traversal, each
+        // element is a pair containing node
+        // and its vertical position
+        Queue<Map.Entry<TreeNode, Integer>> q = new LinkedList<>();
+
+        // Push the root node with its vertical
+        // position (0) into the queue
+        q.add(new AbstractMap.SimpleEntry<>(root, 0));
+
+        // BFS traversal
+        while (!q.isEmpty()) {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            Map.Entry<TreeNode, Integer> it = q.poll();
+            TreeNode node = it.getKey();
+            int line = it.getValue();
+
+            // Update the map with the node's data
+            // for the current vertical position
+            mpp.put(line, node.data);
+
+            // Process left child
+            if (node.left != null) {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.add(new AbstractMap.SimpleEntry<>(node.left, line - 1));
+            }
+
+            // Process right child
+            if (node.right != null) {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.add(new AbstractMap.SimpleEntry<>(node.right, line + 1));
+            }
+        }
+
+        // Transfer values from the
+        // map to the result list
+        for (Map.Entry<Integer, Integer> it : mpp.entrySet()) {
+            ans.add(it.getValue());
+        }
+
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        // Creating a sample binary tree
+        TreeNode root = new TreeNode(1);
+        root.left = new TreeNode(2);
+        root.left.left = new TreeNode(4);
+        root.left.right = new TreeNode(10);
+        root.left.left.right = new TreeNode(5);
+        root.left.left.right.right = new TreeNode(6);
+        root.right = new TreeNode(3);
+        root.right.right = new TreeNode(10);
+        root.right.left = new TreeNode(9);
+
+        Solution solution = new Solution();
+
+        // Get the Bottom View traversal
+        List<Integer> bottomView = solution.bottomView(root);
+
+        // Print the result
+        System.out.println("Bottom View Traversal: ");
+        for (int node : bottomView) {
+            System.out.print(node + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+# Definition for a binary tree node.
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.data = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def bottomView(self, root):
+        # List to store the result
+        ans = []
+
+        # Check if the tree is empty
+        if not root:
+            return ans
+
+        # Dictionary to store the bottom view nodes
+        # based on their vertical positions
+        mpp = {}
+
+        # Queue for BFS traversal, each
+        # element is a pair containing node
+        # and its vertical position
+        q = deque([(root, 0)])
+
+        # BFS traversal
+        while q:
+            # Retrieve the node and its vertical
+            # position from the front of the queue
+            node, line = q.popleft()
+
+            # Update the dictionary with the node's data
+            # for the current vertical position
+            mpp[line] = node.data
+
+            # Process left child
+            if node.left:
+                # Push the left child with a decreased
+                # vertical position into the queue
+                q.append((node.left, line - 1))
+
+            # Process right child
+            if node.right:
+                # Push the right child with an increased
+                # vertical position into the queue
+                q.append((node.right, line + 1))
+
+        # Transfer values from the
+        # dictionary to the result list
+        for key in sorted(mpp.keys()):
+            ans.append(mpp[key])
+
+        return ans
+
+if __name__ == "__main__":
+    # Creating a sample binary tree
+    root = TreeNode(1)
+    root.left = TreeNode(2)
+    root.left.left = TreeNode(4)
+    root.left.right = TreeNode(10)
+    root.left.left.right = TreeNode(5)
+    root.left.left.right.right = TreeNode(6)
+    root.right = TreeNode(3)
+    root.right.right = TreeNode(10)
+    root.right.left = TreeNode(9)
+
+    solution = Solution()
+
+    # Get the Bottom View traversal
+    bottom_view = solution.bottomView(root)
+
+    # Print the result
+    print("Bottom View Traversal: ")
+    for node in bottom_view:
+        print(node, end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Definition for a binary tree node.
+ class TreeNode {
+       constructor(val = 0, left = null, right = null){
+           this.data = val;
+           this.left = left;
+           this.right = right;
+ }
+  }
+ 
+class Solution {
+    bottomView(root) {
+        // Array to store the result
+        let ans = [];
+
+        // Check if the tree is empty
+        if (root === null) {
+            return ans;
+        }
+
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        let mpp = new Map();
+
+        // Queue for BFS traversal, each
+        // element is a pair containing node
+        // and its vertical position
+        let q = [];
+        q.push([root, 0]);
+
+        // BFS traversal
+        while (q.length > 0) {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            let [node, line] = q.shift();
+
+            // Update the map with the node's data
+            // for the current vertical position
+            mpp.set(line, node.data);
+
+            // Process left child
+            if (node.left !== null) {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.push([node.left, line - 1]);
+            }
+
+            // Process right child
+            if (node.right !== null) {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.push([node.right, line + 1]);
+            }
+        }
+
+        // Transfer values from the
+        // map to the result array
+        let keys = Array.from(mpp.keys()).sort((a, b) => a - b);
+        for (let key of keys) {
+            ans.push(mpp.get(key));
+        }
+
+        return ans;
+    }
+}
+
+// Helper function to create a new TreeNode
+function createTreeNode(val) {
+    return new TreeNode(val);
+}
+
+// Main function to test the solution
+function main() {
+    // Creating a sample binary tree
+    let root = createTreeNode(1);
+    root.left = createTreeNode(2);
+    root.left.left = createTreeNode(4);
+    root.left.right = createTreeNode(10);
+    root.left.left.right = createTreeNode(5);
+    root.left.left.right.right = createTreeNode(6);
+    root.right = createTreeNode(3);
+    root.right.right = createTreeNode(10);
+    root.right.left = createTreeNode(9);
+
+    let solution = new Solution();
+
+    // Get the Bottom View traversal
+    let bottomView = solution.bottomView(root);
+
+    // Print the result
+    console.log("Bottom View Traversal: ");
+    for (let node of bottomView) {
+        console.log(node + " ");
+    }
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class TreeNode
+{
+    public int data;
+    public TreeNode left;
+    public TreeNode right;
+    public TreeNode(int val)
+    {
+        data = val;
+        left = null;
+        right = null;
+    }
+}
+
+public class Solution
+{
+    public List<int> bottomView(TreeNode root)
+    {
+        // Array to store the result
+        List<int> ans = new List<int>();
+
+        // Check if the tree is empty
+        if (root == null)
+        {
+            return ans;
+        }
+
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        Dictionary<int, int> mpp = new Dictionary<int, int>();
+
+        // Queue for BFS traversal, each
+        // element is a tuple containing node
+        // and its vertical position
+        Queue<(TreeNode node, int line)> q = new Queue<(TreeNode node, int line)>();
+        q.Enqueue((root, 0));
+
+        // BFS traversal
+        while (q.Count > 0)
+        {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            (TreeNode node, int line) = q.Dequeue();
+
+            // Update the map with the node's data
+            // for the current vertical position
+            mpp[line] = node.data;
+
+            // Process left child
+            if (node.left != null)
+            {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.Enqueue((node.left, line - 1));
+            }
+
+            // Process right child
+            if (node.right != null)
+            {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.Enqueue((node.right, line + 1));
+            }
+        }
+
+        // Transfer values from the
+        // map to the result array
+        List<int> keys = new List<int>(mpp.Keys);
+        keys.Sort(); // Sort the keys to get nodes in order of vertical position
+
+        foreach (int key in keys)
+        {
+            ans.Add(mpp[key]);
+        }
+
+        return ans;
+    }
+}
+
+public class Program
+{
+    // Helper function to create a new TreeNode
+    static TreeNode createTreeNode(int val)
+    {
+        return new TreeNode(val);
+    }
+
+    // Main function to test the solution
+    public static void Main(string[] args)
+    {
+        // Creating a sample binary tree
+        TreeNode root = createTreeNode(1);
+        root.left = createTreeNode(2);
+        root.left.left = createTreeNode(4);
+        root.left.right = createTreeNode(10);
+        root.left.left.right = createTreeNode(5);
+        root.left.left.right.right = createTreeNode(6);
+        root.right = createTreeNode(3);
+        root.right.right = createTreeNode(10);
+        root.right.left = createTreeNode(9);
+
+        Solution solution = new Solution();
+
+        // Get the Bottom View traversal
+        List<int> bottomViewResult = solution.bottomView(root);
+
+        // Print the result
+        Console.WriteLine("Bottom View Traversal: ");
+        foreach (int nodeData in bottomViewResult)
+        {
+            Console.Write(nodeData + " ");
+        }
+        Console.WriteLine(); // Add a newline at the end for clean output
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Definition for a binary tree node.
+type TreeNode struct {
+    Data         int
+    Left, Right *TreeNode
+}
+
+// bottomView returns the bottom view of the binary tree.
+func bottomView(root *TreeNode) []int {
+    // Vector to store the result
+    ans := []int{}
+
+    // Check if the tree is empty
+    if root == nil {
+        return ans
+    }
+
+    // Map to store the bottom view nodes
+    // based on their vertical positions
+    mpp := make(map[int]int)
+
+    // track horizontal distance range
+    minLine, maxLine := 0, 0
+
+    // Queue for BFS traversal, each
+    // element is a pair containing node
+    // and its vertical position
+    type pair struct {
+        node *TreeNode
+        line int
+    }
+    // Push the root node with its vertical
+    // position (0) into the queue
+    q := []pair{{root, 0}}
+
+    // BFS traversal
+    for len(q) > 0 {
+        // Retrieve the node and its vertical
+        // position from the front of the queue
+        it := q[0]
+        q = q[1:]
+        node := it.node
+        line := it.line
+
+        // keep track of horizontal distance bounds
+        if line < minLine {
+            minLine = line
+        }
+        if line > maxLine {
+            maxLine = line
+        }
+
+        // Update the map with the node's data
+        // for the current vertical position
+        mpp[line] = node.Data
+
+        // Process left child
+        if node.Left != nil {
+            // Push the left child with a decreased
+            // vertical position into the queue
+            q = append(q, pair{node.Left, line - 1})
+        }
+
+        // Process right child
+        if node.Right != nil {
+            // Push the right child with an increased
+            // vertical position into the queue
+            q = append(q, pair{node.Right, line + 1})
+        }
+    }
+
+    // Transfer values from the
+    // map to the result vector
+    for line := minLine; line <= maxLine; line++ {
+        if val, exists := mpp[line]; exists {
+            ans = append(ans, val)
+        }
+    }
+
+    return ans
+}
+
+func main() {
+    // Creating a sample binary tree
+    root := &TreeNode{Data: 1}
+    root.Left = &TreeNode{Data: 2}
+    root.Left.Left = &TreeNode{Data: 4}
+    root.Left.Right = &TreeNode{Data: 10}
+    root.Left.Left.Right = &TreeNode{Data: 5}
+    root.Left.Left.Right.Right = &TreeNode{Data: 6}
+    root.Right = &TreeNode{Data: 3}
+    root.Right.Right = &TreeNode{Data: 10}
+    root.Right.Left = &TreeNode{Data: 9}
+
+    // Get the Bottom View traversal
+    bottom := bottomView(root)
+
+    // Print the result
+    fmt.Println("Bottom View Traversal:")
+    for _, node := range bottom {
+        fmt.Print(node, " ")
+    }
+    fmt.Println()
+}
+
+</code></pre></div></div></div>
+
+<h2> Complexity Analysis </h2>
+<p><strong>Time Complexity: O(N*logN)</strong>, where N is the number of nodes in the binary tree. <br>
+This arises from visiting each node exactly once during the BFS traversal that takes O(N) time. Each node is then inserted in the map, taking O(logH) (where H is the number of unique horizontal distances, which can be up to N in the worst case) time. Thus, in the worst case, the overall time complexity comes out to be O(N*logN).</p>
+
+<p><strong>Space Complexity: O(N)</strong>, where N represents the number of nodes in the binary tree. <br> The main space-consuming data structure is the queue used for BFS traversal. In the worst case of a balanced binary tree, the queue will have at most N/2 nodes, representing the maximum width of the tree. </p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+  public:
+    vector&lt;int&gt; bottomView(TreeNode *root) {
+        // Vector to store the result
+        vector&lt;int&gt; ans;
+        
+        // Check if the tree is empty
+        if (root == nullptr) {
+            return ans;
+        }
+        
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        map&lt;int, int&gt; mpp;
+        
+        // Queue for BFS traversal, each
+        // element is a pair containing node
+        // and its vertical position
+        queue&lt;pair&lt;TreeNode*, int&gt;&gt; q;
+        
+        // Push the root node with its vertical
+        // position (0) into the queue
+        q.push({root, 0});
+        
+        // BFS traversal
+        while (!q.empty()) {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            auto it = q.front();
+            q.pop();
+            TreeNode* node = it.first;
+            int line = it.second;
+            
+            // Update the map with the node&#x27;s data
+            // for the current vertical position
+            mpp[line] = node-&gt;data;
+            
+            // Process left child
+            if (node-&gt;left != nullptr) {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.push({node-&gt;left, line - 1});
+            }
+            
+            // Process right child
+            if (node-&gt;right != nullptr) {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.push({node-&gt;right, line + 1});
+            }
+        }
+        
+        // Transfer values from the
+        // map to the result vector
+        for (auto it : mpp) {
+            ans.push_back(it.second);
+        }
+        
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int data;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int val) { data = val; left = null, right = null }
+ * }
+ */
+
+public class Solution
+{
+    public List&lt;int&gt; bottomView(TreeNode root)
+    {
+        // Array to store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+
+        // Check if the tree is empty
+        if (root == null)
+        {
+            return ans;
+        }
+
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        Dictionary&lt;int, int&gt; mpp = new Dictionary&lt;int, int&gt;();
+
+        // Queue for BFS traversal, each
+        // element is a tuple containing node
+        // and its vertical position
+        Queue&lt;(TreeNode node, int line)&gt; q = new Queue&lt;(TreeNode node, int line)&gt;();
+        q.Enqueue((root, 0));
+
+        // BFS traversal
+        while (q.Count &gt; 0)
+        {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            (TreeNode node, int line) = q.Dequeue();
+
+            // Update the map with the node&#x27;s data
+            // for the current vertical position
+            mpp[line] = node.data;
+
+            // Process left child
+            if (node.left != null)
+            {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.Enqueue((node.left, line - 1));
+            }
+
+            // Process right child
+            if (node.right != null)
+            {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.Enqueue((node.right, line + 1));
+            }
+        }
+
+        // Transfer values from the
+        // map to the result array
+        List&lt;int&gt; keys = new List&lt;int&gt;(mpp.Keys);
+        keys.Sort(); // Sort the keys to get nodes in order of vertical position
+
+        foreach (int key in keys)
+        {
+            ans.Add(mpp[key]);
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Definition for a binary tree node.
+type TreeNode struct {
+    Data         int
+    Left, Right *TreeNode
+}
+
+// bottomView returns the bottom view of the binary tree.
+func bottomView(root *TreeNode) []int {
+    // Vector to store the result
+    ans := []int{}
+
+    // Check if the tree is empty
+    if root == nil {
+        return ans
+    }
+
+    // Map to store the bottom view nodes
+    // based on their vertical positions
+    mpp := make(map[int]int)
+
+    // track horizontal distance range
+    minLine, maxLine := 0, 0
+
+    // Queue for BFS traversal, each
+    // element is a pair containing node
+    // and its vertical position
+    type pair struct {
+        node *TreeNode
+        line int
+    }
+    // Push the root node with its vertical
+    // position (0) into the queue
+    q := []pair{{root, 0}}
+
+    // BFS traversal
+    for len(q) &gt; 0 {
+        // Retrieve the node and its vertical
+        // position from the front of the queue
+        it := q[0]
+        q = q[1:]
+        node := it.node
+        line := it.line
+
+        // keep track of horizontal distance bounds
+        if line &lt; minLine {
+            minLine = line
+        }
+        if line &gt; maxLine {
+            maxLine = line
+        }
+
+        // Update the map with the node&#x27;s data
+        // for the current vertical position
+        mpp[line] = node.Data
+
+        // Process left child
+        if node.Left != nil {
+            // Push the left child with a decreased
+            // vertical position into the queue
+            q = append(q, pair{node.Left, line - 1})
+        }
+
+        // Process right child
+        if node.Right != nil {
+            // Push the right child with an increased
+            // vertical position into the queue
+            q = append(q, pair{node.Right, line + 1})
+        }
+    }
+
+    // Transfer values from the
+    // map to the result vector
+    for line := minLine; line &lt;= maxLine; line++ {
+        if val, exists := mpp[line]; exists {
+            ans = append(ans, val)
+        }
+    }
+
+    return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>
+class Solution {
+    public List&lt;Integer&gt; bottomView(TreeNode root) {
+        // List to store the result
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+
+        // Check if the tree is empty
+        if (root == null) {
+            return ans;
+        }
+
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        Map&lt;Integer, Integer&gt; mpp = new TreeMap&lt;&gt;();
+
+        // Queue for BFS traversal, each
+        // element is a pair containing node
+        // and its vertical position
+        Queue&lt;Map.Entry&lt;TreeNode, Integer&gt;&gt; q = new LinkedList&lt;&gt;();
+
+        // Push the root node with its vertical
+        // position (0) into the queue
+        q.add(new AbstractMap.SimpleEntry&lt;&gt;(root, 0));
+
+        // BFS traversal
+        while (!q.isEmpty()) {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            Map.Entry&lt;TreeNode, Integer&gt; it = q.poll();
+            TreeNode node = it.getKey();
+            int line = it.getValue();
+
+            // Update the map with the node&#x27;s data
+            // for the current vertical position
+            mpp.put(line, node.data);
+
+            // Process left child
+            if (node.left != null) {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.add(new AbstractMap.SimpleEntry&lt;&gt;(node.left, line - 1));
+            }
+
+            // Process right child
+            if (node.right != null) {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.add(new AbstractMap.SimpleEntry&lt;&gt;(node.right, line + 1));
+            }
+        }
+
+        // Transfer values from the
+        // map to the result list
+        for (Map.Entry&lt;Integer, Integer&gt; it : mpp.entrySet()) {
+            ans.add(it.getValue());
+        }
+
+        return ans;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    bottomView(root) {
+        // Array to store the result
+        let ans = [];
+
+        // Check if the tree is empty
+        if (root === null) {
+            return ans;
+        }
+
+        // Map to store the bottom view nodes
+        // based on their vertical positions
+        let mpp = new Map();
+
+        // Queue for BFS traversal, each
+        // element is a pair containing node
+        // and its vertical position
+        let q = [];
+        q.push([root, 0]);
+
+        // BFS traversal
+        while (q.length &gt; 0) {
+            // Retrieve the node and its vertical
+            // position from the front of the queue
+            let [node, line] = q.shift();
+
+            // Update the map with the node&#x27;s data
+            // for the current vertical position
+            mpp.set(line, node.data);
+
+            // Process left child
+            if (node.left !== null) {
+                // Push the left child with a decreased
+                // vertical position into the queue
+                q.push([node.left, line - 1]);
+            }
+
+            // Process right child
+            if (node.right !== null) {
+                // Push the right child with an increased
+                // vertical position into the queue
+                q.push([node.right, line + 1]);
+            }
+        }
+
+        // Transfer values from the
+        // map to the result array
+        let keys = Array.from(mpp.keys()).sort((a, b) =&gt; a - b);
+        for (let key of keys) {
+            ans.push(mpp.get(key));
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.data = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def bottomView(self, root):
+        # List to store the result
+        ans = []
+
+        # Check if the tree is empty
+        if not root:
+            return ans
+
+        # Dictionary to store the bottom view nodes
+        # based on their vertical positions
+        mpp = {}
+
+        # Queue for BFS traversal, each
+        # element is a pair containing node
+        # and its vertical position
+        q = deque([(root, 0)])
+
+        # BFS traversal
+        while q:
+            # Retrieve the node and its vertical
+            # position from the front of the queue
+            node, line = q.popleft()
+
+            # Update the dictionary with the node&#x27;s data
+            # for the current vertical position
+            mpp[line] = node.data
+
+            # Process left child
+            if node.left:
+                # Push the left child with a decreased
+                # vertical position into the queue
+                q.append((node.left, line - 1))
+
+            # Process right child
+            if node.right:
+                # Push the right child with an increased
+                # vertical position into the queue
+                q.append((node.right, line + 1))
+
+        # Transfer values from the
+        # dictionary to the result list
+        for key in sorted(mpp.keys()):
+            ans.append(mpp[key])
+
+        return ans</code></pre></div>
+</body>
+</html>

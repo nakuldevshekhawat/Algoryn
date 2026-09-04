@@ -1,0 +1,3214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Partition a set into two subsets with minimum absolute sum difference</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Partition a set into two subsets with minimum absolute sum difference</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array arr of n integers, partition the array into two <strong>subsets</strong> such that the <strong>absolute difference</strong> between their sums is minimized.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ n * sum of array elements ≤ 10<sup>6</sup></li><li>0 < arr[i] <= 10<sup>4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> arr = [1, 7, 14, 5]</p><p><strong>Output: </strong>1</p><p><strong>Explanation:</strong> The array can be partitioned as [1, 7, 5] and [14], with an absolute difference of 1.</p><h3>Example 2</h3><p><strong>Input:</strong> arr = [3, 1, 6, 2, 2]</p><p><strong>Output:</strong> 0</p><p><strong>Explanation:</strong> The array can be partitioned as [3, 2, 2] and [6, 1], with an absolute difference of 0.</p><h3>Example 3</h3><p><strong>Input:</strong> arr = [2, 2, 2, 9]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem can be challenging but it's also interesting because it's a form of 'Partitioning Problem', which is a key part of many real-world applications, such as load balancing in distributed systems or databases. Developers often need to partition data among different machines or database tables to balance the load and achieve maximum performance. The minimization of the absolute difference in sums is analogous to minimizing the difference in load between the most and least loaded machines or tables.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2></div>
+<p>This question is a slight modification of the problem discussed in the Subset Sum equal to target. Before discussing the approach for this question, it is important to understand what we did in the previous question of the <a href="/plus/dsa/problems/partition-equal-subset-sum?category=dynamic-programming&subcategory=dp-on-subsequences">Patition equal subset sum</a>. There we found whether or not a subset exists in an array with a given target sum.</p>
+
+<p>In this question, we need to partition the array into two subsets( say with sum S1 and S2) and we need to return the minimized absolute difference of S1 and S2. But do not need two variables for it. We can use a variable 'totSum', which stores the sum of all elements of the input array, and then we can simply say S2 = totSum - S1. Therefore we only need one variable S1.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Partition a set into two subsets with minimum absolute sum difference/-3NerphqQ"><br>
+<p>From here try to find a subset in the array with a target as discussed in <a href="/plus/dsa/problems/partition-equal-subset-sum?category=dynamic-programming&subcategory=dp-on-subsequences">Partition equal subset sum</a>.</p>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes: </b>The array will have an index but there is one more parameter “target”.  So, we can say that initially, we need to find(n-1, target) which means that we need to find whether there exists a subset in the array from index 0 to n-1, whose sum is equal to the target. </li>
+<p>So, f(ind, target) will check whether a subset exists in the array from index 0 to index 'ind' such that the sum of elements is equal to the target.</p>
+
+<li><b>Try out all possible choices at a given index: </b>As all the subsets needs to be generated, we will use the pick/non-pick technique.There will be two choices in each function call:</li>
+<p><b>Do not include the current element in the subset: </b>First try to find a subset without considering the current index element. For this, make a recursive call to f(ind-1,target).</p>
+<p><b>Include the current element in the subset: </b>Now try to find a subset by considering the current index element as part of subset. As the current element(arr[ind]) is included, the remaining target sum will be target - arr[ind]. Therefore, make a function call of f(ind-1,target-arr[ind]).</p>
+<p><b>Note: </b>Consider the current element in the subset only when the current element is less or equal to the target.</p>
+</ol>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, target){
+    not pick = f(ind-1, target)
+    pick = false
+    if(target <= arr[ind]){
+        pick = f(ind-1, target - arr[ind])
+    }
+           
+}</code></pre></div></div></div><br>
+
+<li><b>Return (pick || not pick): </b>As we are looking for only one subset whose sum of elements is equal to target, if any of the one among 'pick' or 'not pick' returns true, it means the  required subset is found so, return true. </li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, target){
+   not pick = f(ind-1, target)
+    pick = false
+    if(target <= arr[ind]){
+        pick = f(ind-1, target - arr[ind])
+    }
+    return (pick || not pick)    
+}</code></pre></div></div></div><br>
+
+<li><b>Base cases: </b>There will be two base cases, First, when target == 0, it means that the subset is already found from the previous steps, so simply return true. Another, 
+when ind==0, it means we are at the first element, so return arr[ind]==target. If the element is equal to the target it will return true else false.</li><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">
+#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    // Function to solve the subset sum problem recursively 
+    bool func(int ind, int target, vector<int>& arr) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return (arr[0] == target);
+
+        // Exclude the current element
+        bool notTaken = func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn't exceed the target*/
+        bool taken = false;
+        if (arr[ind] <= target)
+            taken = func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector<int>& arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+
+        int mini = 1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (func(n-1, i, arr) == true) {
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        return mini;
+    }
+};
+
+int main() {
+    vector<int> arr = {1, 2, 3, 4};
+    int n = arr.size();
+
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << "The minimum absolute difference is: " << sol.minDifference(arr, n);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the subset sum problem Recursively
+    private boolean func(int ind, int target, int[] arr) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements 
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return (arr[0] == target);
+            
+        // Exclude the current element
+        boolean notTaken = func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn't exceed the target*/
+        boolean taken = false;
+        if (arr[ind] <= target)
+            taken = func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+
+        int mini = Integer.MAX_VALUE;
+        for (int i = 0; i <= totSum; i++) {
+            if (func(n - 1, i, arr) == true) {
+                int diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        //Return the result
+        return mini;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 4};
+        int n = arr.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        System.out.println("The minimum absolute difference is: " + sol.minDifference(arr, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the subset sum problem recursively
+    def func(self, ind, target, arr):
+        # Base case: If the target sum is 0, return true
+        if target == 0:
+            return True
+
+        """ Base case: If we have considered all elements 
+        and the target is still not 0, return false"""
+        if ind == 0:
+            return arr[0] == target
+
+        # Exclude the current element
+        not_taken = self.func(ind - 1, target, arr)
+
+        """ Include the current element 
+        if it doesn't exceed the target"""
+        taken = False
+        if arr[ind] <= target:
+            taken = self.func(ind - 1, target - arr[ind], arr)
+
+        # Return the result
+        return not_taken or taken
+
+    """ Function to find the minimum absolute
+    difference between two subset sums"""
+    def minDifference(self, arr, n):
+        tot_sum = 0
+
+        # Calculate the total sum of the array
+        for i in range(n):
+            tot_sum += arr[i]
+
+        mini = float('inf')
+        for i in range(tot_sum + 1):
+            if self.func(n - 1, i, arr):
+                diff = abs(i - (tot_sum - i))
+                mini = min(mini, diff)
+
+        return mini
+
+if __name__ == "__main__":
+    arr = [1, 2, 3, 4]
+    n = len(arr)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    print("The minimum absolute difference is:", sol.minDifference(arr, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the subset sum problem recursively
+    func(ind, target, arr) {
+        // Base case: If the target sum is 0, return true
+        if (target === 0)
+            return true;
+
+        /* Base case: If we have considered all elements 
+        and the target is still not 0, return false*/
+        if (ind === 0)
+            return arr[0] === target;
+
+        // Exclude the current element
+        let notTaken = this.func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn't exceed the target*/
+        let taken = false;
+        if (arr[ind] <= target)
+            taken = this.func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = 0;
+
+        // Calculate the total sum of the array
+        for (let i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i <= totSum; i++) {
+            if (this.func(n - 1, i, arr)) {
+                let diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        //Return the result
+        return mini;
+    }
+}
+
+const arr = [1, 2, 3, 4];
+const n = arr.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+console.log("The minimum absolute difference is:", sol.minDifference(arr, n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution {
+    // Function to solve the subset sum problem recursively 
+    private bool func(int ind, int target, int[] arr) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false */
+        if (ind == 0)
+            return (arr[0] == target);
+
+        // Exclude the current element
+        bool notTaken = func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn't exceed the target */
+        bool taken = false;
+        if (arr[ind] <= target)
+            taken = func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        int mini = (int)1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (func(n - 1, i, arr) == true) {
+                int diff = Math.Abs(i - (totSum - i));
+                mini = Math.Min(mini, diff);
+            }
+        }
+        return mini;
+    }
+}
+
+class Program {
+    static void Main() {
+        int[] arr = { 1, 2, 3, 4 };
+        int n = arr.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        Console.WriteLine(
+            "The minimum absolute difference is: " +
+            sol.minDifference(arr, n)
+        );
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Function to solve the subset sum problem recursively 
+func funcHelper(ind int, target int, arr []int) bool {
+	// Base case: If the target sum is 0, return true
+	if target == 0 {
+		return true
+	}
+
+	/* Base case: If we have considered all elements
+	and the target is still not 0, return false */
+	if ind == 0 {
+		return arr[0] == target
+	}
+
+	// Exclude the current element
+	notTaken := funcHelper(ind-1, target, arr)
+
+	/* Include the current element 
+	if it doesn't exceed the target */
+	taken := false
+	if arr[ind] <= target {
+		taken = funcHelper(ind-1, target-arr[ind], arr)
+	}
+
+	// Return the result
+	return notTaken || taken
+}
+
+/* Function to find the minimum absolute
+difference between two subset sums */
+func minDifference(arr []int, n int) int {
+	totSum := 0
+
+	// Calculate the total sum of the array
+	for i := 0; i < n; i++ {
+		totSum += arr[i]
+	}
+
+	mini := int(1e9)
+	for i := 0; i <= totSum; i++ {
+		if funcHelper(n-1, i, arr) == true {
+			diff := int(math.Abs(float64(i - (totSum - i))))
+			if diff < mini {
+				mini = diff
+			}
+		}
+	}
+	return mini
+}
+
+func main() {
+	arr := []int{1, 2, 3, 4}
+	n := len(arr)
+
+	fmt.Println(
+		"The minimum absolute difference is:",
+		minDifference(arr, n),
+	)
+}
+</code></pre></div></div></div>
+
+
+<strong>Time Complexity: O(totalSum × 2<sup>N</sup>)</strong>, where N is the length of the array. <br>
+The overall time complexity results from the sum of the following:
+<ul>
+<li>Each recursive function call to <b>func</b> takes O(2<sup>N</sup>) time, as there are two possible options to <b>take</b> and <b>notTake</b>. Also, the recursive call is made for a total of <b>totalSum</b> number of times. This makes the overall complexity of the for loop as O(totalSum × 2<sup>N</sup>).</li>
+<li>There will be an additional O(N) as well for computing <b>totalSum</b>.</li>
+</ul><br>
+
+<strong>Space Complexity: O(N)</strong>, at maximum, the depth of the recursive stack can go upto N.</div>
+<div class="section"><h2>Editorial: Memoization</h2></div>
+<p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+
+In order to convert a recursive solution to memoization the following steps will be taken:
+<li><b>Declare a dp array of size [n][target+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'target'. The maximum value 'ind' can attain is (n), where n is the size of array and for 'target'  only values between 0 to target. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    // Function to solve the subset sum problem 
+    bool func(int ind, int target, vector<int>& arr, vector<vector<int>>& dp) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return dp[ind][target] = true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return dp[ind][target] = (arr[0] == target);
+            
+        /* If the result for this state 
+        is already calculated, return it*/
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        bool notTaken = func(ind - 1, target, arr, dp);
+
+        /* Include the current element 
+        if it doesn't exceed the target*/
+        bool taken = false;
+        if (arr[ind] <= target)
+            taken = func(ind - 1, target - arr[ind], arr, dp);
+
+        // Return the result
+        return dp[ind][target] = notTaken || taken;
+    }
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector<int>& arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        vector<vector<int>> dp(n, vector<int>(totSum + 1, -1));
+        
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+        for (int i = 0; i <= totSum; i++) {
+            bool dummy = func(n - 1, i, arr, dp);
+        }
+
+        int mini = 1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (dp[n-1][i] == true) {
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        return mini;
+    }
+};
+
+int main() {
+    vector<int> arr = {1, 2, 3, 4};
+    int n = arr.size();
+
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << "The minimum absolute difference is: " << sol.minDifference(arr, n);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the subset sum problem
+    private boolean func(int ind, int target, int[] arr, int[][] dp) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return arr[0] == target;
+
+        /* If the result for this state 
+        is already calculated, return it*/
+        if (dp[ind][target] != -1)
+            return dp[ind][target] == 1;
+
+        // Exclude the current element
+        boolean notTaken = func(ind - 1, target, arr, dp);
+
+        /* Include the current element 
+        if it doesn't exceed the target*/
+        boolean taken = false;
+        if (arr[ind] <= target)
+            taken = func(ind - 1, target - arr[ind], arr, dp);
+
+        // Store and return the result
+        dp[ind][target] = (notTaken || taken) ? 1 : 0;
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    public int minDifference(int[] arr, int n) {
+        if (n == 1) {
+            // If there's only one element, no subsets can be divided, so the result is 0
+            return arr[0];
+        }
+        
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        int[][] dp = new int[n][totSum + 1];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+        
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+        for (int i = 0; i <= totSum; i++) {
+            boolean dummy = func(n - 1, i, arr, dp);
+        }
+
+        int mini = Integer.MAX_VALUE;
+        for (int i = 0; i <= totSum; i++) {
+            if (dp[n-1][i] == 1) {
+                int diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        return mini;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 4};
+        int n = arr.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        System.out.println("The minimum absolute difference is: " + sol.minDifference(arr, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the subset sum problem
+    def func(self, ind, target, arr, dp):
+        # Base case: If the target sum is 0, return true
+        if target == 0:
+            dp[ind][target] = True
+            return True
+
+        """ Base case: If we have considered all elements 
+        and the target is still not 0, return false"""
+        if ind == 0:
+            dp[ind][target] = (arr[0] == target)
+            return dp[ind][target]
+
+        """ If the result for this state is
+        already calculated, return it"""
+        if dp[ind][target] != -1:
+            return dp[ind][target]
+
+        # Exclude the current element
+        not_taken = self.func(ind - 1, target, arr, dp)
+
+        """ Include the current element if 
+        it doesn't exceed the target"""
+        taken = False
+        if arr[ind] <= target:
+            taken = self.func(ind - 1, target - arr[ind], arr, dp)
+
+        # Return the result
+        dp[ind][target] = not_taken or taken
+        return dp[ind][target]
+
+    """ Function to find the minimum absolute
+    difference between two subset sums"""
+    def minDifference(self, arr, n):
+        tot_sum = 0
+
+        # Calculate the total sum of the array
+        for i in range(n):
+            tot_sum += arr[i]
+
+        """ Initialize a DP table to store the
+        results of the subset sum problem"""
+        dp = [[-1 for _ in range(tot_sum + 1)] for _ in range(n)]
+
+        """ Calculate the subset sum for each 
+        possible sum from 0 to the total sum"""
+        for i in range(tot_sum + 1):
+            dummy = self.func(n - 1, i, arr, dp)
+
+        mini = float('inf')
+        for i in range(tot_sum + 1):
+            if dp[n - 1][i] == True:
+                diff = abs(i - (tot_sum - i))
+                mini = min(mini, diff)
+
+        return mini
+
+if __name__ == "__main__":
+    arr = [1, 2, 3, 4]
+    n = len(arr)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    print("The minimum absolute difference is:", sol.minDifference(arr, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the subset sum problem 
+    func(ind, target, arr, dp) {
+        // Base case: If the target sum is 0, return true
+        if (target === 0) {
+            dp[ind][target] = true;
+            return true;
+        }
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind === 0) {
+            dp[ind][target] = (arr[0] === target);
+            return dp[ind][target];
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][target] !== -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        let notTaken = this.func(ind - 1, target, arr, dp);
+
+        /* Include the current element if 
+        it doesn't exceed the target*/
+        let taken = false;
+        if (arr[ind] <= target)
+            taken = this.func(ind - 1, target - arr[ind], arr, dp);
+
+        // Return the result
+        dp[ind][target] = notTaken || taken;
+        return dp[ind][target];
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = 0;
+
+        // Calculate the total sum of the array
+        for (let i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store 
+        the results of the subset sum problem*/
+        let dp = Array.from({ length: n }, () => Array(totSum + 1).fill(-1));
+
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+        for (let i = 0; i <= totSum; i++) {
+            let dummy = this.func(n - 1, i, arr, dp);
+        }
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i <= totSum; i++) {
+            if (dp[n - 1][i] === true) {
+                let diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+
+        return mini;
+    }
+}
+
+const arr = [1, 2, 3, 4];
+const n = arr.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+console.log("The minimum absolute difference is:", sol.minDifference(arr, n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution {
+    // Function to solve the subset sum problem 
+    private bool func(int ind, int target, int[] arr, int[,] dp) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return dp[ind, target] = 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false */
+        if (ind == 0)
+            return dp[ind, target] = (arr[0] == target) ? 1 : 0;
+
+        /* If the result for this state 
+        is already calculated, return it */
+        if (dp[ind, target] != -1)
+            return dp[ind, target] == 1;
+
+        // Exclude the current element
+        bool notTaken = func(ind - 1, target, arr, dp);
+
+        /* Include the current element 
+        if it doesn't exceed the target */
+        bool taken = false;
+        if (arr[ind] <= target)
+            taken = func(ind - 1, target - arr[ind], arr, dp);
+
+        // Return the result
+        dp[ind, target] = (notTaken || taken) ? 1 : 0;
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem */
+        int[,] dp = new int[n, totSum + 1];
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j <= totSum; j++) {
+                dp[i, j] = -1;
+            }
+        }
+
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum */
+        for (int i = 0; i <= totSum; i++) {
+            bool dummy = func(n - 1, i, arr, dp);
+        }
+
+        int mini = (int)1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (dp[n - 1, i] == 1) {
+                int diff = Math.Abs(i - (totSum - i));
+                mini = Math.Min(mini, diff);
+            }
+        }
+        return mini;
+    }
+}
+
+class Program {
+    static void Main() {
+        int[] arr = { 1, 2, 3, 4 };
+        int n = arr.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        Console.WriteLine(
+            "The minimum absolute difference is: " +
+            sol.minDifference(arr, n)
+        );
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// Function to solve the subset sum problem 
+func funcHelper(ind int, target int, arr []int, dp [][]int) bool {
+	// Base case: If the target sum is 0, return true
+	if target == 0 {
+		dp[ind][target] = 1
+		return true
+	}
+
+	/* Base case: If we have considered all elements
+	and the target is still not 0, return false */
+	if ind == 0 {
+		if arr[0] == target {
+			dp[ind][target] = 1
+			return true
+		}
+		dp[ind][target] = 0
+		return false
+	}
+
+	/* If the result for this state 
+	is already calculated, return it */
+	if dp[ind][target] != -1 {
+		return dp[ind][target] == 1
+	}
+
+	// Exclude the current element
+	notTaken := funcHelper(ind-1, target, arr, dp)
+
+	/* Include the current element 
+	if it doesn't exceed the target */
+	taken := false
+	if arr[ind] <= target {
+		taken = funcHelper(ind-1, target-arr[ind], arr, dp)
+	}
+
+	// Return the result
+	if notTaken || taken {
+		dp[ind][target] = 1
+	} else {
+		dp[ind][target] = 0
+	}
+	return notTaken || taken
+}
+
+/* Function to find the minimum absolute
+difference between two subset sums */
+func minDifference(arr []int, n int) int {
+	totSum := 0
+
+	// Calculate the total sum of the array
+	for i := 0; i < n; i++ {
+		totSum += arr[i]
+	}
+
+	/* Initialize a DP table to store the
+	results of the subset sum problem */
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, totSum+1)
+		for j := 0; j <= totSum; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	/* Calculate the subset sum for each 
+	possible sum from 0 to the total sum */
+	for i := 0; i <= totSum; i++ {
+		dummy := funcHelper(n-1, i, arr, dp)
+		_ = dummy
+	}
+
+	mini := int(1e9)
+	for i := 0; i <= totSum; i++ {
+		if dp[n-1][i] == 1 {
+			diff := int(math.Abs(float64(i - (totSum - i))))
+			if diff < mini {
+				mini = diff
+			}
+		}
+	}
+	return mini
+}
+
+func main() {
+	arr := []int{1, 2, 3, 4}
+	n := len(arr)
+
+	fmt.Println(
+		"The minimum absolute difference is:",
+		minDifference(arr, n),
+	)
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*sum)+O(N) +O(N), There are 'N*sum' states therefore at max ‘N*sum’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*sum) + O(N), As we are using a recursion stack space(O(N)) and a 2D array ( O(N*sum)).</div>
+<div class="section"><h2>Editorial: Tabulation</h2></div>
+<p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<li><b>Declare a dp array of size [n][target+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'target'.  The maximum value 'ind' can attain is (n) and including 0 its n, where n is the size of array, for 'target' can have any values between 0 to 'target'.  So we need a 2D dp array. Set its type as int and initialize it as 0.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Partition a set into two subsets with minimum absolute sum difference/-c0R_Vvum"><br>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when target == 0, it means the required subset is found and we were returning 1. So, set '1' in the dp array for every index where target = 0.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Partition a set into two subsets with minimum absolute sum difference/-L0H8lhTu"><br>
+
+<p>The first row dp[0][] indicates that only the first element of the array is considered, therefore for the target value equal to arr[0], only cell with that target will be true, so explicitly set dp[0][arr[0]] =1, (dp[0][arr[0]] means that we are considering the first element of the array with the target equal to the first element itself). Please note that it can happen that arr[0]>target, so we first check it: if(arr[0]<=target) then set dp[0][arr[0]] = 1</p>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Partition a set into two subsets with minimum absolute sum difference/-GL8hGdWO"><br>
+
+<li><b>Iterative Computation Using Loops: </b>Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.</li>
+
+<li><b>Returning the answer: </b>After filling the DP table, the last row <code>dp[n-1][i]</code> represents whether a subset sum <code>i</code> is achievable using all elements. We iterate through all possible subset sums and compute the absolute difference between the two partitions as <code>abs(i - (totSum - i))</code>. The minimum value among all valid <code>i</code> gives the final answer.</li><br>
+
+<p><b>Note:</b> Since the expression is symmetric, we only need to iterate up to <code>totSum / 2</code> to find the minimum difference.</p>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector<int>& arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        vector<vector<bool>> dp(n, vector<bool>(totSum + 1, false));
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it's a valid subset*/
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = true;
+        }
+
+        /* Initialize the first row based  
+        on the first element of the array*/
+        if (arr[0] <= totSum)
+            dp[0][arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            
+            for (int target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                bool notTaken = dp[ind - 1][target];
+
+                /* Include the current element 
+                if it doesn't exceed the target*/
+                bool taken = false;
+                if (arr[ind] <= target)
+                    taken = dp[ind - 1][target - arr[ind]];
+
+                dp[ind][target] = notTaken || taken;
+            }
+        }
+
+        int mini = 1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (dp[n - 1][i] == true) {
+                /* Calculate the absolute difference
+                between two subset sums*/
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        //Return the result
+        return mini;
+    }
+};
+int main() {
+    vector<int> arr = {1, 2, 3, 4};
+    int n = arr.size();
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << "The minimum absolute difference is: " << sol.minDifference(arr, n);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem */
+        boolean[][] dp = new boolean[n][totSum + 1];
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it's a valid subset */
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = true;
+        }
+
+        /* Initialize the first row based  
+        on the first element of the array */
+        if (arr[0] <= totSum)
+            dp[0][arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                boolean notTaken = dp[ind - 1][target];
+
+                /* Include the current element 
+                if it doesn't exceed the target */
+                boolean taken = false;
+                if (arr[ind] <= target)
+                    taken = dp[ind - 1][target - arr[ind]];
+
+                dp[ind][target] = notTaken || taken;
+            }
+        }
+
+        int mini = Integer.MAX_VALUE;
+        for (int i = 0; i <= totSum; i++) {
+            if (dp[n - 1][i]) {
+                /* Calculate the absolute difference
+                between two subset sums */
+                int diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        //Return the result
+        return mini;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 4};
+        int n = arr.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        System.out.println("The minimum absolute difference is: " + sol.minDifference(arr, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find the minimum absolute
+    difference between two subset sums"""
+    def minDifference(self, arr, n):
+        totSum = sum(arr)
+
+        """ Initialize a DP table to store the
+        results of the subset sum problem"""
+        dp = [[False] * (totSum + 1) for _ in range(n)]
+
+        """ Base case: If no elements are 
+        selected (sum is 0), it's a valid subset"""
+        for i in range(n):
+            dp[i][0] = True
+
+        """ Initialize the first row based 
+        on the first element of the array"""
+        if arr[0] <= totSum:
+            dp[0][arr[0]] = True
+
+        # Fill in the DP table using bottom-up approach
+        for ind in range(1, n):
+            for target in range(1, totSum + 1):
+                # Exclude the current element
+                notTaken = dp[ind - 1][target]
+
+                """ Include the current element if
+                it doesn't exceed the target"""
+                taken = False
+                if arr[ind] <= target:
+                    taken = dp[ind - 1][target - arr[ind]]
+
+                dp[ind][target] = notTaken or taken
+
+        mini = float('inf')
+        for i in range(totSum + 1):
+            if dp[n - 1][i]:
+                """ Calculate the absolute difference
+                between two subset sums"""
+                diff = abs(i - (totSum - i))
+                mini = min(mini, diff)
+
+        return mini
+
+arr = [1, 2, 3, 4]
+n = len(arr)
+
+#Create an instance of Solution class
+sol = Solution()
+
+print("The minimum absolute difference is:", sol.minDifference(arr, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = arr.reduce((a, b) => a + b, 0);
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        const dp = Array.from({ length: n }, () => Array(totSum + 1).fill(false));
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it's a valid subset*/
+        for (let i = 0; i < n; i++) {
+            dp[i][0] = true;
+        }
+
+        /* Initialize the first row based 
+        on the first element of the array*/
+        if (arr[0] <= totSum) {
+            dp[0][arr[0]] = true;
+        }
+
+        // Fill in the DP table using bottom-up approach
+        for (let ind = 1; ind < n; ind++) {
+            for (let target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                const notTaken = dp[ind - 1][target];
+
+                /* Include the current element 
+                if it doesn't exceed the target*/
+                let taken = false;
+                if (arr[ind] <= target) {
+                    taken = dp[ind - 1][target - arr[ind]];
+                }
+
+                dp[ind][target] = notTaken || taken;
+            }
+        }
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i <= totSum; i++) {
+            if (dp[n - 1][i]) {
+                /* Calculate the absolute difference
+                between two subset sums*/
+                const diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+
+        return mini;
+    }
+}
+
+const arr = [1, 2, 3, 4];
+const n = arr.length;
+
+//Create an instance of Solution class
+const sol = new Solution();
+
+console.log("The minimum absolute difference is:", sol.minDifference(arr, n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem */
+        bool[,] dp = new bool[n, totSum + 1];
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it's a valid subset */
+        for (int i = 0; i < n; i++) {
+            dp[i, 0] = true;
+        }
+
+        /* Initialize the first row based  
+        on the first element of the array */
+        if (arr[0] <= totSum)
+            dp[0, arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+
+            for (int target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                bool notTaken = dp[ind - 1, target];
+
+                /* Include the current element 
+                if it doesn't exceed the target */
+                bool taken = false;
+                if (arr[ind] <= target)
+                    taken = dp[ind - 1, target - arr[ind]];
+
+                dp[ind, target] = notTaken || taken;
+            }
+        }
+
+        int mini = (int)1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (dp[n - 1, i] == true) {
+                /* Calculate the absolute difference
+                between two subset sums */
+                int diff = Math.Abs(i - (totSum - i));
+                mini = Math.Min(mini, diff);
+            }
+        }
+        // Return the result
+        return mini;
+    }
+}
+
+class Program {
+    static void Main() {
+        int[] arr = { 1, 2, 3, 4 };
+        int n = arr.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        Console.WriteLine(
+            "The minimum absolute difference is: " +
+            sol.minDifference(arr, n)
+        );
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+/* Function to find the minimum absolute
+difference between two subset sums */
+func minDifference(arr []int, n int) int {
+	totSum := 0
+
+	// Calculate the total sum of the array
+	for i := 0; i < n; i++ {
+		totSum += arr[i]
+	}
+
+	/* Initialize a DP table to store the
+	results of the subset sum problem */
+	dp := make([][]bool, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]bool, totSum+1)
+	}
+
+	/* Base case: If no elements are 
+	selected (sum is 0), it's a valid subset */
+	for i := 0; i < n; i++ {
+		dp[i][0] = true
+	}
+
+	/* Initialize the first row based  
+	on the first element of the array */
+	if arr[0] <= totSum {
+    dp[0][arr[0]] = true
+	}
+
+	// Fill in the DP table using bottom-up approach
+	for ind := 1; ind < n; ind++ {
+
+		for target := 1; target <= totSum; target++ {
+			// Exclude the current element
+			notTaken := dp[ind-1][target]
+
+			/* Include the current element 
+			if it doesn't exceed the target */
+			taken := false
+			if arr[ind] <= target {
+				taken = dp[ind-1][target-arr[ind]]
+			}
+
+			dp[ind][target] = notTaken || taken
+		}
+	}
+
+	mini := int(1e9)
+	for i := 0; i <= totSum; i++ {
+		if dp[n-1][i] == true {
+			/* Calculate the absolute difference
+			between two subset sums */
+			diff := int(math.Abs(float64(i - (totSum - i))))
+			if diff < mini {
+				mini = diff
+			}
+		}
+	}
+	// Return the result
+	return mini
+}
+
+func main() {
+	arr := []int{1, 2, 3, 4}
+	n := len(arr)
+
+	fmt.Println(
+		"The minimum absolute difference is:",
+		minDifference(arr, n),
+	)
+}
+</code></pre></div></div></div>
+
+
+<strong>Time Complexity: </strong>O(N * sum) + O(sum), where <code>sum</code> is the total sum of elements of the array. The DP table computation takes O(N * sum), and the final traversal of possible subset sums takes O(sum). Overall complexity simplifies to <strong>O(N * sum)</strong>.<br><br></div>
+<div class="section"><h2>Editorial: Space Optimization</h2></div>
+<p>If we observe the relation, dp[ind][target] =  dp[ind-1][target] || dp[ind-1][target-arr[ind]]. We see that to calculate a value of a cell of the dp array, we need only the previous row values (say prev). So, we don’t need to store an entire array. Hence we can space optimize it.</p>
+
+<h5><strong>Steps to space optimize the tabulation code:</strong></h5>
+<ol>
+<li><b>Initialize the DP Table: </b>Initialize a boolean vector 'prev' of size 'totSum + 1' to store whether a particular subset sum is achievable. Set prev[0] to true because a subset sum of 0 is always achievable with an empty subset.</li>
+<p>If the first element of the array arr[0] is less than or equal to totSum, mark prev[arr[0]] as true, indicating that a subset sum equal to arr[0] is achievable.</p>
+
+<li><b>Update the DP Table: </b>Iterate through each element of the array starting from the second element.
+For each element, create a new boolean vector cur to represent the current state of achievable subset sums.
+Update cur based on whether each target sum can be achieved either by excluding or including the current element. After processing each element, update prev to be cur for the next iteration.</li>
+
+<li><b>Find the Minimum Absolute Difference:  </b>Initialize a variable mini to a large value (1e9) to keep track of the minimum absolute difference found. Iterate through all possible subset sums stored in prev.
+For each achievable subset sum i, calculate the absolute difference between i and the complement subset sum (totSum - i).</li>
+<li>Update mini with the minimum of the current difference and mini. Finally, return the minimum absolute difference found.</li></ol><br>
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector<int>& arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a boolean vector 'prev' to 
+        represent the previous row of the DP table*/
+        vector<bool> prev(totSum + 1, false);
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it's a valid subset*/
+        prev[0] = true;
+
+        /* Initialize the first row based 
+        on the first element of the array*/
+        if (arr[0] <= totSum)
+            prev[arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            /* Initialize a boolean vector 'cur' to 
+            represent the current row of the DP table*/
+            vector<bool> cur(totSum + 1, false);
+            
+            cur[0] = true;
+
+            for (int target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                bool notTaken = prev[target];
+
+                /* Include the current element
+                if it doesn't exceed the target*/
+                bool taken = false;
+                if (arr[ind] <= target)
+                    taken = prev[target - arr[ind]];
+
+                cur[target] = notTaken || taken;
+            }
+
+            // Set 'cur' as the 'prev' for the next iteration
+            prev = cur;
+        }
+
+        int mini = 1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (prev[i] == true) {
+                /* Calculate the absolute 
+                difference between two subset sums*/
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        return mini;
+    }
+};
+int main() {
+    vector<int> arr = {1, 2, 3, 4};
+    int n = arr.size();
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    cout << "The minimum absolute difference is: " << sol.minDifference(arr, n);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a boolean vector 'prev' to
+        represent the previous row of the DP table */
+        boolean[] prev = new boolean[totSum + 1];
+        Arrays.fill(prev, false);
+
+        /* Base case: If no elements are
+        selected (sum is 0), it's a valid subset */
+        prev[0] = true;
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] <= totSum)
+            prev[arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            /* Initialize a boolean vector 'cur' to
+            represent the current row of the DP table */
+            boolean[] cur = new boolean[totSum + 1];
+            Arrays.fill(cur, false);
+            cur[0] = true;
+
+            for (int target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                boolean notTaken = prev[target];
+
+                /* Include the current element
+                if it doesn't exceed the target */
+                boolean taken = false;
+                if (arr[ind] <= target)
+                    taken = prev[target - arr[ind]];
+
+                cur[target] = notTaken || taken;
+            }
+
+            // Set 'cur' as the 'prev' for the next iteration
+            prev = cur;
+        }
+
+        int mini = Integer.MAX_VALUE;
+        for (int i = 0; i <= totSum; i++) {
+            if (prev[i]) {
+                /* Calculate the absolute
+                difference between two subset sums */
+                int diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        return mini;
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 3, 4};
+        int n = arr.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        System.out.println("The minimum absolute difference is: " + sol.minDifference(arr, n));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to find the minimum absolute
+    difference between two subset sums"""
+    def minDifference(self, arr, n):
+        totSum = sum(arr)
+
+        """ Initialize a boolean vector 'prev' to
+        represent the previous row of the DP table"""
+        prev = [False] * (totSum + 1)
+        prev[0] = True
+
+        """ Initialize the first row based
+        on the first element of the array"""
+        if arr[0] <= totSum:
+            prev[arr[0]] = True
+
+        # Fill in the DP table using bottom-up approach
+        for ind in range(1, n):
+            """ Initialize a boolean vector 'cur' to
+            represent the current row of the DP table"""
+            cur = [False] * (totSum + 1)
+            cur[0] = True
+
+            for target in range(1, totSum + 1):
+                # Exclude the current element
+                notTaken = prev[target]
+
+                """ Include the current element if
+                it doesn't exceed the target"""
+                taken = False
+                if arr[ind] <= target:
+                    taken = prev[target - arr[ind]]
+
+                cur[target] = notTaken or taken
+
+            # Set 'cur' as the 'prev' for the next iteration
+            prev = cur
+
+        mini = float('inf')
+        for i in range(totSum + 1):
+            if prev[i]:
+                """ Calculate the absolute 
+                difference between two subset sums"""
+                diff = abs(i - (totSum - i))
+                mini = min(mini, diff)
+
+        return mini
+
+arr = [1, 2, 3, 4]
+n = len(arr);
+
+#Create an instance of Solution class
+sol = Solution()
+
+print("The minimum absolute difference is:", sol.minDifference(arr, n))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = arr.reduce((a, b) => a + b, 0);
+
+        /* Initialize a boolean vector 'prev' to
+        represent the previous row of the DP table*/
+        const prev = new Array(totSum + 1).fill(false);
+        prev[0] = true;
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] <= totSum) {
+            prev[arr[0]] = true;
+        }
+
+        // Fill in the DP table using bottom-up approach
+        for (let ind = 1; ind < n; ind++) {
+            /* Initialize a boolean vector 'cur' to
+            represent the current row of the DP table*/
+            const cur = new Array(totSum + 1).fill(false);
+            cur[0] = true;
+
+            for (let target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                const notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn't exceed the target*/
+                let taken = false;
+                if (arr[ind] <= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                cur[target] = notTaken || taken;
+            }
+
+            // Set 'cur' as the 'prev' for the next iteration
+            prev.splice(0, prev.length, ...cur);
+        }
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i <= totSum; i++) {
+            if (prev[i]) {
+                /* Calculate the absolute 
+                difference between two subset sums*/
+                const diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+   
+        return mini;
+    }
+}
+
+const arr = [1, 2, 3, 4];
+const n = arr.length;
+
+//Create an instance of Solution class
+const sol = new Solution();
+
+console.log("The minimum absolute difference is:", sol.minDifference(arr,n));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i < n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a boolean array 'prev' to 
+        represent the previous row of the DP table */
+        bool[] prev = new bool[totSum + 1];
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it's a valid subset */
+        prev[0] = true;
+
+        /* Initialize the first row based 
+        on the first element of the array */
+        if (arr[0] <= totSum)
+            prev[arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            /* Initialize a boolean array 'cur' to 
+            represent the current row of the DP table */
+            bool[] cur = new bool[totSum + 1];
+
+            cur[0] = true;
+
+            for (int target = 1; target <= totSum; target++) {
+                // Exclude the current element
+                bool notTaken = prev[target];
+
+                /* Include the current element
+                if it doesn't exceed the target */
+                bool taken = false;
+                if (arr[ind] <= target)
+                    taken = prev[target - arr[ind]];
+
+                cur[target] = notTaken || taken;
+            }
+
+            // Set 'cur' as the 'prev' for the next iteration
+            prev = cur;
+        }
+
+        int mini = (int)1e9;
+        for (int i = 0; i <= totSum; i++) {
+            if (prev[i] == true) {
+                /* Calculate the absolute 
+                difference between two subset sums */
+                int diff = Math.Abs(i - (totSum - i));
+                mini = Math.Min(mini, diff);
+            }
+        }
+        return mini;
+    }
+}
+
+class Program {
+    static void Main() {
+        int[] arr = { 1, 2, 3, 4 };
+        int n = arr.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        Console.WriteLine(
+            "The minimum absolute difference is: " +
+            sol.minDifference(arr, n)
+        );
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+/* Function to find the minimum absolute
+difference between two subset sums */
+func minDifference(arr []int, n int) int {
+	totSum := 0
+
+	// Calculate the total sum of the array
+	for i := 0; i < n; i++ {
+		totSum += arr[i]
+	}
+
+	/* Initialize a boolean slice 'prev' to 
+	represent the previous row of the DP table */
+	prev := make([]bool, totSum+1)
+
+	/* Base case: If no elements are 
+	selected (sum is 0), it's a valid subset */
+	prev[0] = true
+
+	/* Initialize the first row based 
+	on the first element of the array */
+	if arr[0] <= totSum {
+		prev[arr[0]] = true
+	}
+
+	// Fill in the DP table using bottom-up approach
+	for ind := 1; ind < n; ind++ {
+		/* Initialize a boolean slice 'cur' to 
+		represent the current row of the DP table */
+		cur := make([]bool, totSum+1)
+
+		cur[0] = true
+
+		for target := 1; target <= totSum; target++ {
+			// Exclude the current element
+			notTaken := prev[target]
+
+			/* Include the current element
+			if it doesn't exceed the target */
+			taken := false
+			if arr[ind] <= target {
+				taken = prev[target-arr[ind]]
+			}
+
+			cur[target] = notTaken || taken
+		}
+
+		// Set 'cur' as the 'prev' for the next iteration
+		prev = cur
+	}
+
+	mini := int(1e9)
+	for i := 0; i <= totSum; i++ {
+		if prev[i] == true {
+			/* Calculate the absolute 
+			difference between two subset sums */
+			diff := int(math.Abs(float64(i - (totSum - i))))
+			if diff < mini {
+				mini = diff
+			}
+		}
+	}
+	return mini
+}
+
+func main() {
+	arr := []int{1, 2, 3, 4}
+	n := len(arr)
+
+	fmt.Println(
+		"The minimum absolute difference is:",
+		minDifference(arr, n),
+	)
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*sum) + O(N) + O(N),  There are two nested loops that account for O(N*sum), at starting we are running a for loop to calculate totSum and at last a for loop to traverse the last row.
+
+<br><br>
+<strong>Space Complexity:</strong>O(sum), Where sum is the total sum of elements of the array.  We are using an external array of size ‘sum+1’ to store only one row.</div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    // Function to solve the subset sum problem recursively 
+    bool func(int ind, int target, vector&lt;int&gt;&amp; arr) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return (arr[0] == target);
+
+        // Exclude the current element
+        bool notTaken = func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn&#x27;t exceed the target*/
+        bool taken = false;
+        if (arr[ind] &lt;= target)
+            taken = func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector&lt;int&gt;&amp; arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+        int mini = 1e9;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (func(n-1, i, arr) == true) {
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        return mini;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to solve the subset sum problem recursively 
+    private bool Func(int ind, int target, int[] arr)
+    {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return (arr[0] == target);
+
+        // Exclude the current element
+        bool notTaken = Func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn&#x27;t exceed the target*/
+        bool taken = false;
+        if (arr[ind] &lt;= target)
+            taken = Func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    public int minDifference(int[] arr, int n)
+    {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++)
+        {
+            totSum += arr[i];
+        }
+
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+        for (int i = 0; i &lt;= totSum; i++)
+        {
+            bool dummy = Func(n - 1, i, arr);
+        }
+
+        int mini = int.MaxValue;
+        for (int i = 0; i &lt;= totSum; i++)
+        {
+            if (Func(n - 1, i, arr))
+            {
+                int diff = Math.Abs(i - (totSum - i));
+                mini = Math.Min(mini, diff);
+            }
+        }
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to solve the subset sum problem recursively 
+    the array into two subsets with equal sum*/
+func funcRec(ind int, target int, arr []int) bool {
+    // Base case: If the target sum is 0, return true
+    if target == 0 {
+        return true
+    }
+
+    /* Base case: If we have considered all elements 
+        and the target is still not 0, return false*/
+    if ind == 0 {
+        return arr[0] == target
+    }
+
+    // Exclude the current element
+    notTaken := funcRec(ind-1, target, arr)
+
+    /* Include the current element 
+        if it doesn&#x27;t exceed the target*/
+    taken := false
+    if arr[ind] &lt;= target {
+        taken = funcRec(ind-1, target-arr[ind], arr)
+    }
+
+    // Return the result
+    return notTaken || taken
+}
+
+/* Function to find the minimum absolute
+    difference between two subset sums*/
+func minDifference(arr []int, n int) int {
+    totSum := 0
+
+    // Calculate the total sum of the array
+    for i := 0; i &lt; n; i++ {
+        totSum += arr[i]
+    }
+
+    /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+    for i := 0; i &lt;= totSum; i++ {
+        _ = funcRec(n-1, i, arr) 
+    }
+
+    mini := 1000000000 // same sentinel as 1e9 
+
+    for i := 0; i &lt;= totSum; i++ {
+        if funcRec(n-1, i, arr) == true {
+            diff := abs(i - (totSum - i))
+            mini = min(mini, diff)
+        }
+    }
+
+    return mini
+}
+
+// abs returns the non-negative value of its argument.
+func abs(a int) int {
+    if a &lt; 0 {
+        return -a
+    }
+    return a
+}
+
+// min returns the smaller of two integers.
+func min(a, b int) int {
+    if a &lt; b {
+        return a
+    }
+    return b
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the subset sum problem Recursively
+    private boolean func(int ind, int target, int[] arr) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements 
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return (arr[0] == target);
+            
+        // Exclude the current element
+        boolean notTaken = func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn&#x27;t exceed the target*/
+        boolean taken = false;
+        if (arr[ind] &lt;= target)
+            taken = func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+        int mini = Integer.MAX_VALUE;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (func(n - 1, i, arr) == true) {
+                int diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        //Return the result
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the subset sum problem recursively
+    func(ind, target, arr) {
+        // Base case: If the target sum is 0, return true
+        if (target === 0)
+            return true;
+
+        /* Base case: If we have considered all elements 
+        and the target is still not 0, return false*/
+        if (ind === 0)
+            return arr[0] === target;
+
+        // Exclude the current element
+        let notTaken = this.func(ind - 1, target, arr);
+
+        /* Include the current element 
+        if it doesn&#x27;t exceed the target*/
+        let taken = false;
+        if (arr[ind] &lt;= target)
+            taken = this.func(ind - 1, target - arr[ind], arr);
+
+        // Return the result
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = 0;
+
+        // Calculate the total sum of the array
+        for (let i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i &lt;= totSum; i++) {
+            if (this.func(n - 1, i, arr)) {
+                let diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        //Return the result
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the subset sum problem recursively
+    def func(self, ind, target, arr):
+        # Base case: If the target sum is 0, return true
+        if target == 0:
+            return True
+
+        &quot;&quot;&quot; Base case: If we have considered all elements 
+        and the target is still not 0, return false&quot;&quot;&quot;
+        if ind == 0:
+            return arr[0] == target
+
+        # Exclude the current element
+        not_taken = self.func(ind - 1, target, arr)
+
+        &quot;&quot;&quot; Include the current element 
+        if it doesn&#x27;t exceed the target&quot;&quot;&quot;
+        taken = False
+        if arr[ind] &lt;= target:
+            taken = self.func(ind - 1, target - arr[ind], arr)
+
+        # Return the result
+        return not_taken or taken
+
+    &quot;&quot;&quot; Function to find the minimum absolute
+    difference between two subset sums&quot;&quot;&quot;
+    def minDifference(self, arr, n):
+        tot_sum = 0
+
+        # Calculate the total sum of the array
+        for i in range(n):
+            tot_sum += arr[i]
+
+        mini = float(&#x27;inf&#x27;)
+        for i in range(tot_sum + 1):
+            if self.func(n - 1, i, arr):
+                diff = abs(i - (tot_sum - i))
+                mini = min(mini, diff)
+
+        return mini</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    // Function to solve the subset sum problem 
+    bool func(int ind, int target, vector&lt;int&gt;&amp; arr, vector&lt;vector&lt;int&gt;&gt;&amp; dp) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return dp[ind][target] = true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return dp[ind][target] = (arr[0] == target);
+            
+        /* If the result for this state 
+        is already calculated, return it*/
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        bool notTaken = func(ind - 1, target, arr, dp);
+
+        /* Include the current element 
+        if it doesn&#x27;t exceed the target*/
+        bool taken = false;
+        if (arr[ind] &lt;= target)
+            taken = func(ind - 1, target - arr[ind], arr, dp);
+
+        // Return the result
+        return dp[ind][target] = notTaken || taken;
+    }
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector&lt;int&gt;&amp; arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(totSum + 1, -1));
+        
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+        for (int i = 0; i &lt;= totSum; i++) {
+            bool dummy = func(n - 1, i, arr, dp);
+        }
+
+        int mini = 1e9;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (dp[n-1][i] == true) {
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        return mini;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System;
+using System.Linq;
+
+class Solution {
+    public int minDifference(int[] arr, int n) {
+
+        // Your code goes here
+        int totalSum = 0;
+        foreach (int num in arr)
+        {
+            totalSum += num;
+        }
+
+        bool[] dp = new bool[totalSum + 1];
+        dp[0] = true;
+
+        foreach (int num in arr)
+        {
+            for (int j = totalSum; j &gt;= num; j--)
+            {
+                if (dp[j - num])
+                {
+                    dp[j] = true;
+                }
+            }
+        }
+
+        int minDiff = totalSum;
+
+        for (int j = 0; j &lt;= totalSum / 2; j++)
+        {
+            if (dp[j])
+            {
+                minDiff = Math.Min(minDiff, totalSum - 2 * j);
+            }
+        }
+
+        return minDiff;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to solve the subset sum problem */
+func funcRec(ind, target int, arr []int, dp [][]int) bool {
+	// Base case: If the target sum is 0, return true
+	if target == 0 {
+		dp[ind][target] = 1
+		return true
+	}
+
+	/* Base case: If we have considered all elements
+	and the target is still not 0, return false */
+	if ind == 0 {
+		if arr[0] == target {
+			dp[ind][target] = 1
+			return true
+		}
+		dp[ind][target] = 0
+		return false
+	}
+
+	/* If the result for this state
+	is already calculated, return it */
+	if dp[ind][target] != -1 {
+		return dp[ind][target] == 1
+	}
+
+	// Exclude the current element
+	notTaken := funcRec(ind-1, target, arr, dp)
+
+	/* Include the current element
+	if it doesn&#x27;t exceed the target */
+	taken := false
+	if arr[ind] &lt;= target {
+		taken = funcRec(ind-1, target-arr[ind], arr, dp)
+	}
+
+	// Return the result
+	if notTaken || taken {
+		dp[ind][target] = 1
+	} else {
+		dp[ind][target] = 0
+	}
+	return notTaken || taken
+}
+
+/* Function to find the minimum absolute
+difference between two subset sums */
+func minDifference(arr []int, n int) int {
+	totSum := 0
+
+	// Calculate the total sum of the array
+	for i := 0; i &lt; n; i++ {
+		totSum += arr[i]
+	}
+
+	/* Initialize a DP table to store the
+	results of the subset sum problem */
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, totSum+1)
+		for j := 0; j &lt;= totSum; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	/* Calculate the subset sum for each
+	possible sum from 0 to the total sum */
+	for i := 0; i &lt;= totSum; i++ {
+		_ = funcRec(n-1, i, arr, dp)
+	}
+
+	// Custom abs function
+	abs := func(a int) int {
+		if a &lt; 0 {
+			return -a
+		}
+		return a
+	}
+
+	// Find minimum difference
+	mini := int(1e9)
+	for i := 0; i &lt;= totSum; i++ {
+		if dp[n-1][i] == 1 {
+			diff := abs(i - (totSum - i))
+			if diff &lt; mini {
+				mini = diff
+			}
+		}
+	}
+	return mini
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the subset sum problem
+    private boolean func(int ind, int target, int[] arr, int[][] dp) {
+        // Base case: If the target sum is 0, return true
+        if (target == 0)
+            return true;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind == 0)
+            return arr[0] == target;
+
+        /* If the result for this state 
+        is already calculated, return it*/
+        if (dp[ind][target] != -1)
+            return dp[ind][target] == 1;
+
+        // Exclude the current element
+        boolean notTaken = func(ind - 1, target, arr, dp);
+
+        /* Include the current element 
+        if it doesn&#x27;t exceed the target*/
+        boolean taken = false;
+        if (arr[ind] &lt;= target)
+            taken = func(ind - 1, target - arr[ind], arr, dp);
+
+        // Store and return the result
+        dp[ind][target] = (notTaken || taken) ? 1 : 0;
+        return notTaken || taken;
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    public int minDifference(int[] arr, int n) {
+        if (n == 1) {
+            // If there&#x27;s only one element, no subsets can be divided, so the result is 0
+            return arr[0];
+        }
+        
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+        
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        int[][] dp = new int[n][totSum + 1];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+        
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+        for (int i = 0; i &lt;= totSum; i++) {
+            boolean dummy = func(n - 1, i, arr, dp);
+        }
+
+        int mini = Integer.MAX_VALUE;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (dp[n-1][i] == 1) {
+                int diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the subset sum problem 
+    func(ind, target, arr, dp) {
+        // Base case: If the target sum is 0, return true
+        if (target === 0) {
+            dp[ind][target] = true;
+            return true;
+        }
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return false*/
+        if (ind === 0) {
+            dp[ind][target] = (arr[0] === target);
+            return dp[ind][target];
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][target] !== -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        let notTaken = this.func(ind - 1, target, arr, dp);
+
+        /* Include the current element if 
+        it doesn&#x27;t exceed the target*/
+        let taken = false;
+        if (arr[ind] &lt;= target)
+            taken = this.func(ind - 1, target - arr[ind], arr, dp);
+
+        // Return the result
+        dp[ind][target] = notTaken || taken;
+        return dp[ind][target];
+    }
+
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = 0;
+
+        // Calculate the total sum of the array
+        for (let i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store 
+        the results of the subset sum problem*/
+        let dp = Array.from({ length: n }, () =&gt; Array(totSum + 1).fill(-1));
+
+        /* Calculate the subset sum for each 
+        possible sum from 0 to the total sum*/
+        for (let i = 0; i &lt;= totSum; i++) {
+            let dummy = this.func(n - 1, i, arr, dp);
+        }
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i &lt;= totSum; i++) {
+            if (dp[n - 1][i] === true) {
+                let diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the subset sum problem
+    def func(self, ind, target, arr, dp):
+        # Base case: If the target sum is 0, return true
+        if target == 0:
+            dp[ind][target] = True
+            return True
+
+        &quot;&quot;&quot; Base case: If we have considered all elements 
+        and the target is still not 0, return false&quot;&quot;&quot;
+        if ind == 0:
+            dp[ind][target] = (arr[0] == target)
+            return dp[ind][target]
+
+        &quot;&quot;&quot; If the result for this state is
+        already calculated, return it&quot;&quot;&quot;
+        if dp[ind][target] != -1:
+            return dp[ind][target]
+
+        # Exclude the current element
+        not_taken = self.func(ind - 1, target, arr, dp)
+
+        &quot;&quot;&quot; Include the current element if 
+        it doesn&#x27;t exceed the target&quot;&quot;&quot;
+        taken = False
+        if arr[ind] &lt;= target:
+            taken = self.func(ind - 1, target - arr[ind], arr, dp)
+
+        # Return the result
+        dp[ind][target] = not_taken or taken
+        return dp[ind][target]
+
+    &quot;&quot;&quot; Function to find the minimum absolute
+    difference between two subset sums&quot;&quot;&quot;
+    def minDifference(self, arr, n):
+        tot_sum = 0
+
+        # Calculate the total sum of the array
+        for i in range(n):
+            tot_sum += arr[i]
+
+        &quot;&quot;&quot; Initialize a DP table to store the
+        results of the subset sum problem&quot;&quot;&quot;
+        dp = [[-1 for _ in range(tot_sum + 1)] for _ in range(n)]
+
+        &quot;&quot;&quot; Calculate the subset sum for each 
+        possible sum from 0 to the total sum&quot;&quot;&quot;
+        for i in range(tot_sum + 1):
+            dummy = self.func(n - 1, i, arr, dp)
+
+        mini = float(&#x27;inf&#x27;)
+        for i in range(tot_sum + 1):
+            if dp[n - 1][i] == True:
+                diff = abs(i - (tot_sum - i))
+                mini = min(mini, diff)
+
+        return mini</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector&lt;int&gt;&amp; arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        vector&lt;vector&lt;bool&gt;&gt; dp(n, vector&lt;bool&gt;(totSum + 1, false));
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it&#x27;s a valid subset*/
+        for (int i = 0; i &lt; n; i++) {
+            dp[i][0] = true;
+        }
+
+        /* Initialize the first row based  
+        on the first element of the array*/
+        if (arr[0] &lt;= totSum)
+            dp[0][arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            
+            for (int target = 1; target &lt;= totSum; target++) {
+                // Exclude the current element
+                bool notTaken = dp[ind - 1][target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target*/
+                bool taken = false;
+                if (arr[ind] &lt;= target)
+                    taken = dp[ind - 1][target - arr[ind]];
+
+                dp[ind][target] = notTaken || taken;
+            }
+        }
+
+        int mini = 1e9;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (dp[n - 1][i] == true) {
+                /* Calculate the absolute difference
+                between two subset sums*/
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        //Return the result
+        return mini;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem */
+        bool[,] dp = new bool[n, totSum + 1];
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it&#x27;s a valid subset */
+        for (int i = 0; i &lt; n; i++) {
+            dp[i, 0] = true;
+        }
+
+        /* Initialize the first row based  
+        on the first element of the array */
+        if (arr[0] &lt;= totSum)
+            dp[0, arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+
+            for (int target = 1; target &lt;= totSum; target++) {
+                // Exclude the current element
+                bool notTaken = dp[ind - 1, target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target */
+                bool taken = false;
+                if (arr[ind] &lt;= target)
+                    taken = dp[ind - 1, target - arr[ind]];
+
+                dp[ind, target] = notTaken || taken;
+            }
+        }
+
+        int mini = (int)1e9;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (dp[n - 1, i] == true) {
+                /* Calculate the absolute difference
+                between two subset sums */
+                int diff = Math.Abs(i - (totSum - i));
+                mini = Math.Min(mini, diff);
+            }
+        }
+        // Return the result
+        return mini;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to find the minimum absolute
+difference between two subset sums */
+func minDifference(arr []int, n int) int {
+	totSum := 0
+
+	// Calculate the total sum of the array
+	for i := 0; i &lt; n; i++ {
+		totSum += arr[i]
+	}
+
+	/* Initialize a DP table to store the
+	results of the subset sum problem */
+	dp := make([][]bool, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]bool, totSum+1)
+	}
+
+	/* Base case: If no elements are
+	selected (sum is 0), it&#x27;s a valid subset */
+	for i := 0; i &lt; n; i++ {
+		dp[i][0] = true
+	}
+
+	/* Initialize the first row based
+	on the first element of the array */
+	if arr[0] &lt;= totSum {
+		dp[0][arr[0]] = true
+	}
+
+	// Fill in the DP table using bottom-up approach
+	for ind := 1; ind &lt; n; ind++ {
+		for target := 1; target &lt;= totSum; target++ {
+			// Exclude the current element
+			notTaken := dp[ind-1][target]
+
+			/* Include the current element
+			if it doesn&#x27;t exceed the target */
+			taken := false
+			if arr[ind] &lt;= target {
+				taken = dp[ind-1][target-arr[ind]]
+			}
+
+			dp[ind][target] = notTaken || taken
+		}
+	}
+
+	// Custom abs and min functions
+	abs := func(a int) int {
+		if a &lt; 0 {
+			return -a
+		}
+		return a
+	}
+	min := func(a, b int) int {
+		if a &lt; b {
+			return a
+		}
+		return b
+	}
+
+	mini := int(1e9)
+	for i := 0; i &lt;= totSum; i++ {
+		if dp[n-1][i] {
+			/* Calculate the absolute difference
+			between two subset sums */
+			diff := abs(i - (totSum - i))
+			mini = min(mini, diff)
+		}
+	}
+
+	// Return the result
+	return mini
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+public int minDifference(int[] arr, int n) {
+    int totSum = 0;
+
+    // Calculate the total sum of the array
+    for (int i = 0; i &lt; n; i++) {
+        totSum += arr[i];
+    }
+
+    /* Initialize a DP table to store the
+    results of the subset sum problem */
+    boolean[][] dp = new boolean[n][totSum + 1];
+
+    /* Base case: If no elements are 
+    selected (sum is 0), it&#x27;s a valid subset */
+    for (int i = 0; i &lt; n; i++) {
+        dp[i][0] = true;
+    }
+
+    /* Initialize the first row based  
+    on the first element of the array */
+    if (arr[0] &lt;= totSum)
+        dp[0][arr[0]] = true;
+
+    // Fill in the DP table using bottom-up approach
+    for (int ind = 1; ind &lt; n; ind++) {
+        for (int target = 1; target &lt;= totSum; target++) {
+            // Exclude the current element
+            boolean notTaken = dp[ind - 1][target];
+
+            /* Include the current element 
+            if it doesn&#x27;t exceed the target */
+            boolean taken = false;
+            if (arr[ind] &lt;= target)
+                taken = dp[ind - 1][target - arr[ind]];
+
+            dp[ind][target] = notTaken || taken;
+        }
+    }
+
+    int mini = Integer.MAX_VALUE;
+    for (int i = 0; i &lt;= totSum; i++) {
+        if (dp[n - 1][i]) {
+            /* Calculate the absolute difference
+            between two subset sums */
+            int diff = Math.abs(i - (totSum - i));
+            mini = Math.min(mini, diff);
+        }
+    }
+    //Return the result
+    return mini;
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = arr.reduce((a, b) =&gt; a + b, 0);
+
+        /* Initialize a DP table to store the
+        results of the subset sum problem*/
+        const dp = Array.from({ length: n }, () =&gt; Array(totSum + 1).fill(false));
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it&#x27;s a valid subset*/
+        for (let i = 0; i &lt; n; i++) {
+            dp[i][0] = true;
+        }
+
+        /* Initialize the first row based 
+        on the first element of the array*/
+        if (arr[0] &lt;= totSum) {
+            dp[0][arr[0]] = true;
+        }
+
+        // Fill in the DP table using bottom-up approach
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let target = 1; target &lt;= totSum; target++) {
+                // Exclude the current element
+                const notTaken = dp[ind - 1][target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target*/
+                let taken = false;
+                if (arr[ind] &lt;= target) {
+                    taken = dp[ind - 1][target - arr[ind]];
+                }
+
+                dp[ind][target] = notTaken || taken;
+            }
+        }
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i &lt;= totSum; i++) {
+            if (dp[n - 1][i]) {
+                /* Calculate the absolute difference
+                between two subset sums*/
+                const diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find the minimum absolute
+    difference between two subset sums&quot;&quot;&quot;
+    def minDifference(self, arr, n):
+        totSum = sum(arr)
+
+        &quot;&quot;&quot; Initialize a DP table to store the
+        results of the subset sum problem&quot;&quot;&quot;
+        dp = [[False] * (totSum + 1) for _ in range(n)]
+
+        &quot;&quot;&quot; Base case: If no elements are 
+        selected (sum is 0), it&#x27;s a valid subset&quot;&quot;&quot;
+        for i in range(n):
+            dp[i][0] = True
+
+        &quot;&quot;&quot; Initialize the first row based 
+        on the first element of the array&quot;&quot;&quot;
+        if arr[0] &lt;= totSum:
+            dp[0][arr[0]] = True
+
+        # Fill in the DP table using bottom-up approach
+        for ind in range(1, n):
+            for target in range(1, totSum + 1):
+                # Exclude the current element
+                notTaken = dp[ind - 1][target]
+
+                &quot;&quot;&quot; Include the current element if
+                it doesn&#x27;t exceed the target&quot;&quot;&quot;
+                taken = False
+                if arr[ind] &lt;= target:
+                    taken = dp[ind - 1][target - arr[ind]]
+
+                dp[ind][target] = notTaken or taken
+
+        mini = float(&#x27;inf&#x27;)
+        for i in range(totSum + 1):
+            if dp[n - 1][i]:
+                &quot;&quot;&quot; Calculate the absolute difference
+                between two subset sums&quot;&quot;&quot;
+                diff = abs(i - (totSum - i))
+                mini = min(mini, diff)
+
+        return mini</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    int minDifference(vector&lt;int&gt;&amp; arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a boolean vector &#x27;prev&#x27; to 
+        represent the previous row of the DP table*/
+        vector&lt;bool&gt; prev(totSum + 1, false);
+
+        /* Base case: If no elements are 
+        selected (sum is 0), it&#x27;s a valid subset*/
+        prev[0] = true;
+
+        /* Initialize the first row based 
+        on the first element of the array*/
+        if (arr[0] &lt;= totSum)
+            prev[arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            /* Initialize a boolean vector &#x27;cur&#x27; to 
+            represent the current row of the DP table*/
+            vector&lt;bool&gt; cur(totSum + 1, false);
+            
+            cur[0] = true;
+
+            for (int target = 1; target &lt;= totSum; target++) {
+                // Exclude the current element
+                bool notTaken = prev[target];
+
+                /* Include the current element
+                if it doesn&#x27;t exceed the target*/
+                bool taken = false;
+                if (arr[ind] &lt;= target)
+                    taken = prev[target - arr[ind]];
+
+                cur[target] = notTaken || taken;
+            }
+
+            // Set &#x27;cur&#x27; as the &#x27;prev&#x27; for the next iteration
+            prev = cur;
+        }
+
+        int mini = 1e9;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (prev[i] == true) {
+                /* Calculate the absolute 
+                difference between two subset sums*/
+                int diff = abs(i - (totSum - i));
+                mini = min(mini, diff);
+            }
+        }
+        return mini;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System;
+using System.Linq;
+
+class Solution {
+    public int minDifference(int[] arr, int n) {
+
+        // Your code goes here
+        int totalSum = 0;
+        foreach (int num in arr)
+        {
+            totalSum += num;
+        }
+
+        bool[] dp = new bool[totalSum + 1];
+        dp[0] = true;
+
+        foreach (int num in arr)
+        {
+            for (int j = totalSum; j &gt;= num; j--)
+            {
+                if (dp[j - num])
+                {
+                    dp[j] = true;
+                }
+            }
+        }
+
+        int minDiff = totalSum;
+
+        for (int j = 0; j &lt;= totalSum / 2; j++)
+        {
+            if (dp[j])
+            {
+                minDiff = Math.Min(minDiff, totalSum - 2 * j);
+            }
+        }
+
+        return minDiff;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to find the minimum absolute
+difference between two subset sums */
+func minDifference(arr []int, n int) int {
+	totSum := 0
+
+	// Calculate the total sum of the array
+	for i := 0; i &lt; n; i++ {
+		totSum += arr[i]
+	}
+
+	/* Initialize a boolean slice &#x27;prev&#x27; to
+	represent the previous row of the DP table */
+	prev := make([]bool, totSum+1)
+
+	/* Base case: If no elements are
+	selected (sum is 0), it&#x27;s a valid subset */
+	prev[0] = true
+
+	/* Initialize the first row based
+	on the first element of the array */
+	if arr[0] &lt;= totSum {
+		prev[arr[0]] = true
+	}
+
+	// Fill in the DP table using bottom-up approach
+	for ind := 1; ind &lt; n; ind++ {
+		/* Initialize a boolean slice &#x27;cur&#x27; to
+		represent the current row of the DP table */
+		cur := make([]bool, totSum+1)
+
+		cur[0] = true
+
+		for target := 1; target &lt;= totSum; target++ {
+			// Exclude the current element
+			notTaken := prev[target]
+
+			/* Include the current element
+			if it doesn&#x27;t exceed the target */
+			taken := false
+			if arr[ind] &lt;= target {
+				taken = prev[target-arr[ind]]
+			}
+
+			cur[target] = notTaken || taken
+		}
+
+		// Set &#x27;cur&#x27; as the &#x27;prev&#x27; for the next iteration
+		prev = cur
+	}
+
+	// Custom abs and min functions
+	abs := func(a int) int {
+		if a &lt; 0 {
+			return -a
+		}
+		return a
+	}
+	min := func(a, b int) int {
+		if a &lt; b {
+			return a
+		}
+		return b
+	}
+
+	mini := int(1e9)
+	for i := 0; i &lt;= totSum; i++ {
+		if prev[i] {
+			/* Calculate the absolute
+			difference between two subset sums */
+			diff := abs(i - (totSum - i))
+			mini = min(mini, diff)
+		}
+	}
+	return mini
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums */
+    public int minDifference(int[] arr, int n) {
+        int totSum = 0;
+
+        // Calculate the total sum of the array
+        for (int i = 0; i &lt; n; i++) {
+            totSum += arr[i];
+        }
+
+        /* Initialize a boolean vector &#x27;prev&#x27; to
+        represent the previous row of the DP table */
+        boolean[] prev = new boolean[totSum + 1];
+        Arrays.fill(prev, false);
+
+        /* Base case: If no elements are
+        selected (sum is 0), it&#x27;s a valid subset */
+        prev[0] = true;
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] &lt;= totSum)
+            prev[arr[0]] = true;
+
+        // Fill in the DP table using bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            /* Initialize a boolean vector &#x27;cur&#x27; to
+            represent the current row of the DP table */
+            boolean[] cur = new boolean[totSum + 1];
+            Arrays.fill(cur, false);
+            cur[0] = true;
+
+            for (int target = 1; target &lt;= totSum; target++) {
+                // Exclude the current element
+                boolean notTaken = prev[target];
+
+                /* Include the current element
+                if it doesn&#x27;t exceed the target */
+                boolean taken = false;
+                if (arr[ind] &lt;= target)
+                    taken = prev[target - arr[ind]];
+
+                cur[target] = notTaken || taken;
+            }
+
+            // Set &#x27;cur&#x27; as the &#x27;prev&#x27; for the next iteration
+            prev = cur;
+        }
+
+        int mini = Integer.MAX_VALUE;
+        for (int i = 0; i &lt;= totSum; i++) {
+            if (prev[i]) {
+                /* Calculate the absolute
+                difference between two subset sums */
+                int diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the minimum absolute
+    difference between two subset sums*/
+    minDifference(arr, n) {
+        let totSum = arr.reduce((a, b) =&gt; a + b, 0);
+
+        /* Initialize a boolean vector &#x27;prev&#x27; to
+        represent the previous row of the DP table*/
+        const prev = new Array(totSum + 1).fill(false);
+        prev[0] = true;
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] &lt;= totSum) {
+            prev[arr[0]] = true;
+        }
+
+        // Fill in the DP table using bottom-up approach
+        for (let ind = 1; ind &lt; n; ind++) {
+            /* Initialize a boolean vector &#x27;cur&#x27; to
+            represent the current row of the DP table*/
+            const cur = new Array(totSum + 1).fill(false);
+            cur[0] = true;
+
+            for (let target = 1; target &lt;= totSum; target++) {
+                // Exclude the current element
+                const notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target*/
+                let taken = false;
+                if (arr[ind] &lt;= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                cur[target] = notTaken || taken;
+            }
+
+            // Set &#x27;cur&#x27; as the &#x27;prev&#x27; for the next iteration
+            prev.splice(0, prev.length, ...cur);
+        }
+
+        let mini = Number.MAX_VALUE;
+        for (let i = 0; i &lt;= totSum; i++) {
+            if (prev[i]) {
+                /* Calculate the absolute 
+                difference between two subset sums*/
+                const diff = Math.abs(i - (totSum - i));
+                mini = Math.min(mini, diff);
+            }
+        }
+   
+        return mini;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to find the minimum absolute
+    difference between two subset sums&quot;&quot;&quot;
+    def minDifference(self, arr, n):
+        totSum = sum(arr)
+
+        &quot;&quot;&quot; Initialize a boolean vector &#x27;prev&#x27; to
+        represent the previous row of the DP table&quot;&quot;&quot;
+        prev = [False] * (totSum + 1)
+        prev[0] = True
+
+        &quot;&quot;&quot; Initialize the first row based
+        on the first element of the array&quot;&quot;&quot;
+        if arr[0] &lt;= totSum:
+            prev[arr[0]] = True
+
+        # Fill in the DP table using bottom-up approach
+        for ind in range(1, n):
+            &quot;&quot;&quot; Initialize a boolean vector &#x27;cur&#x27; to
+            represent the current row of the DP table&quot;&quot;&quot;
+            cur = [False] * (totSum + 1)
+            cur[0] = True
+
+            for target in range(1, totSum + 1):
+                # Exclude the current element
+                notTaken = prev[target]
+
+                &quot;&quot;&quot; Include the current element if
+                it doesn&#x27;t exceed the target&quot;&quot;&quot;
+                taken = False
+                if arr[ind] &lt;= target:
+                    taken = prev[target - arr[ind]]
+
+                cur[target] = notTaken or taken
+
+            # Set &#x27;cur&#x27; as the &#x27;prev&#x27; for the next iteration
+            prev = cur
+
+        mini = float(&#x27;inf&#x27;)
+        for i in range(totSum + 1):
+            if prev[i]:
+                &quot;&quot;&quot; Calculate the absolute 
+                difference between two subset sums&quot;&quot;&quot;
+                diff = abs(i - (totSum - i))
+                mini = min(mini, diff)
+
+        return mini</code></pre></div>
+</body>
+</html>

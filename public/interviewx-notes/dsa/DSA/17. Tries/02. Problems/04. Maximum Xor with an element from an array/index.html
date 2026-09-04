@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maximum Xor with an element from an array</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Maximum Xor with an element from an array</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Bit Manipulation</span><span>Trie</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array nums consisting of non-negative integers and a queries array, where queries[i] = [x<sub>i</sub>, m<sub>i</sub>].</p><p><br></p><p>The answer to the i<sup>th</sup> query is the <strong>maximum bitwise XOR</strong> value of x<sub>i</sub> and any element of nums that does not exceed m<sub>i</sub>. In other words, the answer is max(nums[j] XOR x<sub>i</sub>) for all j such that nums[j] <= m<sub>i</sub>. If all elements in nums are larger than m<sub>i</sub>, then the answer is -1.</p><p><br></p><p>Return an integer array answer where answer.length == queries.length and answer[i] is the answer to the i<sup>th</sup> query.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= nums.length , queries.length <= 10<sup>5</sup></li><li>queries[i].length == 2</li><li>0 <= nums[i] , x<sub>i</sub> , m<sub>i</sub> <= 10<sup>9</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> nums = [4, 9, 2, 5, 0, 1] , queries = [ [3, 0], [3, 10], [7, 5], [7,9] ]</p><p><br></p><p><strong>Output :</strong> [3, 10, 7, 14]</p><p><br></p><p><strong>Explanation :</strong> </p><p>1<sup>st</sup> query : x = 3, m = 0. There are only one numbers less than equal to m i.e 0. 0 XOR 3 = 3. The answer is 3.</p><p>2<sup>nd</sup> query : x = 3, m = 10. The maximum XOR is 3 XOR 9 = 10.</p><p>3<sup>rd</sup> query : x = 7, m = 5. The maximum XOR is 7 XOR 0 = 7.</p><p>4<sup>th</sup> query : x = 7, m = 9. The maximum XOR is 7 XOR 9 = 14.</p><h3>Example 2</h3><p><strong>Input :</strong> nums = [0, 1, 2, 3, 4] , queries = [ [3, 1], [1, 3], [5, 6] ]</p><p><br></p><p><strong>Output :</strong> [3, 3, 7]</p><p><br></p><p><strong>Explanation :</strong> </p><p>1<sup>st</sup> query : x = 3, m = 1. There are only two numbers less than equal to m i.e 0 , 1. 0 XOR 3 = 3, 1 XOR 3 = 2. The larger value is 3.</p><p>2<sup>nd</sup> query : x = 1, m = 3. The maximum XOR is 1 XOR 2 = 3</p><p>3<sup>rd</sup> query : x = 5, m = 6. The maximum XOR is 5 XOR 2 = 7.</p><h3>Example 3</h3><p><strong>Input :</strong> nums = [5, 2, 4, 6, 6, 3] , queries = [ [12, 4], [8, 1], [6, 3] ]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The concept underlying this problem, which is bitwise operations, has practical applications in many areas of software development. For example, in cryptographic algorithms, bitwise operations like XOR are used for encryption and decryption because of their computational efficiency. Additionally, they provide a simple yet effective method of scrambling data, which is crucial in maintaining the security of data. Therefore, understanding how to use bitwise operations effectively can make you a more effective software engineer in cybersecurity space.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition</h3>
+We can efficiently solve this problem by using a Trie data structure, where each node represents a bit and paths from the root to the leaves represent binary numbers. The aim is to maximize the XOR value between a given number and any number in the array that is less than or equal to a specified limit. <br>
+By incrementally inserting numbers into the Trie up to the required value for each query, unnecessary operations are minimized. This approach allows for efficiently finding the maximum XOR for each query by traversing the Trie and selecting opposite bits whenever possible, ensuring the highest possible XOR result. If no numbers are less than or equal to the specified limit, the result is -1.
+<h3>Approach</h3>
+<ul>
+  <li>Build a Trie Node to hold binary bits (0 and 1), and add methods to insert numbers and find the maximum XOR value.</li>
+  <li>Set up a list to store query results, and sort the numbers and queries by their limits. This way, we only insert necessary numbers into the Trie.</li>
+  <li>Go through the sorted numbers and queries. For each query, add numbers to the Trie up to the query's limit and use the Trie to find the highest XOR value for the query.</li>
+  <li>After all queries are processed, return the results. This method ensures we handle each query efficiently.</li>
+</ul>
+<h3>Dry Run</h3>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/1.png-shMOMO-s" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/2.png-XAwynj-3" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/3.png-nkc_ABIC" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/4.png-5I6R_fxM" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/5.png-7Qao6Ci6" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/6.png-v4V4DM8n" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/7.png-uYZ0FAU7" alt="Image 7"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/8.png-gkrusz-q" alt="Image 8"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/1.png-shMOMO-s" alt="Image 1"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/2.png-XAwynj-3" alt="Image 2"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/3.png-nkc_ABIC" alt="Image 3"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/4.png-5I6R_fxM" alt="Image 4"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/5.png-7Qao6Ci6" alt="Image 5"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/6.png-v4V4DM8n" alt="Image 6"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/7.png-uYZ0FAU7" alt="Image 7"><img src="https://static.takeuforward.org/premium/Tries/Problems/Maximum Xor with an element from an array/8.png-gkrusz-q" alt="Image 8"></div></div>
+<p>For detailed dry run watch the video.</p>
+<h3>Solution</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+// Node Structure for Trie
+struct Node {
+    Node *links[2];
+
+  
+    bool containsKey(int ind) {
+        return (links[ind] != NULL);
+    }
+
+  
+    Node* get(int ind) {
+        return links[ind];
+    }
+
+    void put(int ind, Node* node) {
+        links[ind] = node;
+    }
+};
+
+// Definition for Trie data
+class Trie {
+private:
+    Node* root;
+
+public:
+    // Constructor 
+    Trie() {
+        root = new Node();
+    }
+
+    // Function to insert 
+    void insert(int num) {
+        // Start traversal
+        Node* node = root;
+
+       /* Traverse each bit of the number 
+       from the most significant bit to the 
+       least significant bit*/
+        for (int i = 31; i >= 0; i--) {
+            int bit = (num >> i) & 1;
+
+            /*If the current node doesn't have 
+            a child node at the current bit, 
+            create one*/
+            if (!node->containsKey(bit)) {
+                node->put(bit, new Node());
+            }
+
+           /* Move to the child node
+            corresponding to the 
+            current bit*/
+            node = node->get(bit);
+        }
+    }
+
+    // Function to find maximum XOR
+    int findMax(int num) {
+        Node* node = root;
+
+        int maxNum = 0;
+
+        /*Traverse each bit of the number from 
+        the most significant bit to the least 
+        significant bit extract the i-th 
+        bit of the number.
+        If there exists a different bit 
+        in the trie at the current 
+        position, choose it to maximize XOR*/
+        for (int i = 31; i >= 0; i--) {
+            
+            int bit = (num >> i) & 1;
+
+            
+            if (node->containsKey(!bit)) {
+                maxNum = maxNum | (1 << i);
+                node = node->get(!bit);
+            } else {
+                node = node->get(bit);
+            }
+        }
+
+        // Return maximum XOR value
+        return maxNum;
+    }
+};
+
+// Solution class to handle queries
+class Solution {
+public:
+    // Function to handle the maximize XOR queries
+    vector<int> maximizeXor(vector<int>& nums, vector<vector<int>>& queries) {
+        // Initialize vector to store results of queries
+        vector<int> ans(queries.size(), 0);
+
+        // Vector to store offline queries
+        vector<pair<int, pair<int, int>>> offlineQueries;
+
+        // Sort the array of numbers
+        sort(nums.begin(), nums.end());
+
+        // Convert queries to offline queries and store them in a vector
+        int index = 0;
+        for (auto &it : queries) {
+            offlineQueries.push_back({it[1], {it[0], index++}});
+        }
+
+        // Sort queries based on their end points
+        sort(offlineQueries.begin(), offlineQueries.end());
+        int i = 0;
+        int n = nums.size();
+
+        Trie trie;
+
+        // Process each query
+        for (auto &it : offlineQueries) {
+            // Insert numbers 
+            while (i < n && nums[i] <= it.first) {
+                trie.insert(nums[i]);
+                i++;
+            }
+
+            /*If there are numbers inserted into the trie, 
+            find the maximum XOR value for the query range*/
+            if (i != 0)
+                ans[it.second.second] = trie.findMax(it.second.first);
+            else
+                ans[it.second.second] = -1;
+        }
+
+        // Return results
+        return ans;
+    }
+};
+
+int main() {
+    // Create instance of Solution class
+    Solution sol;
+
+    // Input array of numbers
+    vector<int> nums = {0, 1, 2, 3, 4};
+
+    // Queries in the form of [x, m]
+    vector<vector<int>> queries = {{3, 1}, {1, 3}, {5, 6}};
+
+    // Get the results of the maximize XOR queries
+    vector<int> result = sol.maximizeXor(nums, queries);
+
+    // Output the results
+    cout << "Result of Max XOR Queries:" << endl;
+    for (int i = 0; i < result.size(); ++i) {
+        cout << "Query " << i+1 << ": " << result[i] << endl;
+    }
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+// Node Structure for Trie
+class Node {
+    Node[] links = new Node[2];
+
+  
+    boolean containsKey(int ind) {
+        return links[ind] != null;
+    }
+
+  
+    Node get(int ind) {
+        return links[ind];
+    }
+
+    void put(int ind, Node node) {
+        links[ind] = node;
+    }
+}
+
+// Definition for Trie data structure
+class Trie {
+    private Node root;
+
+    // Constructor
+    Trie() {
+        root = new Node();
+    }
+
+    // Function to insert a number into the trie
+    void insert(int num) {
+        // Start traversal
+        Node node = root;
+
+        /* Traverse each bit of the number 
+           from the most significant bit to the 
+           least significant bit */
+        for (int i = 31; i >= 0; i--) {
+            int bit = (num >> i) & 1;
+
+            /* If the current node doesn't have 
+               a child node at the current bit, 
+               create one */
+            if (!node.containsKey(bit)) {
+                node.put(bit, new Node());
+            }
+
+            /* Move to the child node
+               corresponding to the 
+               current bit */
+            node = node.get(bit);
+        }
+    }
+
+    // Function to find maximum XOR
+    int findMax(int num) {
+        Node node = root;
+        int maxNum = 0;
+
+        /* Traverse each bit of the number from 
+           the most significant bit to the least 
+           significant bit extract the i-th 
+           bit of the number.
+           If there exists a different bit 
+           in the trie at the current 
+           position, choose it to maximize XOR */
+        for (int i = 31; i >= 0; i--) {
+            int bit = (num >> i) & 1;
+
+            if (node.containsKey(1 - bit)) {
+                maxNum = maxNum | (1 << i);
+                node = node.get(1 - bit);
+            } else {
+                node = node.get(bit);
+            }
+        }
+
+        // Return maximum XOR value
+        return maxNum;
+    }
+}
+
+// Solution class to handle queries
+class Solution {
+    // Function to handle the maximize XOR queries
+    public int[] maximizeXor(int[] nums, int[][] queries) {
+        // Initialize array to store results of queries
+        int[] ans = new int[queries.length];
+
+        // List to store offline queries
+        List<int[]> offlineQueries = new ArrayList<>();
+
+        // Sort the array of numbers
+        Arrays.sort(nums);
+
+        // Convert queries to offline queries and store them in a list
+        for (int i = 0; i < queries.length; i++) {
+            offlineQueries.add(new int[]{queries[i][1], queries[i][0], i});
+        }
+
+        // Sort queries based on their end points
+        offlineQueries.sort(Comparator.comparingInt(a -> a[0]));
+
+        int i = 0;
+        Trie trie = new Trie();
+
+        // Process each query
+        for (int[] query : offlineQueries) {
+            // Insert numbers 
+            while (i < nums.length && nums[i] <= query[0]) {
+                trie.insert(nums[i]);
+                i++;
+            }
+
+            /* If there are numbers inserted into the trie, 
+               find the maximum XOR value for the query range */
+            if (i != 0)
+                ans[query[2]] = trie.findMax(query[1]);
+            else
+                ans[query[2]] = -1;
+        }
+
+        // Return results
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        // Create instance of Solution class
+        Solution sol = new Solution();
+
+        // Input array of numbers
+        int[] nums = {0, 1, 2, 3, 4};
+
+        // Queries in the form of [x, m]
+        int[][] queries = {{3, 1}, {1, 3}, {5, 6}};
+
+        // Get the results of the maximize XOR queries
+        int[] result = sol.maximizeXor(nums, queries);
+
+        // Output the results
+        System.out.println("Result of Max XOR Queries:");
+        for (int i = 0; i < result.length; ++i) {
+            System.out.println("Query " + (i + 1) + ": " + result[i]);
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span></div><pre class="wp-block-code"><code lang="python" class="language-python"># Node Structure for Trie
+class Node:
+    def __init__(self):
+        # Initialize child links (0 and 1)
+        self.links = [None, None]
+
+    # Check if a child node exists at a given index (0 or 1)
+    def contains_key(self, ind):
+        return self.links[ind] is not None
+
+    # Get the child node at a given index (0 or 1)
+    def get(self, ind):
+        return self.links[ind]
+
+    # Set the child node at a given index (0 or 1)
+    def put(self, ind, node):
+        self.links[ind] = node
+
+# Definition for Trie data structure
+class Trie:
+    def __init__(self):
+        # Initialize root node
+        self.root = Node()
+
+    # Function to insert a number into the trie
+    def insert(self, num):
+        # Start traversal
+        node = self.root
+
+        # Traverse each bit of the number
+        for i in range(31, -1, -1):
+            bit = (num >> i) & 1
+
+            # If the current node doesn't have a child node at the current bit, create one
+            if not node.contains_key(bit):
+                node.put(bit, Node())
+
+            # Move to the child node corresponding to the current bit
+            node = node.get(bit)
+
+    # Function to find the maximum XOR value achievable with a given number
+    def find_max(self, num):
+        node = self.root
+        max_num = 0
+
+        # Traverse each bit of the number
+        for i in range(31, -1, -1):
+            bit = (num >> i) & 1
+
+            # If there exists a different bit in the trie at the current position, choose it to maximize XOR
+            if node.contains_key(1 - bit):
+                max_num = max_num | (1 << i)
+                node = node.get(1 - bit)
+            else:
+                node = node.get(bit)
+
+        # Return the maximum XOR value
+        return max_num
+
+# Solution class to handle queries
+class Solution:
+    # Function to handle the maximize XOR queries
+    def maximizeXor(self, nums, queries):
+        # Initialize list to store results of queries
+        ans = [0] * len(queries)
+
+        # List to store offline queries
+        offline_queries = []
+
+        # Sort the array of numbers
+        nums.sort()
+
+        # Convert queries to offline queries and store them in a list
+        for index, query in enumerate(queries):
+            offline_queries.append((query[1], query[0], index))
+
+        # Sort queries based on their end points
+        offline_queries.sort()
+
+        i = 0
+        trie = Trie()
+
+        # Process each query
+        for m, x, query_index in offline_queries:
+            # Insert numbers into the trie until the current query's end point
+            while i < len(nums) and nums[i] <= m:
+                trie.insert(nums[i])
+                i += 1
+
+            # If there are numbers inserted into the trie, find the maximum XOR value for the query range
+            if i != 0:
+                ans[query_index] = trie.find_max(x)
+            else:
+                ans[query_index] = -1
+
+        # Return results
+        return ans
+
+# Main function to test the Solution class
+if __name__ == "__main__":
+    # Create instance of Solution class
+    sol = Solution()
+
+    # Input array of numbers
+    nums = [0, 1, 2, 3, 4]
+
+    # Queries in the form of [x, m]
+    queries = [[3, 1], [1, 3], [5, 6]]
+
+    # Get the results of the maximize XOR queries
+    result = sol.maximizeXor(nums, queries)
+
+    # Output the results
+    print("Result of Max XOR Queries:")
+    for i in range(len(result)):
+        print(f"Query {i + 1}: {result[i]}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Node Structure for Trie
+class Node {
+    constructor() {
+        this.links = [null, null];
+    }
+
+    containsKey(ind) {
+        return this.links[ind] !== null;
+    }
+
+    get(ind) {
+        return this.links[ind];
+    }
+
+    put(ind, node) {
+        this.links[ind] = node;
+    }
+}
+
+// Definition for Trie data structure
+class Trie {
+    constructor() {
+        // Initialize root node
+        this.root = new Node();
+    }
+
+    // Function to insert a number into the trie
+    insert(num) {
+        // Start traversal
+        let node = this.root;
+
+        /* Traverse each bit of the number 
+           from the most significant bit to the 
+           least significant bit */
+        for (let i = 31; i >= 0; i--) {
+            const bit = (num >> i) & 1;
+
+            /* If the current node doesn't have 
+               a child node at the current bit, 
+               create one */
+            if (!node.containsKey(bit)) {
+                node.put(bit, new Node());
+            }
+
+            /* Move to the child node
+               corresponding to the 
+               current bit */
+            node = node.get(bit);
+        }
+    }
+
+    // Function to find maximum XOR
+    findMax(num) {
+        let node = this.root;
+        let maxNum = 0;
+
+        /* Traverse each bit of the number from 
+           the most significant bit to the least 
+           significant bit extract the i-th 
+           bit of the number.
+           If there exists a different bit 
+           in the trie at the current 
+           position, choose it to maximize XOR */
+        for (let i = 31; i >= 0; i--) {
+            const bit = (num >> i) & 1;
+
+            if (node.containsKey(1 - bit)) {
+                maxNum = maxNum | (1 << i);
+                node = node.get(1 - bit);
+            } else {
+                node = node.get(bit);
+            }
+        }
+
+        // Return maximum XOR value
+        return maxNum;
+    }
+}
+
+// Solution class to handle queries
+class Solution {
+    // Function to handle the maximize XOR queries
+    maximizeXor(nums, queries) {
+        // Initialize array to store results of queries
+        const ans = new Array(queries.length).fill(0);
+
+        // Array to store offline queries
+        const offlineQueries = [];
+
+        // Sort the array of numbers
+        nums.sort((a, b) => a - b);
+
+        // Convert queries to offline queries and store them in an array
+        queries.forEach((query, index) => {
+            offlineQueries.push([query[1], query[0], index]);
+        });
+
+        // Sort queries based on their end points
+        offlineQueries.sort((a, b) => a[0] - b[0]);
+
+        let i = 0;
+        const trie = new Trie();
+
+        // Process each query
+        offlineQueries.forEach(query => {
+            // Insert numbers 
+            while (i < nums.length && nums[i] <= query[0]) {
+                trie.insert(nums[i]);
+                i++;
+            }
+
+            /* If there are numbers inserted into the trie, 
+               find the maximum XOR value for the query range */
+            if (i !== 0) {
+                ans[query[2]] = trie.findMax(query[1]);
+            } else {
+                ans[query[2]] = -1;
+            }
+        });
+
+        // Return results
+        return ans;
+    }
+}
+
+// Main function to test the Solution class
+const main = () => {
+    // Create instance of Solution class
+    const sol = new Solution();
+
+    // Input array of numbers
+    const nums = [0, 1, 2, 3, 4];
+
+    // Queries in the form of [x, m]
+    const queries = [[3, 1], [1, 3], [5, 6]];
+
+    // Get the results of the maximize XOR queries
+    const result = sol.maximizeXor(nums, queries);
+
+    // Output the results
+    console.log("Result of Max XOR Queries:");
+    result.forEach((res, i) => {
+        console.log(`Query ${i + 1}: ${res}`);
+    });
+};
+
+// Call the main function
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+// Node Structure for Trie
+class Node
+{
+    public Node[] links;
+
+    public Node()
+    {
+        this.links = new Node[2];
+    }
+
+    public bool ContainsKey(int ind)
+    {
+        return this.links[ind] != null;
+    }
+
+    public Node Get(int ind)
+    {
+        return this.links[ind];
+    }
+
+    public void Put(int ind, Node node)
+    {
+        this.links[ind] = node;
+    }
+}
+
+// Definition for Trie data structure
+class Trie
+{
+    // Initialize root node
+    private Node root;
+
+    public Trie()
+    {
+        this.root = new Node();
+    }
+
+    // Function to insert a number into the trie
+    public void Insert(int num)
+    {
+        // Start traversal
+        Node node = this.root;
+
+        /* Traverse each bit of the number 
+           from the most significant bit to the 
+           least significant bit */
+        for (int i = 31; i >= 0; i--)
+        {
+            int bit = (num >> i) & 1;
+
+            /* If the current node doesn't have 
+               a child node at the current bit, 
+               create one */
+            if (!node.ContainsKey(bit))
+            {
+                node.Put(bit, new Node());
+            }
+
+            /* Move to the child node
+               corresponding to the 
+               current bit */
+            node = node.Get(bit);
+        }
+    }
+
+    // Function to find maximum XOR
+    public int FindMax(int num)
+    {
+        Node node = this.root;
+        int maxNum = 0;
+
+        /* Traverse each bit of the number from 
+           the most significant bit to the least 
+           significant bit extract the i-th 
+           bit of the number.
+           If there exists a different bit 
+           in the trie at the current 
+           position, choose it to maximize XOR */
+        for (int i = 31; i >= 0; i--)
+        {
+            int bit = (num >> i) & 1;
+
+            if (node.ContainsKey(1 - bit))
+            {
+                maxNum = maxNum | (1 << i);
+                node = node.Get(1 - bit);
+            }
+            else
+            {
+                node = node.Get(bit);
+            }
+        }
+
+        // Return maximum XOR value
+        return maxNum;
+    }
+}
+
+// Solution class to handle queries
+class Solution
+{
+    // Function to handle the maximize XOR queries
+    public List<int> MaximizeXor(List<int> nums, List<List<int>> queries)
+    {
+        // Initialize array to store results of queries
+        List<int> ans = new List<int>(new int[queries.Count]);
+
+        // Array to store offline queries
+        List<int[]> offlineQueries = new List<int[]>();
+
+        // Sort the array of numbers
+        nums.Sort();
+
+        // Convert queries to offline queries and store them in an array
+        for (int index = 0; index < queries.Count; index++)
+        {
+            offlineQueries.Add(new int[] { queries[index][1], queries[index][0], index });
+        }
+
+        // Sort queries based on their end points
+        offlineQueries.Sort((a, b) => a[0].CompareTo(b[0]));
+
+        int i = 0;
+        Trie trie = new Trie();
+
+        // Process each query
+        foreach (int[] query in offlineQueries)
+        {
+            // Insert numbers 
+            while (i < nums.Count && nums[i] <= query[0])
+            {
+                trie.Insert(nums[i]);
+                i++;
+            }
+
+            /* If there are numbers inserted into the trie, 
+               find the maximum XOR value for the query range */
+            if (i != 0)
+            {
+                ans[query[2]] = trie.FindMax(query[1]);
+            }
+            else
+            {
+                ans[query[2]] = -1;
+            }
+        }
+
+        // Return results
+        return ans;
+    }
+}
+
+// Main function to test the Solution class
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Create instance of Solution class
+        Solution sol = new Solution();
+
+        // Input array of numbers
+        List<int> nums = new List<int> { 0, 1, 2, 3, 4 };
+
+        // Queries in the form of [x, m]
+        List<List<int>> queries = new List<List<int>>
+        {
+            new List<int> { 3, 1 },
+            new List<int> { 1, 3 },
+            new List<int> { 5, 6 }
+        };
+
+        // Get the results of the maximize XOR queries
+        List<int> result = sol.MaximizeXor(nums, queries);
+
+        // Output the results
+        Console.WriteLine("Result of Max XOR Queries:");
+        for (int i = 0; i < result.Count; i++)
+        {
+            Console.WriteLine($"Query {i + 1}: {result[i]}");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// Node Structure for Trie
+type Node struct {
+	links [2]*Node
+}
+
+// Function to check if the node contains the key (0 or 1)
+func (n *Node) containsKey(ind int) bool {
+	return n.links[ind] != nil
+}
+
+// Function to get the node at the specific index (0 or 1)
+func (n *Node) get(ind int) *Node {
+	return n.links[ind]
+}
+
+// Function to put a node at the specific index (0 or 1)
+func (n *Node) put(ind int, node *Node) {
+	n.links[ind] = node
+}
+
+// Trie data structure to handle insert and findMax
+type Trie struct {
+	root *Node
+}
+
+// Constructor for Trie
+func NewTrie() *Trie {
+	return &Trie{
+		root: &Node{},
+	}
+}
+
+// Function to insert a number into the Trie
+func (t *Trie) insert(num int) {
+	node := t.root
+	for i := 31; i >= 0; i-- {
+		bit := (num >> i) & 1
+		if !node.containsKey(bit) {
+			node.put(bit, &Node{})
+		}
+		node = node.get(bit)
+	}
+}
+
+// Function to find the maximum XOR for a given number
+func (t *Trie) findMax(num int) int {
+	node := t.root
+	maxNum := 0
+	for i := 31; i >= 0; i-- {
+		bit := (num >> i) & 1
+		if node.containsKey(1-bit) {
+			maxNum |= (1 << i)
+			node = node.get(1 - bit)
+		} else {
+			node = node.get(bit)
+		}
+	}
+	return maxNum
+}
+
+// Function to handle the maximize XOR queries
+func maximizeXor(nums []int, queries [][]int) []int {
+	// Vector to store results of queries
+	ans := make([]int, len(queries))
+
+	// Vector to store offline queries
+	offlineQueries := make([]struct {
+		end   int
+		start int
+		index int
+	}, len(queries))
+
+	// Sort the array of numbers
+	sort.Ints(nums)
+
+	// Convert queries to offline queries and store them in a vector
+	for index, query := range queries {
+		offlineQueries[index] = struct {
+			end   int
+			start int
+			index int
+		}{query[1], query[0], index} // query = {end, start}
+	}
+
+	// Sort queries based on their end points
+	sort.Slice(offlineQueries, func(i, j int) bool {
+		return offlineQueries[i].end < offlineQueries[j].end
+	})
+
+	// Initialize the trie and index for nums
+	trie := NewTrie()
+	i := 0
+	n := len(nums)
+
+	// Process each query
+	for _, query := range offlineQueries {
+		end := query.end
+		start := query.start
+		index := query.index
+
+		// Insert numbers into the trie until the current number is less than or equal to end
+		for i < n && nums[i] <= end {
+			trie.insert(nums[i])
+			i++
+		}
+
+		// If numbers have been inserted into the trie, find the maximum XOR for the query range
+		if i > 0 {
+			ans[index] = trie.findMax(start)
+		} else {
+			ans[index] = -1
+		}
+	}
+
+	// Return the results
+	return ans
+}
+
+func main() {
+	// Input array of numbers
+	nums := []int{0, 1, 2, 3, 4}
+
+	// Queries in the form of [x, m]
+	queries := [][]int{
+		{3, 1},
+		{1, 3},
+		{5, 6},
+	}
+
+	// Get the results of the maximize XOR queries
+	result := maximizeXor(nums, queries)
+
+	// Output the results
+	fmt.Println("Result of Max XOR Queries:")
+	for i, r := range result {
+		fmt.Printf("Query %d: %d\n", i+1, r)
+	}
+}
+</code></pre></div></div></div>
+<h3>Complexity Analysis</h3>
+<strong>Time Complexity: O(32N + Q(logQ) + 32Q)</strong> where N is the size of the input array and Q is the number of queries.
+The time complexity includes inserting N numbers into the Trie, each taking O(32) operations due to the 32-bit integer representation, resulting in O(32N). Sorting the Q queries takes O(Q(logQ)) time. Processing each query involves traversing the 32-bit Trie, resulting in O(32Q).
+<br>
+<br>
+<strong>Space Complexity: O(32N + Q)</strong> where N is the size of the input array and Q is the number of queries.
+The space complexity accounts for storing N numbers in the Trie (32N) and the storage needed for the Q queries.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>
+// Node Structure for Trie
+struct Node {
+    Node *links[2];
+
+    bool containsKey(int ind) {
+        return (links[ind] != NULL);
+    }
+
+    Node* get(int ind) {
+        return links[ind];
+    }
+
+    void put(int ind, Node* node) {
+        links[ind] = node;
+    }
+};
+
+// Definition for Trie data
+class Trie {
+private:
+    Node* root;
+
+public:
+    // Constructor 
+    Trie() {
+        root = new Node();
+    }
+
+    // Function to insert 
+    void insert(int num) {
+        // Start traversal
+        Node* node = root;
+
+        /* Traverse each bit of the number 
+        from the most significant bit to the 
+        least significant bit*/
+        for (int i = 31; i &gt;= 0; i--) {
+            int bit = (num &gt;&gt; i) &amp; 1;
+
+            /*If the current node doesn&#x27;t have 
+            a child node at the current bit, 
+            create one*/
+            if (!node-&gt;containsKey(bit)) {
+                node-&gt;put(bit, new Node());
+            }
+
+            /* Move to the child node
+            corresponding to the 
+            current bit*/
+            node = node-&gt;get(bit);
+        }
+    }
+
+    // Function to find maximum XOR
+    int findMax(int num) {
+        Node* node = root;
+
+        int maxNum = 0;
+
+        /*Traverse each bit of the number from 
+        the most significant bit to the least 
+        significant bit extract the i-th 
+        bit of the number.
+        If there exists a different bit 
+        in the trie at the current 
+        position, choose it to maximize XOR*/
+        for (int i = 31; i &gt;= 0; i--) {
+            int bit = (num &gt;&gt; i) &amp; 1;
+
+            if (node-&gt;containsKey(!bit)) {
+                maxNum = maxNum | (1 &lt;&lt; i);
+                node = node-&gt;get(!bit);
+            } else {
+                node = node-&gt;get(bit);
+            }
+        }
+
+        // Return maximum XOR value
+        return maxNum;
+    }
+};
+
+// Solution class to handle queries
+class Solution {
+public:
+    // Function to handle the maximize XOR queries
+    vector&lt;int&gt; maximizeXor(vector&lt;int&gt;&amp; nums, vector&lt;vector&lt;int&gt;&gt;&amp; queries) {
+        // Initialize vector to store results of queries
+        vector&lt;int&gt; ans(queries.size(), 0);
+
+        // Vector to store offline queries
+        vector&lt;pair&lt;int, pair&lt;int, int&gt;&gt;&gt; offlineQueries;
+
+        // Sort the array of numbers
+        sort(nums.begin(), nums.end());
+
+        // Convert queries to offline queries and store them in a vector
+        int index = 0;
+        for (auto &amp;it : queries) {
+            offlineQueries.push_back({it[1], {it[0], index++}});
+        }
+
+        // Sort queries based on their end points
+        sort(offlineQueries.begin(), offlineQueries.end());
+        int i = 0;
+        int n = nums.size();
+
+        Trie trie;
+
+        // Process each query
+        for (auto &amp;it : offlineQueries) {
+            // Insert numbers 
+            while (i &lt; n &amp;&amp; nums[i] &lt;= it.first) {
+                trie.insert(nums[i]);
+                i++;
+            }
+
+            /*If there are numbers inserted into the trie, 
+            find the maximum XOR value for the query range*/
+            if (i != 0)
+                ans[it.second.second] = trie.findMax(it.second.first);
+            else
+                ans[it.second.second] = -1;
+        }
+
+        // Return results
+        return ans;
+    }
+};
+</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Node Structure for Trie
+    private class Node
+    {
+        public Node[] links;
+
+        public Node()
+        {
+            this.links = new Node[2];
+        }
+
+        public bool ContainsKey(int ind)
+        {
+            return this.links[ind] != null;
+        }
+
+        public Node Get(int ind)
+        {
+            return this.links[ind];
+        }
+
+        public void Put(int ind, Node node)
+        {
+            this.links[ind] = node;
+        }
+    }
+
+    // Definition for Trie data structure
+    private class Trie
+    {
+        // Initialize root node
+        private Node root;
+
+        public Trie()
+        {
+            this.root = new Node();
+        }
+
+        // Function to insert a number into the trie
+        public void Insert(int num)
+        {
+            // Start traversal
+            Node node = this.root;
+
+            /* Traverse each bit of the number 
+               from the most significant bit to the 
+               least significant bit */
+            for (int i = 31; i &gt;= 0; i--)
+            {
+                int bit = (num &gt;&gt; i) &amp; 1;
+
+                /* If the current node doesn&#x27;t have 
+                   a child node at the current bit, 
+                   create one */
+                if (!node.ContainsKey(bit))
+                {
+                    node.Put(bit, new Node());
+                }
+
+                /* Move to the child node
+                   corresponding to the 
+                   current bit */
+                node = node.Get(bit);
+            }
+        }
+
+        // Function to find maximum XOR
+        public int FindMax(int num)
+        {
+            Node node = this.root;
+            int maxNum = 0;
+
+            /* Traverse each bit of the number from 
+               the most significant bit to the least 
+               significant bit extract the i-th 
+               bit of the number.
+               If there exists a different bit 
+               in the trie at the current 
+               position, choose it to maximize XOR */
+            for (int i = 31; i &gt;= 0; i--)
+            {
+                int bit = (num &gt;&gt; i) &amp; 1;
+
+                if (node.ContainsKey(1 - bit))
+                {
+                    maxNum = maxNum | (1 &lt;&lt; i);
+                    node = node.Get(1 - bit);
+                }
+                else
+                {
+                    node = node.Get(bit);
+                }
+            }
+
+            // Return maximum XOR value
+            return maxNum;
+        }
+    }
+
+    public List&lt;int&gt; MaximizeXor(List&lt;int&gt; nums, List&lt;List&lt;int&gt;&gt; queries)
+    {
+        // Initialize array to store results of queries
+        List&lt;int&gt; ans = new List&lt;int&gt;(new int[queries.Count]);
+
+        // Array to store offline queries
+        List&lt;int[]&gt; offlineQueries = new List&lt;int[]&gt;();
+
+        // Sort the array of numbers
+        nums.Sort();
+
+        // Convert queries to offline queries and store them in an array
+        for (int index = 0; index &lt; queries.Count; index++)
+        {
+            offlineQueries.Add(new int[] { queries[index][1], queries[index][0], index });
+        }
+
+        // Sort queries based on their end points
+        offlineQueries.Sort((a, b) =&gt; a[0].CompareTo(b[0]));
+
+        int i = 0;
+        Trie trie = new Trie();
+
+        // Process each query
+        foreach (int[] query in offlineQueries)
+        {
+            // Insert numbers 
+            while (i &lt; nums.Count &amp;&amp; nums[i] &lt;= query[0])
+            {
+                trie.Insert(nums[i]);
+                i++;
+            }
+
+            /* If there are numbers inserted into the trie, 
+               find the maximum XOR value for the query range */
+            if (i != 0)
+            {
+                ans[query[2]] = trie.FindMax(query[1]);
+            }
+            else
+            {
+                ans[query[2]] = -1;
+            }
+        }
+
+        // Return results
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Node Structure for Trie
+type Node struct {
+	links [2]*Node
+}
+
+// Function to check if the node contains the key (0 or 1)
+func (n *Node) containsKey(ind int) bool {
+	return n.links[ind] != nil
+}
+
+// Function to get the node at the specific index (0 or 1)
+func (n *Node) get(ind int) *Node {
+	return n.links[ind]
+}
+
+// Function to put a node at the specific index (0 or 1)
+func (n *Node) put(ind int, node *Node) {
+	n.links[ind] = node
+}
+
+// Trie data structure to handle insert and findMax
+type Trie struct {
+	root *Node
+}
+
+// Constructor for Trie
+func NewTrie() *Trie {
+	return &amp;Trie{
+		root: &amp;Node{},
+	}
+}
+
+// Function to insert a number into the Trie
+func (t *Trie) insert(num int) {
+	node := t.root
+	for i := 31; i &gt;= 0; i-- {
+		bit := (num &gt;&gt; i) &amp; 1
+		if !node.containsKey(bit) {
+			node.put(bit, &amp;Node{})
+		}
+		node = node.get(bit)
+	}
+}
+
+// Function to find the maximum XOR for a given number
+func (t *Trie) findMax(num int) int {
+	node := t.root
+	maxNum := 0
+	for i := 31; i &gt;= 0; i-- {
+		bit := (num &gt;&gt; i) &amp; 1
+		if node.containsKey(1-bit) {
+			maxNum |= (1 &lt;&lt; i)
+			node = node.get(1 - bit)
+		} else {
+			node = node.get(bit)
+		}
+	}
+	return maxNum
+}
+
+// Function to handle the maximize XOR queries
+func maximizeXor(nums []int, queries [][]int) []int {
+	// Vector to store results of queries
+	ans := make([]int, len(queries))
+
+	// Vector to store offline queries
+	offlineQueries := make([]struct {
+		end   int
+		start int
+		index int
+	}, len(queries))
+
+	// Sort the array of numbers
+	sort.Ints(nums)
+
+	// Convert queries to offline queries and store them in a vector
+	for index, query := range queries {
+		offlineQueries[index] = struct {
+			end   int
+			start int
+			index int
+		}{query[1], query[0], index} // query = {end, start}
+	}
+
+	// Sort queries based on their end points
+	sort.Slice(offlineQueries, func(i, j int) bool {
+		return offlineQueries[i].end &lt; offlineQueries[j].end
+	})
+
+	// Initialize the trie and index for nums
+	trie := NewTrie()
+	i := 0
+	n := len(nums)
+
+	// Process each query
+	for _, query := range offlineQueries {
+		end := query.end
+		start := query.start
+		index := query.index
+
+		// Insert numbers into the trie until the current number is less than or equal to end
+		for i &lt; n &amp;&amp; nums[i] &lt;= end {
+			trie.insert(nums[i])
+			i++
+		}
+
+		// If numbers have been inserted into the trie, find the maximum XOR for the query range
+		if i &gt; 0 {
+			ans[index] = trie.findMax(start)
+		} else {
+			ans[index] = -1
+		}
+	}
+
+	// Return the results
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Node {
+    Node[] links = new Node[2];
+
+    boolean containsKey(int ind) {
+        return links[ind] != null;
+    }
+
+    Node get(int ind) {
+        return links[ind];
+    }
+
+    void put(int ind, Node node) {
+        links[ind] = node;
+    }
+}
+
+class Trie {
+    private Node root;
+
+    // Constructor
+    Trie() {
+        root = new Node();
+    }
+
+    // Function to insert a number into the trie
+    void insert(int num) {
+        // Start traversal
+        Node node = root;
+
+        /* Traverse each bit of the number 
+           from the most significant bit to the 
+           least significant bit */
+        for (int i = 31; i &gt;= 0; i--) {
+            int bit = (num &gt;&gt; i) &amp; 1;
+
+            /* If the current node doesn&#x27;t have 
+               a child node at the current bit, 
+               create one */
+            if (!node.containsKey(bit)) {
+                node.put(bit, new Node());
+            }
+
+            /* Move to the child node
+               corresponding to the 
+               current bit */
+            node = node.get(bit);
+        }
+    }
+
+    // Function to find maximum XOR
+    int findMax(int num) {
+        Node node = root;
+        int maxNum = 0;
+
+        /* Traverse each bit of the number from 
+           the most significant bit to the least 
+           significant bit extract the i-th 
+           bit of the number.
+           If there exists a different bit 
+           in the trie at the current 
+           position, choose it to maximize XOR */
+        for (int i = 31; i &gt;= 0; i--) {
+            int bit = (num &gt;&gt; i) &amp; 1;
+
+            if (node.containsKey(1 - bit)) {
+                maxNum = maxNum | (1 &lt;&lt; i);
+                node = node.get(1 - bit);
+            } else {
+                node = node.get(bit);
+            }
+        }
+
+        // Return maximum XOR value
+        return maxNum;
+    }
+}
+
+// Solution class to handle queries
+class Solution {
+    // Function to handle the maximize XOR queries
+    public List&lt;Integer&gt; maximizeXor(int[] nums, int[][] queries) {
+        // Initialize array to store results of queries
+        int[] ans = new int[queries.length];
+
+        // List to store offline queries
+        List&lt;int[]&gt; offlineQueries = new ArrayList&lt;&gt;();
+
+        // Sort the array of numbers
+        Arrays.sort(nums);
+
+        // Convert queries to offline queries and store them in a list
+        for (int i = 0; i &lt; queries.length; i++) {
+            offlineQueries.add(new int[]{queries[i][1], queries[i][0], i});
+        }
+
+        // Sort queries based on their end points
+        offlineQueries.sort(Comparator.comparingInt(a -&gt; a[0]));
+
+        int i = 0;
+        Trie trie = new Trie();
+
+        // Process each query
+        for (int[] query : offlineQueries) {
+            // Insert numbers 
+            while (i &lt; nums.length &amp;&amp; nums[i] &lt;= query[0]) {
+                trie.insert(nums[i]);
+                i++;
+            }
+
+            /* If there are numbers inserted into the trie, 
+               find the maximum XOR value for the query range */
+            if (i != 0)
+                ans[query[2]] = trie.findMax(query[1]);
+            else
+                ans[query[2]] = -1;
+        }
+
+        // Return results
+        List&lt;Integer&gt; result = new ArrayList&lt;&gt;();
+        for (int val : ans) {
+            result.add(val);
+        }
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Node {
+    constructor() {
+        this.links = [null, null];
+    }
+
+    containsKey(ind) {
+        return this.links[ind] !== null;
+    }
+
+    get(ind) {
+        return this.links[ind];
+    }
+
+    put(ind, node) {
+        this.links[ind] = node;
+    }
+}
+
+// Definition for Trie data structure
+class Trie {
+    constructor() {
+        // Initialize root node
+        this.root = new Node();
+    }
+
+    // Function to insert a number into the trie
+    insert(num) {
+        // Start traversal
+        let node = this.root;
+
+        /* Traverse each bit of the number 
+           from the most significant bit to the 
+           least significant bit */
+        for (let i = 31; i &gt;= 0; i--) {
+            const bit = (num &gt;&gt; i) &amp; 1;
+
+            /* If the current node doesn&#x27;t have 
+               a child node at the current bit, 
+               create one */
+            if (!node.containsKey(bit)) {
+                node.put(bit, new Node());
+            }
+
+            /* Move to the child node
+               corresponding to the 
+               current bit */
+            node = node.get(bit);
+        }
+    }
+
+    // Function to find maximum XOR
+    findMax(num) {
+        let node = this.root;
+        let maxNum = 0;
+
+        /* Traverse each bit of the number from 
+           the most significant bit to the least 
+           significant bit extract the i-th 
+           bit of the number.
+           If there exists a different bit 
+           in the trie at the current 
+           position, choose it to maximize XOR */
+        for (let i = 31; i &gt;= 0; i--) {
+            const bit = (num &gt;&gt; i) &amp; 1;
+
+            if (node.containsKey(1 - bit)) {
+                maxNum = maxNum | (1 &lt;&lt; i);
+                node = node.get(1 - bit);
+            } else {
+                node = node.get(bit);
+            }
+        }
+
+        // Return maximum XOR value
+        return maxNum;
+    }
+}
+
+// Solution class to handle queries
+class Solution {
+    // Function to handle the maximize XOR queries
+    maximizeXor(nums, queries) {
+        // Initialize array to store results of queries
+        const ans = new Array(queries.length).fill(0);
+
+        // Array to store offline queries
+        const offlineQueries = [];
+
+        // Sort the array of numbers
+        nums.sort((a, b) =&gt; a - b);
+
+        // Convert queries to offline queries and store them in an array
+        queries.forEach((query, index) =&gt; {
+            offlineQueries.push([query[1], query[0], index]);
+        });
+
+        // Sort queries based on their end points
+        offlineQueries.sort((a, b) =&gt; a[0] - b[0]);
+
+        let i = 0;
+        const trie = new Trie();
+
+        // Process each query
+        offlineQueries.forEach(query =&gt; {
+            // Insert numbers 
+            while (i &lt; nums.length &amp;&amp; nums[i] &lt;= query[0]) {
+                trie.insert(nums[i]);
+                i++;
+            }
+
+            /* If there are numbers inserted into the trie, 
+               find the maximum XOR value for the query range */
+            if (i !== 0) {
+                ans[query[2]] = trie.findMax(query[1]);
+            } else {
+                ans[query[2]] = -1;
+            }
+        });
+
+        // Return results
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Node:
+    def __init__(self):
+        # Initialize child links (0 and 1)
+        self.links = [None, None]
+
+    # Check if a child node exists at a given index (0 or 1)
+    def contains_key(self, ind):
+        return self.links[ind] is not None
+
+    # Get the child node at a given index (0 or 1)
+    def get(self, ind):
+        return self.links[ind]
+
+    # Set the child node at a given index (0 or 1)
+    def put(self, ind, node):
+        self.links[ind] = node
+
+# Definition for Trie data structure
+class Trie:
+    def __init__(self):
+        # Initialize root node
+        self.root = Node()
+
+    # Function to insert a number into the trie
+    def insert(self, num):
+        # Start traversal
+        node = self.root
+
+        # Traverse each bit of the number
+        for i in range(31, -1, -1):
+            bit = (num &gt;&gt; i) &amp; 1
+
+            # If the current node doesn&#x27;t have a child node at the current bit, create one
+            if not node.contains_key(bit):
+                node.put(bit, Node())
+
+            # Move to the child node corresponding to the current bit
+            node = node.get(bit)
+
+    # Function to find the maximum XOR value achievable with a given number
+    def find_max(self, num):
+        node = self.root
+        max_num = 0
+
+        # Traverse each bit of the number
+        for i in range(31, -1, -1):
+            bit = (num &gt;&gt; i) &amp; 1
+
+            # If there exists a different bit in the trie at the current position, choose it to maximize XOR
+            if node.contains_key(1 - bit):
+                max_num = max_num | (1 &lt;&lt; i)
+                node = node.get(1 - bit)
+            else:
+                node = node.get(bit)
+
+        # Return the maximum XOR value
+        return max_num
+
+# Solution class to handle queries
+class Solution:
+    # Function to handle the maximize XOR queries
+    def maximizeXor(self, nums, queries):
+        # Initialize list to store results of queries
+        ans = [0] * len(queries)
+
+        # List to store offline queries
+        offline_queries = []
+
+        # Sort the array of numbers
+        nums.sort()
+
+        # Convert queries to offline queries and store them in a list
+        for index, query in enumerate(queries):
+            offline_queries.append((query[1], query[0], index))
+
+        # Sort queries based on their end points
+        offline_queries.sort()
+
+        i = 0
+        trie = Trie()
+
+        # Process each query
+        for m, x, query_index in offline_queries:
+            # Insert numbers into the trie until the current query&#x27;s end point
+            while i &lt; len(nums) and nums[i] &lt;= m:
+                trie.insert(nums[i])
+                i += 1
+
+            # If there are numbers inserted into the trie, find the maximum XOR value for the query range
+            if i != 0:
+                ans[query_index] = trie.find_max(x)
+            else:
+                ans[query_index] = -1
+
+        # Return results
+        return ans</code></pre></div>
+</body>
+</html>

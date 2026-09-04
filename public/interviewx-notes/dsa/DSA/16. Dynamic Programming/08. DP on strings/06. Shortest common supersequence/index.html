@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shortest common supersequence</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Shortest common supersequence</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span><span>String</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two strings str1 and str2, find the <strong>shortest common supersequence</strong>.</p><p><br></p><p>The shortest common supersequence is the shortest string that contains both str1 and str2 as subsequences.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= str1.length, str2.length <= 1000</li><li>str1 and str2 consist of lowercase English letters.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input: </strong>str1 = "mno", str2 = "nop"</p><p><strong>Output:</strong> "mnop"</p><p><strong>Explanation:</strong> The shortest common supersequence is "mnop". It contains "mno" as the first three characters and "nop" as the last three characters, thus including both strings as subsequences.</p><h3>Example 2</h3><p><strong>Input:</strong> str1 = "dynamic", str2 = "program"</p><p><strong>Output:</strong> "dynprogramic"</p><p><strong>Explanation:</strong> The shortest common supersequence is "<span style="color: rgb(245, 245, 245);">dynprogramic</span>". It includes all characters from both "dynamic" and "program", with minimal overlap. For example, "dynamic" appears as "dyn...amic" and "program" appears as "...program..." within "<span style="color: rgb(245, 245, 245);">dynprogramic</span>".</p><h3>Example 3</h3><p><strong>Input:</strong> str1 = "apple", str2 = "orange"</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The concept of finding the shortest common supersequence, as this problem explores, has applications in the field of bioinformatics. It is used in DNA sequence alignment, which is a way of arranging the sequences of DNA, RNA, or protein to identify regions of similarity. These methods are used to explore functional, structural, or evolutionary relationships between the sequences. In software development, algorithms solving this problem are used in applications that aim to align, compare, and analyze genetic material.</p></div>
+<div class="section"><h2>Editorial: Tabulation </h2><html><head></head><body><h3><strong>Intuition:</strong></h3>
+<p>If we keep the “shortest” criteria aside, what can be a way to generate a supersequence given two strings. One easy way is to concat the given strings (write one after the other), this will always give us a supersequence for any pair of given strings.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-cdEJXfGj">
+
+<p>This can be said as the worst case with time complexity of O(n+m), where n and are the lengths of strings str1 and str2 respectively.</p>
+
+<h5><strong>How can we improve the naive approach:</strong></h5>
+
+<p>If we observe, there are some common characters that we can avoid writing for both the strings separately. These common characters can’t be all the common characters. They are the characters that are common and come in the same order. In other words, they are the characters of the longest common subsequence. </p>
+
+<p>In an optimum solution, the characters of the longest common subsequence are written only once and other characters are placed around them. For every character that belongs to the longest common subsequence, the non-lcs characters coming before them in the strings S1 and S2 are placed before the lcs-character in the answer string. The below figure explains this:</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-MvJHh9oo">
+
+<h5><strong>Length of Shortest Common Supersequence(lcs):</strong></h5>
+<p>From the explanation above, we can see that characters of lcs need to be covered only once. Therefore, the length of the shortest Common supersequence = n + m -k, where (n and m are lengths of str1 and str2, and k is the length of the lcs string).</p>
+
+<h5><strong>Finding the supersequence string:</strong></h5>
+
+<p>Now, instead of the length, we are interested in finding the shortest supersequence string itself.</p>
+<p>When we form the DP table to calculate the <a href="/plus/dsa/problems/longest-common-subsequence?category=dynamic-programming&subcategory=dp-on-strings" target="blank">longest common subsequence</a>, we have all the information of characters that are coming in the lcs string and characters that don’t. We use this same DP table to form the shortest common supersequence.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-dqLcPqO2" width="350">
+
+<p>To frame the string, we need to understand how the dp table was formed and work in the reverse process.</p>
+
+<p>Now, let us see what were the conditions that we used while forming the dp array:</p>
+<ol>
+<li>If(str1[i-1] == str2[j-1]), then return 1 + dp[i-1][j-1]</li>
+<li>If(str1[i-1] != str22[j-1]) , then return 0 + max(dp[i-1][j],dp[i][j-1])</li></ol>
+
+<h3><strong>Approach: </strong></h3>
+<p>We will start from the right-most cell of the dp array, initially i=n and j=m. To form the string, we will work in a reverse manner.</p>
+<ol>
+<li>If(str1[i-1] == str2[j-1]), this means the character is an lcs character and needs to be included only once from both the strings, so we add it to the ans string and reduce both i and j by 1. We reduce them simultaneously to make sure the character is counted only once.</li>
+<li>If(str1[i-1] != str2[j-1]), this means that the character is a non-lcs character and then we move the pointer to the top cell or left cell depending on which is greater. This way non-lcs characters will be included separately in the right order.</li></ol>
+<h5><strong>The algorithm steps are stated below:</strong></h5>
+<ol>
+We start from cell dp[n][m]. Initially i=n and j=m.
+<li>At every cell, we will check if S1[i-1] == S2[j-1], if it is then it means this character is a part of the longest common subsequence. So we will push it to the ans string str. Then we will move to the diagonally top-left(↖)  cell by assigning i to i-1 and j to j-1.
+</li><li>Else, this character is not a part of the longest common subsequence so we include it in ans string. Originally this cell got its value from its left cell (←) or from its top cell (↑). Whichever cell’s value will be more of the two, we will move to that cell.
+</li><li>We will continue till i>0 and j>0, failing it we will break from the loop.
+</li><li>After breaking, either i>0 or j>0 (only one condition will fail to break from the while loop), if(i>0) we push all the characters from S1 to ans string, else if(j>0), we push all the remaining characters from S2.
+</li><li>At last, we reverse the ‘ans’ string and we get our answer.</li></ol>
+
+<h3><strong>Dry Run:</strong></h3>
+<ol>
+<p>In the beginning i=5 and j=5.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-q7tXX-J4" width="350"><br>
+
+<li> As S1[4] != S2[4], we move to the top cell(↑) as its value is greater than the left cell(←)  but before moving as we are leaving row 5(i=5) and will not return to it so we add S1[4] to our ans string.</li>
+<br><img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-uwXkYfD8" width="350"><br>
+<li> As S1[3] == S2[4], this is an lcs-character. We add the current character to the ans string(and move to i-1 and j-1 cell) i.e top-left(↖). Reducing i and j simultaneously helps in adding the lcs character only once in the ans string.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-5MGjUL0S" width="350"><br>
+<li> As S1[2] != S2[3], we move to the left cell(←) as its value is greater than or equal to the top cell(↑) but before moving as we are leaving column 4 (j=4) and will not return to it so we add S2[3] to our ans string. </li>
+<br><img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-qqsWcIuE" width="350"><br>
+
+<li>As S1[2] != S2[2], we move to the left cell(←) as its value is greater than or equal to the top cell(↑) but before moving as we are leaving column 3 (j=3) and will not return to it so we add S2[2] to our ans string.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-Sn9Yowce" width="350"><br>
+
+<li> As S1[2] != S2[1], we move to the top cell(↑) as its value is greater than the left cell(←)  but before moving as we are leaving row 3(i=3) and will not return to it so we add S1[2] to our ans string.</li>
+<br><img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-OUtqBdDe" width="350"><br>
+
+<li> As S1[1] == S2[1], this is an lcs-character. We add the current character to the ans string(and move to i-1 and j-1 cell) i.e top-left(↖).</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/--t39qeHV" width="350"><br>
+<li>  As S1[2] != S2[2], we move to the left cell(←) as its value is greater than or equal to the top cell(↑) but before moving as we are leaving column 1 (j=1) and will not return to it so we add S2[0] to our ans string.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Shortest common supersequence/-THFmSSoL" width="350"><br>
+
+<li> As j=0, we have reached the exit condition of the while loop, so we will break from it but still there are some characters left in the other string. We will simply add them in the ans string.
+
+</li><li> At last, we will return the reverse of the ans string as the final answer.</li></ol><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    //Function to fund the shortest common supersequence
+    string shortestCommonSupersequence(string str1, string str2) {
+        int n = str1.size();
+        int m = str2.size();
+
+        // Create a DP table with dimensions (n+1) x (m+1) initialized to 0
+        vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
+
+        // Initialize the first row and column of the DP table
+        for (int i = 0; i <= n; i++) {
+            dp[i][0] = 0;
+        }
+        for (int i = 0; i <= m; i++) {
+            dp[0][i] = 0;
+        }
+
+        // Fill the DP table
+        for (int ind1 = 1; ind1 <= n; ind1++) {
+            for (int ind2 = 1; ind2 <= m; ind2++) {
+                if (str1[ind1 - 1] == str2[ind2 - 1])
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1]; 
+                else
+                    dp[ind1][ind2] = max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]); 
+            }
+        }
+
+        // Reconstruct the shortest supersequence from the DP table
+        int len = dp[n][m];
+        int i = n;
+        int j = m;
+
+        int index = len - 1;
+        string ans = "";
+
+        // Build the shortest supersequence by backtracking
+        while (i > 0 && j > 0) {
+            if (str1[i - 1] == str2[j - 1]) {
+                ans += str1[i - 1]; 
+                index--;
+                i--;
+                j--;
+            } else if (dp[i - 1][j] > dp[i][j - 1]) {
+                ans += str1[i - 1]; 
+                i--;
+            } else {
+                ans += str2[j - 1]; 
+                j--;
+            }
+        }
+
+        // Add remaining characters from str1 or str2
+        while (i > 0) {
+            ans += str1[i - 1];
+            i--;
+        }
+        while (j > 0) {
+            ans += str2[j - 1];
+            j--;
+        }
+
+        // Reverse the result since we built it backwards
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
+};
+
+int main() {
+    string s1 = "brute";
+    string s2 = "groot";
+    
+    // Create an instance of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Longest Common Supersequence is " << sol.shortestCommonSupersequence(s1, s2);
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the shortest common supersequence
+    public String shortestCommonSupersequence(String str1, String str2) {
+        int n = str1.length();
+        int m = str2.length();
+
+        // Create a DP table initialized to 0
+        int[][] dp = new int[n + 1][m + 1];
+
+        // Initialize the first row and column of DP table
+        for (int i = 0; i <= n; i++) {
+            dp[i][0] = 0;
+        }
+        for (int i = 0; i <= m; i++) {
+            dp[0][i] = 0;
+        }
+
+        // Fill the DP table
+        for (int ind1 = 1; ind1 <= n; ind1++) {
+            for (int ind2 = 1; ind2 <= m; ind2++) {
+                if (str1.charAt(ind1 - 1) == str2.charAt(ind2 - 1))
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1];
+                else
+                    dp[ind1][ind2] = Math.max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]);
+            }
+        }
+
+        // Reconstruct the shortest supersequence from DP table
+        int len = dp[n][m];
+        int i = n;
+        int j = m;
+
+        int index = len - 1;
+        StringBuilder ans = new StringBuilder();
+
+        // Build the shortest supersequence by backtracking
+        while (i > 0 && j > 0) {
+            if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+                ans.append(str1.charAt(i - 1));
+                index--;
+                i--;
+                j--;
+            } else if (dp[i - 1][j] > dp[i][j - 1]) {
+                ans.append(str1.charAt(i - 1));
+                i--;
+            } else {
+                ans.append(str2.charAt(j - 1));
+                j--;
+            }
+        }
+
+        // Add remaining characters from str1 or str2
+        while (i > 0) {
+            ans.append(str1.charAt(i - 1));
+            i--;
+        }
+        while (j > 0) {
+            ans.append(str2.charAt(j - 1));
+            j--;
+        }
+
+        // Reverse the result since we built it backwards
+        ans.reverse();
+        return ans.toString();
+    }
+
+    public static void main(String[] args) {
+        String s1 = "brute";
+        String s2 = "groot";
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Longest Common Supersequence is " + sol.shortestCommonSupersequence(s1, s2));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the shortest common supersequence
+    def shortestCommonSupersequence(self, str1, str2):
+        n = len(str1)
+        m = len(str2)
+
+        # Create a DP table initialized to 0
+        dp = [[0] * (m + 1) for _ in range(n + 1)]
+
+        # Initialize the first row and column of the DP table
+        for i in range(n + 1):
+            dp[i][0] = 0
+        for i in range(m + 1):
+            dp[0][i] = 0
+
+        # Fill the DP table
+        for ind1 in range(1, n + 1):
+            for ind2 in range(1, m + 1):
+                if str1[ind1 - 1] == str2[ind2 - 1]:
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1]
+                else:
+                    dp[ind1][ind2] = max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1])
+
+        # Reconstruct the shortest supersequence from DP table
+        len_superseq = dp[n][m]
+        i = n
+        j = m
+
+        index = len_superseq - 1
+        ans = []
+
+        # Build the shortest supersequence by backtracking
+        while i > 0 and j > 0:
+            if str1[i - 1] == str2[j - 1]:
+                ans.append(str1[i - 1])
+                index -= 1
+                i -= 1
+                j -= 1
+            elif dp[i - 1][j] > dp[i][j - 1]:
+                ans.append(str1[i - 1])
+                i -= 1
+            else:
+                ans.append(str2[j - 1])
+                j -= 1
+
+        # Add remaining characters from str1 or str2
+        while i > 0:
+            ans.append(str1[i - 1])
+            i -= 1
+        while j > 0:
+            ans.append(str2[j - 1])
+            j -= 1
+
+        # Reverse the result since we built it backwards
+        ans.reverse()
+        return ''.join(ans)
+
+s1 = "brute"
+s2 = "groot"
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the result
+print(f"The Longest Common Supersequence is {sol.shortestCommonSupersequence(s1, s2)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the shortest common supersequence
+    shortestCommonSupersequence(str1, str2) {
+        let n = str1.length;
+        let m = str2.length;
+
+        // Create a DP table initialized to 0
+        let dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+
+        // Initialize the first row and column of DP table
+        for (let i = 0; i <= n; i++) {
+            dp[i][0] = 0;
+        }
+        for (let i = 0; i <= m; i++) {
+            dp[0][i] = 0;
+        }
+
+        // Fill the DP table
+        for (let ind1 = 1; ind1 <= n; ind1++) {
+            for (let ind2 = 1; ind2 <= m; ind2++) {
+                if (str1[ind1 - 1] === str2[ind2 - 1])
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1];
+                else
+                    dp[ind1][ind2] = Math.max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]);
+            }
+        }
+
+        // Reconstruct the shortest supersequence from DP table
+        let len = dp[n][m];
+        let i = n;
+        let j = m;
+
+        let index = len - 1;
+        let ans = "";
+
+        // Build the shortest supersequence by backtracking
+        while (i > 0 && j > 0) {
+            if (str1[i - 1] === str2[j - 1]) {
+                ans += str1[i - 1];
+                index--;
+                i--;
+                j--;
+            } else if (dp[i - 1][j] > dp[i][j - 1]) {
+                ans += str1[i - 1];
+                i--;
+            } else {
+                ans += str2[j - 1];
+                j--;
+            }
+        }
+
+        // Add remaining characters from str1 or str2
+        while (i > 0) {
+            ans += str1[i - 1];
+            i--;
+        }
+        while (j > 0) {
+            ans += str2[j - 1];
+            j--;
+        }
+
+        // Reverse the result since we built it backwards
+        return ans.split('').reverse().join('');
+    }
+}
+
+let s1 = "brute";
+let s2 = "groot";
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Print the result
+console.log("The Longest Common Supersequence is " + sol.shortestCommonSupersequence(s1, s2));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Text;
+
+public class Solution {
+    // Function to find the shortest common supersequence
+    public string shortestCommonSupersequence(string str1, string str2) {
+        int n = str1.Length;
+        int m = str2.Length;
+
+        // Create a DP table initialized to 0
+        int[,] dp = new int[n + 1, m + 1];
+
+        // Fill the DP table
+        for (int i = 0; i <= n; i++) {
+            for (int j = 0; j <= m; j++) {
+                if (i == 0 || j == 0) {
+                    dp[i, j] = 0;
+                } else if (str1[i - 1] == str2[j - 1]) {
+                    dp[i, j] = 1 + dp[i - 1, j - 1];
+                } else {
+                    dp[i, j] = Math.Max(dp[i - 1, j], dp[i, j - 1]);
+                }
+            }
+        }
+
+        // Reconstruct the shortest supersequence from DP table
+        int i = n;
+        int j = m;
+        StringBuilder ans = new StringBuilder();
+
+        // Build the shortest supersequence by backtracking
+        while (i > 0 && j > 0) {
+            if (str1[i - 1] == str2[j - 1]) {
+                ans.Append(str1[i - 1]);
+                i--;
+                j--;
+            } else if (dp[i - 1, j] > dp[i, j - 1]) {
+                ans.Append(str1[i - 1]);
+                i--;
+            } else {
+                ans.Append(str2[j - 1]);
+                j--;
+            }
+        }
+
+        // Add remaining characters from str1 or str2
+        while (i > 0) {
+            ans.Append(str1[i - 1]);
+            i--;
+        }
+        while (j > 0) {
+            ans.Append(str2[j - 1]);
+            j--;
+        }
+
+        // Reverse the result since we built it backwards
+        char[] resultArray = ans.ToString().ToCharArray();
+        Array.Reverse(resultArray);
+        return new string(resultArray);
+    }
+}
+
+public class Program {
+    public static void Main(string[] args) {
+        // Read input strings
+        string s1 = Console.ReadLine();
+        string s2 = Console.ReadLine();
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Shortest Common Supersequence is " + sol.shortestCommonSupersequence(s1, s2));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to find the shortest common supersequence
+func shortestCommonSupersequence(str1, str2 string) string {
+	n := len(str1)
+	m := len(str2)
+
+	// Create a DP table with dimensions (n+1) x (m+1) initialized to 0
+	dp := make([][]int, n+1)
+	for i := range dp {
+		dp[i] = make([]int, m+1)
+	}
+
+	// Fill the DP table
+	for ind1 := 1; ind1 <= n; ind1++ {
+		for ind2 := 1; ind2 <= m; ind2++ {
+			if str1[ind1-1] == str2[ind2-1] {
+				dp[ind1][ind2] = 1 + dp[ind1-1][ind2-1]
+			} else {
+				if dp[ind1-1][ind2] > dp[ind1][ind2-1] {
+					dp[ind1][ind2] = dp[ind1-1][ind2]
+				} else {
+					dp[ind1][ind2] = dp[ind1][ind2-1]
+				}
+			}
+		}
+	}
+
+	// Reconstruct the shortest supersequence from the DP table
+	i, j := n, m
+	ans := ""
+
+	// Build the shortest supersequence by backtracking
+	for i > 0 && j > 0 {
+		if str1[i-1] == str2[j-1] {
+			ans += string(str1[i-1])
+			i--
+			j--
+		} else if dp[i-1][j] > dp[i][j-1] {
+			ans += string(str1[i-1])
+			i--
+		} else {
+			ans += string(str2[j-1])
+			j--
+		}
+	}
+
+	// Add remaining characters from str1 or str2
+	for i > 0 {
+		ans += string(str1[i-1])
+		i--
+	}
+	for j > 0 {
+		ans += string(str2[j-1])
+		j--
+	}
+
+	// Reverse the result since we built it backwards
+	ansRunes := []rune(ans)
+	for l, r := 0, len(ansRunes)-1; l < r; l, r = l+1, r-1 {
+		ansRunes[l], ansRunes[r] = ansRunes[r], ansRunes[l]
+	}
+
+	return string(ansRunes)
+}
+
+func main() {
+	s1 := "brute"
+	s2 := "groot"
+
+	// Print the result
+	fmt.Println("The Longest Common Supersequence is", shortestCommonSupersequence(s1, s2))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity: </strong> O(N*M), Where N is the length of string str1 and M is the length of string str2. As there are two nested loops, the time complexity will be O(N*M).<br><br>
+
+<strong>Space Complexity:  </strong>O(N*M), We are using an external array of size (N*M).</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    //Function to fund the shortest common supersequence
+    string shortestCommonSupersequence(string str1, string str2) {
+        int n = str1.size();
+        int m = str2.size();
+
+        // Create a DP table with dimensions (n+1) x (m+1) initialized to 0
+        vector&lt;vector&lt;int&gt;&gt; dp(n + 1, vector&lt;int&gt;(m + 1, 0));
+
+        // Initialize the first row and column of the DP table
+        for (int i = 0; i &lt;= n; i++) {
+            dp[i][0] = 0;
+        }
+        for (int i = 0; i &lt;= m; i++) {
+            dp[0][i] = 0;
+        }
+
+        // Fill the DP table
+        for (int ind1 = 1; ind1 &lt;= n; ind1++) {
+            for (int ind2 = 1; ind2 &lt;= m; ind2++) {
+                if (str1[ind1 - 1] == str2[ind2 - 1])
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1]; 
+                else
+                    dp[ind1][ind2] = max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]); 
+            }
+        }
+
+        // Reconstruct the shortest supersequence from the DP table
+        int len = dp[n][m];
+        int i = n;
+        int j = m;
+
+        int index = len - 1;
+        string ans = &quot;&quot;;
+
+        // Build the shortest supersequence by backtracking
+        while (i &gt; 0 &amp;&amp; j &gt; 0) {
+            if (str1[i - 1] == str2[j - 1]) {
+                ans += str1[i - 1]; 
+                index--;
+                i--;
+                j--;
+            } else if (dp[i - 1][j] &gt; dp[i][j - 1]) {
+                ans += str1[i - 1]; 
+                i--;
+            } else {
+                ans += str2[j - 1]; 
+                j--;
+            }
+        }
+
+        // Add remaining characters from str1 or str2
+        while (i &gt; 0) {
+            ans += str1[i - 1];
+            i--;
+        }
+        while (j &gt; 0) {
+            ans += str2[j - 1];
+            j--;
+        }
+
+        // Reverse the result since we built it backwards
+        reverse(ans.begin(), ans.end());
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    public string shortestCommonSupersequence(string str1, string str2) {
+        // Your code goes here
+        // This is a common dynamic programming approach
+        // Find the length of the Longest Common Subsequence (LCS) first
+
+        int n = str1.Length;
+        int m = str2.Length;
+
+        // dp[i,j] stores the length of LCS of str1[0..i-1] and str2[0..j-1]
+        int[,] dp = new int[n + 1, m + 1];
+
+        for (int i = 0; i &lt;= n; i++) {
+            for (int j = 0; j &lt;= m; j++) {
+                if (i == 0 || j == 0) {
+                    dp[i, j] = 0;
+                } else if (str1[i - 1] == str2[j - 1]) {
+                    dp[i, j] = 1 + dp[i - 1, j - 1];
+                } else {
+                    dp[i, j] = Math.Max(dp[i - 1, j], dp[i, j - 1]);
+                }
+            }
+        }
+
+        // Reconstruct the Shortest Common Supersequence (SCS)
+        // We build the string backwards from the DP table
+
+        int i_scs = n;
+        int j_scs = m;
+        System.Text.StringBuilder result = new System.Text.StringBuilder();
+
+        while (i_scs &gt; 0 &amp;&amp; j_scs &gt; 0) {
+            if (str1[i_scs - 1] == str2[j_scs - 1]) {
+                // If characters match, they are part of LCS and SCS. Append one and move diagonally.
+                result.Append(str1[i_scs - 1]);
+                i_scs--;
+                j_scs--;
+            } else if (dp[i_scs - 1, j_scs] &gt; dp[i_scs, j_scs - 1]) {
+                // If dp[i-1][j] is greater, it means str1[i-1] was not included in the LCS path
+                // from str2[0..j-1]. So, str1[i-1] must be included in SCS.
+                result.Append(str1[i_scs - 1]);
+                i_scs--;
+            } else {
+                 // If dp[i][j-1] is greater or equal, str2[j-1] was not included in LCS path
+                 // from str1[0..i-1]. Include str2[j-1] in SCS.
+                result.Append(str2[j_scs - 1]);
+                j_scs--;
+            }
+        }
+
+        // Append any remaining characters from str1 or str2
+        // These are characters not part of the LCS that haven&#x27;t been added yet
+
+        while (i_scs &gt; 0) {
+            result.Append(str1[i_scs - 1]);
+            i_scs--;
+        }
+
+        while (j_scs &gt; 0) {
+            result.Append(str2[j_scs - 1]);
+            j_scs--;
+        }
+
+        // The string was built backwards during reconstruction, reverse it
+        char[] resultArray = result.ToString().ToCharArray();
+        Array.Reverse(resultArray); // Use Array.Reverse on the char array
+        return new string(resultArray); // Convert the char array back to a string
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the shortest common supersequence
+func shortestCommonSupersequence(str1, str2 string) string {
+	n := len(str1)
+	m := len(str2)
+
+	// Create a DP table with dimensions (n+1) x (m+1) initialized to 0
+	dp := make([][]int, n+1)
+	for i := range dp {
+		dp[i] = make([]int, m+1)
+	}
+
+	// Fill the DP table
+	for ind1 := 1; ind1 &lt;= n; ind1++ {
+		for ind2 := 1; ind2 &lt;= m; ind2++ {
+			if str1[ind1-1] == str2[ind2-1] {
+				dp[ind1][ind2] = 1 + dp[ind1-1][ind2-1]
+			} else {
+				if dp[ind1-1][ind2] &gt; dp[ind1][ind2-1] {
+					dp[ind1][ind2] = dp[ind1-1][ind2]
+				} else {
+					dp[ind1][ind2] = dp[ind1][ind2-1]
+				}
+			}
+		}
+	}
+
+	// Reconstruct the shortest supersequence from the DP table
+	i, j := n, m
+	ans := &quot;&quot;
+
+	// Build the shortest supersequence by backtracking
+	for i &gt; 0 &amp;&amp; j &gt; 0 {
+		if str1[i-1] == str2[j-1] {
+			ans += string(str1[i-1])
+			i--
+			j--
+		} else if dp[i-1][j] &gt; dp[i][j-1] {
+			ans += string(str1[i-1])
+			i--
+		} else {
+			ans += string(str2[j-1])
+			j--
+		}
+	}
+
+	// Add remaining characters from str1 or str2
+	for i &gt; 0 {
+		ans += string(str1[i-1])
+		i--
+	}
+	for j &gt; 0 {
+		ans += string(str2[j-1])
+		j--
+	}
+
+	// Reverse the result since we built it backwards
+	ansRunes := []rune(ans)
+	for l, r := 0, len(ansRunes)-1; l &lt; r; l, r = l+1, r-1 {
+		ansRunes[l], ansRunes[r] = ansRunes[r], ansRunes[l]
+	}
+
+	return string(ansRunes)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to find the shortest common supersequence
+    public String shortestCommonSupersequence(String str1, String str2) {
+        int n = str1.length();
+        int m = str2.length();
+
+        // Create a DP table initialized to 0
+        int[][] dp = new int[n + 1][m + 1];
+
+        // Initialize the first row and column of DP table
+        for (int i = 0; i &lt;= n; i++) {
+            dp[i][0] = 0;
+        }
+        for (int i = 0; i &lt;= m; i++) {
+            dp[0][i] = 0;
+        }
+
+        // Fill the DP table
+        for (int ind1 = 1; ind1 &lt;= n; ind1++) {
+            for (int ind2 = 1; ind2 &lt;= m; ind2++) {
+                if (str1.charAt(ind1 - 1) == str2.charAt(ind2 - 1))
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1];
+                else
+                    dp[ind1][ind2] = Math.max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]);
+            }
+        }
+
+        // Reconstruct the shortest supersequence from DP table
+        int len = dp[n][m];
+        int i = n;
+        int j = m;
+
+        int index = len - 1;
+        StringBuilder ans = new StringBuilder();
+
+        // Build the shortest supersequence by backtracking
+        while (i &gt; 0 &amp;&amp; j &gt; 0) {
+            if (str1.charAt(i - 1) == str2.charAt(j - 1)) {
+                ans.append(str1.charAt(i - 1));
+                index--;
+                i--;
+                j--;
+            } else if (dp[i - 1][j] &gt; dp[i][j - 1]) {
+                ans.append(str1.charAt(i - 1));
+                i--;
+            } else {
+                ans.append(str2.charAt(j - 1));
+                j--;
+            }
+        }
+
+        // Add remaining characters from str1 or str2
+        while (i &gt; 0) {
+            ans.append(str1.charAt(i - 1));
+            i--;
+        }
+        while (j &gt; 0) {
+            ans.append(str2.charAt(j - 1));
+            j--;
+        }
+
+        // Reverse the result since we built it backwards
+        ans.reverse();
+        return ans.toString();
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the shortest common supersequence
+    shortestCommonSupersequence(str1, str2) {
+        let n = str1.length;
+        let m = str2.length;
+
+        // Create a DP table initialized to 0
+        let dp = Array.from({ length: n + 1 }, () =&gt; Array(m + 1).fill(0));
+
+        // Fill the DP table
+        for (let ind1 = 1; ind1 &lt;= n; ind1++) {
+            for (let ind2 = 1; ind2 &lt;= m; ind2++) {
+                if (str1[ind1 - 1] === str2[ind2 - 1])
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1];
+                else
+                    dp[ind1][ind2] = Math.max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]);
+            }
+        }
+
+        let i = n, j = m;
+        let ans = &#x27;&#x27;;
+
+        // Build the shortest supersequence by backtracking
+        while (i &gt; 0 &amp;&amp; j &gt; 0) {
+            if (str1[i - 1] === str2[j - 1]) {
+                ans += str1[i - 1];
+                i--;
+                j--;
+            } else if (dp[i - 1][j] &gt; dp[i][j - 1]) {
+                ans += str1[i - 1];
+                i--;
+            } else {
+                ans += str2[j - 1];
+                j--;
+            }
+        }
+
+        while (i &gt; 0) {
+            ans += str1[i - 1];
+            i--;
+        }
+        while (j &gt; 0) {
+            ans += str2[j - 1];
+            j--;
+        }
+
+        // Reverse the result since we built it backwards
+        return ans.split(&#x27;&#x27;).reverse().join(&#x27;&#x27;);
+    }
+}
+
+function shortestCommonSupersequencefunc(str1, str2) {
+    const n = str1.length;
+    const m = str2.length;
+
+    const dp = Array.from({ length: n + 1 }, () =&gt; Array(m + 1).fill(0));
+
+    for (let ind1 = 1; ind1 &lt;= n; ind1++) {
+        for (let ind2 = 1; ind2 &lt;= m; ind2++) {
+            if (str1[ind1 - 1] === str2[ind2 - 1]) {
+                dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1];
+            } else {
+                dp[ind1][ind2] = Math.max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]);
+            }
+        }
+    }
+
+    let i = n, j = m;
+    let ans = &#x27;&#x27;;
+
+    while (i &gt; 0 &amp;&amp; j &gt; 0) {
+        if (str1[i - 1] === str2[j - 1]) {
+            ans += str1[i - 1];
+            i--;
+            j--;
+        } else if (dp[i - 1][j] &gt; dp[i][j - 1]) {
+            ans += str1[i - 1];
+            i--;
+        } else {
+            ans += str2[j - 1];
+            j--;
+        }
+    }
+
+    while (i &gt; 0) {
+        ans += str1[i - 1];
+        i--;
+    }
+    while (j &gt; 0) {
+        ans += str2[j - 1];
+        j--;
+    }
+
+    return ans.split(&#x27;&#x27;).reverse().join(&#x27;&#x27;);
+}
+
+function isSubsequence(S1, S2) {
+    let i = 0, j = 0;
+
+    for (; i &lt; S1.length &amp;&amp; j &lt; S2.length; j++) {
+        if (S1[i] === S2[j]) {
+            i++;
+        }
+    }
+
+    return (i === S1.length);
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the shortest common supersequence
+    def shortestCommonSupersequence(self, str1, str2):
+        n = len(str1)
+        m = len(str2)
+
+        # Create a DP table initialized to 0
+        dp = [[0] * (m + 1) for _ in range(n + 1)]
+
+        # Initialize the first row and column of the DP table
+        for i in range(n + 1):
+            dp[i][0] = 0
+        for i in range(m + 1):
+            dp[0][i] = 0
+
+        # Fill the DP table
+        for ind1 in range(1, n + 1):
+            for ind2 in range(1, m + 1):
+                if str1[ind1 - 1] == str2[ind2 - 1]:
+                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1]
+                else:
+                    dp[ind1][ind2] = max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1])
+
+        # Reconstruct the shortest supersequence from DP table
+        len_superseq = dp[n][m]
+        i = n
+        j = m
+
+        index = len_superseq - 1
+        ans = []
+
+        # Build the shortest supersequence by backtracking
+        while i &gt; 0 and j &gt; 0:
+            if str1[i - 1] == str2[j - 1]:
+                ans.append(str1[i - 1])
+                index -= 1
+                i -= 1
+                j -= 1
+            elif dp[i - 1][j] &gt; dp[i][j - 1]:
+                ans.append(str1[i - 1])
+                i -= 1
+            else:
+                ans.append(str2[j - 1])
+                j -= 1
+
+        # Add remaining characters from str1 or str2
+        while i &gt; 0:
+            ans.append(str1[i - 1])
+            i -= 1
+        while j &gt; 0:
+            ans.append(str2[j - 1])
+            j -= 1
+
+        # Reverse the result since we built it backwards
+        ans.reverse()
+        return &#x27;&#x27;.join(ans)</code></pre></div>
+</body>
+</html>

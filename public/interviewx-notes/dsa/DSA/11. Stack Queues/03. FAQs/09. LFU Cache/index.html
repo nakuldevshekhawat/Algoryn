@@ -1,0 +1,2355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LFU Cache</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>LFU Cache</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Design</span><span>Doubly-Linked List</span><span>Hash Table</span><span>Linked List</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Design and implement a data structure for a <strong>Least Frequently Used (LFU) </strong>cache.</p><p><br></p><p>Implement the LFUCache class with the following functions:</p><p><br></p><p><strong>LFUCache(int capacity):</strong> Initialize the object with the specified capacity.</p><p><strong>int get(int key):</strong> Retrieve the value of the key if it exists in the cache; otherwise, return -1.</p><p><strong>void put(int key, int value):</strong> Update the value of the key if it is present in the cache, or insert the key if it is not already present. If the cache has reached its capacity, invalidate and remove the least frequently used key before inserting a new item. In case of a tie (i.e., two or more keys with the same frequency), invalidate the least recently used key.</p><p><br></p><p>A use counter is maintained for each key in the cache to determine the least frequently used key. The key with the smallest use counter is considered the least frequently used.</p><p><br></p><p>When a key is first inserted into the cache, its use counter is set to 1 due to the put operation. The use counter for a key in the cache is incremented whenever a get or put operation is called on it.</p><p><br></p><p>Ensure that the functions get and put run in <strong>O(1)</strong> average time complexity.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= capacity <= 10<sup>3</sup></li><li>0 <= key <= 10<sup>4</sup></li><li>0 <= value <= 10<sup>5</sup></li><li>At most 10<sup>5</sup> calls will be made to get and put.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input:</p><p>["LFUCache", "put", "put", "get", "put", "get", "get", "put", "get", "get", "get"]</p><p>[[2], [1, 1], [2, 2], [1], [3, 3], [2], [3], [4, 4], [1], [3], [4]]</p><p>Output:</p><p>[null, null, null, 1, null, -1, 3, null, -1, 3, 4]</p><p>Explanation:</p><p>// cnt(x) = the use counter for key x</p><p>// cache=[] will show the last used order for tiebreakers (leftmost element is most recent)</p><p>LFUCache lfu = new LFUCache(2);</p><p>lfu.put(1, 1);  // cache=[1,_], cnt(1)=1</p><p>lfu.put(2, 2);  // cache=[2,1], cnt(2)=1, cnt(1)=1</p><p>lfu.get(1);   // return 1</p><p>         // cache=[1,2], cnt(2)=1, cnt(1)=2</p><p>lfu.put(3, 3);  // 2 is the LFU key because cnt(2)=1 is the smallest, invalidate 2.</p><p>         // cache=[3,1], cnt(3)=1, cnt(1)=2</p><p>lfu.get(2);   // return -1 (not found)</p><p>lfu.get(3);   // return 3</p><p>         // cache=[3,1], cnt(3)=2, cnt(1)=2</p><p>lfu.put(4, 4);  // Both 1 and 3 have the same cnt, but 1 is LRU, invalidate 1.</p><p>         // cache=[4,3], cnt(4)=1, cnt(3)=2</p><p>lfu.get(1);   // return -1 (not found)</p><p>lfu.get(3);   // return 3</p><p>         // cache=[3,4], cnt(4)=1, cnt(3)=3</p><p>lfu.get(4);   // return 4</p><p>         // cache=[4,3], cnt(4)=2, cnt(3)=3</p><h3>Example 2</h3><p>Input:</p><p>["LFUCache", "put", "put", "put", "put", "put", "get", "get", "get", "get", "get"]</p><p>[[3], [5, 7], [4, 6], [3, 5], [2, 4], [1, 3], [1], [2], [3], [4], [5]]</p><p>Output:</p><p>[null, null, null, null, null, null, 3, 4, 5, -1, -1]</p><p>Explanation:</p><p>// cnt(x) = the use counter for key x</p><p>// cache=[] will show the last used order for tiebreakers (leftmost element is most recent)</p><p>LFUCache lfu = new LFUCache(3);</p><p>lfu.put(5, 7);  // cache=[5], cnt(5)=1</p><p>lfu.put(4, 6);  // cache=[4,5], cnt(4)=1, cnt(5)=1</p><p>lfu.put(3, 5);  // cache=[3,4,5], cnt(3)=1, cnt(4)=1, cnt(5)=1</p><p>lfu.put(2, 4);  // 5 is the LFU key because cnt(5)=1 is the smallest, invalidate 5.</p><p>         // cache=[2,3,4], cnt(2)=1, cnt(3)=1, cnt(4)=1</p><p>lfu.put(1, 3);  // 4 is the LFU key because cnt(4)=1 is the smallest, invalidate 4.</p><p>         // cache=[1,2,3], cnt(1)=1, cnt(2)=1, cnt(3)=1</p><p>lfu.get(1);   // return 3</p><p>         // cache=[1,2,3], cnt(1)=2, cnt(2)=1, cnt(3)=1</p><p>lfu.get(2);   // return 4</p><p>         // cache=[2,1,3], cnt(1)=2, cnt(2)=2, cnt(3)=1</p><p>lfu.get(3);   // return 5</p><p>         // cache=[3,2,1], cnt(1)=2, cnt(2)=2, cnt(3)=2</p><p>lfu.get(4);   // return -1 (not found)</p><p>lfu.get(5);   // return -1 (not found)</p><h3>Example 3</h3><p>Input:</p><p>["LFUCache", "put", "get", "put", "get", "get"]</p><p>[[1], [1, 10], [1], [2, 20], [1], [2]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The concept of a Least Frequently Used (LFU) cache, as represented in this problem, is routinely used in database systems, web browser caching, and operating systems for page replacement. The idea is to keep the most frequently accessed items in memory for faster retrieval. For instance, web browsers like Chrome or Firefox use LFU to cache web pages. When the cache is full, the least frequently viewed web pages are evicted to make room for new ones. This makes returning to frequently visited sites much faster.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><p><strong>Pre Requisites:</strong> <a href="/plus/dsa/problems/lru-cache?category=stack-and-queues&subcategory=faqs" target="_blank">LRU Cache</a></p>
+
+<h3>Intuition:</h3> 
+<p>
+   As the name suggests, the data items (key-value pairs) that are <strong>least</strong> frequently used will be removed from the cache memory. To mark the data items as recently used, a doubly linked list can be used. The most recently used data item will be placed in the front and the least recently used data item will be placed at the end of the doubly linked list. <br>
+   </p><h6>Why using a Doubly Linked List?</h6>
+   Because doubly linked list data structure makes the insertion and deletion operation on data items in constant time while making sure the order of data items remains. <br><br>
+
+   But in order to implement the <strong>get</strong> method for LFU cache, the searching operation will take linear time where each data-item needs to be checked. To improve the complexity of <strong>get</strong> method, a hashmap can be used to store the key and the address of node containing the key (if it exists). <br><br>
+
+   Also, to store the frequencies of different data-items. A Hashmap can be used to store the lists of data-items based on their frequenices. <br>
+
+   This way, the two methods can be implemented in constant time: 
+   <ul>
+       <li><strong>Get method:</strong> Using hashmap, it can be found whether a key exists in the doubly linked list. If it exists, the corresponding value can be returned using the address of node, otherwise, -1 can be returned.</li>
+       <li><strong>Put method:</strong> If the key exists in the doubly linked list, its value can be updated. Otherwise, if the cache limit is reached, the least frequently used data-item can be removed and the current key-value pair can be inserted.</li>
+   </ul>
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>The cache is initialized with a specified capacity. Dummy head and tail nodes are created for each list to simplify edge case handling.</li>
+   <li><strong>Updating Frequency:</strong>
+      <ul>
+         <li>When a node is accessed or updated, it is removed from its current frequency list.</li>
+         <li>If this node was the only node with the minimum frequency, the minimum frequency is incremented.</li>
+         <li>The node's frequency is incremented, and it is added to the front of the list corresponding to the new frequency.</li>
+         <li>Both hash maps are updated to reflect these changes.</li>
+      </ul>
+   </li>
+   <li><strong>Get Operation:</strong>
+      <ul>
+         <li>Check if the key exists in the keyNode map. </li>
+         <li>If present, retrieve the node, update its frequency, and return its value. If not present, return -1.</li>
+      </ul>
+   </li>
+   <li><strong>Put Operation:</strong>
+      <ul>
+         <li>Check if the key already exists in the keyNode map.</li>
+         <li>If present, update the node's value, update its frequency, and return. If not present, check if the cache has reached its maximum capacity.</li>
+         <li>If at capacity, remove the least frequently used node (the node in the list with the minimum frequency and the least recent usage).</li>
+         <li>Create a new node for the key-value pair, set its frequency to 1, and add it to the front of the frequency list for nodes with frequency 1. Update both hash maps to reflect the addition of the new node.</li>
+      </ul>
+   </li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/1.png-Y7W_TvdO" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/2.png-Jt__dL4K" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/3.png-KsjPJrc_" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/4.png-ISjNFGEP" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/5.png-5yjUwlMl" alt="Image 5"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/1.png-Y7W_TvdO" alt="Image 1"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/2.png-Jt__dL4K" alt="Image 2"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/3.png-KsjPJrc_" alt="Image 3"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/4.png-ISjNFGEP" alt="Image 4"><img src="https://static.takeuforward.org/premium/Stack and Queues/FAQs/LFU Cache/5.png-5yjUwlMl" alt="Image 5"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span><span>210</span><span>211</span><span>212</span><span>213</span><span>214</span><span>215</span><span>216</span><span>217</span><span>218</span><span>219</span><span>220</span><span>221</span><span>222</span><span>223</span><span>224</span><span>225</span><span>226</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* To implement a node in doubly linked 
+list that will store data items */
+struct Node {
+   int key, value, cnt;
+   Node *next; 
+   Node *prev;
+   Node(int _key, int _value) {
+       key = _key;
+       value = _value; 
+       cnt = 1; 
+   }
+}; 
+
+// To implement the doubly linked list
+struct List {
+   int size; // Size 
+   Node *head; // Dummy head
+   Node *tail; // Dummy tail
+   
+   // Constructor
+   List() {
+       head = new Node(0, 0); 
+       tail = new Node(0,0); 
+       head->next = tail;
+       tail->prev = head; 
+       size = 0;
+   }
+   
+   // Function to add node in front 
+   void addFront(Node *node) {
+       Node* temp = head->next;
+       node->next = temp;
+       node->prev = head;
+       head->next = node;
+       temp->prev = node;
+       size++; 
+   }
+   
+   // Function to remove node from the list
+   void removeNode(Node* delnode) {
+       Node* prevNode = delnode->prev;
+       Node* nextNode = delnode->next;
+       prevNode->next = nextNode;
+       nextNode->prev = prevNode;
+       size--; 
+   }
+};
+
+// Class to implement LFU cache
+class LFUCache {
+private:
+
+   // Hashmap to store the key-nodes pairs
+   map<int, Node*> keyNode; 
+   
+   /* Hashmap to maintain the lists 
+   having different frequencies */
+   map<int, List*> freqListMap; 
+   
+   int maxSizeCache; // Max size of cache
+   
+   /* To store the frequency of least 
+   frequently used data-item */
+   int minFreq; 
+   
+   // To store current size of cache
+   int curSize; 
+   
+public:
+
+   // Constructor
+   LFUCache(int capacity) {
+       // Set the capacity
+       maxSizeCache = capacity; 
+       minFreq = 0; // Set minimum frequency
+       curSize = 0; // Set current frequency
+   }
+   
+   // Method to update frequency of data-items
+   void updateFreqListMap(Node *node) {
+       
+       // Remove from Hashmap
+       keyNode.erase(node->key); 
+       
+       // Update the frequency list hashmap
+       freqListMap[node->cnt]->removeNode(node); 
+       
+       // If node was the last node having it's frequency
+       if(node->cnt == minFreq && 
+          freqListMap[node->cnt]->size == 0) {
+              
+           // Update the minimum frequency
+           minFreq++; 
+       }
+       
+       // Creating a dummy list for next higher frequency
+       List* nextHigherFreqList = new List();
+       
+       // If the next higher frequency list already exists
+       if(freqListMap.find(node->cnt + 1) != 
+          freqListMap.end()) {
+              
+           // Update pointer to already existing list
+           nextHigherFreqList = freqListMap[node->cnt + 1];
+       } 
+       
+       // Increment the count of data-item
+       node->cnt += 1; 
+       
+       // Add the node in front of higher frequency list
+       nextHigherFreqList->addFront(node); 
+       
+       // Update the 
+       freqListMap[node->cnt] = nextHigherFreqList; 
+       keyNode[node->key] = node;
+   }
+   
+   // Method to get the value of key from LFU cache
+   int get(int key) {
+       
+       // Return the value if key exists
+       if(keyNode.find(key) != keyNode.end()) {
+           Node* node = keyNode[key]; // Get the node
+           int val = node->value; // Get the value
+           updateFreqListMap(node); // Update the frequency
+           
+           // Return the value
+           return val; 
+       }
+       
+       // Return -1 if key is not found
+       return -1; 
+   }
+   
+   void put(int key, int value) {
+       /* If the size of Cache is 0, 
+       no data-items can be inserted */
+       if (maxSizeCache == 0) {
+           return;
+       }
+       
+       // If key already exists
+       if(keyNode.find(key) != keyNode.end()) {
+           
+           // Get the node
+           Node* node = keyNode[key]; 
+           
+           // Update the value
+           node->value = value; 
+           
+           // Update the frequency
+           updateFreqListMap(node); 
+       }
+       
+       // Else if the key does not exist
+       else {
+           
+           // If cache limit is reached
+           if(curSize == maxSizeCache) {
+               
+               // Remove the least frequently used data-item
+               List* list = freqListMap[minFreq]; 
+               keyNode.erase(list->tail->prev->key); 
+               
+               // Update the frequency map 
+               freqListMap[minFreq]->removeNode(
+                   list->tail->prev
+               );
+               
+               // Decrement the current size of cache
+               curSize--; 
+           }
+           
+           // Increment the current cache size
+           curSize++; 
+           
+           // Adding new value to the cache
+           minFreq = 1; // Set its frequency to 1
+           
+           // Create a dummy list
+           List* listFreq = new List(); 
+           
+           // If the list already exist
+           if(freqListMap.find(minFreq) != 
+              freqListMap.end()) {
+               
+               // Update the pointer to already present list
+               listFreq = freqListMap[minFreq]; 
+           }
+           
+           // Create the node to store data-item
+           Node* node = new Node(key, value); 
+           
+           // Add the node to dummy list
+           listFreq->addFront(node);
+           
+           // Add the node to Hashmap
+           keyNode[key] = node; 
+           
+           // Update the frequency list map 
+           freqListMap[minFreq] = listFreq; 
+       }
+   }
+};
+
+int main() {
+  // LFU Cache
+  LFUCache cache(2);
+
+  // Queries
+  cache.put(1, 1);
+  cache.put(2, 2);
+  cout << cache.get(1) << " ";
+  cache.put(3, 3);
+  cout << cache.get(2) << " ";
+  cout << cache.get(3) << " ";
+  cache.put(4, 4);
+  cout << cache.get(1) << " ";
+  cout << cache.get(3) << " ";
+  cout << cache.get(4) << " ";
+
+  return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.HashMap;
+import java.util.Map;
+
+/* To implement a node in doubly linked 
+list that will store data items */
+class Node {
+   int key, value, cnt;
+   Node next;
+   Node prev;
+   Node(int _key, int _value) {
+       key = _key;
+       value = _value;
+       cnt = 1;
+   }
+}
+
+// To implement the doubly linked list
+class List {
+   int size; // Size 
+   Node head; // Dummy head
+   Node tail; // Dummy tail
+   
+   // Constructor
+   List() {
+       head = new Node(0, 0);
+       tail = new Node(0, 0);
+       head.next = tail;
+       tail.prev = head;
+       size = 0;
+   }
+   
+   // Function to add node in front 
+   void addFront(Node node) {
+       Node temp = head.next;
+       node.next = temp;
+       node.prev = head;
+       head.next = node;
+       temp.prev = node;
+       size++;
+   }
+   
+   // Function to remove node from the list
+   void removeNode(Node delnode) {
+       Node prevNode = delnode.prev;
+       Node nextNode = delnode.next;
+       prevNode.next = nextNode;
+       nextNode.prev = prevNode;
+       size--;
+   }
+}
+
+// Class to implement LFU cache
+class LFUCache {
+   // Hashmap to store the key-nodes pairs
+   private Map<Integer, Node> keyNode;
+   
+   /* Hashmap to maintain the lists 
+   having different frequencies */
+   private Map<Integer, List> freqListMap;
+   
+   private int maxSizeCache; // Max size of cache
+   
+   /* To store the frequency of least 
+   frequently used data-item */
+   private int minFreq;
+   
+   // To store current size of cache
+   private int curSize;
+   
+   // Constructor
+   public LFUCache(int capacity) {
+       // Set the capacity
+       maxSizeCache = capacity;
+       minFreq = 0; // Set minimum frequency
+       curSize = 0; // Set current frequency
+       keyNode = new HashMap<>();
+       freqListMap = new HashMap<>();
+   }
+   
+   // Method to update frequency of data-items
+   private void updateFreqListMap(Node node) {
+       // Remove from Hashmap
+       keyNode.remove(node.key);
+       
+       // Update the frequency list hashmap
+       freqListMap.get(node.cnt).removeNode(node);
+       
+       // If node was the last node having its frequency
+       if (node.cnt == minFreq && 
+           freqListMap.get(node.cnt).size == 0) {
+           // Update the minimum frequency
+           minFreq++;
+       }
+       
+       // Creating a dummy list for next higher frequency
+       List nextHigherFreqList = new List();
+       
+       // If the next higher frequency list already exists
+       if (freqListMap.containsKey(node.cnt + 1)) {
+           // Update pointer to already existing list
+           nextHigherFreqList = 
+               freqListMap.get(node.cnt + 1);
+       }
+       
+       // Increment the count of data-item
+       node.cnt += 1;
+       
+       // Add the node in front of higher frequency list
+       nextHigherFreqList.addFront(node);
+       
+       // Update the frequency list map
+       freqListMap.put(node.cnt, nextHigherFreqList);
+       keyNode.put(node.key, node);
+   }
+   
+   // Method to get the value of key from LFU cache
+   public int get(int key) {
+       // Return the value if key exists
+       if (keyNode.containsKey(key)) {
+           Node node = keyNode.get(key); // Get the node
+           int val = node.value; // Get the value
+           updateFreqListMap(node); // Update the frequency
+           // Return the value
+           return val;
+       }
+       // Return -1 if key is not found
+       return -1;
+   }
+   
+   public void put(int key, int value) {
+       /* If the size of Cache is 0, 
+       no data-items can be inserted */
+       if (maxSizeCache == 0) {
+           return;
+       }
+       
+       // If key already exists
+       if (keyNode.containsKey(key)) {
+           // Get the node
+           Node node = keyNode.get(key);
+           // Update the value
+           node.value = value;
+           // Update the frequency
+           updateFreqListMap(node);
+       } else {
+           // If cache limit is reached
+           if (curSize == maxSizeCache) {
+               // Remove the least frequently used data-item
+               List list = freqListMap.get(minFreq);
+               keyNode.remove(list.tail.prev.key);
+               
+               // Update the frequency map
+               freqListMap.get(minFreq).removeNode(list.tail.prev);
+               // Decrement the current size of cache
+               curSize--;
+           }
+           // Increment the current cache size
+           curSize++;
+           
+           // Adding new value to the cache
+           minFreq = 1; // Set its frequency to 1
+           
+           // Create a dummy list
+           List listFreq = new List();
+           
+           // If the list already exists
+           if (freqListMap.containsKey(minFreq)) {
+               // Update the pointer to already present list
+               listFreq = freqListMap.get(minFreq);
+           }
+           
+           // Create the node to store data-item
+           Node node = new Node(key, value);
+           
+           // Add the node to dummy list
+           listFreq.addFront(node);
+           
+           // Add the node to Hashmap
+           keyNode.put(key, node);
+           
+           // Update the frequency list map
+           freqListMap.put(minFreq, listFreq);
+       }
+   }
+   
+   public static void main(String[] args) {
+       // LFU Cache
+       LFUCache cache = new LFUCache(2);
+       
+       // Queries
+       cache.put(1, 1);
+       cache.put(2, 2);
+       System.out.print(cache.get(1) + " ");
+       cache.put(3, 3);
+       System.out.print(cache.get(2) + " ");
+       System.out.print(cache.get(3) + " ");
+       cache.put(4, 4);
+       System.out.print(cache.get(1) + " ");
+       System.out.print(cache.get(3) + " ");
+       System.out.print(cache.get(4) + " ");
+   }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span></div><pre class="wp-block-code"><code lang="python" class="language-python"># To implement a node in doubly linked 
+# list that will store data items
+class Node:
+   def __init__(self, _key, _value):
+       self.key = _key
+       self.value = _value
+       self.cnt = 1
+       self.next = None
+       self.prev = None
+
+# To implement the doubly linked list
+class List:
+   def __init__(self):
+       self.size = 0  # Size 
+       self.head = Node(0, 0)  # Dummy head
+       self.tail = Node(0, 0)  # Dummy tail
+       self.head.next = self.tail
+       self.tail.prev = self.head
+
+   # Function to add node in front 
+   def addFront(self, node):
+       temp = self.head.next
+       node.next = temp
+       node.prev = self.head
+       self.head.next = node
+       temp.prev = node
+       self.size += 1
+
+   # Function to remove node from the list
+   def removeNode(self, delnode):
+       prevNode = delnode.prev
+       nextNode = delnode.next
+       prevNode.next = nextNode
+       nextNode.prev = prevNode
+       self.size -= 1
+
+# Class to implement LFU cache
+class LFUCache:
+   def __init__(self, capacity):
+       # Set the capacity
+       self.maxSizeCache = capacity
+       self.minFreq = 0  # Set minimum frequency
+       self.curSize = 0  # Set current frequency
+       
+       # Hashmap to store the key-nodes pairs
+       self.keyNode = {}  
+       
+       # Hashmap to maintain the lists 
+       # having different frequencies
+       self.freqListMap = {}
+
+   # Method to update frequency of data-items
+   def updateFreqListMap(self, node):
+       # Remove from Hashmap
+       del self.keyNode[node.key]
+       
+       # Update the frequency list hashmap
+       self.freqListMap[node.cnt].removeNode(node)
+       
+       # If node was the last node having its frequency
+       if (node.cnt == self.minFreq and 
+           self.freqListMap[node.cnt].size == 0):
+               
+           # Update the minimum frequency
+           self.minFreq += 1
+       
+       # Creating a dummy list for next higher frequency
+       nextHigherFreqList = List()
+       
+       # If the next higher frequency list already exists
+       if node.cnt + 1 in self.freqListMap:
+           
+           # Update pointer to already existing list
+           nextHigherFreqList = self.freqListMap[node.cnt + 1]
+       
+       # Increment the count of data-item
+       node.cnt += 1
+       
+       # Add the node in front of higher frequency list
+       nextHigherFreqList.addFront(node)
+       
+       # Update the frequency list map
+       self.freqListMap[node.cnt] = nextHigherFreqList
+       self.keyNode[node.key] = node
+
+   # Method to get the value of key from LFU cache
+   def get(self, key):
+       # Return the value if key exists
+       if key in self.keyNode:
+           node = self.keyNode[key]  # Get the node
+           val = node.value  # Get the value
+           self.updateFreqListMap(node)  # Update the frequency
+           # Return the value
+           return val
+           
+       # Return -1 if key is not found
+       return -1
+
+   def put(self, key, value):
+       
+       # If the size of Cache is 0, 
+       # no data-items can be inserted
+       if self.maxSizeCache == 0:
+           return
+       
+       # If key already exists
+       if key in self.keyNode:
+           node = self.keyNode[key]  # Get the node
+           node.value = value  # Update the value
+           self.updateFreqListMap(node)  # Update the frequency
+       else:
+           # If cache limit is reached
+           if self.curSize == self.maxSizeCache:
+               # Remove the least frequently used data-item
+               list = self.freqListMap[self.minFreq]
+               del self.keyNode[list.tail.prev.key]
+               # Update the frequency map
+               self.freqListMap[self.minFreq].removeNode(list.tail.prev)
+               self.curSize -= 1  # Decrement the current size of cache
+           
+           self.curSize += 1  # Increment the current cache size
+           # Adding new value to the cache, 
+           # set its frequency to 1
+           self.minFreq = 1  
+           
+           # Create a dummy list
+           listFreq = List()
+           
+           # If the list already exists
+           if self.minFreq in self.freqListMap:
+               
+               # Update the pointer to already present list
+               listFreq = self.freqListMap[self.minFreq]
+           
+           # Create the node to store data-item
+           node = Node(key, value)
+           
+           # Add the node to dummy list
+           listFreq.addFront(node)
+           
+           # Add the node to Hashmap
+           self.keyNode[key] = node
+           
+           # Update the frequency list map
+           self.freqListMap[self.minFreq] = listFreq
+
+# LFU Cache
+cache = LFUCache(2)
+
+# Queries
+cache.put(1, 1)
+cache.put(2, 2)
+print(cache.get(1), end=" ")
+cache.put(3, 3)
+print(cache.get(2), end=" ")
+print(cache.get(3), end=" ")
+cache.put(4, 4)
+print(cache.get(1), end=" ")
+print(cache.get(3), end=" ")
+print(cache.get(4), end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">/* To implement a node in doubly linked 
+list that will store data items */
+class Node {
+   constructor(_key, _value) {
+       this.key = _key;
+       this.value = _value;
+       this.cnt = 1;
+       this.next = null;
+       this.prev = null;
+   }
+}
+
+// To implement the doubly linked list
+class List {
+   constructor() {
+       this.size = 0; // Size 
+       this.head = new Node(0, 0); // Dummy head
+       this.tail = new Node(0, 0); // Dummy tail
+       this.head.next = this.tail;
+       this.tail.prev = this.head;
+   }
+   
+   // Function to add node in front 
+   addFront(node) {
+       let temp = this.head.next;
+       node.next = temp;
+       node.prev = this.head;
+       this.head.next = node;
+       temp.prev = node;
+       this.size++;
+   }
+   
+   // Function to remove node from the list
+   removeNode(delnode) {
+       let prevNode = delnode.prev;
+       let nextNode = delnode.next;
+       prevNode.next = nextNode;
+       nextNode.prev = prevNode;
+       this.size--;
+   }
+}
+
+// Class to implement LFU cache
+class LFUCache {
+   constructor(capacity) {
+       // Set the capacity
+       this.maxSizeCache = capacity;
+       this.minFreq = 0; // Set minimum frequency
+       this.curSize = 0; // Set current frequency
+       
+       // Hashmap to store the key-nodes pairs
+       this.keyNode = new Map(); 
+       
+       /* Hashmap to maintain the lists 
+       having different frequencies */
+       this.freqListMap = new Map(); 
+   }
+   
+   // Method to update frequency of data-items
+   updateFreqListMap(node) {
+       // Remove from Hashmap
+       this.keyNode.delete(node.key);
+       
+       // Update the frequency list hashmap
+       this.freqListMap.get(node.cnt).removeNode(node);
+       
+       // If node was the last node having its frequency
+       if (node.cnt === this.minFreq && 
+           this.freqListMap.get(node.cnt).size === 0) {
+           // Update the minimum frequency
+           this.minFreq++;
+       }
+       
+       // Creating a dummy list for next higher frequency
+       let nextHigherFreqList = new List();
+       
+       // If the next higher frequency list already exists
+       if (this.freqListMap.has(node.cnt + 1)) {
+           
+           // Update pointer to already existing list
+           nextHigherFreqList = 
+               this.freqListMap.get(node.cnt + 1);
+       }
+       
+       // Increment the count of data-item
+       node.cnt += 1;
+       
+       // Add the node in front of higher frequency list
+       nextHigherFreqList.addFront(node);
+       
+       // Update the frequency list map
+       this.freqListMap.set(node.cnt, nextHigherFreqList);
+       this.keyNode.set(node.key, node);
+   }
+   
+   // Method to get the value of key from LFU cache
+   get(key) {
+       // Return the value if key exists
+       if (this.keyNode.has(key)) {
+           let node = this.keyNode.get(key); // Get the node
+           let val = node.value; // Get the value
+           this.updateFreqListMap(node); // Update the frequency
+           // Return the value
+           return val;
+       }
+       // Return -1 if key is not found
+       return -1;
+   }
+   
+   put(key, value) {
+       /* If the size of Cache is 0, 
+       no data-items can be inserted */
+       if (this.maxSizeCache === 0) {
+           return;
+       }
+       
+       // If key already exists
+       if (this.keyNode.has(key)) {
+           let node = this.keyNode.get(key); // Get the node
+           node.value = value; // Update the value
+           this.updateFreqListMap(node); // Update the frequency
+       } else {
+           // If cache limit is reached
+           if (this.curSize === this.maxSizeCache) {
+               // Remove the least frequently used data-item
+               let list = this.freqListMap.get(this.minFreq);
+               this.keyNode.delete(list.tail.prev.key);
+               // Update the frequency map
+               this.freqListMap.get(this.minFreq).removeNode(list.tail.prev);
+               this.curSize--; // Decrement the current size of cache
+           }
+           this.curSize++; // Increment the current cache size
+           this.minFreq = 1; // Adding new value to the cache, set its frequency to 1
+           
+           // Create a dummy list
+           let listFreq = new List();
+           
+           // If the list already exists
+           if (this.freqListMap.has(this.minFreq)) {
+               // Update the pointer to already present list
+               listFreq = this.freqListMap.get(this.minFreq);
+           }
+           
+           // Create the node to store data-item
+           let node = new Node(key, value);
+           
+           // Add the node to dummy list
+           listFreq.addFront(node);
+           
+           // Add the node to Hashmap
+           this.keyNode.set(key, node);
+           
+           // Update the frequency list map
+           this.freqListMap.set(this.minFreq, listFreq);
+       }
+   }
+}
+
+// LFU Cache
+const cache = new LFUCache(2);
+
+// Queries
+cache.put(1, 1);
+cache.put(2, 2);
+console.log(cache.get(1) + " ");
+cache.put(3, 3);
+console.log(cache.get(2) + " ");
+console.log(cache.get(3) + " ");
+cache.put(4, 4);
+console.log(cache.get(1) + " ");
+console.log(cache.get(3) + " ");
+console.log(cache.get(4) + " ");
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span><span>210</span><span>211</span><span>212</span><span>213</span><span>214</span><span>215</span><span>216</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+/* To implement a node in doubly linked 
+list that will store data items */
+public class Node
+{
+    public int key;
+    public int value;
+    public int cnt;
+    public Node next;
+    public Node prev;
+
+    public Node(int _key, int _value)
+    {
+        this.key = _key;
+        this.value = _value;
+        this.cnt = 1;
+        this.next = null;
+        this.prev = null;
+    }
+}
+
+// To implement the doubly linked list
+public class List
+{
+    public int size; // Size 
+    public Node head; // Dummy head
+    public Node tail; // Dummy tail
+
+    public List()
+    {
+        this.size = 0;
+        this.head = new Node(0, 0);
+        this.tail = new Node(0, 0);
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+
+    // Function to add node in front 
+    public void addFront(Node node)
+    {
+        Node temp = this.head.next;
+        node.next = temp;
+        node.prev = this.head;
+        this.head.next = node;
+        temp.prev = node;
+        this.size++;
+    }
+
+    // Function to remove node from the list
+    public void removeNode(Node delnode)
+    {
+        Node prevNode = delnode.prev;
+        Node nextNode = delnode.next;
+        prevNode.next = nextNode;
+        nextNode.prev = prevNode;
+        this.size--;
+    }
+}
+
+// Class to implement LFU cache
+public class LFUCache
+{
+    // Set the capacity
+    private int maxSizeCache;
+    private int minFreq; // Set minimum frequency
+    private int curSize; // Set current frequency
+
+    // Hashmap to store the key-nodes pairs
+    private Dictionary<int, Node> keyNode; 
+
+    /* Hashmap to maintain the lists 
+    having different frequencies */
+    private Dictionary<int, List> freqListMap; 
+
+    public LFUCache(int capacity)
+    {
+        this.maxSizeCache = capacity;
+        this.minFreq = 0;
+        this.curSize = 0;
+        this.keyNode = new Dictionary<int, Node>();
+        this.freqListMap = new Dictionary<int, List>();
+    }
+
+    // Method to update frequency of data-items
+    private void updateFreqListMap(Node node)
+    {
+        // Remove from Hashmap
+        this.keyNode.Remove(node.key);
+
+        // Update the frequency list hashmap
+        this.freqListMap[node.cnt].removeNode(node);
+
+        // If node was the last node having its frequency
+        if (node.cnt == this.minFreq && 
+            this.freqListMap[node.cnt].size == 0)
+        {
+            // Update the minimum frequency
+            this.minFreq++;
+        }
+
+        // Creating a dummy list for next higher frequency
+        List nextHigherFreqList = new List();
+
+        // If the next higher frequency list already exists
+        if (this.freqListMap.ContainsKey(node.cnt + 1))
+        {
+            // Update pointer to already existing list
+            nextHigherFreqList = 
+                this.freqListMap[node.cnt + 1];
+        }
+
+        // Increment the count of data-item
+        node.cnt += 1;
+
+        // Add the node in front of higher frequency list
+        nextHigherFreqList.addFront(node);
+
+        // Update the frequency list map
+        this.freqListMap[node.cnt] = nextHigherFreqList;
+        this.keyNode[node.key] = node;
+    }
+
+    // Method to get the value of key from LFU cache
+    public int Get(int key)
+    {
+        // Return the value if key exists
+        if (this.keyNode.ContainsKey(key))
+        {
+            Node node = this.keyNode[key]; // Get the node
+            int val = node.value; // Get the value
+            this.updateFreqListMap(node); // Update the frequency
+            // Return the value
+            return val;
+        }
+        // Return -1 if key is not found
+        return -1;
+    }
+
+    public void Put(int key, int value)
+    {
+        /* If the size of Cache is 0, 
+        no data-items can be inserted */
+        if (this.maxSizeCache == 0)
+        {
+            return;
+        }
+
+        // If key already exists
+        if (this.keyNode.ContainsKey(key))
+        {
+            Node node = this.keyNode[key]; // Get the node
+            node.value = value; // Update the value
+            this.updateFreqListMap(node); // Update the frequency
+        } 
+        else 
+        {
+            // If cache limit is reached
+            if (this.curSize == this.maxSizeCache)
+            {
+                // Remove the least frequently used data-item
+                List list = this.freqListMap[this.minFreq];
+                this.keyNode.Remove(list.tail.prev.key);
+                // Update the frequency map
+                this.freqListMap[this.minFreq].removeNode(list.tail.prev);
+                this.curSize--; // Decrement the current size of cache
+            }
+            this.curSize++; // Increment the current cache size
+            this.minFreq = 1; // Adding new value to the cache, set its frequency to 1
+
+            // Create a dummy list
+            List listFreq = new List();
+
+            // If the list already exists
+            if (this.freqListMap.ContainsKey(this.minFreq))
+            {
+                // Update the pointer to already present list
+                listFreq = this.freqListMap[this.minFreq];
+            }
+
+            // Create the node to store data-item
+            Node node = new Node(key, value);
+
+            // Add the node to dummy list
+            listFreq.addFront(node);
+
+            // Add the node to Hashmap
+            this.keyNode[key] = node;
+
+            // Update the frequency list map
+            this.freqListMap[this.minFreq] = listFreq;
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // LFU Cache
+        LFUCache cache = new LFUCache(2);
+
+        // Queries
+        cache.Put(1, 1);
+        cache.Put(2, 2);
+        Console.WriteLine(cache.Get(1) + " ");
+        cache.Put(3, 3);
+        Console.WriteLine(cache.Get(2) + " ");
+        Console.WriteLine(cache.Get(3) + " ");
+        cache.Put(4, 4);
+        Console.WriteLine(cache.Get(1) + " ");
+        Console.WriteLine(cache.Get(3) + " ");
+        Console.WriteLine(cache.Get(4) + " ");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span><span>210</span><span>211</span><span>212</span><span>213</span><span>214</span><span>215</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+/* To implement a node in doubly linked 
+list that will store data items */
+type Node struct {
+	key, value, cnt int
+	next            *Node
+	prev            *Node
+}
+
+// Constructor for Node
+func NewNode(key, value int) *Node {
+	return &Node{
+		key:   key,
+		value: value,
+		cnt:   1,
+	}
+}
+
+// To implement the doubly linked list
+type List struct {
+	size int   // Size
+	head *Node // Dummy head
+	tail *Node // Dummy tail
+}
+
+// Constructor for List
+func NewList() *List {
+	head := NewNode(0, 0)
+	tail := NewNode(0, 0)
+	head.next = tail
+	tail.prev = head
+	return &List{
+		size: 0,
+		head: head,
+		tail: tail,
+	}
+}
+
+// Function to add node in front
+func (l *List) addFront(node *Node) {
+	temp := l.head.next
+	node.next = temp
+	node.prev = l.head
+	l.head.next = node
+	temp.prev = node
+	l.size++
+}
+
+// Function to remove node from the list
+func (l *List) removeNode(delnode *Node) {
+	prevNode := delnode.prev
+	nextNode := delnode.next
+	prevNode.next = nextNode
+	nextNode.prev = prevNode
+	l.size--
+}
+
+// LFUCache struct
+type LFUCache struct {
+	// Hashmap to store the key-nodes pairs
+	keyNode map[int]*Node
+
+	/* Hashmap to maintain the lists 
+	having different frequencies */
+	freqListMap map[int]*List
+
+	maxSizeCache int // Max size of cache
+
+	/* To store the frequency of least 
+	frequently used data-item */
+	minFreq int
+
+	// To store current size of cache
+	curSize int
+}
+
+// Constructor
+func NewLFUCache(capacity int) *LFUCache {
+	return &LFUCache{
+		// Set the capacity
+		maxSizeCache: capacity,
+		minFreq:      0,              // Set minimum frequency
+		curSize:      0,              // Set current frequency
+		keyNode:      make(map[int]*Node),
+		freqListMap:  make(map[int]*List),
+	}
+}
+
+// Method to update frequency of data-items
+func (lfu *LFUCache) updateFreqListMap(node *Node) {
+	// Remove from Hashmap
+	delete(lfu.keyNode, node.key)
+
+	// Update the frequency list hashmap
+	lfu.freqListMap[node.cnt].removeNode(node)
+
+	// If node was the last node having it's frequency
+	if node.cnt == lfu.minFreq && lfu.freqListMap[node.cnt].size == 0 {
+		// Update the minimum frequency
+		lfu.minFreq++
+	}
+
+	// Creating a dummy list for next higher frequency
+	nextHigherFreqList := NewList()
+
+	// If the next higher frequency list already exists
+	if existingList, exists := lfu.freqListMap[node.cnt+1]; exists {
+		// Update pointer to already existing list
+		nextHigherFreqList = existingList
+	}
+
+	// Increment the count of data-item
+	node.cnt++
+
+	// Add the node in front of higher frequency list
+	nextHigherFreqList.addFront(node)
+
+	// Update the frequency list map and key node map
+	lfu.freqListMap[node.cnt] = nextHigherFreqList
+	lfu.keyNode[node.key] = node
+}
+
+// Method to get the value of key from LFU cache
+func (lfu *LFUCache) Get(key int) int {
+	// Return the value if key exists
+	if node, exists := lfu.keyNode[key]; exists {
+		val := node.value              // Get the value
+		lfu.updateFreqListMap(node)    // Update the frequency
+		
+		// Return the value
+		return val
+	}
+
+	// Return -1 if key is not found
+	return -1
+}
+
+func (lfu *LFUCache) Put(key int, value int) {
+	/* If the size of Cache is 0, 
+	no data-items can be inserted */
+	if lfu.maxSizeCache == 0 {
+		return
+	}
+
+	// If key already exists
+	if node, exists := lfu.keyNode[key]; exists {
+		// Update the value
+		node.value = value
+
+		// Update the frequency
+		lfu.updateFreqListMap(node)
+	} else {
+		// Else if the key does not exist
+
+		// If cache limit is reached
+		if lfu.curSize == lfu.maxSizeCache {
+			// Remove the least frequently used data-item
+			list := lfu.freqListMap[lfu.minFreq]
+			delete(lfu.keyNode, list.tail.prev.key)
+
+			// Update the frequency map
+			lfu.freqListMap[lfu.minFreq].removeNode(list.tail.prev)
+
+			// Decrement the current size of cache
+			lfu.curSize--
+		}
+
+		// Increment the current cache size
+		lfu.curSize++
+
+		// Adding new value to the cache
+		lfu.minFreq = 1 // Set its frequency to 1
+
+		// Create a dummy list
+		listFreq := NewList()
+
+		// If the list already exist
+		if existingList, exists := lfu.freqListMap[lfu.minFreq]; exists {
+			// Update the pointer to already present list
+			listFreq = existingList
+		}
+
+		// Create the node to store data-item
+		node := NewNode(key, value)
+
+		// Add the node to dummy list
+		listFreq.addFront(node)
+
+		// Add the node to Hashmap
+		lfu.keyNode[key] = node
+
+		// Update the frequency list map
+		lfu.freqListMap[lfu.minFreq] = listFreq
+	}
+}
+
+func main() {
+	// LFU Cache
+	cache := NewLFUCache(2)
+
+	// Queries
+	cache.Put(1, 1)
+	cache.Put(2, 2)
+	fmt.Print(cache.Get(1), " ")
+	cache.Put(3, 3)
+	fmt.Print(cache.Get(2), " ")
+	fmt.Print(cache.Get(3), " ")
+	cache.Put(4, 4)
+	fmt.Print(cache.Get(1), " ")
+	fmt.Print(cache.Get(3), " ")
+	fmt.Print(cache.Get(4), " ")
+}</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N)</strong>  (where N is the number of queries on the LFU cache) <br>
+   Each get and put method takes an average of constant time making the overall complexity as O(N).
+</p>
+
+<p><strong>Space Complexity: O(cap)</strong> (where cap is the capacity of LFU cache defined) <br>
+   At maximum the cache can store the numbers of data-items equal to its capacity taking O(cap) space. 
+   
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>struct Node {
+   int key, value, cnt;
+   Node *next; 
+   Node *prev;
+   Node(int _key, int _value) {
+       key = _key;
+       value = _value; 
+       cnt = 1; 
+   }
+}; 
+
+// To implement the doubly linked list
+struct List {
+   int size; // Size 
+   Node *head; // Dummy head
+   Node *tail; // Dummy tail
+   
+   // Constructor
+   List() {
+       head = new Node(0, 0); 
+       tail = new Node(0,0); 
+       head-&gt;next = tail;
+       tail-&gt;prev = head; 
+       size = 0;
+   }
+   
+   // Function to add node in front 
+   void addFront(Node *node) {
+       Node* temp = head-&gt;next;
+       node-&gt;next = temp;
+       node-&gt;prev = head;
+       head-&gt;next = node;
+       temp-&gt;prev = node;
+       size++; 
+   }
+   
+   // Function to remove node from the list
+   void removeNode(Node* delnode) {
+       Node* prevNode = delnode-&gt;prev;
+       Node* nextNode = delnode-&gt;next;
+       prevNode-&gt;next = nextNode;
+       nextNode-&gt;prev = prevNode;
+       size--; 
+   }
+};
+
+// Class to implement LFU cache
+class LFUCache {
+private:
+
+   // Hashmap to store the key-nodes pairs
+   map&lt;int, Node*&gt; keyNode; 
+   
+   /* Hashmap to maintain the lists 
+   having different frequencies */
+   map&lt;int, List*&gt; freqListMap; 
+   
+   int maxSizeCache; // Max size of cache
+   
+   /* To store the frequency of least 
+   frequently used data-item */
+   int minFreq; 
+   
+   // To store current size of cache
+   int curSize; 
+   
+public:
+
+   // Constructor
+   LFUCache(int capacity) {
+       // Set the capacity
+       maxSizeCache = capacity; 
+       minFreq = 0; // Set minimum frequency
+       curSize = 0; // Set current frequency
+   }
+   
+   // Method to update frequency of data-items
+   void updateFreqListMap(Node *node) {
+       
+       // Remove from Hashmap
+       keyNode.erase(node-&gt;key); 
+       
+       // Update the frequency list hashmap
+       freqListMap[node-&gt;cnt]-&gt;removeNode(node); 
+       
+       // If node was the last node having it&#x27;s frequency
+       if(node-&gt;cnt == minFreq &amp;&amp; 
+          freqListMap[node-&gt;cnt]-&gt;size == 0) {
+              
+           // Update the minimum frequency
+           minFreq++; 
+       }
+       
+       // Creating a dummy list for next higher frequency
+       List* nextHigherFreqList = new List();
+       
+       // If the next higher frequency list already exists
+       if(freqListMap.find(node-&gt;cnt + 1) != 
+          freqListMap.end()) {
+              
+           // Update pointer to already existing list
+           nextHigherFreqList = freqListMap[node-&gt;cnt + 1];
+       } 
+       
+       // Increment the count of data-item
+       node-&gt;cnt += 1; 
+       
+       // Add the node in front of higher frequency list
+       nextHigherFreqList-&gt;addFront(node); 
+       
+       // Update the 
+       freqListMap[node-&gt;cnt] = nextHigherFreqList; 
+       keyNode[node-&gt;key] = node;
+   }
+   
+   // Method to get the value of key from LFU cache
+   int get(int key) {
+       
+       // Return the value if key exists
+       if(keyNode.find(key) != keyNode.end()) {
+           Node* node = keyNode[key]; // Get the node
+           int val = node-&gt;value; // Get the value
+           updateFreqListMap(node); // Update the frequency
+           
+           // Return the value
+           return val; 
+       }
+       
+       // Return -1 if key is not found
+       return -1; 
+   }
+   
+   void put(int key, int value) {
+       /* If the size of Cache is 0, 
+       no data-items can be inserted */
+       if (maxSizeCache == 0) {
+           return;
+       }
+       
+       // If key already exists
+       if(keyNode.find(key) != keyNode.end()) {
+           
+           // Get the node
+           Node* node = keyNode[key]; 
+           
+           // Update the value
+           node-&gt;value = value; 
+           
+           // Update the frequency
+           updateFreqListMap(node); 
+       }
+       
+       // Else if the key does not exist
+       else {
+           
+           // If cache limit is reached
+           if(curSize == maxSizeCache) {
+               
+               // Remove the least frequently used data-item
+               List* list = freqListMap[minFreq]; 
+               keyNode.erase(list-&gt;tail-&gt;prev-&gt;key); 
+               
+               // Update the frequency map 
+               freqListMap[minFreq]-&gt;removeNode(
+                   list-&gt;tail-&gt;prev
+               );
+               
+               // Decrement the current size of cache
+               curSize--; 
+           }
+           
+           // Increment the current cache size
+           curSize++; 
+           
+           // Adding new value to the cache
+           minFreq = 1; // Set its frequency to 1
+           
+           // Create a dummy list
+           List* listFreq = new List(); 
+           
+           // If the list already exist
+           if(freqListMap.find(minFreq) != 
+              freqListMap.end()) {
+               
+               // Update the pointer to already present list
+               listFreq = freqListMap[minFreq]; 
+           }
+           
+           // Create the node to store data-item
+           Node* node = new Node(key, value); 
+           
+           // Add the node to dummy list
+           listFreq-&gt;addFront(node);
+           
+           // Add the node to Hashmap
+           keyNode[key] = node; 
+           
+           // Update the frequency list map 
+           freqListMap[minFreq] = listFreq; 
+       }
+   }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class LFUCache {
+    /* To implement a node in doubly linked 
+    list that will store data items */
+    private class Node
+    {
+        public int key;
+        public int value;
+        public int cnt;
+        public Node next;
+        public Node prev;
+
+        public Node(int _key, int _value)
+        {
+            this.key = _key;
+            this.value = _value;
+            this.cnt = 1;
+            this.next = null;
+            this.prev = null;
+        }
+    }
+
+    // To implement the doubly linked list
+    private class List
+    {
+        public int size; // Size 
+        public Node head; // Dummy head
+        public Node tail; // Dummy tail
+
+        public List()
+        {
+            this.size = 0;
+            this.head = new Node(0, 0);
+            this.tail = new Node(0, 0);
+            this.head.next = this.tail;
+            this.tail.prev = this.head;
+        }
+
+        // Function to add node in front 
+        public void addFront(Node node)
+        {
+            Node temp = this.head.next;
+            node.next = temp;
+            node.prev = this.head;
+            this.head.next = node;
+            temp.prev = node;
+            this.size++;
+        }
+
+        // Function to remove node from the list
+        public void removeNode(Node delnode)
+        {
+            Node prevNode = delnode.prev;
+            Node nextNode = delnode.next;
+            prevNode.next = nextNode;
+            nextNode.prev = prevNode;
+            this.size--;
+        }
+    }
+
+    // Set the capacity
+    private int maxSizeCache;
+    private int minFreq; // Set minimum frequency
+    private int curSize; // Set current frequency
+
+    // Hashmap to store the key-nodes pairs
+    private Dictionary&lt;int, Node&gt; keyNode; 
+
+    /* Hashmap to maintain the lists 
+    having different frequencies */
+    private Dictionary&lt;int, List&gt; freqListMap; 
+
+    public LFUCache(int capacity) {
+        this.maxSizeCache = capacity;
+        this.minFreq = 0;
+        this.curSize = 0;
+        this.keyNode = new Dictionary&lt;int, Node&gt;();
+        this.freqListMap = new Dictionary&lt;int, List&gt;();
+    }
+
+    // Method to update frequency of data-items
+    private void updateFreqListMap(Node node)
+    {
+        // Remove from Hashmap
+        this.keyNode.Remove(node.key);
+
+        // Update the frequency list hashmap
+        this.freqListMap[node.cnt].removeNode(node);
+
+        // If node was the last node having its frequency
+        if (node.cnt == this.minFreq &amp;&amp; 
+            this.freqListMap[node.cnt].size == 0)
+        {
+            // Update the minimum frequency
+            this.minFreq++;
+        }
+
+        // Creating a dummy list for next higher frequency
+        List nextHigherFreqList = new List();
+
+        // If the next higher frequency list already exists
+        if (this.freqListMap.ContainsKey(node.cnt + 1))
+        {
+            // Update pointer to already existing list
+            nextHigherFreqList = 
+                this.freqListMap[node.cnt + 1];
+        }
+
+        // Increment the count of data-item
+        node.cnt += 1;
+
+        // Add the node in front of higher frequency list
+        nextHigherFreqList.addFront(node);
+
+        // Update the frequency list map
+        this.freqListMap[node.cnt] = nextHigherFreqList;
+        this.keyNode[node.key] = node;
+    }
+
+    public int Get(int key) {
+        // Return the value if key exists
+        if (this.keyNode.ContainsKey(key))
+        {
+            Node node = this.keyNode[key]; // Get the node
+            int val = node.value; // Get the value
+            this.updateFreqListMap(node); // Update the frequency
+            // Return the value
+            return val;
+        }
+        // Return -1 if key is not found
+        return -1;
+    }
+
+    public void Put(int key, int value) {
+        /* If the size of Cache is 0, 
+        no data-items can be inserted */
+        if (this.maxSizeCache == 0)
+        {
+            return;
+        }
+
+        // If key already exists
+        if (this.keyNode.ContainsKey(key))
+        {
+            Node node = this.keyNode[key]; // Get the node
+            node.value = value; // Update the value
+            this.updateFreqListMap(node); // Update the frequency
+        } 
+        else 
+        {
+            // If cache limit is reached
+            if (this.curSize == this.maxSizeCache)
+            {
+                // Remove the least frequently used data-item
+                List list = this.freqListMap[this.minFreq];
+                this.keyNode.Remove(list.tail.prev.key);
+                // Update the frequency map
+                this.freqListMap[this.minFreq].removeNode(list.tail.prev);
+                this.curSize--; // Decrement the current size of cache
+            }
+            this.curSize++; // Increment the current cache size
+            this.minFreq = 1; // Adding new value to the cache, set its frequency to 1
+
+            // Create a dummy list
+            List listFreq = new List();
+
+            // If the list already exists
+            if (this.freqListMap.ContainsKey(this.minFreq))
+            {
+                // Update the pointer to already present list
+                listFreq = this.freqListMap[this.minFreq];
+            }
+
+            // Create the node to store data-item
+            Node node = new Node(key, value);
+
+            // Add the node to dummy list
+            listFreq.addFront(node);
+
+            // Add the node to Hashmap
+            this.keyNode[key] = node;
+
+            // Update the frequency list map
+            this.freqListMap[this.minFreq] = listFreq;
+        }
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* To implement a node in doubly linked 
+list that will store data items */
+type Node struct {
+	key, value, cnt int
+	next            *Node
+	prev            *Node
+}
+
+// Constructor for Node
+func NewNode(key, value int) *Node {
+	return &amp;Node{
+		key:   key,
+		value: value,
+		cnt:   1,
+	}
+}
+
+// To implement the doubly linked list
+type List struct {
+	size int   // Size
+	head *Node // Dummy head
+	tail *Node // Dummy tail
+}
+
+// Constructor for List
+func NewList() *List {
+	head := NewNode(0, 0)
+	tail := NewNode(0, 0)
+	head.next = tail
+	tail.prev = head
+	return &amp;List{
+		size: 0,
+		head: head,
+		tail: tail,
+	}
+}
+
+// Function to add node in front
+func (l *List) addFront(node *Node) {
+	temp := l.head.next
+	node.next = temp
+	node.prev = l.head
+	l.head.next = node
+	temp.prev = node
+	l.size++
+}
+
+// Function to remove node from the list
+func (l *List) removeNode(delnode *Node) {
+	prevNode := delnode.prev
+	nextNode := delnode.next
+	prevNode.next = nextNode
+	nextNode.prev = prevNode
+	l.size--
+}
+
+// LFUCache struct
+type LFUCache struct {
+	// Hashmap to store the key-nodes pairs
+	keyNode map[int]*Node
+
+	/* Hashmap to maintain the lists 
+	having different frequencies */
+	freqListMap map[int]*List
+
+	maxSizeCache int // Max size of cache
+
+	/* To store the frequency of least 
+	frequently used data-item */
+	minFreq int
+
+	// To store current size of cache
+	curSize int
+}
+
+// Constructor
+func NewLFUCache(capacity int) *LFUCache {
+	return &amp;LFUCache{
+		// Set the capacity
+		maxSizeCache: capacity,
+		minFreq:      0,              // Set minimum frequency
+		curSize:      0,              // Set current frequency
+		keyNode:      make(map[int]*Node),
+		freqListMap:  make(map[int]*List),
+	}
+}
+
+// Method to update frequency of data-items
+func (lfu *LFUCache) updateFreqListMap(node *Node) {
+	// Remove from Hashmap
+	delete(lfu.keyNode, node.key)
+
+	// Update the frequency list hashmap
+	lfu.freqListMap[node.cnt].removeNode(node)
+
+	// If node was the last node having it&#x27;s frequency
+	if node.cnt == lfu.minFreq &amp;&amp; lfu.freqListMap[node.cnt].size == 0 {
+		// Update the minimum frequency
+		lfu.minFreq++
+	}
+
+	// Creating a dummy list for next higher frequency
+	nextHigherFreqList := NewList()
+
+	// If the next higher frequency list already exists
+	if existingList, exists := lfu.freqListMap[node.cnt+1]; exists {
+		// Update pointer to already existing list
+		nextHigherFreqList = existingList
+	}
+
+	// Increment the count of data-item
+	node.cnt++
+
+	// Add the node in front of higher frequency list
+	nextHigherFreqList.addFront(node)
+
+	// Update the frequency list map and key node map
+	lfu.freqListMap[node.cnt] = nextHigherFreqList
+	lfu.keyNode[node.key] = node
+}
+
+// Method to get the value of key from LFU cache
+func (lfu *LFUCache) Get(key int) int {
+	// Return the value if key exists
+	if node, exists := lfu.keyNode[key]; exists {
+		val := node.value              // Get the value
+		lfu.updateFreqListMap(node)    // Update the frequency
+		
+		// Return the value
+		return val
+	}
+
+	// Return -1 if key is not found
+	return -1
+}
+
+func (lfu *LFUCache) Put(key int, value int) {
+	/* If the size of Cache is 0, 
+	no data-items can be inserted */
+	if lfu.maxSizeCache == 0 {
+		return
+	}
+
+	// If key already exists
+	if node, exists := lfu.keyNode[key]; exists {
+		// Update the value
+		node.value = value
+
+		// Update the frequency
+		lfu.updateFreqListMap(node)
+	} else {
+		// Else if the key does not exist
+
+		// If cache limit is reached
+		if lfu.curSize == lfu.maxSizeCache {
+			// Remove the least frequently used data-item
+			list := lfu.freqListMap[lfu.minFreq]
+			delete(lfu.keyNode, list.tail.prev.key)
+
+			// Update the frequency map
+			lfu.freqListMap[lfu.minFreq].removeNode(list.tail.prev)
+
+			// Decrement the current size of cache
+			lfu.curSize--
+		}
+
+		// Increment the current cache size
+		lfu.curSize++
+
+		// Adding new value to the cache
+		lfu.minFreq = 1 // Set its frequency to 1
+
+		// Create a dummy list
+		listFreq := NewList()
+
+		// If the list already exist
+		if existingList, exists := lfu.freqListMap[lfu.minFreq]; exists {
+			// Update the pointer to already present list
+			listFreq = existingList
+		}
+
+		// Create the node to store data-item
+		node := NewNode(key, value)
+
+		// Add the node to dummy list
+		listFreq.addFront(node)
+
+		// Add the node to Hashmap
+		lfu.keyNode[key] = node
+
+		// Update the frequency list map
+		lfu.freqListMap[lfu.minFreq] = listFreq
+	}
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>
+class Node {
+   int key, value, cnt;
+   Node next;
+   Node prev;
+   Node(int _key, int _value) {
+       key = _key;
+       value = _value;
+       cnt = 1;
+   }
+}
+
+// To implement the doubly linked list
+class List {
+   int size; // Size 
+   Node head; // Dummy head
+   Node tail; // Dummy tail
+   
+   // Constructor
+   List() {
+       head = new Node(0, 0);
+       tail = new Node(0, 0);
+       head.next = tail;
+       tail.prev = head;
+       size = 0;
+   }
+   
+   // Function to add node in front 
+   void addFront(Node node) {
+       Node temp = head.next;
+       node.next = temp;
+       node.prev = head;
+       head.next = node;
+       temp.prev = node;
+       size++;
+   }
+   
+   // Function to remove node from the list
+   void removeNode(Node delnode) {
+       Node prevNode = delnode.prev;
+       Node nextNode = delnode.next;
+       prevNode.next = nextNode;
+       nextNode.prev = prevNode;
+       size--;
+   }
+}
+
+// Class to implement LFU cache
+class LFUCache {
+   // Hashmap to store the key-nodes pairs
+   private Map&lt;Integer, Node&gt; keyNode;
+   
+   /* Hashmap to maintain the lists 
+   having different frequencies */
+   private Map&lt;Integer, List&gt; freqListMap;
+   
+   private int maxSizeCache; // Max size of cache
+   
+   /* To store the frequency of least 
+   frequently used data-item */
+   private int minFreq;
+   
+   // To store current size of cache
+   private int curSize;
+   
+   // Constructor
+   public LFUCache(int capacity) {
+       // Set the capacity
+       maxSizeCache = capacity;
+       minFreq = 0; // Set minimum frequency
+       curSize = 0; // Set current frequency
+       keyNode = new HashMap&lt;&gt;();
+       freqListMap = new HashMap&lt;&gt;();
+   }
+   
+   // Method to update frequency of data-items
+   private void updateFreqListMap(Node node) {
+       // Remove from Hashmap
+       keyNode.remove(node.key);
+       
+       // Update the frequency list hashmap
+       freqListMap.get(node.cnt).removeNode(node);
+       
+       // If node was the last node having its frequency
+       if (node.cnt == minFreq &amp;&amp; 
+           freqListMap.get(node.cnt).size == 0) {
+           // Update the minimum frequency
+           minFreq++;
+       }
+       
+       // Creating a dummy list for next higher frequency
+       List nextHigherFreqList = new List();
+       
+       // If the next higher frequency list already exists
+       if (freqListMap.containsKey(node.cnt + 1)) {
+           // Update pointer to already existing list
+           nextHigherFreqList = 
+               freqListMap.get(node.cnt + 1);
+       }
+       
+       // Increment the count of data-item
+       node.cnt += 1;
+       
+       // Add the node in front of higher frequency list
+       nextHigherFreqList.addFront(node);
+       
+       // Update the frequency list map
+       freqListMap.put(node.cnt, nextHigherFreqList);
+       keyNode.put(node.key, node);
+   }
+   
+   // Method to get the value of key from LFU cache
+   public int get(int key) {
+       // Return the value if key exists
+       if (keyNode.containsKey(key)) {
+           Node node = keyNode.get(key); // Get the node
+           int val = node.value; // Get the value
+           updateFreqListMap(node); // Update the frequency
+           // Return the value
+           return val;
+       }
+       // Return -1 if key is not found
+       return -1;
+   }
+   
+   public void put(int key, int value) {
+       /* If the size of Cache is 0, 
+       no data-items can be inserted */
+       if (maxSizeCache == 0) {
+           return;
+       }
+       
+       // If key already exists
+       if (keyNode.containsKey(key)) {
+           // Get the node
+           Node node = keyNode.get(key);
+           // Update the value
+           node.value = value;
+           // Update the frequency
+           updateFreqListMap(node);
+       } else {
+           // If cache limit is reached
+           if (curSize == maxSizeCache) {
+               // Remove the least frequently used data-item
+               List list = freqListMap.get(minFreq);
+               keyNode.remove(list.tail.prev.key);
+               
+               // Update the frequency map
+               freqListMap.get(minFreq).removeNode(list.tail.prev);
+               // Decrement the current size of cache
+               curSize--;
+           }
+           // Increment the current cache size
+           curSize++;
+           
+           // Adding new value to the cache
+           minFreq = 1; // Set its frequency to 1
+           
+           // Create a dummy list
+           List listFreq = new List();
+           
+           // If the list already exists
+           if (freqListMap.containsKey(minFreq)) {
+               // Update the pointer to already present list
+               listFreq = freqListMap.get(minFreq);
+           }
+           
+           // Create the node to store data-item
+           Node node = new Node(key, value);
+           
+           // Add the node to dummy list
+           listFreq.addFront(node);
+           
+           // Add the node to Hashmap
+           keyNode.put(key, node);
+           
+           // Update the frequency list map
+           freqListMap.put(minFreq, listFreq);
+       }
+   }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Node {
+   constructor(_key, _value) {
+       this.key = _key;
+       this.value = _value;
+       this.cnt = 1;
+       this.next = null;
+       this.prev = null;
+   }
+}
+
+// To implement the doubly linked list
+class List {
+   constructor() {
+       this.size = 0; // Size 
+       this.head = new Node(0, 0); // Dummy head
+       this.tail = new Node(0, 0); // Dummy tail
+       this.head.next = this.tail;
+       this.tail.prev = this.head;
+   }
+   
+   // Function to add node in front 
+   addFront(node) {
+       let temp = this.head.next;
+       node.next = temp;
+       node.prev = this.head;
+       this.head.next = node;
+       temp.prev = node;
+       this.size++;
+   }
+   
+   // Function to remove node from the list
+   removeNode(delnode) {
+       let prevNode = delnode.prev;
+       let nextNode = delnode.next;
+       prevNode.next = nextNode;
+       nextNode.prev = prevNode;
+       this.size--;
+   }
+}
+
+// Class to implement LFU cache
+class LFUCache {
+   constructor(capacity) {
+       // Set the capacity
+       this.maxSizeCache = capacity;
+       this.minFreq = 0; // Set minimum frequency
+       this.curSize = 0; // Set current frequency
+       
+       // Hashmap to store the key-nodes pairs
+       this.keyNode = new Map(); 
+       
+       /* Hashmap to maintain the lists 
+       having different frequencies */
+       this.freqListMap = new Map(); 
+   }
+   
+   // Method to update frequency of data-items
+   updateFreqListMap(node) {
+       // Remove from Hashmap
+       this.keyNode.delete(node.key);
+       
+       // Update the frequency list hashmap
+       this.freqListMap.get(node.cnt).removeNode(node);
+       
+       // If node was the last node having its frequency
+       if (node.cnt === this.minFreq &amp;&amp; 
+           this.freqListMap.get(node.cnt).size === 0) {
+           // Update the minimum frequency
+           this.minFreq++;
+       }
+       
+       // Creating a dummy list for next higher frequency
+       let nextHigherFreqList = new List();
+       
+       // If the next higher frequency list already exists
+       if (this.freqListMap.has(node.cnt + 1)) {
+           
+           // Update pointer to already existing list
+           nextHigherFreqList = 
+               this.freqListMap.get(node.cnt + 1);
+       }
+       
+       // Increment the count of data-item
+       node.cnt += 1;
+       
+       // Add the node in front of higher frequency list
+       nextHigherFreqList.addFront(node);
+       
+       // Update the frequency list map
+       this.freqListMap.set(node.cnt, nextHigherFreqList);
+       this.keyNode.set(node.key, node);
+   }
+   
+   // Method to get the value of key from LFU cache
+   get(key) {
+       // Return the value if key exists
+       if (this.keyNode.has(key)) {
+           let node = this.keyNode.get(key); // Get the node
+           let val = node.value; // Get the value
+           this.updateFreqListMap(node); // Update the frequency
+           // Return the value
+           return val;
+       }
+       // Return -1 if key is not found
+       return -1;
+   }
+   
+   put(key, value) {
+       /* If the size of Cache is 0, 
+       no data-items can be inserted */
+       if (this.maxSizeCache === 0) {
+           return;
+       }
+       
+       // If key already exists
+       if (this.keyNode.has(key)) {
+           let node = this.keyNode.get(key); // Get the node
+           node.value = value; // Update the value
+           this.updateFreqListMap(node); // Update the frequency
+       } else {
+           // If cache limit is reached
+           if (this.curSize === this.maxSizeCache) {
+               // Remove the least frequently used data-item
+               let list = this.freqListMap.get(this.minFreq);
+               this.keyNode.delete(list.tail.prev.key);
+               // Update the frequency map
+               this.freqListMap.get(this.minFreq).removeNode(list.tail.prev);
+               this.curSize--; // Decrement the current size of cache
+           }
+           this.curSize++; // Increment the current cache size
+           this.minFreq = 1; // Adding new value to the cache, set its frequency to 1
+           
+           // Create a dummy list
+           let listFreq = new List();
+           
+           // If the list already exists
+           if (this.freqListMap.has(this.minFreq)) {
+               // Update the pointer to already present list
+               listFreq = this.freqListMap.get(this.minFreq);
+           }
+           
+           // Create the node to store data-item
+           let node = new Node(key, value);
+           
+           // Add the node to dummy list
+           listFreq.addFront(node);
+           
+           // Add the node to Hashmap
+           this.keyNode.set(key, node);
+           
+           // Update the frequency list map
+           this.freqListMap.set(this.minFreq, listFreq);
+       }
+   }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Node:
+   def __init__(self, _key, _value):
+       self.key = _key
+       self.value = _value
+       self.cnt = 1
+       self.next = None
+       self.prev = None
+
+class List:
+   def __init__(self):
+       self.size = 0  # Size 
+       self.head = Node(0, 0)  # Dummy head
+       self.tail = Node(0, 0)  # Dummy tail
+       self.head.next = self.tail
+       self.tail.prev = self.head
+
+   # Function to add node in front 
+   def addFront(self, node):
+       temp = self.head.next
+       node.next = temp
+       node.prev = self.head
+       self.head.next = node
+       temp.prev = node
+       self.size += 1
+
+   # Function to remove node from the list
+   def removeNode(self, delnode):
+       prevNode = delnode.prev
+       nextNode = delnode.next
+       prevNode.next = nextNode
+       nextNode.prev = prevNode
+       self.size -= 1
+
+class LFUCache:
+   def __init__(self, capacity):
+       # Set the capacity
+       self.maxSizeCache = capacity
+       self.minFreq = 0  # Set minimum frequency
+       self.curSize = 0  # Set current frequency
+       
+       # Hashmap to store the key-nodes pairs
+       self.keyNode = {}  
+       
+       # Hashmap to maintain the lists 
+       # having different frequencies
+       self.freqListMap = {}
+
+   # Method to update frequency of data-items
+   def updateFreqListMap(self, node):
+       # Remove from Hashmap
+       del self.keyNode[node.key]
+       
+       # Update the frequency list hashmap
+       self.freqListMap[node.cnt].removeNode(node)
+       
+       # If node was the last node having its frequency
+       if (node.cnt == self.minFreq and 
+           self.freqListMap[node.cnt].size == 0):
+               
+           # Update the minimum frequency
+           self.minFreq += 1
+       
+       # Creating a dummy list for next higher frequency
+       nextHigherFreqList = List()
+       
+       # If the next higher frequency list already exists
+       if node.cnt + 1 in self.freqListMap:
+           
+           # Update pointer to already existing list
+           nextHigherFreqList = self.freqListMap[node.cnt + 1]
+       
+       # Increment the count of data-item
+       node.cnt += 1
+       
+       # Add the node in front of higher frequency list
+       nextHigherFreqList.addFront(node)
+       
+       # Update the frequency list map
+       self.freqListMap[node.cnt] = nextHigherFreqList
+       self.keyNode[node.key] = node
+
+   # Method to get the value of key from LFU cache
+   def get(self, key):
+       # Return the value if key exists
+       if key in self.keyNode:
+           node = self.keyNode[key]  # Get the node
+           val = node.value  # Get the value
+           self.updateFreqListMap(node)  # Update the frequency
+           # Return the value
+           return val
+           
+       # Return -1 if key is not found
+       return -1
+
+   def put(self, key, value):
+       
+       # If the size of Cache is 0, 
+       # no data-items can be inserted
+       if self.maxSizeCache == 0:
+           return
+       
+       # If key already exists
+       if key in self.keyNode:
+           node = self.keyNode[key]  # Get the node
+           node.value = value  # Update the value
+           self.updateFreqListMap(node)  # Update the frequency
+       else:
+           # If cache limit is reached
+           if self.curSize == self.maxSizeCache:
+               # Remove the least frequently used data-item
+               list = self.freqListMap[self.minFreq]
+               del self.keyNode[list.tail.prev.key]
+               # Update the frequency map
+               self.freqListMap[self.minFreq].removeNode(list.tail.prev)
+               self.curSize -= 1  # Decrement the current size of cache
+           
+           self.curSize += 1  # Increment the current cache size
+           # Adding new value to the cache, 
+           # set its frequency to 1
+           self.minFreq = 1  
+           
+           # Create a dummy list
+           listFreq = List()
+           
+           # If the list already exists
+           if self.minFreq in self.freqListMap:
+               
+               # Update the pointer to already present list
+               listFreq = self.freqListMap[self.minFreq]
+           
+           # Create the node to store data-item
+           node = Node(key, value)
+           
+           # Add the node to dummy list
+           listFreq.addFront(node)
+           
+           # Add the node to Hashmap
+           self.keyNode[key] = node
+           
+           # Update the frequency list map
+           self.freqListMap[self.minFreq] = listFreq</code></pre></div>
+</body>
+</html>

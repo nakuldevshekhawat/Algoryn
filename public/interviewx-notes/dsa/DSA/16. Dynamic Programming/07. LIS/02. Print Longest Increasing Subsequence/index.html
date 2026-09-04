@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Print Longest Increasing Subsequence</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Print Longest Increasing Subsequence</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Binary Search</span><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array of n integers arr, return the Longest Increasing Subsequence (LIS) that is Index-wise Lexicographically Smallest.</p><p><br></p><p>The Longest Increasing Subsequence (LIS) is the longest subsequence where all elements are in strictly increasing order.</p><p>A subsequence A1 is Index-wise Lexicographically Smaller than another subsequence A2 if, at the first position where A1 and A2 differ, the element in A1 appears earlier in the array arr than corresponding element in S2.</p><p><br></p><p>Your task is to return the LIS that is Index-wise Lexicographically Smallest from the given array.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= arr.length <= 10<sup>3</sup></li><li>-10<sup>6</sup> <= <span style="color: rgb(245, 245, 245);">arr</span>[i] <= 10<sup>6</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: arr = [10, 22, 9, 33, 21, 50, 41, 60, 80]</p><p>Output: [10, 22, 33, 50, 60, 80]</p><p>Explanation: The LIS is [10, 22, 33, 41, 60, 80] and it is the index-wise lexicographically smallest.</p><h3>Example 2</h3><p>Input: arr = [1, 3, 2, 4, 6, 5]</p><p>Output: [1, 3, 4, 6]</p><p>Explanation: Possible LIS sequences are [1, 3, 4, 6] and [1, 2, 4, 6]. Since [1, 3, 4, 6] is Index-wise Lexicographically Smaller, it is the result.</p><h3>Example 3</h3><p>Input: arr = [5, 6, 1, 2, 3, 4, 7]</p></div>
+
+<div class="section"><h2>Editorial: Solution</h2><p>
+    <strong>Pre-requisite:</strong> <a href="https://takeuforward.org/plus/dsa-concept-revision/day-38/longest-increasing-subsequence?tab=editorial&approach=tabulation" target="_blank">Tabulation approach to find the length of Longest Increasing Subsequence</a>
+</p>
+
+<h3>Intuition</h3>
+<p>
+    In order to print the LIS, we cannot use the traditional tabulation approach (converting memoization to tabulation) or the space-optimized approach. To get to our answer, we need to understand a different tabulation approach, which will help us retrace the LIS formed. <br><br>
+
+    We will use a 1D DP array to store the last index of the LIS formed till now, where dp[i] will store the length of longest increasing subsequence that <strong>ends at</strong> index i.
+
+    <h3>How to compute the DP array?</h3> 
+<h6>(with lexicographically smallest LIS handling)</h6> 
+<p>
+
+    We iterate through the array, and for each index <b><code>i</code></b>, we check all previous indices   <b><code>j</code></b> <code>(0 ≤ j < i)</code>. <br><br>
+    
+    If <code>arr[j] < arr[i]</code>, then the LIS ending at <code>j</code> can be extended by <code>arr[i]</code>. Now, there can be two scenarios:
+    <ul>
+        <li><b>If <code>dp[i] < dp[j] + 1</code></b>, <br><br>
+            we update: dp[i] to dp[j] + 1 and parent[i] = j
+        </li>
+
+        <li><b>If <code>dp[j] + 1 == dp[i]</code></b>, multiple LIS of the same length are possible. <br><br>To obtain the <b>index-wise lexicographically smallest LIS</b>, we choose the transition with the smaller value (or earlier index for index-wise lexicographic order): parent[i] = j.
+        </li>
+    </ul>
+</p>
+
+    <h5>Backtracking:</h5>
+    Now, since we have understood the tabulation method, we can keep a parent array that will help backtrack and eventually help us print the LIS. Whenever we update dp[i], we will also update the parent array. <br><br>
+    The parent array will store the index of the previous element in the LIS. So, if we are at index i and we find that <code>arr[j] < arr[i]</code>, we will set <code>parent[i] = j</code>. This means that the previous element in the LIS ending at index i is at index j. <br><br>
+
+    Note that the LIS found by this approach will be in reverse order. So, we will need to reverse the LIS before returning it.
+</p>
+
+<h3>Approach</h3>
+<p>
+    <ul>
+        <li>Initialize tracking structures to store the length of the longest subsequence ending at each position and to remember the previous index for reconstruction.</li>
+        <li>Iterate through the array, and for each element, check all previous elements to see if it can extend an increasing subsequence. If yes, update the length and store the previous index.</li>
+        <li>In case of a tie in lengths, choose the smaller index value for the previous index to get the index-wise lexicographically smallest LIS.</li>
+        <li>Track the maximum length of the increasing subsequence and its ending position.</li>
+        <li>Backtrack from the ending position using the parent links to reconstruct the actual subsequence.</li>
+        <li>Reverse the sequence to get it in the correct order and return it.</li>
+    </ul>
+</p>
+
+<h3>Solution</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    vector<int> longestIncreasingSubsequence(vector<int>& arr) {
+        int n = arr.size(); // Size of the array 
+
+        vector<int> ans; // To store the LIS
+        vector<int> dp(n, 1); // DP array 
+        vector<int> parent(n); // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        int lastIndex = 0; 
+
+        // To store the length of LIS
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for(int i = 0; i < n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for(int prevInd = 0; prevInd < i; prevInd++) {
+                
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if(arr[prevInd] < arr[i]) {
+                    // If a longer LIS is found
+                    if(dp[i] < dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if(dp[i] == dp[prevInd] + 1 && prevInd < parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+            }
+
+            // If a longer LIS is found, update the values
+            if(dp[i] > maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            } 
+        }
+
+        // Backtracking
+        int i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.push_back(arr[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.push_back(arr[i]); // Adding the last element 
+
+        // Reverse to get the LIS
+        reverse(ans.begin(), ans.end());
+
+        // Return the computed result
+        return ans;
+    }
+};
+
+int main() {
+    vector<int> arr = {10, 22, 9, 33, 21, 50, 41, 60, 80};
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to find the 
+    longest increasing subsequence */
+    vector<int> ans = sol.longestIncreasingSubsequence(arr);
+    
+    // Output
+    cout << "The longest increasing subsequence for the given array is: ";
+    for(auto x : ans) cout << x << " ";
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    public List<Integer> longestIncreasingSubsequence(int[] arr) {
+        int n = arr.length; // Size of the array 
+
+        List<Integer> ans = new ArrayList<>(); // To store the LIS
+        int[] dp = new int[n]; // DP array 
+        int[] parent = new int[n]; // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        int lastIndex = 0; 
+
+        // To store the length of LIS
+        int maxLen = 0;
+
+        // Initialize DP array with 1
+        Arrays.fill(dp, 1);
+
+        // Computing the DP array 
+        for(int i = 0; i < n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for(int prevInd = 0; prevInd < i; prevInd++) {
+                
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if (arr[prevInd] < arr[i]) {
+                    // If a longer LIS is found
+                    if (dp[i] < dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if (dp[i] == dp[prevInd] + 1 && prevInd < parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+            }
+
+            // If a longer LIS is found, update the values
+            if(dp[i] > maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        int i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.add(arr[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.add(arr[i]); // Adding the last element 
+
+        // Reverse to get the LIS
+        Collections.reverse(ans);
+
+        // Return the computed result
+        return ans;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] arr = {10, 22, 9, 33, 21, 50, 41, 60, 80};
+
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution(); 
+        
+        /* Function call to find the 
+        longest increasing subsequence */
+        List<Integer> ans = sol.longestIncreasingSubsequence(arr);
+        
+        // Output
+        System.out.print("The longest increasing subsequence for the given array is: ");
+        for(int x : ans) System.out.print(x + " ");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def longestIncreasingSubsequence(self, arr):
+        n = len(arr)  # Size of the array 
+
+        ans = []  # To store the LIS
+        dp = [1] * n  # DP array 
+        parent = [0] * n  # Array to keep record of the parent
+
+        # To store the index of last element in the LIS
+        lastIndex = 0
+
+        # To store the length of LIS
+        maxLen = 0
+
+        # Computing the DP array 
+        for i in range(n):
+            parent[i] = i  # Assign the parent to itself
+
+            # For each previous index
+            for prevInd in range(i):
+                
+                # If the element at index i can be
+                # included in the LIS ending at index j
+                if arr[prevInd] < arr[i]:
+                    # If a longer LIS is found
+                    if dp[i] < dp[prevInd] + 1:
+                        dp[i] = dp[prevInd] + 1  # Update the DP value
+                        parent[i] = prevInd  # Store the parent
+                        
+                    # Else if same length LIS is found, choose the earlier index
+                    elif dp[i] == dp[prevInd] + 1 and prevInd < parent[i]:
+                        parent[i] = prevInd
+
+            # If a longer LIS is found, update the values
+            if dp[i] > maxLen:
+                lastIndex = i
+                maxLen = dp[i]
+
+        # Backtracking
+        i = lastIndex
+
+        # Until we reach an index which is its own parent
+        while parent[i] != i:
+            ans.append(arr[i])  # Add the element at current index
+            i = parent[i]
+        ans.append(arr[i])  # Adding the last element 
+
+        # Reverse to get the LIS
+        ans.reverse()
+
+        # Return the computed result
+        return ans
+        
+
+if __name__ == "__main__":
+    arr = [10, 22, 9, 33, 21, 50, 41, 60, 80]
+
+    ''' Creating an instance of 
+    Solution class '''
+    sol = Solution()
+
+    ''' Function call to find the 
+    longest increasing subsequence '''
+    ans = sol.longestIncreasingSubsequence(arr)
+
+    # Output
+    print("The longest increasing subsequence for the given array is:", end=" ")
+    for x in ans:
+        print(x, end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    longestIncreasingSubsequence(arr) {
+        const n = arr.length; // Size of the array 
+
+        let ans = []; // To store the LIS
+        let dp = new Array(n).fill(1); // DP array 
+        let parent = new Array(n); // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        let lastIndex = 0; 
+
+        // To store the length of LIS
+        let maxLen = 0;
+
+        // Computing the DP array 
+        for (let i = 0; i < n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for (let prevInd = 0; prevInd < i; prevInd++) {
+
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if (arr[prevInd] < arr[i]) {
+                    // If a longer LIS is found
+                    if (dp[i] < dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if (dp[i] === dp[prevInd] + 1 && prevInd < parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+
+            }
+
+            // If a longer LIS is found, update the values
+            if (dp[i] > maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        let i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while (parent[i] !== i) {
+            ans.push(arr[i]); // Add the element at current index
+            i = parent[i];
+        }
+        ans.push(arr[i]); // Adding the last element 
+
+        // Reverse to get the LIS
+        ans.reverse();
+
+        // Return the computed result
+        return ans;
+    }
+}
+
+const arr = [10, 22, 9, 33, 21, 50, 41, 60, 80];
+
+/* Creating an instance of 
+Solution class */
+const sol = new Solution();
+
+/* Function call to find the 
+longest increasing subsequence */
+const ans = sol.longestIncreasingSubsequence(arr);
+
+// Output
+console.log("The longest increasing subsequence for the given array is:", ...ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+class Solution
+{
+    public List<int> LongestIncreasingSubsequence(int[] arr)
+    {
+        int n = arr.Length; // Size of the array 
+
+        List<int> ans = new List<int>(); // To store the LIS
+        int[] dp = new int[n];           // DP array 
+        int[] parent = new int[n];       // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        int lastIndex = 0; 
+
+        // To store the length of LIS
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for (int i = 0; i < n; i++)
+        {
+            dp[i] = 1;
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for (int prevInd = 0; prevInd < i; prevInd++)
+            {
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if (arr[prevInd] < arr[i]) {
+                    // If a longer LIS is found
+                    if (dp[i] < dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if (dp[i] == dp[prevInd] + 1 && prevInd < parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+
+            }
+
+            // If a longer LIS is found, update the values
+            if (dp[i] > maxLen)
+            {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        int idx = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while (parent[idx] != idx)
+        {
+            ans.Add(arr[idx]); // Add the element at current index
+            idx = parent[idx]; 
+        }
+        ans.Add(arr[idx]); // Adding the last element 
+
+        // Reverse to get the LIS
+        ans.Reverse();
+
+        // Return the computed result
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] arr = { 10, 22, 9, 33, 21, 50, 41, 60, 80 };
+
+        /* Creating an instance of 
+           Solution class */
+        Solution sol = new Solution();
+
+        /* Function call to find the 
+           longest increasing subsequence */
+        List<int> lis = sol.LongestIncreasingSubsequence(arr);
+
+        // Output
+        Console.WriteLine("The longest increasing subsequence for the given array is: ");
+        foreach (int x in lis)
+            Console.Write(x + " ");
+        Console.WriteLine();
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to find the longest increasing subsequence in the given array
+func longestIncreasingSubsequence(arr []int) []int {
+	n := len(arr) // Size of the array
+
+	ans := []int{}            // To store the LIS
+	dp := make([]int, n)      // DP array
+	parent := make([]int, n)  // Array to keep record of the parent
+
+	// To store the index of last element in the LIS
+	lastIndex := 0
+
+	// To store the length of LIS
+	maxLen := 0
+
+	// Initialize DP array to 1
+	for i := 0; i < n; i++ {
+		dp[i] = 1
+	}
+
+	// Computing the DP array
+	for i := 0; i < n; i++ {
+		parent[i] = i // Assign the parent to itself
+
+		// For each previous index
+		for prevInd := 0; prevInd < i; prevInd++ {
+
+			/* If the element at index i can be
+                included in the LIS ending at index j */
+            if arr[prevInd] < arr[i] {
+                // If a longer LIS is found
+                if dp[i] < dp[prevInd]+1 {
+                    dp[i] = dp[prevInd] + 1 // Update the DP value
+                    parent[i] = prevInd // Store the parent
+                } else if dp[i] == dp[prevInd]+1 && prevInd < parent[i] {
+                    // Else if same length LIS is found, choose the earlier index
+                    parent[i] = prevInd
+                }
+            }
+		}
+
+		// If a longer LIS is found, update the values
+		if dp[i] > maxLen {
+			lastIndex = i
+			maxLen = dp[i]
+		}
+	}
+
+	// Backtracking
+	i := lastIndex
+
+	// Until we reach an index which is its own parent
+	for parent[i] != i {
+		ans = append(ans, arr[i]) // Add the element at current index
+		i = parent[i]
+	}
+	ans = append(ans, arr[i]) // Adding the last element
+
+	// Reverse to get the LIS
+	for left, right := 0, len(ans)-1; left < right; left, right = left+1, right-1 {
+		ans[left], ans[right] = ans[right], ans[left]
+	}
+
+	// Return the computed result
+	return ans
+}
+
+func main() {
+	arr := []int{10, 22, 9, 33, 21, 50, 41, 60, 80}
+
+	// Function call to find the longest increasing subsequence
+	ans := longestIncreasingSubsequence(arr)
+
+	// Output
+	fmt.Print("The longest increasing subsequence for the given array is: ")
+	for _, x := range ans {
+		fmt.Print(x, " ")
+	}
+	fmt.Println()
+}
+</code></pre></div></div></div>
+
+<h3>Complexity Analysis:</h3>
+<p>
+    <strong>Time Complexity: O(N<sup>2</sup>)</strong>, where N is the size of the given array. <br>
+    Computing the DP array takes O(N<sup>2</sup>) time, and backtracking the LIS takes O(N) time. <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, because of two arrays (dp and parent) used, each of size N.
+</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    vector&lt;int&gt; longestIncreasingSubsequence(vector&lt;int&gt;&amp; arr) {
+        int n = arr.size(); // Size of the array 
+
+        vector&lt;int&gt; ans; // To store the LIS
+        vector&lt;int&gt; dp(n, 1); // DP array 
+        vector&lt;int&gt; parent(n); // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        int lastIndex = 0; 
+
+        // To store the length of LIS
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for(int i = 0; i &lt; n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for(int prevInd = 0; prevInd &lt; i; prevInd++) {
+                
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if(arr[prevInd] &lt; arr[i]) {
+                    // If a longer LIS is found
+                    if(dp[i] &lt; dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if(dp[i] == dp[prevInd] + 1 &amp;&amp; prevInd &lt; parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+            }
+
+            // If a longer LIS is found, update the values
+            if(dp[i] &gt; maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            } 
+        }
+
+        // Backtracking
+        int i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.push_back(arr[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.push_back(arr[i]); // Adding the last element 
+
+        // Reverse to get the LIS
+        reverse(ans.begin(), ans.end());
+
+        // Return the computed result
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public List&lt;int&gt; LongestIncreasingSubsequence(int[] arr)
+    {
+        int n = arr.Length; // Size of the array 
+
+        List&lt;int&gt; ans = new List&lt;int&gt;(); // To store the LIS
+        int[] dp = new int[n];           // DP array 
+        int[] parent = new int[n];       // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        int lastIndex = 0; 
+
+        // To store the length of LIS
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for (int i = 0; i &lt; n; i++)
+        {
+            dp[i] = 1;
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for (int prevInd = 0; prevInd &lt; i; prevInd++)
+            {
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if (arr[prevInd] &lt; arr[i]) {
+                    // If a longer LIS is found
+                    if (dp[i] &lt; dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if (dp[i] == dp[prevInd] + 1 &amp;&amp; prevInd &lt; parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+
+            }
+
+            // If a longer LIS is found, update the values
+            if (dp[i] &gt; maxLen)
+            {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        int idx = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while (parent[idx] != idx)
+        {
+            ans.Add(arr[idx]); // Add the element at current index
+            idx = parent[idx]; 
+        }
+        ans.Add(arr[idx]); // Adding the last element 
+
+        // Reverse to get the LIS
+        ans.Reverse();
+
+        // Return the computed result
+        return ans;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the longest increasing subsequence in the given array
+func longestIncreasingSubsequence(arr []int) []int {
+	n := len(arr) // Size of the array
+
+	ans := []int{}            // To store the LIS
+	dp := make([]int, n)      // DP array
+	parent := make([]int, n)  // Array to keep record of the parent
+
+	// To store the index of last element in the LIS
+	lastIndex := 0
+
+	// To store the length of LIS
+	maxLen := 0
+
+	// Initialize DP array to 1
+	for i := 0; i &lt; n; i++ {
+		dp[i] = 1
+	}
+
+	// Computing the DP array
+	for i := 0; i &lt; n; i++ {
+		parent[i] = i // Assign the parent to itself
+
+		// For each previous index
+		for prevInd := 0; prevInd &lt; i; prevInd++ {
+
+			/* If the element at index i can be
+                included in the LIS ending at index j */
+            if arr[prevInd] &lt; arr[i] {
+                // If a longer LIS is found
+                if dp[i] &lt; dp[prevInd]+1 {
+                    dp[i] = dp[prevInd] + 1 // Update the DP value
+                    parent[i] = prevInd // Store the parent
+                } else if dp[i] == dp[prevInd]+1 &amp;&amp; prevInd &lt; parent[i] {
+                    // Else if same length LIS is found, choose the earlier index
+                    parent[i] = prevInd
+                }
+            }
+		}
+
+		// If a longer LIS is found, update the values
+		if dp[i] &gt; maxLen {
+			lastIndex = i
+			maxLen = dp[i]
+		}
+	}
+
+	// Backtracking
+	i := lastIndex
+
+	// Until we reach an index which is its own parent
+	for parent[i] != i {
+		ans = append(ans, arr[i]) // Add the element at current index
+		i = parent[i]
+	}
+	ans = append(ans, arr[i]) // Adding the last element
+
+	// Reverse to get the LIS
+	for left, right := 0, len(ans)-1; left &lt; right; left, right = left+1, right-1 {
+		ans[left], ans[right] = ans[right], ans[left]
+	}
+
+	// Return the computed result
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    public List&lt;Integer&gt; longestIncreasingSubsequence(int[] arr) {
+        int n = arr.length; // Size of the array 
+
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;(); // To store the LIS
+        int[] dp = new int[n]; // DP array 
+        int[] parent = new int[n]; // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        int lastIndex = 0; 
+
+        // To store the length of LIS
+        int maxLen = 0;
+
+        // Initialize DP array with 1
+        Arrays.fill(dp, 1);
+
+        // Computing the DP array 
+        for(int i = 0; i &lt; n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for(int prevInd = 0; prevInd &lt; i; prevInd++) {
+                
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if (arr[prevInd] &lt; arr[i]) {
+                    // If a longer LIS is found
+                    if (dp[i] &lt; dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if (dp[i] == dp[prevInd] + 1 &amp;&amp; prevInd &lt; parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+            }
+
+            // If a longer LIS is found, update the values
+            if(dp[i] &gt; maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        int i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.add(arr[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.add(arr[i]); // Adding the last element 
+
+        // Reverse to get the LIS
+        Collections.reverse(ans);
+
+        // Return the computed result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    longestIncreasingSubsequence(arr) {
+        const n = arr.length; // Size of the array 
+
+        let ans = []; // To store the LIS
+        let dp = new Array(n).fill(1); // DP array 
+        let parent = new Array(n); // Array to keep record of the parent
+
+        // To store the index of last element in the LIS
+        let lastIndex = 0; 
+
+        // To store the length of LIS
+        let maxLen = 0;
+
+        // Computing the DP array 
+        for (let i = 0; i &lt; n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for (let prevInd = 0; prevInd &lt; i; prevInd++) {
+
+                /* If the element at index i can be
+                included in the LIS ending at index j */
+                if (arr[prevInd] &lt; arr[i]) {
+                    // If a longer LIS is found
+                    if (dp[i] &lt; dp[prevInd] + 1) {
+                        dp[i] = dp[prevInd] + 1; // Update the DP value
+                        parent[i] = prevInd; // Store the parent
+                    }
+                    // Else if same length LIS is found, choose the earlier index
+                    else if (dp[i] === dp[prevInd] + 1 &amp;&amp; prevInd &lt; parent[i]) {
+                        parent[i] = prevInd;
+                    }
+                }
+
+            }
+
+            // If a longer LIS is found, update the values
+            if (dp[i] &gt; maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        let i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while (parent[i] !== i) {
+            ans.push(arr[i]); // Add the element at current index
+            i = parent[i];
+        }
+        ans.push(arr[i]); // Adding the last element 
+
+        // Reverse to get the LIS
+        ans.reverse();
+
+        // Return the computed result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def longestIncreasingSubsequence(self, arr):
+        n = len(arr)  # Size of the array 
+
+        ans = []  # To store the LIS
+        dp = [1] * n  # DP array 
+        parent = [0] * n  # Array to keep record of the parent
+
+        # To store the index of last element in the LIS
+        lastIndex = 0
+
+        # To store the length of LIS
+        maxLen = 0
+
+        # Computing the DP array 
+        for i in range(n):
+            parent[i] = i  # Assign the parent to itself
+
+            # For each previous index
+            for prevInd in range(i):
+                
+                # If the element at index i can be
+                # included in the LIS ending at index j
+                if arr[prevInd] &lt; arr[i]:
+                    # If a longer LIS is found
+                    if dp[i] &lt; dp[prevInd] + 1:
+                        dp[i] = dp[prevInd] + 1  # Update the DP value
+                        parent[i] = prevInd  # Store the parent
+                        
+                    # Else if same length LIS is found, choose the earlier index
+                    elif dp[i] == dp[prevInd] + 1 and prevInd &lt; parent[i]:
+                        parent[i] = prevInd
+
+            # If a longer LIS is found, update the values
+            if dp[i] &gt; maxLen:
+                lastIndex = i
+                maxLen = dp[i]
+
+        # Backtracking
+        i = lastIndex
+
+        # Until we reach an index which is its own parent
+        while parent[i] != i:
+            ans.append(arr[i])  # Add the element at current index
+            i = parent[i]
+        ans.append(arr[i])  # Adding the last element 
+
+        # Reverse to get the LIS
+        ans.reverse()
+
+        # Return the computed result
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    vector&lt;int&gt; longestIncreasingSubsequence(vector&lt;int&gt;&amp; arr) {
+        int n = arr.size();
+        if (n == 0) return {};
+
+        vector&lt;int&gt; tails_vals;        // values of tails
+        vector&lt;int&gt; tails_idx;         // indices of those tail values in arr
+        vector&lt;int&gt; parent(n, -1);     // parent links for reconstruction
+
+        for (int i = 0; i &lt; n; ++i) {
+            int x = arr[i];
+            int pos = lower_bound(tails_vals.begin(), tails_vals.end(), x) - tails_vals.begin();
+
+            if (pos == (int)tails_vals.size()) {
+                tails_vals.push_back(x);
+                tails_idx.push_back(i);
+            } else {
+                tails_vals[pos] = x;
+                tails_idx[pos] = i;
+            }
+
+            if (pos &gt; 0) parent[i] = tails_idx[pos - 1];
+        }
+
+        // reconstruct
+        vector&lt;int&gt; lis;
+        int idx = tails_idx.back();
+        while (idx != -1) {
+            lis.push_back(arr[idx]);
+            idx = parent[idx];
+        }
+        reverse(lis.begin(), lis.end());
+        return lis;
+    }
+};
+
+
+</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    public List&lt;int&gt; LongestIncreasingSubsequence(int[] arr) {
+        int n = arr.Length;
+        var tailsVals = new List&lt;int&gt;();
+        var tailsIdx = new List&lt;int&gt;();
+        var parent = new int[n];
+        for (int i = 0; i &lt; n; ++i) parent[i] = -1;
+
+        for (int i = 0; i &lt; n; ++i) {
+            int x = arr[i];
+            int lo = 0, hi = tailsVals.Count;
+            while (lo &lt; hi) {
+                int mid = (lo + hi) &gt;&gt; 1;
+                if (tailsVals[mid] &lt; x) lo = mid + 1;
+                else hi = mid;
+            }
+            int pos = lo;
+            if (pos == tailsVals.Count) {
+                tailsVals.Add(x);
+                tailsIdx.Add(i);
+            } else {
+                tailsVals[pos] = x;
+                tailsIdx[pos] = i;
+            }
+            if (pos &gt; 0) parent[i] = tailsIdx[pos - 1];
+        }
+
+        var lis = new List&lt;int&gt;();
+        if (tailsIdx.Count &gt; 0) {
+            int idx = tailsIdx[tailsIdx.Count - 1];
+            while (idx != -1) {
+                lis.Add(arr[idx]);
+                idx = parent[idx];
+            }
+            lis.Reverse();
+        }
+        return lis;
+    }
+}
+
+
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>func (s Solution) LongestIncreasingSubsequence(arr []int) []int {
+	n := len(arr)
+	if n == 0 {
+		return []int{}
+	}
+	tailsVals := make([]int, 0, n)
+	tailsIdx := make([]int, 0, n)
+	parent := make([]int, n)
+	for i := range parent {
+		parent[i] = -1
+	}
+
+	for i := 0; i &lt; n; i++ {
+		x := arr[i]
+		// lower_bound
+		lo, hi := 0, len(tailsVals)
+		for lo &lt; hi {
+			mid := (lo + hi) &gt;&gt; 1
+			if tailsVals[mid] &lt; x {
+				lo = mid + 1
+			} else {
+				hi = mid
+			}
+		}
+		pos := lo
+		if pos == len(tailsVals) {
+			tailsVals = append(tailsVals, x)
+			tailsIdx = append(tailsIdx, i)
+		} else {
+			tailsVals[pos] = x
+			tailsIdx[pos] = i
+		}
+		if pos &gt; 0 {
+			parent[i] = tailsIdx[pos-1]
+		}
+	}
+
+	lis := make([]int, 0)
+	if len(tailsIdx) &gt; 0 {
+		idx := tailsIdx[len(tailsIdx)-1]
+		for idx != -1 {
+			lis = append(lis, arr[idx])
+			idx = parent[idx]
+		}
+		// reverse in-place
+		for i, j := 0, len(lis)-1; i &lt; j; i, j = i+1, j-1 {
+			lis[i], lis[j] = lis[j], lis[i]
+		}
+	}
+	return lis
+}
+
+
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    public List&lt;Integer&gt; longestIncreasingSubsequence(int[] arr) {
+        int n = arr.length;
+        List&lt;Integer&gt; tailsVals = new ArrayList&lt;&gt;();
+        List&lt;Integer&gt; tailsIdx = new ArrayList&lt;&gt;();
+        int[] parent = new int[n];
+        Arrays.fill(parent, -1);
+
+        for (int i = 0; i &lt; n; ++i) {
+            int x = arr[i];
+            int lo = 0, hi = tailsVals.size();
+            while (lo &lt; hi) {
+                int mid = (lo + hi) &gt;&gt;&gt; 1;
+                if (tailsVals.get(mid) &lt; x) lo = mid + 1;
+                else hi = mid;
+            }
+            int pos = lo;
+            if (pos == tailsVals.size()) {
+                tailsVals.add(x);
+                tailsIdx.add(i);
+            } else {
+                tailsVals.set(pos, x);
+                tailsIdx.set(pos, i);
+            }
+            if (pos &gt; 0) parent[i] = tailsIdx.get(pos - 1);
+        }
+
+        List&lt;Integer&gt; lis = new ArrayList&lt;&gt;();
+        if (!tailsIdx.isEmpty()) {
+            int idx = tailsIdx.get(tailsIdx.size() - 1);
+            while (idx != -1) {
+                lis.add(arr[idx]);
+                idx = parent[idx];
+            }
+            Collections.reverse(lis);
+        }
+        return lis;
+    }
+}
+
+</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    static longestIncreasingSubsequence(arr) {
+        const n = arr.length;
+        if (n === 0) return [];
+        const tailsVals = []; // values
+        const tailsIdx = [];  // indices
+        const parent = new Array(n).fill(-1);
+
+        for (let i = 0; i &lt; n; ++i) {
+            const x = arr[i];
+            // lower_bound
+            let lo = 0, hi = tailsVals.length;
+            while (lo &lt; hi) {
+                const mid = (lo + hi) &gt;&gt; 1;
+                if (tailsVals[mid] &lt; x) lo = mid + 1;
+                else hi = mid;
+            }
+            const pos = lo;
+            if (pos === tailsVals.length) {
+                tailsVals.push(x);
+                tailsIdx.push(i);
+            } else {
+                tailsVals[pos] = x;
+                tailsIdx[pos] = i;
+            }
+            if (pos &gt; 0) parent[i] = tailsIdx[pos - 1];
+        }
+
+        const lis = [];
+        if (tailsIdx.length &gt; 0) {
+            let idx = tailsIdx[tailsIdx.length - 1];
+            while (idx !== -1) {
+                lis.push(arr[idx]);
+                idx = parent[idx];
+            }
+            lis.reverse();
+        }
+        return lis;
+    }
+}
+
+</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    @staticmethod
+    def longest_increasing_subsequence(arr):
+        n = len(arr)
+        if n == 0:
+            return []
+        tails_vals = []   # values
+        tails_idx = []    # indices in arr
+        parent = [-1] * n
+
+        for i, x in enumerate(arr):
+            pos = bisect_left(tails_vals, x)
+            if pos == len(tails_vals):
+                tails_vals.append(x)
+                tails_idx.append(i)
+            else:
+                tails_vals[pos] = x
+                tails_idx[pos] = i
+            if pos &gt; 0:
+                parent[i] = tails_idx[pos - 1]
+
+        lis = []
+        idx = tails_idx[-1]
+        while idx != -1:
+            lis.append(arr[idx])
+            idx = parent[idx]
+        lis.reverse()
+        return lis
+
+
+
+
+</code></pre></div>
+</body>
+</html>

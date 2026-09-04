@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kth element of 2 sorted arrays</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Kth element of 2 sorted arrays</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Divide and Conquer</span><span>Binary Search</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two sorted arrays a and b of size m and n respectively. Find the <strong>kth</strong> element of the final sorted array.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= m, n <= 10<sup>4</sup></li><li>0 <= arr1[i[, arr2[i] < 10<sup>9</sup></li><li>1 <= k <= m+n</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: a = [2, 3, 6, 7, 9], b = [1, 4, 8, 10], k = 5</p><p>Output: 6</p><p>Explanation: The final sorted array would be [1, 2, 3, 4, 6, 7, 8, 9, 10]. The 5th element of this array is 6.</p><h3>Example 2</h3><p>Input: a = [100, 112, 256, 349, 770], b = [72, 86, 113, 119, 265, 445, 892], k = 7</p><p>Output: 256</p><p>Explanation: Final sorted array is - [72, 86, 100, 112, 113, 119, 256, 265, 349, 445, 770, 892], 7th element of this array is 256.</p><h3>Example 3</h3><p>Input: a = [2, 3, 6], b = [7, 9], k = 4</p></div>
+<div class="section"><h2>Fun Fact</h2><p>One fun fact related to this problem is its use in database management systems, particularly in operations such as merge and join. Companies that deal with large amounts of data (like Google, Facebook, or Amazon) often need to perform operations on sorted data from different sources or databases. By optimizing solutions to problems like this, they can ensure more efficient data retrieval, impacting overall system performance.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3><strong>Intuition: </strong></h3>
+<p>
+The idea here is to use the binary search algorithm to solve this problem in an optimal way. Upon observation, it can be found that this problem is a slight variation of another problem <a href="/plus/dsa/problems/median-of-2-sorted-arrays?category=binary-search&subcategory=faqs">Median of two sorted arrays.</a> So, the entire logic of the optimal solution will remain the same here with just few changes; instead of finding the median, the kth element of two sorted arrays will be determined.</p>
+
+<p><strong>Observation: </strong>
+Assume, m = size of arr1[] and n = size of arr2[].
+The median creates a partition on the final merged array, dividing it into two halves with approximately equal sizes, around (m+n) / 2. It was also discussed that these halves must be unique in a valid merged array. The approach involved forming the correct unique left half, assuming it contains x elements from arr1[] and ((m+n)/2)-x elements from arr2[], where x ranges from 0 to min(m, n). For each value in this range, the configuration of the left half was validated using the condition l1 <= r2 && l2 <= r1, where l1, r1 are variables referring to elements from arr1[], and l2, r2 refer to elements from arr2[].</p>
+<img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/ill1-u7KSGnxD" style="margin:0px auto;"><br>
+<p>The same approach will be used with some minor changes in the values. The changes will be as follows:</p>
+<p>The size of the left half will be k: Here, the median does not need to be found; instead, the k-th element is sought. Therefore, the partition will be placed after the k-th element. Consequently, the size of the left half will be k instead of (m+n)/2. For example,<br></p>
+<img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/ill2-rawYVjq-" style="margin:0px auto;"><br>
+
+<strong>Range of x:</strong>
+<ol>
+<li>The maximum possible value of x is determined by aiming to construct the left subarray of size k. Therefore, the maximum possible value should be k. However, if arr1[] has a size of n1 and n1 < k, then the maximum possible value will be n1. Thus, after generalization, the maximum value will be determined by min(k, n1), where n1 denotes the size of the smaller array, with n1 = min(m, n).</li>
+<li>The minimum possible value of x (i.e., the number of elements to be taken from arr1[]) can be understood using an example. Given arr1[] size m = 6, arr2[] size n = 5, and k = 7, the minimum value of x should be 2. When constructing an array of size 7, and considering that the maximum number of elements we can take from arr2[] is 5, a minimum of 2 elements must be taken from arr1[]. </li>
+<li>Therefore, the minimum possible value should be ( k - n2 ), where ( n2 ) represents the size of the not-considered array (i.e., the bigger array).
+However, if ( k < n2 ), ( k - n2 ) will be negative. To handle this case, the minimum value is considered as ( max(0, k - n2) ), where ( n2 ) denotes the size of the bigger array, with ( n2 = max(m, n) ).</li>
+<li>The new range of x is determined by [max(0, k-n2), min(k, n1)], where n1 denotes the size of the smaller array, and n2 denotes the size of the bigger array. Here, n1 is defined as min(m, n) to optimize the time complexity by considering the array with the smaller length. Binary search will be applied within this new range.</li></ol>
+<p><strong>Note:</strong> The answer will always be max(l1, l2) as the kth element will be the maximum element of the left half.</p>
+
+<p>The rest of the process will be as similar to the one used in the problem, Median of 2 sorted arrays.</p>
+<h3><strong>Approach: </strong></h3>
+<ol>
+<li>First, make sure that the arr1 is the smaller array. If not by default, just swap the arrays. Our main goal is to consider the smaller array as arr1[]. Calculate the length of the left half as left = k.
+</li><li>Initialize two pointers: low and high, low will point to max(0, k-n2), and the high will point to min(k, n1) (i.e. n1 is the size of the smaller array, n2 is the size of the bigger array). Calculate the ‘mid1’ i.e. x and ‘mid2’ i.e. [left-x]. Now, inside the loop, calculate the value of ‘mid1’ using the following formula, mid1 = (low+high) // 2 ( ‘//’ refers to integer division) and mid2 = left-mid1.
+</li><li>Calculate l1, l2, r1, and r2: Generally,
+l1 = arr1[mid1-1]
+l2 = arr2[mid2-1]
+r1 = arr1[mid1]
+r2 = arr2[mid2]
+The possible values of ‘mid1’ and ‘mid2’ might be 0 and n1 and n2 respectively. So, to handle these cases, store some default values for these four variables. The default value for l1 and l2 will be INT_MIN and for r1 and r2, it will be INT_MAX.</li>
+<li>Eliminate the halves based on the following conditions:</li>
+<ol>
+<li>If the condition  l1 <= r2  and  l2 <=r1 and is satisfied, the answer is found. The maximum of  l1 and l2 is returned.
+</li><li>If l1>r2, indicating that more elements from arr1[] have been considered than necessary, fewer elements from arr1[] and more from arr2[] are required. In such a scenario, smaller values of x should be tried. To achieve this, the right half is eliminated (high is set to mid1 - 1).
+</li><li>If l2>r1, implying that more elements from arr2[] have been considered than necessary, fewer elements from arr2[] and more from arr1[] are required. In such a scenario, larger values of x should be tried. To achieve this, the left half is eliminated (low is set to mid1 + 1).
+</li></ol>
+<li>Finally, when the loop terminates, include a dummy return statement just to avoid warnings or errors.</li></ol><br>
+
+<h3><strong>Dry Run: </strong></h3>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/1.png-HzSVulU6" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/2.png-bVx30FQj" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/3.png-TY_pBYe4" alt="Image 3"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/1.png-HzSVulU6" alt="Image 1"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/2.png-bVx30FQj" alt="Image 2"><img src="https://static.takeuforward.org/premium/Binary Search/FAQs/Kth element of 2 sorted arrays/3.png-TY_pBYe4" alt="Image 3"></div></div>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int kthElement(vector<int>& a, vector<int>& b, int k) {
+        int m = a.size();
+        int n = b.size();
+
+        // Ensure a is smaller array for optimization
+        if (m > n) {
+            // Swap a and b
+            return kthElement(b, a, k); 
+        }
+        
+        // Length of the left half
+        int left = k; 
+
+        // Apply binary search
+        int low = max(0, k - n), high = min(k, m);
+        while (low <= high) {
+            int mid1 = (low + high) >> 1;
+            int mid2 = left - mid1;
+
+            // Initialize l1, l2, r1, r2
+            int l1 = (mid1 > 0) ? a[mid1 - 1] : INT_MIN;
+            int l2 = (mid2 > 0) ? b[mid2 - 1] : INT_MIN;
+            int r1 = (mid1 < m) ? a[mid1] : INT_MAX;
+            int r2 = (mid2 < n) ? b[mid2] : INT_MAX;
+
+            // Check if we have found the answer
+            if (l1 <= r2 && l2 <= r1) {
+                return max(l1, l2);
+            } 
+            else if (l1 > r2) {
+                // Eliminate the right half
+                high = mid1 - 1;
+            } 
+            else {
+                // Eliminate the left half
+                low = mid1 + 1;
+            }
+        }
+        
+         // Dummy return statement 
+        return -1;
+    }
+};
+
+int main() {
+    vector<int> a = {2, 3, 6, 7, 9};
+    vector<int> b = {1, 4, 8, 10};
+    int k = 5;
+    
+    //Create an instance of Solution class
+    Solution solution;
+    
+    //Print the answer
+    cout << "The " << k << "-th element of two sorted arrays is: "
+         << solution.kthElement(a, b, k) << '\n';
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    public int kthElement(int[] a, int[] b, int k) {
+        int m = a.length;
+        int n = b.length;
+
+        // Ensure a is smaller array for optimization
+        if (m > n) {
+            // Swap a and b
+            return kthElement(b, a, k); 
+        }
+        
+        // Length of the left half
+        int left = k; 
+
+        // Apply binary search
+        int low = Math.max(0, k - n), high = Math.min(k, m);
+        while (low <= high) {
+            int mid1 = (low + high) >> 1;
+            int mid2 = left - mid1;
+
+            // Initialize l1, l2, r1, r2
+            int l1 = (mid1 > 0) ? a[mid1 - 1] : Integer.MIN_VALUE;
+            int l2 = (mid2 > 0) ? b[mid2 - 1] : Integer.MIN_VALUE;
+            int r1 = (mid1 < m) ? a[mid1] : Integer.MAX_VALUE;
+            int r2 = (mid2 < n) ? b[mid2] : Integer.MAX_VALUE;
+
+            // Check if we have found the answer
+            if (l1 <= r2 && l2 <= r1) {
+                return Math.max(l1, l2);
+            } 
+            else if (l1 > r2) {
+                // Eliminate the right half
+                high = mid1 - 1;
+            } 
+            else {
+                // Eliminate the left half
+                low = mid1 + 1;
+            }
+        }
+        
+         // Dummy return statement 
+        return -1;
+    }
+
+    public static void main(String[] args) {
+        int[] a = {2, 3, 6, 7, 9};
+        int[] b = {1, 4, 8, 10};
+        int k = 5;
+        
+        // Create an instance of Solution class
+        Solution solution = new Solution();
+        
+        // Print the answer
+        System.out.println("The " + k + "-th element of two sorted arrays is: " +solution.kthElement(a, b, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def kthElement(self, a, b, k):
+        m = len(a)
+        n = len(b)
+
+        # Ensure a is smaller array for optimization
+        if m > n:
+            # Swap a and b
+            return self.kthElement(b, a, k)
+        
+        # Length of the left half
+        left = k
+
+        # Apply binary search
+        low = max(0, k - n)
+        high = min(k, m)
+        while low <= high:
+            mid1 = (low + high) >> 1
+            mid2 = left - mid1
+
+            # Initialize l1, l2, r1, r2
+            l1 = a[mid1 - 1] if mid1 > 0 else float('-inf')
+            l2 = b[mid2 - 1] if mid2 > 0 else float('-inf')
+            r1 = a[mid1] if mid1 < m else float('inf')
+            r2 = b[mid2] if mid2 < n else float('inf')
+
+            # Check if we have found the answer
+            if l1 <= r2 and l2 <= r1:
+                return max(l1, l2)
+            elif l1 > r2:
+                # Eliminate the right half
+                high = mid1 - 1
+            else:
+                # Eliminate the left half
+                low = mid1 + 1
+        
+        # Dummy return statement
+        return -1
+
+a = [2, 3, 6, 7, 9]
+b = [1, 4, 8, 10]
+k = 5
+
+# Create an instance of Solution class
+solution = Solution()
+
+# Print the answer
+print(f"The {k}-th element of two sorted arrays is: {solution.kthElement(a, b, k)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    kthElement(a, b, k) {
+        let m = a.length;
+        let n = b.length;
+
+        // Ensure a is smaller array for optimization
+        if (m > n) {
+            // Swap a and b
+            return this.kthElement(b, a, k);
+        }
+        
+        // Length of the left half
+        let left = k;
+
+        // Apply binary search
+        let low = Math.max(0, k - n);
+        let high = Math.min(k, m);
+        while (low <= high) {
+            let mid1 = (low + high) >> 1;
+            let mid2 = left - mid1;
+
+            // Initialize l1, l2, r1, r2
+            let l1 = (mid1 > 0) ? a[mid1 - 1] : Number.MIN_SAFE_INTEGER;
+            let l2 = (mid2 > 0) ? b[mid2 - 1] : Number.MIN_SAFE_INTEGER;
+            let r1 = (mid1 < m) ? a[mid1] : Number.MAX_SAFE_INTEGER;
+            let r2 = (mid2 < n) ? b[mid2] : Number.MAX_SAFE_INTEGER;
+
+            // Check if we have found the answer
+            if (l1 <= r2 && l2 <= r1) {
+                return Math.max(l1, l2);
+            } else if (l1 > r2) {
+                // Eliminate the right half
+                high = mid1 - 1;
+            } else {
+                // Eliminate the left half
+                low = mid1 + 1;
+            }
+        }
+        
+        // Dummy return statement 
+        return -1;
+    }
+}
+
+let a = [2, 3, 6, 7, 9];
+let b = [1, 4, 8, 10];
+let k = 5
+
+//Create an instance of Solution class
+let sol = new Solution();
+
+// Print the answer
+console.log(`The ${k}-th element of two sorted arrays is: ${sol.kthElement(a, b, k)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // The provided code was JavaScript, not C++. This is a C# translation of the given JS logic.
+    public int KthElement(List<int> a, List<int> b, int k)
+    {
+        int m = a.Count;
+        int n = b.Count;
+
+        // Ensure a is the smaller array for optimization
+        if (m > n)
+        {
+            // Swap a and b
+            return KthElement(b, a, k);
+        }
+
+        // Length of the left half
+        int left = k;
+
+        // Apply binary search
+        int low = Math.Max(0, k - n);
+        int high = Math.Min(k, m);
+        while (low <= high)
+        {
+            int mid1 = low + (high - low) / 2;
+            int mid2 = left - mid1;
+
+            // Initialize l1, l2, r1, r2
+            int l1 = (mid1 > 0) ? a[mid1 - 1] : int.MinValue;
+            int l2 = (mid2 > 0) ? b[mid2 - 1] : int.MinValue;
+            int r1 = (mid1 < m) ? a[mid1] : int.MaxValue;
+            int r2 = (mid2 < n) ? b[mid2] : int.MaxValue;
+
+            // Check if we have found the answer
+            if (l1 <= r2 && l2 <= r1)
+            {
+                return Math.Max(l1, l2);
+            }
+            else if (l1 > r2)
+            {
+                // Eliminate the right half
+                high = mid1 - 1;
+            }
+            else
+            {
+                // Eliminate the left half
+                low = mid1 + 1;
+            }
+        }
+
+        // Dummy return statement
+        return -1;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<int> a = new List<int> { 2, 3, 6, 7, 9 };
+        List<int> b = new List<int> { 1, 4, 8, 10 };
+        int k = 5;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the answer
+        Console.WriteLine($"The {k}-th element of two sorted arrays is: {sol.KthElement(a, b, k)}");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+    "math"
+)
+
+// kthElement finds the k‑th element (1‑based) in the combined sorted arrays a and b
+func kthElement(a, b []int, k int) int {
+    m, n := len(a), len(b)
+    // Ensure a is the smaller array for optimization
+    if m > n {
+        return kthElement(b, a, k)
+    }
+
+    // Apply binary search on a
+    low := int(math.Max(0, float64(k-n)))
+    high := int(math.Min(float64(k), float64(m)))
+
+    for low <= high {
+        mid1 := (low + high) / 2
+        mid2 := k - mid1
+
+        // Initialize l1, l2, r1, r2
+        l1 := math.MinInt
+        if mid1 > 0 {
+            l1 = a[mid1-1]
+        }
+        l2 := math.MinInt
+        if mid2 > 0 {
+            l2 = b[mid2-1]
+        }
+        r1 := math.MaxInt
+        if mid1 < m {
+            r1 = a[mid1]
+        }
+        r2 := math.MaxInt
+        if mid2 < n {
+            r2 = b[mid2]
+        }
+
+        // Check if partition is correct
+        if l1 <= r2 && l2 <= r1 {
+            // Found the k‑th element
+            return int(math.Max(float64(l1), float64(l2)))
+        } else if l1 > r2 {
+            // Too many from a, move left
+            high = mid1 - 1
+        } else {
+            // Too few, move right
+            low = mid1 + 1
+        }
+    }
+
+    // Dummy return (should not happen with valid inputs)
+    return -1
+}
+
+func main() {
+    a := []int{2, 3, 6, 7, 9}
+    b := []int{1, 4, 8, 10}
+    k := 5
+
+    ans := kthElement(a, b, k)
+    fmt.Printf("The %d-th element of two sorted arrays is: %d\n", k, ans)
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity:</strong>O(log(min(M, N))), where M and N are the sizes of two given arrays. As, binary search is being applied on the range [max(0, k-N2), min(k, N1)]. The range length <= min(M, N).<br><br>
+<strong>Space Complexity:</strong> As no additional space is used, so the Space Complexity is O(1).</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    int kthElement(vector&lt;int&gt;&amp; a, vector&lt;int&gt;&amp; b, int k) {
+        int m = a.size();
+        int n = b.size();
+
+        // Ensure a is smaller array for optimization
+        if (m &gt; n) {
+            // Swap a and b
+            return kthElement(b, a, k); 
+        }
+        
+        // Length of the left half
+        int left = k; 
+
+        // Apply binary search
+        int low = max(0, k - n), high = min(k, m);
+        while (low &lt;= high) {
+            int mid1 = (low + high) &gt;&gt; 1;
+            int mid2 = left - mid1;
+
+            // Initialize l1, l2, r1, r2
+            int l1 = (mid1 &gt; 0) ? a[mid1 - 1] : INT_MIN;
+            int l2 = (mid2 &gt; 0) ? b[mid2 - 1] : INT_MIN;
+            int r1 = (mid1 &lt; m) ? a[mid1] : INT_MAX;
+            int r2 = (mid2 &lt; n) ? b[mid2] : INT_MAX;
+
+            // Check if we have found the answer
+            if (l1 &lt;= r2 &amp;&amp; l2 &lt;= r1) {
+                return max(l1, l2);
+            } 
+            else if (l1 &gt; r2) {
+                // Eliminate the right half
+                high = mid1 - 1;
+            } 
+            else {
+                // Eliminate the left half
+                low = mid1 + 1;
+            }
+        }
+        
+         // Dummy return statement 
+        return -1;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>using System;
+using System.Collections.Generic;
+using System.Linq;
+
+    public class Solution {
+    /// &lt;summary&gt;
+    /// Finds the kth element in the merged sorted arrays.
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;a&quot;&gt;The first sorted list.&lt;/param&gt;
+    /// &lt;param name=&quot;b&quot;&gt;The second sorted list.&lt;/param&gt;
+    /// &lt;param name=&quot;k&quot;&gt;The desired element index (1-based).&lt;/param&gt;
+    /// &lt;returns&gt;The kth element.&lt;/returns&gt;
+        public int KthElement(List&lt;int&gt; a, List&lt;int&gt; b, int k) {
+            int m = a.Count;
+            int n = b.Count;
+
+            // Ensure a is the smaller array for optimization
+            if (m &gt; n) {
+                // Swap a and b
+                return KthElement(b, a, k);
+            }
+            
+            // Length of the left half
+            int left = k;
+
+            // Apply binary search
+            int low = Math.Max(0, k - n);
+            int high = Math.Min(k, m);
+            while (low &lt;= high) {
+                int mid1 = low + (high - low) / 2;
+                int mid2 = left - mid1;
+
+                // Initialize l1, l2, r1, r2
+                int l1 = (mid1 &gt; 0) ? a[mid1 - 1] : int.MinValue;
+                int l2 = (mid2 &gt; 0) ? b[mid2 - 1] : int.MinValue;
+                int r1 = (mid1 &lt; m) ? a[mid1] : int.MaxValue;
+                int r2 = (mid2 &lt; n) ? b[mid2] : int.MaxValue;
+
+                // Check if we have found the answer
+                if (l1 &lt;= r2 &amp;&amp; l2 &lt;= r1) {
+                    return Math.Max(l1, l2);
+                } else if (l1 &gt; r2) {
+                    // Eliminate the right half
+                    high = mid1 - 1;
+                } else {
+                    // Eliminate the left half
+                    low = mid1 + 1;
+                }
+            }
+            
+            // Dummy return statement 
+            return -1;
+        }
+    }</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;math&quot;
+func kthElement(a, b []int, k int) int {
+    m, n := len(a), len(b)
+    // Ensure a is the smaller array for optimization
+    if m &gt; n {
+        return kthElement(b, a, k)
+    }
+
+    // Apply binary search on a
+    low := int(math.Max(0, float64(k-n)))
+    high := int(math.Min(float64(k), float64(m)))
+
+    for low &lt;= high {
+        mid1 := (low + high) / 2
+        mid2 := k - mid1
+
+        // Initialize l1, l2, r1, r2
+        l1 := math.MinInt
+        if mid1 &gt; 0 {
+            l1 = a[mid1-1]
+        }
+        l2 := math.MinInt
+        if mid2 &gt; 0 {
+            l2 = b[mid2-1]
+        }
+        r1 := math.MaxInt
+        if mid1 &lt; m {
+            r1 = a[mid1]
+        }
+        r2 := math.MaxInt
+        if mid2 &lt; n {
+            r2 = b[mid2]
+        }
+
+        // Check if partition is correct
+        if l1 &lt;= r2 &amp;&amp; l2 &lt;= r1 {
+            // Found the k‑th element
+            return int(math.Max(float64(l1), float64(l2)))
+        } else if l1 &gt; r2 {
+            // Too many from a, move left
+            high = mid1 - 1
+        } else {
+            // Too few, move right
+            low = mid1 + 1
+        }
+    }
+
+    // Dummy return (should not happen with valid inputs)
+    return -1
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+public int kthElement(int[] a, int[] b, int k) {
+    int m = a.length;
+    int n = b.length;
+
+    // Ensure a is smaller array for optimization
+    if (m &gt; n) {
+        // Swap a and b
+        return kthElement(b, a, k); 
+    }
+    
+    // Length of the left half
+    int left = k; 
+
+    // Apply binary search
+    int low = Math.max(0, k - n), high = Math.min(k, m);
+    while (low &lt;= high) {
+        int mid1 = (low + high) &gt;&gt; 1;
+        int mid2 = left - mid1;
+
+        // Initialize l1, l2, r1, r2
+        int l1 = (mid1 &gt; 0) ? a[mid1 - 1] : Integer.MIN_VALUE;
+        int l2 = (mid2 &gt; 0) ? b[mid2 - 1] : Integer.MIN_VALUE;
+        int r1 = (mid1 &lt; m) ? a[mid1] : Integer.MAX_VALUE;
+        int r2 = (mid2 &lt; n) ? b[mid2] : Integer.MAX_VALUE;
+
+        // Check if we have found the answer
+        if (l1 &lt;= r2 &amp;&amp; l2 &lt;= r1) {
+            return Math.max(l1, l2);
+        } 
+        else if (l1 &gt; r2) {
+            // Eliminate the right half
+            high = mid1 - 1;
+        } 
+        else {
+            // Eliminate the left half
+            low = mid1 + 1;
+        }
+    }
+    
+     // Dummy return statement 
+    return -1;
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    kthElement(a, b, k) {
+        let m = a.length;
+        let n = b.length;
+
+        // Ensure a is smaller array for optimization
+        if (m &gt; n) {
+            // Swap a and b
+            return this.kthElement(b, a, k);
+        }
+        
+        // Length of the left half
+        let left = k;
+
+        // Apply binary search
+        let low = Math.max(0, k - n);
+        let high = Math.min(k, m);
+        while (low &lt;= high) {
+            let mid1 = (low + high) &gt;&gt; 1;
+            let mid2 = left - mid1;
+
+            // Initialize l1, l2, r1, r2
+            let l1 = (mid1 &gt; 0) ? a[mid1 - 1] : Number.MIN_SAFE_INTEGER;
+            let l2 = (mid2 &gt; 0) ? b[mid2 - 1] : Number.MIN_SAFE_INTEGER;
+            let r1 = (mid1 &lt; m) ? a[mid1] : Number.MAX_SAFE_INTEGER;
+            let r2 = (mid2 &lt; n) ? b[mid2] : Number.MAX_SAFE_INTEGER;
+
+            // Check if we have found the answer
+            if (l1 &lt;= r2 &amp;&amp; l2 &lt;= r1) {
+                return Math.max(l1, l2);
+            } else if (l1 &gt; r2) {
+                // Eliminate the right half
+                high = mid1 - 1;
+            } else {
+                // Eliminate the left half
+                low = mid1 + 1;
+            }
+        }
+        
+        // Dummy return statement 
+        return -1;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def kthElement(self, a, b, k):
+        m = len(a)
+        n = len(b)
+
+        # Ensure a is smaller array for optimization
+        if m &gt; n:
+            # Swap a and b
+            return self.kthElement(b, a, k)
+        
+        # Length of the left half
+        left = k
+
+        # Apply binary search
+        low = max(0, k - n)
+        high = min(k, m)
+        while low &lt;= high:
+            mid1 = (low + high) &gt;&gt; 1
+            mid2 = left - mid1
+
+            # Initialize l1, l2, r1, r2
+            l1 = a[mid1 - 1] if mid1 &gt; 0 else float(&#x27;-inf&#x27;)
+            l2 = b[mid2 - 1] if mid2 &gt; 0 else float(&#x27;-inf&#x27;)
+            r1 = a[mid1] if mid1 &lt; m else float(&#x27;inf&#x27;)
+            r2 = b[mid2] if mid2 &lt; n else float(&#x27;inf&#x27;)
+
+            # Check if we have found the answer
+            if l1 &lt;= r2 and l2 &lt;= r1:
+                return max(l1, l2)
+            elif l1 &gt; r2:
+                # Eliminate the right half
+                high = mid1 - 1
+            else:
+                # Eliminate the left half
+                low = mid1 + 1
+        
+        # Dummy return statement
+        return -1</code></pre></div>
+</body>
+</html>

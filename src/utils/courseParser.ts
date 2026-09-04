@@ -13,9 +13,14 @@ export interface CourseNode {
   id: string;
   name: string;
   order: number;
-  type: 'folder' | 'video';
+  type: 'folder' | 'lesson';
   children?: CourseNode[];
-  video?: any;
+  lesson?: {
+    video?: any;
+    note?: any;
+    id: string;
+    cleanName: string;
+  };
 }
 
 export function extractOrder(name: string): number {
@@ -29,11 +34,9 @@ export function removeNumberPrefix(name: string): string {
 
 export function extractCleanFilename(rawTitle: string): string {
   if (!rawTitle) return '';
-  const fileMatch = rawTitle.match(/File:\s*(.*?)(?=\s*(?:Location:|Follow Now:|Now:|Downloaded By|$))/i);
-  if (fileMatch) {
-    return fileMatch[1].trim();
-  }
-  return rawTitle.trim();
+  const fileMatch = rawTitle.match(/(?:File Name:|File:)\s*(.*?)(?=\s*(?:Location:|Follow Now:|Now:|Downloaded By|$))/i);
+  let name = fileMatch ? fileMatch[1].trim() : rawTitle.trim();
+  return removeNumberPrefix(name);
 }
 
 export function parseVideoMetadata(title: string): ParsedVideoMetadata {
@@ -59,26 +62,36 @@ export function parseVideoMetadata(title: string): ParsedVideoMetadata {
   };
 }
 
-export function buildCourseTree(videos: any[]): CourseNode[] {
+export function buildCourseTree(videos: any[], notesData?: any): CourseNode[] {
   const rootNodes: CourseNode[] = [];
   const nodeMap = new Map<string, CourseNode>();
+
+  const unmatchedNotes = notesData?.unmatchedNotes || [];
+  const matchedNotes = notesData?.matchedNotes || {};
 
   for (const video of videos) {
     const titleStr = video.title || '';
     const metadata = parseVideoMetadata(titleStr);
+    const note = matchedNotes[video.id];
     
-    // If no location path, we can put it at the root or handle it specially.
-    // We'll put it at root.
+    // Check if video has "(...)" suffix to remove it for a cleaner UI title
+    let videoName = metadata.fileName || `Video ${video.id}`;
+    videoName = videoName.replace(/\\s*\\(.*\\)\\s*$/, '').trim();
+    
+    const lessonData = {
+       video: { ...video, cleanName: videoName },
+       note: note,
+       id: `v-${video.id}`,
+       cleanName: videoName
+    };
+
     if (metadata.locationPath.length === 0) {
       rootNodes.push({
         id: `v-${video.id}`,
-        name: metadata.fileName || `Video ${video.id}`,
+        name: videoName,
         order: 999,
-        type: 'video',
-        video: {
-           ...video,
-           cleanName: metadata.fileName || `Video ${video.id}`
-        }
+        type: 'lesson',
+        lesson: lessonData
       });
       continue;
     }
@@ -86,28 +99,21 @@ export function buildCourseTree(videos: any[]): CourseNode[] {
     let currentLevelNodes = rootNodes;
     let currentPathId = '';
 
-    // Traverse all parts EXCEPT the last one to build folders
     for (let i = 0; i < metadata.locationPath.length; i++) {
       const part = metadata.locationPath[i];
       currentPathId = currentPathId ? `${currentPathId}/${part.raw}` : part.raw;
       
-      // If it's the last part in the location array, it's the video itself
       if (i === metadata.locationPath.length - 1) {
-        // Create video node
-        const videoName = metadata.fileName || part.name || `Video ${video.id}`;
-        const videoNode: CourseNode = {
-          id: `v-${video.id}`, // use video id for uniqueness
+        // Create lesson node
+        const lessonNode: CourseNode = {
+          id: `v-${video.id}`,
           name: videoName,
           order: part.order,
-          type: 'video',
-          video: {
-             ...video,
-             cleanName: videoName
-          }
+          type: 'lesson',
+          lesson: lessonData
         };
-        currentLevelNodes.push(videoNode);
+        currentLevelNodes.push(lessonNode);
       } else {
-        // It's a folder
         let folderNode = nodeMap.get(currentPathId);
         if (!folderNode) {
           folderNode = {
@@ -121,7 +127,6 @@ export function buildCourseTree(videos: any[]): CourseNode[] {
           currentLevelNodes.push(folderNode);
         }
         
-        // Next level will be inserted into this folder's children
         if (folderNode.children) {
           currentLevelNodes = folderNode.children;
         }
@@ -129,7 +134,65 @@ export function buildCourseTree(videos: any[]): CourseNode[] {
     }
   }
 
-  // Sort nodes recursively
+  // Handle unmatched notes by appending them as standalone lessons
+  for (let i = 0; i < unmatchedNotes.length; i++) {
+    const uNote = unmatchedNotes[i];
+    const uNoteId = `n-unmatched-${i}`;
+    const lessonData = {
+      note: uNote,
+      id: uNoteId,
+      cleanName: uNote.cleanTitle
+    };
+
+    // If note has a relPath (like OS), try to put it in the right folder
+    if (uNote.relPath) {
+      const parts = uNote.relPath.split('/').filter(Boolean);
+      let currentLevelNodes = rootNodes;
+      let currentPathId = '';
+      
+      for (let j = 0; j < parts.length; j++) {
+        const partRaw = parts[j];
+        const isFile = (j === parts.length - 1);
+        currentPathId = currentPathId ? `${currentPathId}/${partRaw}` : partRaw;
+        
+        if (isFile) {
+          currentLevelNodes.push({
+            id: uNoteId,
+            name: uNote.cleanTitle,
+            order: extractOrder(partRaw),
+            type: 'lesson',
+            lesson: lessonData
+          });
+        } else {
+          let folderNode = nodeMap.get(currentPathId);
+          if (!folderNode) {
+            folderNode = {
+              id: currentPathId,
+              name: removeNumberPrefix(partRaw),
+              order: extractOrder(partRaw),
+              type: 'folder',
+              children: []
+            };
+            nodeMap.set(currentPathId, folderNode);
+            currentLevelNodes.push(folderNode);
+          }
+          if (folderNode.children) {
+            currentLevelNodes = folderNode.children;
+          }
+        }
+      }
+    } else {
+      // Just put at root
+      rootNodes.push({
+        id: uNoteId,
+        name: uNote.cleanTitle,
+        order: 999,
+        type: 'lesson',
+        lesson: lessonData
+      });
+    }
+  }
+
   function sortNodes(nodes: CourseNode[]) {
     nodes.sort((a, b) => a.order - b.order);
     for (const node of nodes) {

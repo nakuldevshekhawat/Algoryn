@@ -1,0 +1,2149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Making a large island</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Making a large island</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Breadth-First Search</span><span>Depth-First Search</span><span>Matrix</span><span>Union Find</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an n x n binary matrix grid, it is allowed to change at most one 0 to 1. A group of connected 1s forms an island, where two 1s are <strong>connected</strong> if they share one of their sides.</p><p><br></p><p>Return the <strong>size</strong> of the largest island in the grid after applying this operation.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 500</li><li>0 <= grid[i][j] <= 1 </li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> grid = [[1,0],[0,1]]</p><p><strong>Output:</strong> 3</p><p><strong>Explanation:</strong> We change any one 0 to 1 and connect two 1s, then we get an island with maximum area = 3.</p><h3>Example 2</h3><p><strong>Input:</strong> grid = [[1,1],[1,1]]</p><p><strong>Output: </strong>4</p><p><strong>Explanation:</strong> The largest island already exists with size 4.</p><h3>Example 3</h3><p><strong>Input:</strong> grid = [[1,1],[1,0]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun fact: The underlying concept of this programming problem is extensively used in image processing applications and computer vision. Specifically, these applications use morphological operations which can include expanding the area of a unique color (akin to changing a 0 to a 1 in the problem) and then determining the size of the largest connected component (or the largest island). This can help in identifying and tracking objects or features in an image or video stream. This technique can be used in a variety of industries such as surveillance systems, autonomous vehicle systems, medical imaging processing, and more!</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    In the given grid, there are different sizes of connected 1s already present. The problem allows converting a single cell containing 0 to 1, and the goal is to form the largest island.<br><br>
+    One way to solve this is by using the brute force approach by finding the largest island formed in the grid by successively converting each cell containing 0 to 1. The largest island found in all such cases will be the island with the most 1s which can be returned as our answer. 
+    </p><h6>Understanding:</h6>
+    As each time, a cell having 0 is turned into 1, it forms an edge with its four neighbors(islands), if existing. This indicates that the graph is dynamic in nature. Now, adding an edge in a dynamic graph can be easily achieved using the <strong>Disjoint Set</strong> data structure. <br>
+    Using the <strong>Union By Size</strong> method in the Disjoint Set data structure, not only the efficient addition of edges can be done but also, the size of islands after merging can be found.
+
+    <h6>How to store cells as nodes in the Disjoint Set?</h6>
+    The cells can be numbered sequentially as shown in the following figure:  <br>
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/-04JbAvRs"> <br>
+    Thus, a number can be assigned to a cell having coordinates (i, j) in the following way: <br>
+    <code> Node number = i*n + j</code>, where n is the number of columns in the grid
+<p></p>
+
+<h3>Edge Cases:</h3>
+<p>
+    Consider the following graph: <br>
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/-yd1ZxFCY"> <br>
+    In the given grid, all the cells with 0 will be converted one by one to check for the largest island. Considering 0-based indexing, the cell (3,3) will be converted to 1, and while checking: <br>
+    </p><ul>
+        <li><strong>Left Island:</strong> The size of island will be incremented by 7.</li>
+        <li><strong>Top Island:</strong> The size of island will be incremented by 6.</li>
+        <li><strong>Right Island:</strong> No change in the size of the island as there is no island present on the right.</li>
+        <li><strong>Bottom Island:</strong> Again the size of the island will be incremented by 7.</li>
+    </ul> <br>
+    But the island of size 7 should have been considered only once while finding the size of the large island. This case can be avoided by storing the <strong>ultimate parents</strong> for the neighboring islands in a set data structure. This will ensure that one island will never be considered more than once in the size of large island. <br>
+    <h6>What if all the cells are 1 in the grid?</h6>
+    In such case, only one island will be formed which will be the largest for which the size of the ultimate parent of the island can be returned as the answer.
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Create a Disjoint Set data structure to manage connected components (islands) in the grid. Each cell is treated as a separate component initially.</li>
+   <li>Traverse through the grid to identify initial islands (connected 1s) and perform union operations to merge adjacent land cells into the same component using the union by size method.</li>
+   <li>Traverse the grid again to consider each 0 cell, and determine the potential island size if this 0 is changed to 1. </li>
+   <li>For each 0 cell, check all its neighboring cells to find unique components (using ultimate parents) and calculate the combined size of these components.</li>
+   <li>Keep track of the maximum island size encountered during the above calculations. Additionally, handle edge cases where no 0 cells are present in the grid by checking the sizes of existing islands.</li>
+   <li> Return the size of the largest possible island after changing at most one 0 to 1. </li>
+</ol>
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/1.drawio (1).png-yKfPYP6x" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/2.drawio (1).png-N6Luu5p1" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/3.drawio (1).png-b9qT7txD" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/4.drawio (1).png-ZihhvtGc" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/1.drawio (1).png-yKfPYP6x" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/2.drawio (1).png-N6Luu5p1" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/3.drawio (1).png-b9qT7txD" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Making a large island/4.drawio (1).png-ZihhvtGc" alt="Image 4"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector<int> rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+private:
+    // DelRow and delCol for neighbors
+    vector<int> delRow = {-1, 0, 1, 0};
+    vector<int> delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    bool isValid(int &i, int &j, int &n) {
+        
+        // Return false if pixel is invalid
+        if(i < 0 || i >= n) return false;
+        if(j < 0 || j >= n) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    /* Function to add initial islands to 
+    the disjoint set data structure */
+    void addInitialIslands(vector<vector<int>> grid, 
+                           DisjointSet &ds, int n) {
+    
+        // Traverse all the cells in the grid
+        for (int row = 0; row < n ; row++) {
+            for (int col = 0; col < n ; col++) {
+                
+                // If the cell is not land, skip
+                if (grid[row][col] == 0) continue;
+                
+                // Traverse on all the neighbors
+                for (int ind = 0; ind < 4; ind++) {
+                    
+                    // Get the coordinates of neighbor
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    // If the cell is valid and a land cell
+                    if (isValid(newRow, newCol, n) && 
+                        grid[newRow][newCol] == 1) {
+                            
+                        // Get the number for node
+                        int nodeNo = row * n + col;
+                        // Get the number for neighbor
+                        int adjNodeNo = newRow * n + newCol;
+                        
+                        /* Take union of both nodes as they
+                        are part of the same island */
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+    
+public:
+
+    // Function to get the size of the largest island
+    int largestIsland(vector<vector<int>>& grid) {
+        
+        // Dimensions of grid
+        int n = grid.size();
+        
+        // Disjoint Set data structure
+        DisjointSet ds(n*n);
+        
+        /* Function call to add initial 
+        islands in the disjoint set */
+        addInitialIslands(grid, ds, n);
+        
+        // To store the answer
+        int ans = 0;
+        
+        // Traverse on the grid
+        for (int row = 0; row < n; row++) {
+            for (int col = 0; col < n; col++) {
+                
+                // If the cell is a land cell, skip
+                if (grid[row][col] == 1) continue;
+                
+                /* Set to store the ultimate parents 
+                of neighboring islands */
+                set<int> components;
+                
+                //Traverse on all its neighbors
+                for (int ind = 0; ind < 4; ind++) {
+                    
+                    // Coodinates of neigboring cell
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    
+                    if (isValid(newRow, newCol, n) && 
+                        grid[newRow][newCol] == 1) {
+                        
+                        /* Perform union and store 
+                        ultimate parent in the set */
+                        int nodeNumber = newRow * n + newCol;
+                        components.insert(ds.findUPar(nodeNumber));
+                    }
+                }
+                
+                // To store the size of current largest island
+                int sizeTotal = 0;
+                
+                // Iterate on all the neighborinh ultimate parents
+                for (auto it : components) {
+                    
+                    // Update the size
+                    sizeTotal += ds.size[it];
+                }
+                
+                // Store the maximum size of island
+                ans = max(ans, sizeTotal + 1);
+            }
+        }
+        
+        // Edge case
+        for (int cellNo = 0; cellNo < n * n; cellNo++) {
+            
+            // Keep the answer updated
+            ans = max(ans, ds.size[ds.findUPar(cellNo)]);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+};
+
+
+int main() {
+    vector<vector<int>> grid = {
+        {1,0},
+        {0,1}
+    };
+
+    // Creating instance of Solution class
+    Solution sol;
+    
+    /* Function call to get the 
+    size of the largest island */
+    int ans = sol.largestIsland(grid);
+    
+    // Output
+    cout << "The size of the largest island is: " << ans;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    // DelRow and delCol for neighbors
+    private int[] delRow = {-1, 0, 1, 0};
+    private int[] delCol = {0, 1, 0, -1};
+    
+    /* Helper function to check 
+    if a pixel is within boundaries */
+    private boolean isValid(int i, int j, int n) {
+        // Return false if pixel is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= n) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    /* Function to add initial islands to 
+    the disjoint set data structure */
+    private void addInitialIslands(int[][] grid, 
+                                   DisjointSet ds, int n) {
+        // Traverse all the cells in the grid
+        for (int row = 0; row < n; row++) {
+            for (int col = 0; col < n; col++) {
+                // If the cell is not land, skip
+                if (grid[row][col] == 0) continue;
+                
+                // Traverse on all the neighbors
+                for (int ind = 0; ind < 4; ind++) {
+                    // Get the coordinates of neighbor
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    // If the cell is valid and a land cell
+                    if (isValid(newRow, newCol, n) && 
+                        grid[newRow][newCol] == 1) {
+                        // Get the number for node
+                        int nodeNo = row * n + col;
+                        // Get the number for neighbor
+                        int adjNodeNo = newRow * n + newCol;
+                        
+                        /* Take union of both nodes as they
+                        are part of the same island */
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Function to get the size of the largest island
+    public int largestIsland(int[][] grid) {
+        // Dimensions of grid
+        int n = grid.length;
+        
+        // Disjoint set data structure
+        DisjointSet ds = new DisjointSet(n * n);
+        
+        /* Function call to add initial
+        islands in the disjoint set */
+        addInitialIslands(grid, ds, n);
+        
+        // To store the answer
+        int ans = 0;
+        
+        // Traverse on the grid
+        for (int row = 0; row < n; row++) {
+            for (int col = 0; col < n; col++) {
+                
+                // If the cell is a land cell, skip
+                if (grid[row][col] == 1) continue;
+                
+                /* Set to store the ultimate 
+                parents of neighboring islands */
+                Set<Integer> components = new HashSet<>();
+                
+                // Traverse on all its neighbors
+                for (int ind = 0; ind < 4; ind++) {
+                    // Coordinates of neighboring cell
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    if (isValid(newRow, newCol, n) && 
+                        grid[newRow][newCol] == 1) {
+                            
+                        /* Perform union and store 
+                        ultimate parent in the set */
+                        int nodeNumber = newRow * n + newCol;
+                        components.add(ds.findUPar(nodeNumber));
+                    }
+                }
+                
+                // To store the size of current largest island
+                int sizeTotal = 0;
+                
+                // Iterate on all the neighboring ultimate parents
+                for (int parent : components) {
+                    // Update the size
+                    sizeTotal += ds.size[ds.findUPar(parent)];
+                }
+                
+                // Store the maximum size of island
+                ans = Math.max(ans, sizeTotal + 1);
+            }
+        }
+        
+        // Edge case
+        for (int cellNo = 0; cellNo < n * n; cellNo++) {
+            // Keep the answer updated
+            ans = Math.max(ans, ds.size[ds.findUPar(cellNo)]);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int[][] grid = {
+            {1, 0},
+            {0, 1}
+        };
+
+        // Creating instance of Solution class
+        Solution sol = new Solution();
+        
+        /* Function call to get the 
+        size of the largest island */
+        int ans = sol.largestIsland(grid);
+        
+        // Output
+        System.out.println("The size of the largest island is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class DisjointSet:
+    # To store the ranks, parents and 
+    # sizes of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = [i for i in range(n + 1)]
+        self.size = [1] * (n + 1)
+    
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+    
+    # Function to implement union by rank
+    def unionByRank(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.rank[ulp_u] < self.rank[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+        elif self.rank[ulp_v] < self.rank[ulp_u]:
+            self.parent[ulp_v] = ulp_u
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.rank[ulp_u] += 1
+    
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.size[ulp_u] < self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+    
+    def getSize(self, node):
+        return self.size[self.findUPar(node)]
+
+# Solution class
+class Solution:
+    # DelRow and delCol for neighbors
+    delRow = [-1, 0, 1, 0]
+    delCol = [0, 1, 0, -1]
+    
+    # Helper function to check if a 
+    # pixel is within boundaries
+    def isValid(self, i, j, n):
+        # Return false if pixel is invalid
+        if i < 0 or i >= n:
+            return False
+        if j < 0 or j >= n:
+            return False
+        # Return true if pixel is valid
+        return True
+    
+    # Function to add initial islands to the 
+    # disjoint set data structure
+    def addInitialIslands(self, grid, ds, n):
+        # Traverse all the cells in the grid
+        for row in range(n):
+            for col in range(n):
+                # If the cell is not land, skip
+                if grid[row][col] == 0:
+                    continue
+                
+                # Traverse on all the neighbors
+                for ind in range(4):
+                    # Get the coordinates of neighbor
+                    newRow = row + self.delRow[ind]
+                    newCol = col + self.delCol[ind]
+                    
+                    # If the cell is valid and a land cell
+                    if (self.isValid(newRow, newCol, n) and 
+                        grid[newRow][newCol] == 1):
+                            
+                        # Get the number for node
+                        nodeNo = row * n + col
+                        # Get the number for neighbor
+                        adjNodeNo = newRow * n + newCol
+                        
+                        # Take union of both nodes as 
+                        # they are part of the same island
+                        ds.unionBySize(nodeNo, adjNodeNo)
+    
+    # Function to get the size of the largest island
+    def largestIsland(self, grid):
+        # Dimensions of grid
+        n = len(grid)
+        
+        # Disjoint set data structure
+        ds = DisjointSet(n * n)
+        
+        # Function call to add initial 
+        # islands in the disjoint set
+        self.addInitialIslands(grid, ds, n)
+        
+        # To store the answer
+        ans = 0
+        
+        # Traverse on the grid
+        for row in range(n):
+            for col in range(n):
+                # If the cell is a land cell, skip
+                if grid[row][col] == 1:
+                    continue
+                
+                # Set to store the ultimate 
+                # parents of neighboring islands
+                components = set()
+                
+                # Traverse on all its neighbors
+                for ind in range(4):
+                    # Coordinates of neighboring cell
+                    newRow = row + self.delRow[ind]
+                    newCol = col + self.delCol[ind]
+                    
+                    if (self.isValid(newRow, newCol, n) and 
+                        grid[newRow][newCol] == 1):
+                        # Perform union and store 
+                        # ultimate parent in the set
+                        nodeNumber = newRow * n + newCol
+                        components.add(ds.findUPar(nodeNumber))
+                
+                # To store the size of current largest island
+                sizeTotal = 0
+                
+                # Iterate on all the neighboring ultimate parents
+                for parent in components:
+                    # Update the size
+                    sizeTotal += ds.getSize(parent)
+                
+                # Store the maximum size of island
+                ans = max(ans, sizeTotal + 1)
+        
+        # Edge case
+        for cellNo in range(n * n):
+            # Keep the answer updated
+            ans = max(ans, ds.getSize(cellNo))
+        
+        # Return the answer
+        return ans
+
+# Main function to test the Solution class
+if __name__ == "__main__":
+    grid = [
+        [1, 0],
+        [0, 1]
+    ]
+
+    # Creating instance of Solution class
+    sol = Solution()
+    
+    # Function call to get the size of the largest island
+    ans = sol.largestIsland(grid)
+    
+    # Output
+    print("The size of the largest island is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class DisjointSet {
+    // Constructor
+    constructor(n) {
+        /* To store the ranks, parents and 
+        sizes of different set of vertices */
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) => i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node])
+            return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by rank
+    unionByRank(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.rank[ulp_u] < this.rank[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+            this.parent[ulp_v] = ulp_u;
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] < this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+
+    getSize(node) {
+        return this.size[this.findUPar(node)];
+    }
+}
+
+// Solution class
+class Solution {
+    // DelRow and delCol for neighbors
+    constructor() {
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, 1, 0, -1];
+    }
+
+    // Helper function to check if a pixel is within boundaries
+    isValid(i, j, n) {
+        // Return false if pixel is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= n) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    /* Function to add initial islands to 
+    the disjoint set data structure */
+    addInitialIslands(grid, ds, n) {
+        // Traverse all the cells in the grid
+        for (let row = 0; row < n; row++) {
+            for (let col = 0; col < n; col++) {
+                // If the cell is not land, skip
+                if (grid[row][col] === 0) continue;
+
+                // Traverse on all the neighbors
+                for (let ind = 0; ind < 4; ind++) {
+                    // Get the coordinates of neighbor
+                    const newRow = row + this.delRow[ind];
+                    const newCol = col + this.delCol[ind];
+
+                    // If the cell is valid and a land cell
+                    if (this.isValid(newRow, newCol, n) && grid[newRow][newCol] === 1) {
+                        // Get the number for node
+                        const nodeNo = row * n + col;
+                        // Get the number for neighbor
+                        const adjNodeNo = newRow * n + newCol;
+
+                        /* Take union of both nodes as 
+                        they are part of the same island */
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+
+    // Function to get the size of the largest island
+    largestIsland(grid) {
+        // Dimensions of grid
+        const n = grid.length;
+
+        // Disjoint set data structure
+        const ds = new DisjointSet(n * n);
+
+        // Function call to add initial islands in the disjoint set
+        this.addInitialIslands(grid, ds, n);
+
+        // To store the answer
+        let ans = 0;
+
+        // Traverse on the grid
+        for (let row = 0; row < n; row++) {
+            for (let col = 0; col < n; col++) {
+                // If the cell is a land cell, skip
+                if (grid[row][col] === 1) continue;
+
+                /* Set to store the ultimate parents 
+                of neighboring islands */
+                const components = new Set();
+
+                // Traverse on all its neighbors
+                for (let ind = 0; ind < 4; ind++) {
+                    // Coordinates of neighboring cell
+                    const newRow = row + this.delRow[ind];
+                    const newCol = col + this.delCol[ind];
+
+                    if (this.isValid(newRow, newCol, n) && grid[newRow][newCol] === 1) {
+                        
+                        /* Perform union and store 
+                        ultimate parent in the set */
+                        const nodeNumber = newRow * n + newCol;
+                        components.add(ds.findUPar(nodeNumber));
+                    }
+                }
+
+                // To store the size of current largest island
+                let sizeTotal = 0;
+
+                // Iterate on all the neighboring ultimate parents
+                for (const parent of components) {
+                    // Update the size
+                    sizeTotal += ds.getSize(parent);
+                }
+
+                // Store the maximum size of island
+                ans = Math.max(ans, sizeTotal + 1);
+            }
+        }
+
+        // Edge case
+        for (let cellNo = 0; cellNo < n * n; cellNo++) {
+            // Keep the answer updated
+            ans = Math.max(ans, ds.getSize(cellNo));
+        }
+
+        // Return the answer
+        return ans;
+    }
+}
+
+// Main function to test the Solution class
+(function main() {
+    const grid = [
+        [1, 0],
+        [0, 1]
+    ];
+
+    // Creating instance of Solution class
+    const sol = new Solution();
+
+    // Function call to get the size of the largest island
+    const ans = sol.largestIsland(grid);
+
+    // Output
+    console.log("The size of the largest island is: " + ans);
+})();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span><span>210</span><span>211</span><span>212</span><span>213</span><span>214</span><span>215</span><span>216</span><span>217</span><span>218</span><span>219</span><span>220</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class DisjointSet
+{
+    private int[] rank;
+    private int[] parent;
+    private int[] size;
+
+    // Constructor
+    public DisjointSet(int n)
+    {
+        /* To store the ranks, parents and 
+        sizes of different set of vertices */
+        this.rank = new int[n + 1];
+        this.parent = new int[n + 1];
+        this.size = new int[n + 1];
+
+        for (int i = 0; i <= n; i++)
+        {
+            this.parent[i] = i;
+            this.size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    public int FindUPar(int node)
+    {
+        if (node == this.parent[node])
+            return node;
+        this.parent[node] = this.FindUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by rank
+    public void UnionByRank(int u, int v)
+    {
+        int ulp_u = this.FindUPar(u);
+        int ulp_v = this.FindUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (this.rank[ulp_u] < this.rank[ulp_v])
+        {
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] < this.rank[ulp_u])
+        {
+            this.parent[ulp_v] = ulp_u;
+        } else
+        {
+            this.parent[ulp_v] = ulp_u;
+            this.rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    public void UnionBySize(int u, int v)
+    {
+        int ulp_u = this.FindUPar(u);
+        int ulp_v = this.FindUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (this.size[ulp_u] < this.size[ulp_v])
+        {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else
+        {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+
+    public int GetSize(int node)
+    {
+        return this.size[this.FindUPar(node)];
+    }
+}
+
+// Solution class
+public class Solution
+{
+    // DelRow and delCol for neighbors
+    private int[] delRow = { -1, 0, 1, 0 };
+    private int[] delCol = { 0, 1, 0, -1 };
+
+    // Helper function to check if a pixel is within boundaries
+    private bool IsValid(int i, int j, int n)
+    {
+        // Return false if pixel is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= n) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    /* Function to add initial islands to 
+    the disjoint set data structure */
+    private void AddInitialIslands(int[][] grid, DisjointSet ds, int n)
+    {
+        // Traverse all the cells in the grid
+        for (int row = 0; row < n; row++)
+        {
+            for (int col = 0; col < n; col++)
+            {
+                // If the cell is not land, skip
+                if (grid[row][col] == 0) continue;
+
+                // Traverse on all the neighbors
+                for (int ind = 0; ind < 4; ind++)
+                {
+                    // Get the coordinates of neighbor
+                    int newRow = row + this.delRow[ind];
+                    int newCol = col + this.delCol[ind];
+
+                    // If the cell is valid and a land cell
+                    if (this.IsValid(newRow, newCol, n) && grid[newRow][newCol] == 1)
+                    {
+                        // Get the number for node
+                        int nodeNo = row * n + col;
+                        // Get the number for neighbor
+                        int adjNodeNo = newRow * n + newCol;
+
+                        /* Take union of both nodes as 
+                        they are part of the same island */
+                        ds.UnionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+
+    // Function to get the size of the largest island
+    public int LargestIsland(int[][] grid)
+    {
+        // Dimensions of grid
+        int n = grid.Length;
+
+        // Disjoint set data structure
+        DisjointSet ds = new DisjointSet(n * n);
+
+        // Function call to add initial islands in the disjoint set
+        this.AddInitialIslands(grid, ds, n);
+
+        // To store the answer
+        int ans = 0;
+
+        // Traverse on the grid
+        for (int row = 0; row < n; row++)
+        {
+            for (int col = 0; col < n; col++)
+            {
+                // If the cell is a land cell, skip
+                if (grid[row][col] == 1) continue;
+
+                /* Set to store the ultimate parents 
+                of neighboring islands */
+                HashSet<int> components = new HashSet<int>();
+
+                // Traverse on all its neighbors
+                for (int ind = 0; ind < 4; ind++)
+                {
+                    // Coordinates of neighboring cell
+                    int newRow = row + this.delRow[ind];
+                    int newCol = col + this.delCol[ind];
+
+                    if (this.IsValid(newRow, newCol, n) && grid[newRow][newCol] == 1)
+                    {
+                        
+                        /* Perform union and store 
+                        ultimate parent in the set */
+                        int nodeNumber = newRow * n + newCol;
+                        components.Add(ds.FindUPar(nodeNumber));
+                    }
+                }
+
+                // To store the size of current largest island
+                int sizeTotal = 0;
+
+                // Iterate on all the neighboring ultimate parents
+                foreach (int parent in components)
+                {
+                    // Update the size
+                    sizeTotal += ds.GetSize(parent);
+                }
+
+                // Store the maximum size of island
+                ans = Math.Max(ans, sizeTotal + 1);
+            }
+        }
+
+        // Edge case
+        for (int cellNo = 0; cellNo < n * n; cellNo++)
+        {
+            // Keep the answer updated
+            ans = Math.Max(ans, ds.GetSize(cellNo));
+        }
+
+        // Return the answer
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[][] grid = new int[][]
+        {
+            new int[] {1, 0},
+            new int[] {0, 1}
+        };
+
+        // Creating instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to get the size of the largest island
+        int ans = sol.LargestIsland(grid);
+
+        // Output
+        Console.WriteLine("The size of the largest island is: " + ans);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+// DisjointSet Data structure
+type DisjointSet struct {
+	rank   []int
+	parent []int
+	size   []int
+}
+
+// Constructor for DisjointSet
+func NewDisjointSet(n int) *DisjointSet {
+	ds := &DisjointSet{
+		rank:   make([]int, n+1),
+		parent: make([]int, n+1),
+		size:   make([]int, n+1),
+	}
+
+	// Initialize parent and size for each element
+	for i := 0; i <= n; i++ {
+		ds.parent[i] = i
+		ds.size[i] = 1
+	}
+	return ds
+}
+
+// Function to find the ultimate parent of a node
+func (ds *DisjointSet) findUPar(node int) int {
+	if node == ds.parent[node] {
+		return node
+	}
+	ds.parent[node] = ds.findUPar(ds.parent[node]) // Path compression
+	return ds.parent[node]
+}
+
+// Function to perform union by size
+func (ds *DisjointSet) unionBySize(u, v int) {
+	ulp_u := ds.findUPar(u)
+	ulp_v := ds.findUPar(v)
+
+	if ulp_u == ulp_v {
+		return
+	}
+
+	if ds.size[ulp_u] < ds.size[ulp_v] {
+		ds.parent[ulp_u] = ulp_v
+		ds.size[ulp_v] += ds.size[ulp_u]
+	} else {
+		ds.parent[ulp_v] = ulp_u
+		ds.size[ulp_u] += ds.size[ulp_v]
+	}
+}
+
+// Helper function to check if a pixel is within boundaries
+func isValid(i, j, n int) bool {
+	if i < 0 || i >= n {
+		return false
+	}
+	if j < 0 || j >= n {
+		return false
+	}
+	return true
+}
+
+// Helper function to add initial islands to the disjoint set data structure
+func addInitialIslands(grid [][]int, ds *DisjointSet, n int) {
+	// Traverse all the cells in the grid
+	for row := 0; row < n; row++ {
+		for col := 0; col < n; col++ {
+			// If the cell is not land, skip
+			if grid[row][col] == 0 {
+				continue
+			}
+
+			// Traverse on all the neighbors
+			for ind := 0; ind < 4; ind++ {
+				// Get the coordinates of neighbor
+				newRow := row + delRow[ind]
+				newCol := col + delCol[ind]
+
+				// If the cell is valid and a land cell
+				if isValid(newRow, newCol, n) && grid[newRow][newCol] == 1 {
+					// Get the node number for the current and neighboring cells
+					nodeNo := row*n + col
+					adjNodeNo := newRow*n + newCol
+
+					// Perform union of both nodes as they are part of the same island
+					ds.unionBySize(nodeNo, adjNodeNo)
+				}
+			}
+		}
+	}
+}
+
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, 1, 0, -1}
+
+// Function to return the size of the largest island
+func largestIsland(grid [][]int) int {
+	n := len(grid)
+
+	// Disjoint Set data structure
+	ds := NewDisjointSet(n * n)
+
+	// Function call to add initial islands in the disjoint set
+	addInitialIslands(grid, ds, n)
+
+	// To store the answer
+	ans := 0
+
+	// Traverse on the grid
+	for row := 0; row < n; row++ {
+		for col := 0; col < n; col++ {
+			// If the cell is a land cell, skip
+			if grid[row][col] == 1 {
+				continue
+			}
+
+			// Set to store the ultimate parents of neighboring islands
+			components := make(map[int]bool)
+
+			// Traverse on all its neighbors
+			for ind := 0; ind < 4; ind++ {
+				// Coordinates of neighboring cell
+				newRow := row + delRow[ind]
+				newCol := col + delCol[ind]
+
+				// If the neighboring cell is a valid land cell
+				if isValid(newRow, newCol, n) && grid[newRow][newCol] == 1 {
+					// Get the node number for the neighboring cell
+					nodeNumber := newRow*n + newCol
+					components[ds.findUPar(nodeNumber)] = true
+				}
+			}
+
+			// To store the size of the current largest island
+			sizeTotal := 0
+
+			// Iterate on all the neighboring ultimate parents
+			for it := range components {
+				// Update the size
+				sizeTotal += ds.size[it]
+			}
+
+			// Store the maximum size of the island
+			ans = int(math.Max(float64(ans), float64(sizeTotal+1)))
+		}
+	}
+
+	// Edge case: Consider the largest island without changing any cell
+	for cellNo := 0; cellNo < n*n; cellNo++ {
+		// Keep the answer updated
+		ans = int(math.Max(float64(ans), float64(ds.size[ds.findUPar(cellNo)])))
+	}
+
+	// Return the answer
+	return ans
+}
+
+func main() {
+	// Test case
+	grid := [][]int{
+		{1, 0},
+		{0, 1},
+	}
+
+	// Function call to get the size of the largest island
+	ans := largestIsland(grid)
+
+	// Output the result
+	fmt.Println("The size of the largest island is:", ans)
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N<sup>2</sup>)</strong> Using nested loops, and within the loops, all the operations take constant time. 
+   
+</p>
+
+<p><strong>Space Complexity: O(N<sup>2</sup>)</strong> The Disjoint set storing N<sup>2</sup> nodes (cells) will take up 2*N<sup>2</sup> space due to parent and size arrays.
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector&lt;int&gt; rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+private:
+    // DelRow and delCol for neighbors
+    vector&lt;int&gt; delRow = {-1, 0, 1, 0};
+    vector&lt;int&gt; delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    bool isValid(int &amp;i, int &amp;j, int &amp;n) {
+        
+        // Return false if pixel is invalid
+        if(i &lt; 0 || i &gt;= n) return false;
+        if(j &lt; 0 || j &gt;= n) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    /* Function to add initial islands to 
+    the disjoint set data structure */
+    void addInitialIslands(vector&lt;vector&lt;int&gt;&gt; grid, 
+                           DisjointSet &amp;ds, int n) {
+    
+        // Traverse all the cells in the grid
+        for (int row = 0; row &lt; n ; row++) {
+            for (int col = 0; col &lt; n ; col++) {
+                
+                // If the cell is not land, skip
+                if (grid[row][col] == 0) continue;
+                
+                // Traverse on all the neighbors
+                for (int ind = 0; ind &lt; 4; ind++) {
+                    
+                    // Get the coordinates of neighbor
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    // If the cell is valid and a land cell
+                    if (isValid(newRow, newCol, n) &amp;&amp; 
+                        grid[newRow][newCol] == 1) {
+                            
+                        // Get the number for node
+                        int nodeNo = row * n + col;
+                        // Get the number for neighbor
+                        int adjNodeNo = newRow * n + newCol;
+                        
+                        /* Take union of both nodes as they
+                        are part of the same island */
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+    
+public:
+
+    // Function to get the size of the largest island
+    int largestIsland(vector&lt;vector&lt;int&gt;&gt;&amp; grid) {
+        
+        // Dimensions of grid
+        int n = grid.size();
+        
+        // Disjoint Set data structure
+        DisjointSet ds(n*n);
+        
+        /* Function call to add initial 
+        islands in the disjoint set */
+        addInitialIslands(grid, ds, n);
+        
+        // To store the answer
+        int ans = 0;
+        
+        // Traverse on the grid
+        for (int row = 0; row &lt; n; row++) {
+            for (int col = 0; col &lt; n; col++) {
+                
+                // If the cell is a land cell, skip
+                if (grid[row][col] == 1) continue;
+                
+                /* Set to store the ultimate parents 
+                of neighboring islands */
+                set&lt;int&gt; components;
+                
+                //Traverse on all its neighbors
+                for (int ind = 0; ind &lt; 4; ind++) {
+                    
+                    // Coodinates of neigboring cell
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    
+                    if (isValid(newRow, newCol, n) &amp;&amp; 
+                        grid[newRow][newCol] == 1) {
+                        
+                        /* Perform union and store 
+                        ultimate parent in the set */
+                        int nodeNumber = newRow * n + newCol;
+                        components.insert(ds.findUPar(nodeNumber));
+                    }
+                }
+                
+                // To store the size of current largest island
+                int sizeTotal = 0;
+                
+                // Iterate on all the neighborinh ultimate parents
+                for (auto it : components) {
+                    
+                    // Update the size
+                    sizeTotal += ds.size[it];
+                }
+                
+                // Store the maximum size of island
+                ans = max(ans, sizeTotal + 1);
+            }
+        }
+        
+        // Edge case
+        for (int cellNo = 0; cellNo &lt; n * n; cellNo++) {
+            
+            // Keep the answer updated
+            ans = max(ans, ds.size[ds.findUPar(cellNo)]);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    private class DisjointSet
+    {
+        private int[] rank;
+        private int[] parent;
+        private int[] size;
+
+        public DisjointSet(int n)
+        {
+            this.rank = new int[n + 1];
+            this.parent = new int[n + 1];
+            this.size = new int[n + 1];
+
+            for (int i = 0; i &lt;= n; i++)
+            {
+                this.parent[i] = i;
+                this.size[i] = 1;
+            }
+        }
+
+        public int FindUPar(int node)
+        {
+            if (node == this.parent[node])
+                return node;
+            this.parent[node] = this.FindUPar(this.parent[node]);
+            return this.parent[node];
+        }
+
+        public void UnionByRank(int u, int v)
+        {
+            int ulp_u = this.FindUPar(u);
+            int ulp_v = this.FindUPar(v);
+            if (ulp_u == ulp_v) return;
+            if (this.rank[ulp_u] &lt; this.rank[ulp_v])
+            {
+                this.parent[ulp_u] = ulp_v;
+            } else if (this.rank[ulp_v] &lt; this.rank[ulp_u])
+            {
+                this.parent[ulp_v] = ulp_u;
+            } else
+            {
+                this.parent[ulp_v] = ulp_u;
+                this.rank[ulp_u]++;
+            }
+        }
+
+        public void UnionBySize(int u, int v)
+        {
+            int ulp_u = this.FindUPar(u);
+            int ulp_v = this.FindUPar(v);
+            if (ulp_u == ulp_v) return;
+            if (this.size[ulp_u] &lt; this.size[ulp_v])
+            {
+                this.parent[ulp_u] = ulp_v;
+                this.size[ulp_v] += this.size[ulp_u];
+            } else
+            {
+                this.parent[ulp_v] = ulp_u;
+                this.size[ulp_u] += this.size[ulp_v];
+            }
+        }
+
+        public int GetSize(int node)
+        {
+            return this.size[this.FindUPar(node)];
+        }
+    }
+
+    private int[] delRow = { -1, 0, 1, 0 };
+    private int[] delCol = { 0, 1, 0, -1 };
+
+    private bool IsValid(int i, int j, int n)
+    {
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= n) return false;
+        return true;
+    }
+
+    private void AddInitialIslands(int[][] grid, DisjointSet ds, int n)
+    {
+        for (int row = 0; row &lt; n; row++)
+        {
+            for (int col = 0; col &lt; n; col++)
+            {
+                if (grid[row][col] == 0) continue;
+
+                for (int ind = 0; ind &lt; 4; ind++)
+                {
+                    int newRow = row + this.delRow[ind];
+                    int newCol = col + this.delCol[ind];
+
+                    if (this.IsValid(newRow, newCol, n) &amp;&amp; grid[newRow][newCol] == 1)
+                    {
+                        int nodeNo = row * n + col;
+                        int adjNodeNo = newRow * n + newCol;
+                        ds.UnionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+
+    public int LargestIsland(int[][] grid)
+    {
+        int n = grid.Length;
+        DisjointSet ds = new DisjointSet(n * n);
+        this.AddInitialIslands(grid, ds, n);
+
+        int ans = 0;
+
+        for (int row = 0; row &lt; n; row++)
+        {
+            for (int col = 0; col &lt; n; col++)
+            {
+                if (grid[row][col] == 1) continue;
+
+                System.Collections.Generic.HashSet&lt;int&gt; components = new System.Collections.Generic.HashSet&lt;int&gt;();
+
+                for (int ind = 0; ind &lt; 4; ind++)
+                {
+                    int newRow = row + this.delRow[ind];
+                    int newCol = col + this.delCol[ind];
+
+                    if (this.IsValid(newRow, newCol, n) &amp;&amp; grid[newRow][newCol] == 1)
+                    {
+                        int nodeNumber = newRow * n + newCol;
+                        components.Add(ds.FindUPar(nodeNumber));
+                    }
+                }
+
+                int sizeTotal = 0;
+                foreach (int parent in components)
+                {
+                    sizeTotal += ds.GetSize(parent);
+                }
+
+                ans = System.Math.Max(ans, sizeTotal + 1);
+            }
+        }
+
+        for (int cellNo = 0; cellNo &lt; n * n; cellNo++)
+        {
+            ans = System.Math.Max(ans, ds.GetSize(cellNo));
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;math&quot;)
+// DisjointSet Data structure
+type DisjointSet struct {
+	rank   []int
+	parent []int
+	size   []int
+}
+
+// Constructor for DisjointSet
+func NewDisjointSet(n int) *DisjointSet {
+	ds := &amp;DisjointSet{
+		rank:   make([]int, n+1),
+		parent: make([]int, n+1),
+		size:   make([]int, n+1),
+	}
+
+	// Initialize parent and size for each element
+	for i := 0; i &lt;= n; i++ {
+		ds.parent[i] = i
+		ds.size[i] = 1
+	}
+	return ds
+}
+
+// Function to find the ultimate parent of a node
+func (ds *DisjointSet) findUPar(node int) int {
+	if node == ds.parent[node] {
+		return node
+	}
+	ds.parent[node] = ds.findUPar(ds.parent[node]) // Path compression
+	return ds.parent[node]
+}
+
+// Function to perform union by size
+func (ds *DisjointSet) unionBySize(u, v int) {
+	ulp_u := ds.findUPar(u)
+	ulp_v := ds.findUPar(v)
+
+	if ulp_u == ulp_v {
+		return
+	}
+
+	if ds.size[ulp_u] &lt; ds.size[ulp_v] {
+		ds.parent[ulp_u] = ulp_v
+		ds.size[ulp_v] += ds.size[ulp_u]
+	} else {
+		ds.parent[ulp_v] = ulp_u
+		ds.size[ulp_u] += ds.size[ulp_v]
+	}
+}
+
+// Helper function to check if a pixel is within boundaries
+func isValid(i, j, n int) bool {
+	if i &lt; 0 || i &gt;= n {
+		return false
+	}
+	if j &lt; 0 || j &gt;= n {
+		return false
+	}
+	return true
+}
+
+// Helper function to add initial islands to the disjoint set data structure
+func addInitialIslands(grid [][]int, ds *DisjointSet, n int) {
+	// Traverse all the cells in the grid
+	for row := 0; row &lt; n; row++ {
+		for col := 0; col &lt; n; col++ {
+			// If the cell is not land, skip
+			if grid[row][col] == 0 {
+				continue
+			}
+
+			// Traverse on all the neighbors
+			for ind := 0; ind &lt; 4; ind++ {
+				// Get the coordinates of neighbor
+				newRow := row + delRow[ind]
+				newCol := col + delCol[ind]
+
+				// If the cell is valid and a land cell
+				if isValid(newRow, newCol, n) &amp;&amp; grid[newRow][newCol] == 1 {
+					// Get the node number for the current and neighboring cells
+					nodeNo := row*n + col
+					adjNodeNo := newRow*n + newCol
+
+					// Perform union of both nodes as they are part of the same island
+					ds.unionBySize(nodeNo, adjNodeNo)
+				}
+			}
+		}
+	}
+}
+
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, 1, 0, -1}
+
+// Function to return the size of the largest island
+func largestIsland(grid [][]int) int {
+	n := len(grid)
+
+	// Disjoint Set data structure
+	ds := NewDisjointSet(n * n)
+
+	// Function call to add initial islands in the disjoint set
+	addInitialIslands(grid, ds, n)
+
+	// To store the answer
+	ans := 0
+
+	// Traverse on the grid
+	for row := 0; row &lt; n; row++ {
+		for col := 0; col &lt; n; col++ {
+			// If the cell is a land cell, skip
+			if grid[row][col] == 1 {
+				continue
+			}
+
+			// Set to store the ultimate parents of neighboring islands
+			components := make(map[int]bool)
+
+			// Traverse on all its neighbors
+			for ind := 0; ind &lt; 4; ind++ {
+				// Coordinates of neighboring cell
+				newRow := row + delRow[ind]
+				newCol := col + delCol[ind]
+
+				// If the neighboring cell is a valid land cell
+				if isValid(newRow, newCol, n) &amp;&amp; grid[newRow][newCol] == 1 {
+					// Get the node number for the neighboring cell
+					nodeNumber := newRow*n + newCol
+					components[ds.findUPar(nodeNumber)] = true
+				}
+			}
+
+			// To store the size of the current largest island
+			sizeTotal := 0
+
+			// Iterate on all the neighboring ultimate parents
+			for it := range components {
+				// Update the size
+				sizeTotal += ds.size[it]
+			}
+
+			// Store the maximum size of the island
+			ans = int(math.Max(float64(ans), float64(sizeTotal+1)))
+		}
+	}
+
+	// Edge case: Consider the largest island without changing any cell
+	for cellNo := 0; cellNo &lt; n*n; cellNo++ {
+		// Keep the answer updated
+		ans = int(math.Max(float64(ans), float64(ds.size[ds.findUPar(cellNo)])))
+	}
+
+	// Return the answer
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    // DelRow and delCol for neighbors
+    private int[] delRow = {-1, 0, 1, 0};
+    private int[] delCol = {0, 1, 0, -1};
+    
+    /* Helper function to check 
+    if a pixel is within boundaries */
+    private boolean isValid(int i, int j, int n) {
+        // Return false if pixel is invalid
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= n) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    /* Function to add initial islands to 
+    the disjoint set data structure */
+    private void addInitialIslands(int[][] grid, 
+                                   DisjointSet ds, int n) {
+        // Traverse all the cells in the grid
+        for (int row = 0; row &lt; n; row++) {
+            for (int col = 0; col &lt; n; col++) {
+                // If the cell is not land, skip
+                if (grid[row][col] == 0) continue;
+                
+                // Traverse on all the neighbors
+                for (int ind = 0; ind &lt; 4; ind++) {
+                    // Get the coordinates of neighbor
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    // If the cell is valid and a land cell
+                    if (isValid(newRow, newCol, n) &amp;&amp; 
+                        grid[newRow][newCol] == 1) {
+                        // Get the number for node
+                        int nodeNo = row * n + col;
+                        // Get the number for neighbor
+                        int adjNodeNo = newRow * n + newCol;
+                        
+                        /* Take union of both nodes as they
+                        are part of the same island */
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Function to get the size of the largest island
+    public int largestIsland(int[][] grid) {
+        // Dimensions of grid
+        int n = grid.length;
+        
+        // Disjoint set data structure
+        DisjointSet ds = new DisjointSet(n * n);
+        
+        /* Function call to add initial
+        islands in the disjoint set */
+        addInitialIslands(grid, ds, n);
+        
+        // To store the answer
+        int ans = 0;
+        
+        // Traverse on the grid
+        for (int row = 0; row &lt; n; row++) {
+            for (int col = 0; col &lt; n; col++) {
+                
+                // If the cell is a land cell, skip
+                if (grid[row][col] == 1) continue;
+                
+                /* Set to store the ultimate 
+                parents of neighboring islands */
+                Set&lt;Integer&gt; components = new HashSet&lt;&gt;();
+                
+                // Traverse on all its neighbors
+                for (int ind = 0; ind &lt; 4; ind++) {
+                    // Coordinates of neighboring cell
+                    int newRow = row + delRow[ind];
+                    int newCol = col + delCol[ind];
+                    
+                    if (isValid(newRow, newCol, n) &amp;&amp; 
+                        grid[newRow][newCol] == 1) {
+                            
+                        /* Perform union and store 
+                        ultimate parent in the set */
+                        int nodeNumber = newRow * n + newCol;
+                        components.add(ds.findUPar(nodeNumber));
+                    }
+                }
+                
+                // To store the size of current largest island
+                int sizeTotal = 0;
+                
+                // Iterate on all the neighboring ultimate parents
+                for (int parent : components) {
+                    // Update the size
+                    sizeTotal += ds.size[ds.findUPar(parent)];
+                }
+                
+                // Store the maximum size of island
+                ans = Math.max(ans, sizeTotal + 1);
+            }
+        }
+        
+        // Edge case
+        for (int cellNo = 0; cellNo &lt; n * n; cellNo++) {
+            // Keep the answer updated
+            ans = Math.max(ans, ds.size[ds.findUPar(cellNo)]);
+        }
+        
+        // Return the answer
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class DisjointSet {
+    // Constructor
+    constructor(n) {
+        /* To store the ranks, parents and 
+        sizes of different set of vertices */
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) =&gt; i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node])
+            return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        const ulp_u = this.findUPar(u);
+        const ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] &lt; this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+
+    getSize(node) {
+        return this.size[this.findUPar(node)];
+    }
+}
+
+// Solution class
+class Solution {
+    // DelRow and delCol for neighbors
+    constructor() {
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, 1, 0, -1];
+    }
+
+    // Helper function to check if a pixel is within boundaries
+    isValid(i, j, n) {
+        // Return false if pixel is invalid
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= n) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    /* Function to add initial islands to 
+    the disjoint set data structure */
+    addInitialIslands(grid, ds, n) {
+        // Traverse all the cells in the grid
+        for (let row = 0; row &lt; n; row++) {
+            for (let col = 0; col &lt; n; col++) {
+                // If the cell is not land, skip
+                if (grid[row][col] === 0) continue;
+
+                // Traverse on all the neighbors
+                for (let ind = 0; ind &lt; 4; ind++) {
+                    // Get the coordinates of neighbor
+                    const newRow = row + this.delRow[ind];
+                    const newCol = col + this.delCol[ind];
+
+                    // If the cell is valid and a land cell
+                    if (this.isValid(newRow, newCol, n) &amp;&amp; grid[newRow][newCol] === 1) {
+                        // Get the number for node
+                        const nodeNo = row * n + col;
+                        // Get the number for neighbor
+                        const adjNodeNo = newRow * n + newCol;
+
+                        /* Take union of both nodes as 
+                        they are part of the same island */
+                        ds.unionBySize(nodeNo, adjNodeNo);
+                    }
+                }
+            }
+        }
+    }
+
+    // Function to get the size of the largest island
+    largestIsland(grid) {
+        // Dimensions of grid
+        const n = grid.length;
+
+        // Disjoint set data structure
+        const ds = new DisjointSet(n * n);
+
+        // Function call to add initial islands in the disjoint set
+        this.addInitialIslands(grid, ds, n);
+
+        // To store the answer
+        let ans = 0;
+
+        // Traverse on the grid
+        for (let row = 0; row &lt; n; row++) {
+            for (let col = 0; col &lt; n; col++) {
+                // If the cell is a land cell, skip
+                if (grid[row][col] === 1) continue;
+
+                /* Set to store the ultimate parents 
+                of neighboring islands */
+                const components = new Set();
+
+                // Traverse on all its neighbors
+                for (let ind = 0; ind &lt; 4; ind++) {
+                    // Coordinates of neighboring cell
+                    const newRow = row + this.delRow[ind];
+                    const newCol = col + this.delCol[ind];
+
+                    if (this.isValid(newRow, newCol, n) &amp;&amp; grid[newRow][newCol] === 1) {
+                        
+                        /* Perform union and store 
+                        ultimate parent in the set */
+                        const nodeNumber = newRow * n + newCol;
+                        components.add(ds.findUPar(nodeNumber));
+                    }
+                }
+
+                // To store the size of current largest island
+                let sizeTotal = 0;
+
+                // Iterate on all the neighboring ultimate parents
+                for (const parent of components) {
+                    // Update the size
+                    sizeTotal += ds.getSize(parent);
+                }
+
+                // Store the maximum size of island
+                ans = Math.max(ans, sizeTotal + 1);
+            }
+        }
+
+        // Edge case
+        for (let cellNo = 0; cellNo &lt; n * n; cellNo++) {
+            // Keep the answer updated
+            ans = Math.max(ans, ds.getSize(cellNo));
+        }
+
+        // Return the answer
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class DisjointSet:
+    # To store the ranks, parents and 
+    # sizes of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = [i for i in range(n + 1)]
+        self.size = [1] * (n + 1)
+    
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+    
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v:
+            return
+        if self.size[ulp_u] &lt; self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+    
+    def getSize(self, node):
+        return self.size[self.findUPar(node)]
+
+# Solution class
+class Solution:
+    # DelRow and delCol for neighbors
+    delRow = [-1, 0, 1, 0]
+    delCol = [0, 1, 0, -1]
+    
+    # Helper function to check if a 
+    # pixel is within boundaries
+    def isValid(self, i, j, n):
+        # Return false if pixel is invalid
+        if i &lt; 0 or i &gt;= n:
+            return False
+        if j &lt; 0 or j &gt;= n:
+            return False
+        # Return true if pixel is valid
+        return True
+    
+    # Function to add initial islands to the 
+    # disjoint set data structure
+    def addInitialIslands(self, grid, ds, n):
+        # Traverse all the cells in the grid
+        for row in range(n):
+            for col in range(n):
+                # If the cell is not land, skip
+                if grid[row][col] == 0:
+                    continue
+                
+                # Traverse on all the neighbors
+                for ind in range(4):
+                    # Get the coordinates of neighbor
+                    newRow = row + self.delRow[ind]
+                    newCol = col + self.delCol[ind]
+                    
+                    # If the cell is valid and a land cell
+                    if (self.isValid(newRow, newCol, n) and 
+                        grid[newRow][newCol] == 1):
+                            
+                        # Get the number for node
+                        nodeNo = row * n + col
+                        # Get the number for neighbor
+                        adjNodeNo = newRow * n + newCol
+                        
+                        # Take union of both nodes as 
+                        # they are part of the same island
+                        ds.unionBySize(nodeNo, adjNodeNo)
+    
+    # Function to get the size of the largest island
+    def largestIsland(self, grid):
+        # Dimensions of grid
+        n = len(grid)
+        
+        # Disjoint set data structure
+        ds = DisjointSet(n * n)
+        
+        # Function call to add initial 
+        # islands in the disjoint set
+        self.addInitialIslands(grid, ds, n)
+        
+        # To store the answer
+        ans = 0
+        
+        # Traverse on the grid
+        for row in range(n):
+            for col in range(n):
+                # If the cell is a land cell, skip
+                if grid[row][col] == 1:
+                    continue
+                
+                # Set to store the ultimate 
+                # parents of neighboring islands
+                components = set()
+                
+                # Traverse on all its neighbors
+                for ind in range(4):
+                    # Coordinates of neighboring cell
+                    newRow = row + self.delRow[ind]
+                    newCol = col + self.delCol[ind]
+                    
+                    if (self.isValid(newRow, newCol, n) and 
+                        grid[newRow][newCol] == 1):
+                        # Perform union and store 
+                        # ultimate parent in the set
+                        nodeNumber = newRow * n + newCol
+                        components.add(ds.findUPar(nodeNumber))
+                
+                # To store the size of current largest island
+                sizeTotal = 0
+                
+                # Iterate on all the neighboring ultimate parents
+                for parent in components:
+                    # Update the size
+                    sizeTotal += ds.getSize(parent)
+                
+                # Store the maximum size of island
+                ans = max(ans, sizeTotal + 1)
+        
+        # Edge case
+        for cellNo in range(n * n):
+            # Keep the answer updated
+            ans = max(ans, ds.getSize(cellNo))
+        
+        # Return the answer
+        return ans</code></pre></div>
+</body>
+</html>

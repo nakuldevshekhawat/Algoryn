@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kth largest element in a stream of running integers</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Kth largest element in a stream of running integers</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Binary Search Tree</span><span>Binary Tree</span><span>Data Stream</span><span>Design</span><span>Heap (Priority Queue)</span><span>Tree</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Implement a class <strong>KthLargest </strong>to find the <strong>k</strong><sup><strong>th</strong></sup> <strong>largest </strong>number in a stream. It should have the following methods:</p><ul><li><strong>KthLargest</strong>(int k, int [] nums) Initializes the object with the integer <strong>k</strong> and the initial stream of numbers in <strong>nums</strong></li><li>int <strong>add</strong>(int val) Appends the integer <strong>val </strong>to the stream and returns the <strong>k</strong><sup><strong>th</strong></sup> largest element in the stream.</li></ul><p>Note that it is the <strong>k</strong><sup><strong>th</strong></sup> <strong>largest </strong>element in the sorted order, not the<strong> k</strong><sup><strong>th</strong></sup> distinct element.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= Number of instructions <= 1000</li><li>-10<sup>4</sup> <= val & all initial values <= 10<sup>4</sup></li><li>1 <= k <= 10<sup>4</sup></li><li>k - 1 <= nums.length <= 10<sup>3</sup></li><li>The stream will have at least k elements after any add call.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: [KthLargest(3, [1, 2, 3, 4]), add(5), add(2), add(7)]</p><p><strong>Output</strong>: [null, 3, 3, 4]</p><p><strong>Explanation</strong>: initial stream = [1, 2, 3, 4], k = 3.</p><p>add(5): stream = [1, 2, 3, 4, 5] -> returns 3</p><p>add(2): stream = [1, 2, 2, 3, 4, 5] -> returns 3</p><p>add(7): stream = [1, 2, 2, 3, 4, 5, 7] -> returns 4</p><h3>Example 2</h3><p><strong>Input</strong>: [KthLargest(2, [5, 5, 5, 5], add(2), add(6), add(60)]</p><p><strong>Output</strong>: [null, 5, 5, 6]</p><p><strong>Explanation</strong>: initial stream = [5, 5, 5, 5], k = 2.</p><p>add(2): stream = [5, 5, 5, 5, 2] -> returns 5</p><p>add(6): stream = [5, 5, 5, 5, 2, 6] -> returns 5</p><p>add(60): stream = [5, 5, 5, 5, 2, 6, 60] -> returns 6</p><h3>Example 3</h3><p>Input: [KthLargest(4, [5, 1, 2, 7], add(8), add(2), add(6)]</p></div>
+
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition</h3>
+<p>
+    A completely naive approach involves adding each new element to a list and sorting the list after every insertion to obtain the <strong>kth largest element</strong>. Although straightforward, this method incurs a time complexity of <strong>O(N logN)</strong> and a space complexity of <strong>O(N)</strong>, making it inefficient for large data streams. <br><br>
+
+    An optimized approach stems from a key observation: maintaining only the <strong>k largest elements</strong> at any given time is sufficient. This significantly reduces the number of elements being processed, leading to improved performance in both time and space. <br>
+
+    </p><h5>Understanding</h5>
+    To retrieve the kth largest element from these k largest numbers, it becomes essential to identify the <strong>smallest</strong> among them. This is due to the fact that the kth largest in the entire stream is the minimum of the top k elements. <br><br>
+    A <strong>min-heap</strong> data structure serves this purpose efficiently. It allows for constant-time access to the smallest element and logarithmic-time insertion and removal, ensuring the heap maintains only the most relevant elements.
+<p></p>
+
+<h3>Approach</h3>
+<p>
+    The code maintains a min-heap of size k to keep track of the k largest elements seen so far in the stream.
+
+    </p><ul>
+        <li>During initialization, each number from the initial stream is added to the heap.
+            <ul>
+                <li>If the heap size is less than k, the number is pushed directly.</li>
+                <li>If the heap already has k elements and the current number is larger than the smallest (top of heap), the smallest is removed and the current number is added.</li>
+            </ul>
+
+        </li>
+        <li>For each new number added to the stream:
+            <ul>
+                <li>If the heap size is less than k, the number is added directly.</li>
+                <li>If the number is greater than the smallest in the heap, the smallest is removed and the new number is added.</li>
+            </ul>
+
+        </li>
+        <li>The smallest element in the heap is always the kth largest in the stream and is returned after each addition.</li>
+    </ul>
+<p></p>
+
+<h3>Solution</h3>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class KthLargest {
+private:
+    int K; // Integer K
+    priority_queue <int, vector<int>, greater<int>> pq; // Min-heap 
+    
+public:
+
+    // Constructor
+    KthLargest(int k, vector<int>& nums) {
+        K = k; // Initialize the integer
+        
+        // Traverse all the elements in the array
+        for(int i = 0; i < nums.size(); i++) {
+            // If the size of min-heap is less than k
+            if(pq.size() < K) pq.push(nums[i]); // Add the current element
+            
+            // Else if the top element is smaller than the current element
+            else if(nums[i] > pq.top()) {
+                pq.pop(); // Pop the top element
+                pq.push(nums[i]); // Add the current element
+            }
+        }
+    }
+    
+    int add(int val) {
+        // If the size of the queue is less than K
+        if(pq.size() < K) {
+            pq.push(val);
+
+            return pq.top();
+        }
+
+        // If the smallest element is less than the element to be added
+        if(val > pq.top()) {
+            pq.pop(); // Remove the top element
+            pq.push(val); // Add the current element
+        }
+        
+        return pq.top(); // Return the Kth largest element
+    }
+};
+
+// Driver code
+int main() {
+    int k = 3;
+    vector<int> nums = {1, 2, 3, 4};
+
+    // Creating an object of KthLargest class
+    KthLargest kthLargest(k, nums);
+    
+    // Performing different operations
+    cout << "Kth Largest element after adding 5 is: " << kthLargest.add(5) << endl;
+    cout << "Kth Largest element after adding 2 is: " << kthLargest.add(2) << endl;
+    cout << "Kth Largest element after adding 7 is: " << kthLargest.add(7) << endl;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class KthLargest {
+    private int K; // Integer K
+    private PriorityQueue<Integer> pq; // Min-heap
+
+    // Constructor
+    public KthLargest(int k, int[] nums) {
+        K = k; // Initialize the integer
+        pq = new PriorityQueue<>(); // Min-heap
+
+        // Traverse all the elements in the array
+        for (int i = 0; i < nums.length; i++) {
+            // If the size of min-heap is less than k
+            if (pq.size() < K) pq.offer(nums[i]); // Add the current element
+
+            // Else if the top element is smaller than the current element
+            else if (nums[i] > pq.peek()) {
+                pq.poll(); // Pop the top element
+                pq.offer(nums[i]); // Add the current element
+            }
+        }
+    }
+
+    public int add(int val) {
+        // If the size of the queue is less than K
+        if (pq.size() < K) {
+            pq.offer(val);
+
+            return pq.peek();
+        }
+
+        // If the smallest element is less than the element to be added
+        if (val > pq.peek()) {
+            pq.poll(); // Remove the top element
+            pq.offer(val); // Add the current element
+        }
+
+        return pq.peek(); // Return the Kth largest element
+    }
+}
+
+class Main {
+    // Driver code
+    public static void main(String[] args) {
+        int k = 3;
+        int[] nums = {1, 2, 3, 4};
+
+        // Creating an object of KthLargest class
+        KthLargest kthLargest = new KthLargest(k, nums);
+
+        // Performing different operations
+        System.out.println("Kth Largest element after adding 5 is: " + kthLargest.add(5));
+        System.out.println("Kth Largest element after adding 2 is: " + kthLargest.add(2));
+        System.out.println("Kth Largest element after adding 7 is: " + kthLargest.add(7));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import heapq
+
+class KthLargest:
+    def __init__(self, k, nums):
+        self.K = k  # Integer K
+        self.pq = []  # Min-heap
+
+        # Traverse all the elements in the array
+        for num in nums:
+            # If the size of min-heap is less than k
+            if len(self.pq) < self.K:
+                heapq.heappush(self.pq, num)  # Add the current element
+
+            # Else if the top element is smaller than the current element
+            elif num > self.pq[0]:
+                heapq.heappop(self.pq)  # Pop the top element
+                heapq.heappush(self.pq, num)  # Add the current element
+
+    def add(self, val):
+        # If the size of the queue is less than K
+        if len(self.pq) < self.K:
+            heapq.heappush(self.pq, val)
+
+            return self.pq[0]
+
+        # If the smallest element is less than the element to be added
+        if val > self.pq[0]:
+            heapq.heappop(self.pq)  # Remove the top element
+            heapq.heappush(self.pq, val)  # Add the current element
+
+        return self.pq[0]  # Return the Kth largest element
+
+# Driver code
+if __name__ == "__main__":
+    k = 3
+    nums = [1, 2, 3, 4]
+
+    # Creating an object of KthLargest class
+    kthLargest = KthLargest(k, nums)
+
+    # Performing different operations
+    print("Kth Largest element after adding 5 is:", kthLargest.add(5))
+    print("Kth Largest element after adding 2 is:", kthLargest.add(2))
+    print("Kth Largest element after adding 7 is:", kthLargest.add(7))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class KthLargest {
+    constructor(k, nums) {
+        this.K = k; // Integer K
+        this.pq = []; // Min-heap
+
+        // Traverse all the elements in the array
+        for (let i = 0; i < nums.length; i++) {
+            // If the size of min-heap is less than k
+            if (this.pq.length < this.K) this.pushHeap(nums[i]); // Add the current element
+
+            // Else if the top element is smaller than the current element
+            else if (nums[i] > this.pq[0]) {
+                this.popHeap(); // Pop the top element
+                this.pushHeap(nums[i]); // Add the current element
+            }
+        }
+    }
+
+    add(val) {
+        // If the size of the queue is less than K
+        if (this.pq.length < this.K) {
+            this.pushHeap(val);
+
+            return this.pq[0];
+        }
+
+        // If the smallest element is less than the element to be added
+        if (val > this.pq[0]) {
+            this.popHeap(); // Remove the top element
+            this.pushHeap(val); // Add the current element
+        }
+
+        return this.pq[0]; // Return the Kth largest element
+    }
+
+    // Helper functions for min-heap using array
+    pushHeap(val) {
+        this.pq.push(val);
+        this.pq.sort((a, b) => a - b); // Sort to maintain min-heap
+    }
+
+    popHeap() {
+        this.pq.shift(); // Remove the smallest element
+    }
+}
+
+// Driver code
+let k = 3;
+let nums = [1, 2, 3, 4];
+
+// Creating an object of KthLargest class
+let kthLargest = new KthLargest(k, nums);
+
+// Performing different operations
+console.log("Kth Largest element after adding 5 is:", kthLargest.add(5));
+console.log("Kth Largest element after adding 2 is:", kthLargest.add(2));
+console.log("Kth Largest element after adding 7 is:", kthLargest.add(7));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class KthLargest
+{
+    private int _k; // Integer K
+    private List<int> _pq; // Min-heap
+
+    public KthLargest(int k, int[] nums)
+    {
+        _k = k;
+        _pq = new List<int>();
+
+        // Traverse all the elements in the array
+        for (int i = 0; i < nums.Length; i++)
+        {
+            // If the size of min-heap is less than k
+            if (_pq.Count < _k)
+            {
+                PushHeap(nums[i]); // Add the current element
+            }
+            // Else if the top element is smaller than the current element
+            else if (nums[i] > _pq[0])
+            {
+                PopHeap(); // Pop the top element
+                PushHeap(nums[i]); // Add the current element
+            }
+        }
+    }
+
+    public int Add(int val)
+    {
+        // If the size of the queue is less than K
+        if (_pq.Count < _k)
+        {
+            PushHeap(val);
+            return _pq[0];
+        }
+
+        // If the smallest element is less than the element to be added
+        if (val > _pq[0])
+        {
+            PopHeap(); // Remove the top element
+            PushHeap(val); // Add the current element
+        }
+
+        return _pq[0]; // Return the Kth largest element
+    }
+
+    // Helper functions for min-heap using list
+    private void PushHeap(int val)
+    {
+        _pq.Add(val);
+        _pq.Sort(); // Sort to maintain min-heap
+    }
+
+    private void PopHeap()
+    {
+        _pq.RemoveAt(0); // Remove the smallest element
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int k = 3;
+        int[] nums = { 1, 2, 3, 4 };
+
+        // Creating an object of KthLargest class
+        KthLargest kthLargest = new KthLargest(k, nums);
+
+        // Performing different operations
+        Console.WriteLine("Kth Largest element after adding 5 is: " + kthLargest.Add(5));
+        Console.WriteLine("Kth Largest element after adding 2 is: " + kthLargest.Add(2));
+        Console.WriteLine("Kth Largest element after adding 7 is: " + kthLargest.Add(7));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"container/heap"
+	"fmt"
+)
+
+// KthLargest class
+type KthLargest struct {
+	K  int
+	pq *MinHeap
+}
+
+// MinHeap is a min-heap for integer values
+type MinHeap []int
+
+// Implementing heap.Interface for MinHeap
+
+func (h *MinHeap) Len() int {
+	return len(*h)
+}
+
+func (h *MinHeap) Less(i, j int) bool {
+	return (*h)[i] < (*h)[j]
+}
+
+func (h *MinHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+}
+
+func (h *MinHeap) Push(x interface{}) {
+	*h = append(*h, x.(int))
+}
+
+func (h *MinHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
+}
+
+// Constructor to initialize the KthLargest
+func Constructor(k int, nums []int) KthLargest {
+	kthLargest := KthLargest{K: k, pq: &MinHeap{}}
+
+	heap.Init(kthLargest.pq)
+
+	// Traverse all the elements in the array
+	for _, num := range nums {
+		// If the size of min-heap is less than k
+		if kthLargest.pq.Len() < kthLargest.K {
+			heap.Push(kthLargest.pq, num) // Add the current element
+		} else if num > (*kthLargest.pq)[0] {
+			// Else if the top element is smaller than the current element
+			heap.Pop(kthLargest.pq) // Pop the top element
+			heap.Push(kthLargest.pq, num) // Add the current element
+		}
+	}
+
+	return kthLargest
+}
+
+// Add function to insert the value and return the Kth largest element
+func (kthLargest *KthLargest) Add(val int) int {
+	// If the size of the queue is less than K
+	if kthLargest.pq.Len() < kthLargest.K {
+		heap.Push(kthLargest.pq, val)
+	} else if val > (*kthLargest.pq)[0] {
+		// If the smallest element is less than the element to be added
+		heap.Pop(kthLargest.pq) // Remove the top element
+		heap.Push(kthLargest.pq, val) // Add the current element
+	}
+
+	return (*kthLargest.pq)[0] // Return the Kth largest element
+}
+
+// Driver code
+func main() {
+	k := 3
+	nums := []int{1, 2, 3, 4}
+
+	// Creating an object of KthLargest class
+	kthLargest := Constructor(k, nums)
+
+	// Performing different operations
+	fmt.Println("Kth Largest element after adding 5 is:", kthLargest.Add(5))
+	fmt.Println("Kth Largest element after adding 2 is:", kthLargest.Add(2))
+	fmt.Println("Kth Largest element after adding 7 is:", kthLargest.Add(7))
+}
+</code></pre></div></div></div>
+
+<h3>Complexity Analysis:</h3>
+<p>
+    </p><h5>Time Complexity:</h5>
+    <strong>KthLargest(K, nums): O(NlogK)</strong>, where N is the number of elements in the given list. <br>
+    For each element, insertion into the min-heap of size at most K takes <strong>O(logK)</strong> time. Hence, the overall time complexity of this method is <strong>O(NlogK)</strong> <br><br>
+
+    <strong>add(val): O(log K)</strong> <br>
+    If the size of the heap is less than k, inserting the value takes <strong>O(log K)</strong>. If the heap already has k elements and the new value is greater than the smallest (heap top), we remove the top and insert the new value — both operations take <strong>O(log K)</strong>. Therefore, each call to add takes <strong>O(log K)</strong> time. <br>
+
+    <h5>Space Complexity: O(K)</h5> 
+    This is because a min-heap of size at most K is maintained, which results in O(K) space in the worst case. 
+<p></p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class KthLargest {
+private:
+    int K; // Integer K
+    priority_queue &lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt; pq; // Min-heap 
+    
+public:
+
+    // Constructor
+    KthLargest(int k, vector&lt;int&gt;&amp; nums) {
+        K = k; // Initialize the integer
+        
+        // Traverse all the elements in the array
+        for(int i = 0; i &lt; nums.size(); i++) {
+            // If the size of min-heap is less than k
+            if(pq.size() &lt; K) pq.push(nums[i]); // Add the current element
+            
+            // Else if the top element is smaller than the current element
+            else if(nums[i] &gt; pq.top()) {
+                pq.pop(); // Pop the top element
+                pq.push(nums[i]); // Add the current element
+            }
+        }
+    }
+    
+    int add(int val) {
+        // If the size of the queue is less than K
+        if(pq.size() &lt; K) {
+            pq.push(val);
+
+            return pq.top();
+        }
+
+        // If the smallest element is less than the element to be added
+        if(val &gt; pq.top()) {
+            pq.pop(); // Remove the top element
+            pq.push(val); // Add the current element
+        }
+        
+        return pq.top(); // Return the Kth largest element
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class KthLargest
+{
+    private int _k;
+    private System.Collections.Generic.List&lt;int&gt; _pq;
+
+    public KthLargest(int k, int[] nums)
+    {
+        _k = k;
+        _pq = new System.Collections.Generic.List&lt;int&gt;();
+
+        // Traverse all the elements in the array
+        for (int i = 0; i &lt; nums.Length; i++)
+        {
+            // If the size of min-heap is less than k
+            if (_pq.Count &lt; _k)
+            {
+                PushHeap(nums[i]); // Add the current element
+            }
+            // Else if the top element is smaller than the current element
+            else if (nums[i] &gt; _pq[0])
+            {
+                PopHeap(); // Pop the top element
+                PushHeap(nums[i]); // Add the current element
+            }
+        }
+    }
+
+    public int Add(int val)
+    {
+        // If the size of the queue is less than K
+        if (_pq.Count &lt; _k)
+        {
+            PushHeap(val);
+            return _pq[0];
+        }
+
+        // If the smallest element is less than the element to be added
+        if (val &gt; _pq[0])
+        {
+            PopHeap(); // Remove the top element
+            PushHeap(val); // Add the current element
+        }
+
+        return _pq[0]; // Return the Kth largest element
+    }
+
+    // Helper functions for min-heap using list
+    private void PushHeap(int val)
+    {
+        _pq.Add(val);
+        _pq.Sort(); // Sort to maintain min-heap
+    }
+
+    private void PopHeap()
+    {
+        _pq.RemoveAt(0); // Remove the smallest element
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;container/heap&quot;)
+
+// KthLargest class
+type KthLargest struct {
+	K  int
+	pq *MinHeap
+}
+
+// MinHeap is a min-heap for integer values
+type MinHeap []int
+
+// Implementing heap.Interface for MinHeap
+
+func (h *MinHeap) Len() int {
+	return len(*h)
+}
+
+func (h *MinHeap) Less(i, j int) bool {
+	return (*h)[i] &lt; (*h)[j]
+}
+
+func (h *MinHeap) Swap(i, j int) {
+	(*h)[i], (*h)[j] = (*h)[j], (*h)[i]
+}
+
+func (h *MinHeap) Push(x interface{}) {
+	*h = append(*h, x.(int))
+}
+
+func (h *MinHeap) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
+}
+
+// Constructor to initialize the KthLargest
+func Constructor(k int, nums []int) KthLargest {
+	kthLargest := KthLargest{K: k, pq: &amp;MinHeap{}}
+
+	heap.Init(kthLargest.pq)
+
+	// Traverse all the elements in the array
+	for _, num := range nums {
+		// If the size of min-heap is less than k
+		if kthLargest.pq.Len() &lt; kthLargest.K {
+			heap.Push(kthLargest.pq, num) // Add the current element
+		} else if num &gt; (*kthLargest.pq)[0] {
+			// Else if the top element is smaller than the current element
+			heap.Pop(kthLargest.pq) // Pop the top element
+			heap.Push(kthLargest.pq, num) // Add the current element
+		}
+	}
+
+	return kthLargest
+}
+
+// Add function to insert the value and return the Kth largest element
+func (kthLargest *KthLargest) Add(val int) int {
+	// If the size of the queue is less than K
+	if kthLargest.pq.Len() &lt; kthLargest.K {
+		heap.Push(kthLargest.pq, val)
+	} else if val &gt; (*kthLargest.pq)[0] {
+		// If the smallest element is less than the element to be added
+		heap.Pop(kthLargest.pq) // Remove the top element
+		heap.Push(kthLargest.pq, val) // Add the current element
+	}
+
+	return (*kthLargest.pq)[0] // Return the Kth largest element
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class KthLargest {
+    private int K; // Integer K
+    private PriorityQueue&lt;Integer&gt; pq; // Min-heap
+
+    // Constructor
+    public KthLargest(int k, int[] nums) {
+        K = k; // Initialize the integer
+        pq = new PriorityQueue&lt;&gt;(); // Min-heap
+
+        // Traverse all the elements in the array
+        for (int i = 0; i &lt; nums.length; i++) {
+            // If the size of min-heap is less than k
+            if (pq.size() &lt; K) pq.offer(nums[i]); // Add the current element
+
+            // Else if the top element is smaller than the current element
+            else if (nums[i] &gt; pq.peek()) {
+                pq.poll(); // Pop the top element
+                pq.offer(nums[i]); // Add the current element
+            }
+        }
+    }
+
+    public int add(int val) {
+        // If the size of the queue is less than K
+        if (pq.size() &lt; K) {
+            pq.offer(val);
+
+            return pq.peek();
+        }
+
+        // If the smallest element is less than the element to be added
+        if (val &gt; pq.peek()) {
+            pq.poll(); // Remove the top element
+            pq.offer(val); // Add the current element
+        }
+
+        return pq.peek(); // Return the Kth largest element
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class KthLargest {
+    constructor(k, nums) {
+        this.K = k; // Integer K
+        this.pq = []; // Min-heap
+
+        // Traverse all the elements in the array
+        for (let i = 0; i &lt; nums.length; i++) {
+            // If the size of min-heap is less than k
+            if (this.pq.length &lt; this.K) this.pushHeap(nums[i]); // Add the current element
+
+            // Else if the top element is smaller than the current element
+            else if (nums[i] &gt; this.pq[0]) {
+                this.popHeap(); // Pop the top element
+                this.pushHeap(nums[i]); // Add the current element
+            }
+        }
+    }
+
+    add(val) {
+        // If the size of the queue is less than K
+        if (this.pq.length &lt; this.K) {
+            this.pushHeap(val);
+
+            return this.pq[0];
+        }
+
+        // If the smallest element is less than the element to be added
+        if (val &gt; this.pq[0]) {
+            this.popHeap(); // Remove the top element
+            this.pushHeap(val); // Add the current element
+        }
+
+        return this.pq[0]; // Return the Kth largest element
+    }
+
+    // Helper functions for min-heap using array
+    pushHeap(val) {
+        this.pq.push(val);
+        this.pq.sort((a, b) =&gt; a - b); // Sort to maintain min-heap
+    }
+
+    popHeap() {
+        this.pq.shift(); // Remove the smallest element
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>import heapq
+
+class KthLargest:
+    def __init__(self, k, nums):
+        self.K = k  # Integer K
+        self.pq = []  # Min-heap
+
+        # Traverse all the elements in the array
+        for num in nums:
+            # If the size of min-heap is less than k
+            if len(self.pq) &lt; self.K:
+                heapq.heappush(self.pq, num)  # Add the current element
+
+            # Else if the top element is smaller than the current element
+            elif num &gt; self.pq[0]:
+                heapq.heappop(self.pq)  # Pop the top element
+                heapq.heappush(self.pq, num)  # Add the current element
+
+    def add(self, val):
+        # If the size of the queue is less than K
+        if len(self.pq) &lt; self.K:
+            heapq.heappush(self.pq, val)
+
+            return self.pq[0]
+
+        # If the smallest element is less than the element to be added
+        if val &gt; self.pq[0]:
+            heapq.heappop(self.pq)  # Remove the top element
+            heapq.heappush(self.pq, val)  # Add the current element
+
+        return self.pq[0]  # Return the Kth largest element</code></pre></div>
+</body>
+</html>

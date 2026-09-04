@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cheapest flight within K stops</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Cheapest flight within K stops</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Breadth-First Search</span><span>Depth-First Search</span><span>Dynamic Programming</span><span>Graph</span><span>Heap (Priority Queue)</span><span>Shortest Path</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>There are n cities and m edges connected by some number of flights. Given an array of flights where flights[i] = [ from<sub>i</sub>, to<sub>i</sub>, price<sub>i</sub>] indicates that there is a flight from city from<sub>i</sub> to city to<sub>i</sub> with cost price<sub>i</sub>. Given three integers src, dst, and k, and return the <strong>cheapest price</strong> from src to dst with at most<strong> k</strong> stops. If there is no such route, return -1.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  1 <= n <= 100</li><li>  0 <= flights.length <= (n * (n - 1) / 2)</li><li>   flights[i].length == 3</li><li>  0 <= from<sub>i</sub>, to<sub>i </sub>< n</li><li>  from<sub>i</sub> != to<sub>i</sub></li><li>  1 <= price<sub>i </sub><= 10<sup>4</sup></li><li>  There will not be any multiple flights between the two cities.</li><li>  0 <= src, dst, k < n</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-lTPXKKMA"></p><p><br></p><p><strong>Input:</strong> n = 4, flights = [[0,1,100],[1,2,100],[2,0,100],[1,3,600],[2,3,200]], src = 0, dst = 3, k = 1</p><p><strong>Output:</strong> 700</p><p><strong>Explanation:</strong> The optimal path with at most 1 stops from city 0 to 3 is marked in red and has cost 100 + 600 = 700.</p><p>Note that the path through cities [0,1,2,3] is cheaper but is invalid because it uses 2 stops.</p><h3>Example 2</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-CIPwuM01"></p><p><br></p><p><strong>Input:</strong> n = 3, flights = [[0,1,100],[1,2,100],[0,2,500]], src = 0, dst = 2, k = 1</p><p><strong>Output:</strong> 200</p><p><strong>Explanation:</strong>The optimal path with at most 1 stops from city 0 to 2 is marked in red and has cost 100 + 100 = 200.</p><h3>Example 3</h3><p>Input: n = 3, flights = [[0, 1, 100], [1, 2, 100], [0, 2, 500]], src = 0, dst = 2, k = 0 </p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem underpins the fundamental operations of various travel and accommodation booking apps such as Expedia, Skyscanner, or Google Flights. These platforms utilize algorithms rooted in graph theory to find the cheapest or most convenient routes between locations by considering factors such as price, transit cities (stops), and directness of the route. The problem is essentially a variant of the shortest path problem with a constraint on the number of edges, which translates to the maximum number of stops in a flight journey in applications.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    Since the problem includes finding the cheapest flight to reach from <strong>source</strong> to <strong>destination</strong>, the first thought that must come to the mind is to use <strong>Dijkstra's Algorithm</strong>. But there is a restriction mentioned on the number of stops taken to reach the <strong>destination</strong>, due to which some modifications need to be done in Dijkstra's algorithm to obtain the result. <br>
+
+    It is known that Dijkstra's algorithm is implemented using Min-heap (priority queue) data structure. For current problem, there are two things related to a node that must be stored in priority queue:
+    </p><ul>
+        <li>Distance to reach the node.</li>
+        <li>Stops taken to reach the node.</li>
+    </ul><br>
+
+    Now the question arises which one must be given priority in the priority queue.
+
+    <h6>Understanding how to store elements in priority queue:</h6>
+    <ul>
+        <li>While storing the elements, if priority is given to minimum distance first then after a few iterations, it can be seen that the algorithm will halt when number of stops could not exceed. </li>
+        <li>It may result in a wrong answer as it will prevent the algorithm to explore those paths which have more cost but fewer stops that the current answer.</li>
+        <li>To prevent this issue, the elements can be stored in terms of the minimum number of stops in the priority queue so that when the algorithm halts, it gives the minimum cost within limits.</li>
+    </ul>
+
+    <h6>Choosing better data structure to improve complexity:</h6>
+    It was clear till now that everything will be stored/ordered in terms of number of stops. But the stops will always increase monotonically (increasing by 1). So the actual significance of using a <strong>Min-heap</strong> data strucute here in Dijkstra's algorithm fades away. Hence, a simple <strong>Queue</strong> data structure can be used to avoid the additional logarithmic factor in the complexity (caused by the insertion/deletion operation in Min-Heap data structure).
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>The cities and flights are represented as a graph using an adjacency list. Each city is a node, and each flight is an edge with an associated cost.</li>
+    <li>A vector is initialized to store the minimum cost to reach each city, initially set to a very large value (infinity). A queue is used to manage the states during traversal. Each state consists of the current city, the cost to reach that city, and the number of stops made so far.
+    </li>
+    <li>The traversal begins from the source city, with an initial cost of 0 and 0 stops. For each city dequeued, all its neighboring cities are explored.</li>
+    <li>If a cheaper cost to reach a neighboring city is found and the number of stops does not exceed k, the neighboring city is enqueued with the updated cost and incremented stop count.</li>
+    <li>The minimum cost to reach each neighboring city is updated whenever a cheaper route is found during the traversal. 
+    </li>
+    <li>After exploring all possible routes within the stop constraint, the minimum cost to reach the destination city is returned. If unreachable within k stops, the function returns -1.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/1.drawio (1).png-vNw7H75w" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/2.drawio (1).png-88DXbvU3" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/3.drawio (1).png-pZZdyKp0" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/4.drawio (1).png-JJ0SIZvT" alt="Image 4"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/1.drawio (1).png-vNw7H75w" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/2.drawio (1).png-88DXbvU3" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/3.drawio (1).png-pZZdyKp0" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Cheapest flight within K stops/4.drawio (1).png-JJ0SIZvT" alt="Image 4"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* Define P as a shorthand for
+the pair<int, pair<int,int>> type */
+#define P pair <int, pair<int,int>>
+
+class Solution {
+public:
+    
+    /* Function to find cheapest price from 
+    src to dst with at most k stops */
+    int CheapestFlight(int n, vector<vector<int>>& flights, 
+                       int src, int dst, int k) {
+        
+        // To store the graph
+        vector<pair<int,int>> adj[n];
+        
+        // Adding edges to the graph
+        for(auto it : flights) {
+            adj[it[0]].push_back({it[1], it[2]});
+        }
+        
+        // To store minimum distance
+        vector<int> minDist(n, 1e9);
+        minDist[src] = 0;
+        /* Queue storing the elements of 
+        the form {stops, {node, dist}} */
+        queue <P> q;
+        
+        // Add the source to the queue
+        q.push({0, {src, 0}});
+        
+        // Until the queue is empty
+        while(!q.empty()) {
+            
+            // Get the element from queue
+            auto p = q.front(); q.pop();
+            
+            int stops = p.first; //stops
+            int node = p.second.first; // node
+            int dist = p.second.second; // distance
+            
+            /* If the number of stops taken exceed k,
+            skip and move to the next element */
+            if(stops > k) continue;
+            
+            // Traverse all the neighbors
+            for(auto it : adj[node]) {
+                
+                int adjNode = it.first; // Adjacent node
+                int edgeWt = it.second; // Edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance and number 
+                of stops doesn't exceed k */
+                if(dist + edgeWt < minDist[adjNode] && 
+                   stops <= k) {
+                       
+                    // Update the known distance
+                    minDist[adjNode] = dist + edgeWt;
+                    
+                    // Add the new element to queue
+                    q.push({stops+1, {adjNode, dist + edgeWt}});
+                }
+            }
+        }
+        
+        /* If the destination is 
+        unreachable, return -1 */
+        if(minDist[dst] == 1e9) 
+            return -1;
+        
+        // Otherwise return the result
+        return minDist[dst];
+    }
+};
+
+int main() {
+    int n = 4;
+    vector<vector<int>> flights = {
+        {0,1,100},
+        {1,2,100},
+        {2,0,100},
+        {1,3,600},
+        {2,3,200}
+    };
+    
+    int src = 0, dst = 3, k = 1;
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine cheapest flight 
+    from source to destination within K stops */
+    int ans = 
+        sol.CheapestFLight(n, flights, src, dst, k);
+    
+    // Output
+    cout << "The cheapest flight from source to destination within K stops is: " << ans;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Function to find the cheapest price 
+    from src to dst with at most k stops */
+    public int CheapestFlight(int n, int[][] flights, 
+                              int src, int dst, int k) {
+        if(src == dst){
+            return 0;
+        }
+        // To store the graph
+        List<List<int[]>> adj = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        // Adding edges to the graph
+        for (int[] flight : flights) {
+            adj.get(flight[0]).add(new int[]{flight[1], flight[2]});
+        }
+        
+        // To store minimum distance
+        int[] minDist = new int[n];
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        /* Queue storing the elements of 
+        the form {stops, {node, dist}} */
+        Queue<int[]> q = new LinkedList<>();
+        
+        // Add the source to the queue
+        q.offer(new int[]{0, src, 0});
+        
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+            
+            // Get the element from the queue
+            int[] p = q.poll();
+            
+            int stops = p[0]; // stops
+            int node = p[1]; // node
+            int dist = p[2]; // distance
+            
+            /* If the number of stops taken exceed k, 
+            skip and move to the next element */
+            if (stops > k) continue;
+            
+            // Traverse all the neighbors
+            for (int[] neighbor : adj.get(node)) {
+                
+                int adjNode = neighbor[0]; // Adjacent node
+                int edgeWt = neighbor[1]; // Edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance and number 
+                of stops doesn't exceed k */
+                if (dist + edgeWt < minDist[adjNode] && 
+                    stops <= k) {
+                    
+                    // Update the known distance
+                    minDist[adjNode] = dist + edgeWt;
+                    
+                    // Add the new element to the queue
+                    q.offer(new int[]{stops + 1, adjNode, dist + edgeWt});
+                }
+            }
+        }
+        
+        // If the destination is unreachable, return -1
+        if (minDist[dst] == Integer.MAX_VALUE) 
+            return -1;
+        
+        // Otherwise, return the result
+        return minDist[dst];
+    }
+    
+    public static void main(String[] args) {
+        int n = 4;
+        int[][] flights = {
+            {0, 1, 100},
+            {1, 2, 100},
+            {2, 0, 100},
+            {1, 3, 600},
+            {2, 3, 200}
+        };
+        
+        int src = 0, dst = 3, k = 1;
+        
+        // Creating an instance of Solution class
+        Solution sol = new Solution(); 
+        
+        // Function call to determine cheapest flight from source to destination within K stops
+        int ans = sol.CheapestFLight(n, flights, src, dst, k);
+        
+        // Output
+        System.out.println("The cheapest flight from source to destination within K stops is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+from typing import List
+
+class Solution:
+    
+    # Function to find cheapest price from 
+    # src to dst with at most k stops 
+    def CheapestFlight(self, n: int, flights: List[List[int]], 
+                       src: int, dst: int, k: int) -> int:
+        
+        # To store the graph
+        adj = [[] for _ in range(n)]
+        
+        # Adding edges to the graph
+        for it in flights:
+            adj[it[0]].append((it[1], it[2]))
+        
+        # To store minimum distance
+        minDist = [float('inf')] * n
+        minDist[src] = 0
+        # Queue storing the elements of 
+        # the form {stops, {node, dist}}
+        q = deque([(0, src, 0)])
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the element from queue
+            stops, node, dist = q.popleft()
+            
+            # If the number of stops taken exceed k, 
+            # skip and move to the next element
+            if stops > k:
+                continue
+            
+            # Traverse all the neighbors
+            for adjNode, edgeWt in adj[node]:
+                
+                # If the tentative distance to reach adjacent
+                # node is smaller than the known distance
+                # and number of stops doesn't exceed k
+                if (dist + edgeWt < minDist[adjNode] and 
+                    stops <= k):
+                    
+                    # Update the known distance
+                    minDist[adjNode] = dist + edgeWt
+                    
+                    # Add the new element to queue
+                    q.append((stops + 1, adjNode, dist + edgeWt))
+        
+        # If the destination is unreachable, return -1
+        if minDist[dst] == float('inf'):
+            return -1
+        
+        # Otherwise return the result
+        return minDist[dst]
+
+if __name__ == "__main__":
+    n = 4
+    flights = [
+        [0, 1, 100],
+        [1, 2, 100],
+        [2, 0, 100],
+        [1, 3, 600],
+        [2, 3, 200]
+    ]
+    
+    src, dst, k = 0, 3, 1
+    
+    # Creating an instance of Solution class
+    sol = Solution() 
+    
+    # Function call to determine cheapest flight from source to destination within K stops
+    ans = sol.CheapestFLight(n, flights, src, dst, k)
+    
+    # Output
+    print("The cheapest flight from source to destination within K stops is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    
+    /* Function to find the cheapest price 
+    from src to dst with at most k stops */
+    CheapestFlight(n, flights, src, dst, k) {
+        
+        // To store the graph
+        let adj = Array.from(
+            { length: n }, 
+            () => []
+        );
+        
+        // Adding edges to the graph
+        for (let flight of flights) {
+            adj[flight[0]].push([flight[1], flight[2]]);
+        }
+        
+        // To store minimum distance
+        let minDist = new Array(n).fill(Infinity);
+        minDist[src] = 0;
+        /* Queue storing the elements of 
+        the form {stops, {node, dist}} */
+        let q = [[0, src, 0]];
+        
+        // Until the queue is empty
+        while (q.length > 0) {
+            
+            // Get the element from the queue
+            let [stops, node, dist] = q.shift();
+            
+            /* If the number of stops taken exceed k,
+            skip and move to the next element */
+            if (stops > k) continue;
+            
+            // Traverse all the neighbors
+            for (let [adjNode, edgeWt] of adj[node]) {
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance and number 
+                of stops doesn't exceed k */
+                if (dist + edgeWt < minDist[adjNode] && 
+                    stops <= k) {
+                    
+                    // Update the known distance
+                    minDist[adjNode] = dist + edgeWt;
+                    
+                    // Add the new element to the queue
+                    q.push([stops + 1, adjNode, dist + edgeWt]);
+                }
+            }
+        }
+        
+        // If the destination is unreachable, return -1
+        if (minDist[dst] === Infinity) 
+            return -1;
+        
+        // Otherwise, return the result
+        return minDist[dst];
+    }
+}
+
+// Test case
+const n = 4;
+const flights = [
+    [0, 1, 100],
+    [1, 2, 100],
+    [2, 0, 100],
+    [1, 3, 600],
+    [2, 3, 200]
+];
+const src = 0, dst = 3, k = 1;
+
+// Creating an instance of Solution class
+const sol = new Solution();
+
+// Function call to determine cheapest flight from source to destination within K stops
+const ans = sol.CheapestFLight(n, flights, src, dst, k);
+
+// Output
+console.log("The cheapest flight from source to destination within K stops is:", ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+class Solution {
+    public int CheapestFlight(int n, List<List<int>> flights, int src, int dst, int K) {
+        /* To store the graph */
+        var adj = new List<(int to, int wt)>[n];
+        for (int i = 0; i < n; i++) adj[i] = new List<(int to, int wt)>();
+
+        /* Adding edges to the graph */
+        foreach (var it in flights) {
+            adj[it[0]].Add((it[1], it[2]));
+        }
+
+        /* To store minimum distance */
+        var minDist = new int[n];
+        for (int i = 0; i < n; i++) minDist[i] = int.MaxValue; // Use int.MaxValue instead of 1e9
+        minDist[src] = 0;
+
+        /* Queue storing the elements of 
+           the form {stops, node, dist} */
+        var q = new Queue<(int stops, int node, int dist)>();
+
+        /* Add the source to the queue */
+        q.Enqueue((0, src, 0));
+
+        /* Until the queue is empty */
+        while (q.Count > 0) {
+            /* Get the element from queue */
+            var p = q.Dequeue();
+
+            int stops = p.stops;   // stops
+            int node  = p.node;    // node
+            int dist  = p.dist;    // distance
+
+            /* If the number of stops taken exceed K,
+               skip and move to the next element */
+            if (stops > K) continue;
+
+            /* Traverse all the neighbors */
+            foreach (var it in adj[node]) {
+                int adjNode = it.to; // Adjacent node
+                int edgeWt  = it.wt; // Edge weight
+
+                /* If the tentative distance to reach adjacent node 
+                   is smaller than the known distance and number 
+                   of stops doesn't exceed K */
+                if (dist + edgeWt < minDist[adjNode] && stops <= K) {
+                    /* Update the known distance */
+                    minDist[adjNode] = dist + edgeWt;
+
+                    /* Add the new element to queue */
+                    q.Enqueue((stops + 1, adjNode, dist + edgeWt));
+                }
+            }
+        }
+
+        /* If the destination is unreachable, return -1 */
+        if (minDist[dst] == int.MaxValue) return -1;
+
+        /* Otherwise return the result */
+        return minDist[dst];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Test case
+        int n = 4;
+        List<List<int>> flights = new List<List<int>>
+        {
+            new List<int> {0, 1, 100},
+            new List<int> {1, 2, 100},
+            new List<int> {2, 0, 100},
+            new List<int> {1, 3, 600},
+            new List<int> {2, 3, 200}
+        };
+        int src = 0, dst = 3, k = 1;
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to determine cheapest flight from source to destination within K stops
+        int ans = sol.CheapestFlight(n, flights, src, dst, k);
+
+        // Output
+        Console.WriteLine("The cheapest flight from source to destination within K stops is: " + ans);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+type P struct {
+	stops int
+	node  int
+	dist  int
+}
+
+// CheapestFlight finds the cheapest price from src to dst with at most K stops.
+func CheapestFlight(n int, flights [][]int, src int, dst int, K int) int {
+	// To store the graph
+	adj := make([][]struct{ to, wt int }, n)
+	// Adding edges to the graph
+	for _, f := range flights {
+		u, v, w := f[0], f[1], f[2]
+		adj[u] = append(adj[u], struct{ to, wt int }{v, w})
+	}
+
+	// To store minimum distance
+	const INF = int(1e9)
+	minDist := make([]int, n)
+	for i := range minDist {
+		minDist[i] = INF
+	}
+	minDist[src] = 0
+
+	/* Queue storing the elements of
+	   the form {stops, {node, dist}} */
+	q := []P{{stops: 0, node: src, dist: 0}}
+
+	// Until the queue is empty
+	for len(q) > 0 {
+		p := q[0]
+		q = q[1:]
+
+		stops, node, dist := p.stops, p.node, p.dist
+
+		/* If the number of stops taken exceed K, skip */
+		if stops > K {
+			continue
+		}
+
+		// Traverse all the neighbors
+		for _, edge := range adj[node] {
+			next, wt := edge.to, edge.wt
+
+			/* If the tentative distance to reach adjacent node is smaller
+			   than the known distance and stops limit not exceeded */
+			if dist+wt < minDist[next] {
+				minDist[next] = dist + wt
+				// Add the new element to queue
+				q = append(q, P{stops: stops + 1, node: next, dist: minDist[next]})
+			}
+		}
+	}
+
+	/* If the destination is unreachable, return -1 */
+	if minDist[dst] == INF {
+		return -1
+	}
+	// Otherwise return the result
+	return minDist[dst]
+}
+
+func main() {
+	n := 4
+	flights := [][]int{
+		{0, 1, 100},
+		{1, 2, 100},
+		{2, 0, 100},
+		{1, 3, 600},
+		{2, 3, 200},
+	}
+	src, dst, K := 0, 3, 1
+
+	// Function call to determine cheapest flight
+	ans := CheapestFlight(n, flights, src, dst, K)
+
+	// Output
+	fmt.Printf("The cheapest flight from source to destination within K stops is: %d\n", ans)
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O((N+M*K))</strong> (where N is the number of cities, M is the number of flight (edges), and K is the max. number of stops allowed) <br>
+</p><ul>
+    <li>Creating the graph takes O(M) time.</li>
+    <li>Each node can be inserted into the queue up to k+1 times (0 stops, 1 stop, ..., up to k stops) making it take O(N*k).</li>
+    <li>For each node processed in the queue, we iterate over all its adjacent nodes (edges). If there are E edges in total and each edge can be considered at most k+1 times, the total number of edge considerations takes O(M*k) time.</li>
+
+</ul><p></p>
+
+<p><strong>Space Complexity: O(M+N*K)</strong> <br>
+</p><ul>
+    <li>Storing the graph takes O(M) space.</li>
+    <li>Array to store minimum distance takes O(N) space.</li>
+    <li>Queue will store N*K elements in the worst case taking O(N*K) space.</li>
+</ul>
+<p></p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>/* Define P as a shorthand for
+the pair&lt;int, pair&lt;int,int&gt;&gt; type */
+#define P pair &lt;int, pair&lt;int,int&gt;&gt;
+
+class Solution {
+public:
+    
+    /* Function to find cheapest price from 
+    src to dst with at most k stops */
+    int CheapestFlight(int n, vector&lt;vector&lt;int&gt;&gt;&amp; flights, 
+                       int src, int dst, int k) {
+        
+        // To store the graph
+        vector&lt;pair&lt;int,int&gt;&gt; adj[n];
+        
+        // Adding edges to the graph
+        for(auto it : flights) {
+            adj[it[0]].push_back({it[1], it[2]});
+        }
+        
+        // To store minimum distance
+        vector&lt;int&gt; minDist(n, 1e9);
+        minDist[src] = 0;
+        /* Queue storing the elements of 
+        the form {stops, {node, dist}} */
+        queue &lt;P&gt; q;
+        
+        // Add the source to the queue
+        q.push({0, {src, 0}});
+        
+        // Until the queue is empty
+        while(!q.empty()) {
+            
+            // Get the element from queue
+            auto p = q.front(); q.pop();
+            
+            int stops = p.first; //stops
+            int node = p.second.first; // node
+            int dist = p.second.second; // distance
+            
+            /* If the number of stops taken exceed k,
+            skip and move to the next element */
+            if(stops &gt; k) continue;
+            
+            // Traverse all the neighbors
+            for(auto it : adj[node]) {
+                
+                int adjNode = it.first; // Adjacent node
+                int edgeWt = it.second; // Edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance and number 
+                of stops doesn&#x27;t exceed k */
+                if(dist + edgeWt &lt; minDist[adjNode] &amp;&amp; 
+                   stops &lt;= k) {
+                       
+                    // Update the known distance
+                    minDist[adjNode] = dist + edgeWt;
+                    
+                    // Add the new element to queue
+                    q.push({stops+1, {adjNode, dist + edgeWt}});
+                }
+            }
+        }
+        
+        /* If the destination is 
+        unreachable, return -1 */
+        if(minDist[dst] == 1e9) 
+            return -1;
+        
+        // Otherwise return the result
+        return minDist[dst];
+    }
+};
+</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    public int CheapestFlight(int n, List&lt;List&lt;int&gt;&gt; flights, int src, int dst, int K) {
+        /* To store the graph */
+        var adj = new List&lt;(int to, int wt)&gt;[n];
+        for (int i = 0; i &lt; n; i++) adj[i] = new List&lt;(int to, int wt)&gt;();
+
+        /* Adding edges to the graph */
+        foreach (var it in flights) {
+            adj[it[0]].Add((it[1], it[2]));
+        }
+
+        /* To store minimum distance */
+        var minDist = new int[n];
+        for (int i = 0; i &lt; n; i++) minDist[i] = int.MaxValue; // Use int.MaxValue instead of 1e9
+        minDist[src] = 0;
+
+        /* Queue storing the elements of 
+           the form {stops, node, dist} */
+        var q = new Queue&lt;(int stops, int node, int dist)&gt;();
+
+        /* Add the source to the queue */
+        q.Enqueue((0, src, 0));
+
+        /* Until the queue is empty */
+        while (q.Count &gt; 0) {
+            /* Get the element from queue */
+            var p = q.Dequeue();
+
+            int stops = p.stops;   // stops
+            int node  = p.node;    // node
+            int dist  = p.dist;    // distance
+
+            /* If the number of stops taken exceed K,
+               skip and move to the next element */
+            if (stops &gt; K) continue;
+
+            /* Traverse all the neighbors */
+            foreach (var it in adj[node]) {
+                int adjNode = it.to; // Adjacent node
+                int edgeWt  = it.wt; // Edge weight
+
+                /* If the tentative distance to reach adjacent node 
+                   is smaller than the known distance and number 
+                   of stops doesn&#x27;t exceed K */
+                if (dist + edgeWt &lt; minDist[adjNode] &amp;&amp; stops &lt;= K) {
+                    /* Update the known distance */
+                    minDist[adjNode] = dist + edgeWt;
+
+                    /* Add the new element to queue */
+                    q.Enqueue((stops + 1, adjNode, dist + edgeWt));
+                }
+            }
+        }
+
+        /* If the destination is unreachable, return -1 */
+        if (minDist[dst] == int.MaxValue) return -1;
+
+        /* Otherwise return the result */
+        return minDist[dst];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>type P struct {
+	stops int
+	node  int
+	dist  int
+}
+
+// CheapestFlight finds the cheapest price from src to dst with at most K stops.
+func CheapestFlight(n int, flights [][]int, src int, dst int, K int) int {
+	// To store the graph
+	adj := make([][]struct{ to, wt int }, n)
+	// Adding edges to the graph
+	for _, f := range flights {
+		u, v, w := f[0], f[1], f[2]
+		adj[u] = append(adj[u], struct{ to, wt int }{v, w})
+	}
+
+	// To store minimum distance
+	const INF = int(1e9)
+	minDist := make([]int, n)
+	for i := range minDist {
+		minDist[i] = INF
+	}
+	minDist[src] = 0
+
+	/* Queue storing the elements of
+	   the form {stops, {node, dist}} */
+	q := []P{{stops: 0, node: src, dist: 0}}
+
+	// Until the queue is empty
+	for len(q) &gt; 0 {
+		p := q[0]
+		q = q[1:]
+
+		stops, node, dist := p.stops, p.node, p.dist
+
+		/* If the number of stops taken exceed K, skip */
+		if stops &gt; K {
+			continue
+		}
+
+		// Traverse all the neighbors
+		for _, edge := range adj[node] {
+			next, wt := edge.to, edge.wt
+
+			/* If the tentative distance to reach adjacent node is smaller
+			   than the known distance and stops limit not exceeded */
+			if dist+wt &lt; minDist[next] {
+				minDist[next] = dist + wt
+				// Add the new element to queue
+				q = append(q, P{stops: stops + 1, node: next, dist: minDist[next]})
+			}
+		}
+	}
+
+	/* If the destination is unreachable, return -1 */
+	if minDist[dst] == INF {
+		return -1
+	}
+	// Otherwise return the result
+	return minDist[dst]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    
+    /* Function to find the cheapest price 
+    from src to dst with at most k stops */
+    public int CheapestFlight(int n, int[][] flights, 
+                              int src, int dst, int k) {
+        if(src == dst){
+            return 0;
+        }
+        // To store the graph
+        List&lt;List&lt;int[]&gt;&gt; adj = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; n; i++) {
+            adj.add(new ArrayList&lt;&gt;());
+        }
+        
+        // Adding edges to the graph
+        for (int[] flight : flights) {
+            adj.get(flight[0]).add(new int[]{flight[1], flight[2]});
+        }
+        
+        // To store minimum distance
+        int[] minDist = new int[n];
+        Arrays.fill(minDist, Integer.MAX_VALUE);
+        
+        /* Queue storing the elements of 
+        the form {stops, {node, dist}} */
+        Queue&lt;int[]&gt; q = new LinkedList&lt;&gt;();
+        
+        // Add the source to the queue
+        q.offer(new int[]{0, src, 0});
+        
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+            
+            // Get the element from the queue
+            int[] p = q.poll();
+            
+            int stops = p[0]; // stops
+            int node = p[1]; // node
+            int dist = p[2]; // distance
+            
+            /* If the number of stops taken exceed k, 
+            skip and move to the next element */
+            if (stops &gt; k) continue;
+            
+            // Traverse all the neighbors
+            for (int[] neighbor : adj.get(node)) {
+                
+                int adjNode = neighbor[0]; // Adjacent node
+                int edgeWt = neighbor[1]; // Edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance and number 
+                of stops doesn&#x27;t exceed k */
+                if (dist + edgeWt &lt; minDist[adjNode] &amp;&amp; 
+                    stops &lt;= k) {
+                    
+                    // Update the known distance
+                    minDist[adjNode] = dist + edgeWt;
+                    
+                    // Add the new element to the queue
+                    q.offer(new int[]{stops + 1, adjNode, dist + edgeWt});
+                }
+            }
+        }
+        
+        // If the destination is unreachable, return -1
+        if (minDist[dst] == Integer.MAX_VALUE) 
+            return -1;
+        
+        // Otherwise, return the result
+        return minDist[dst];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    
+    /* Function to find the cheapest price 
+    from src to dst with at most k stops */
+    CheapestFlight(n, flights, src, dst, k) {
+        
+        // To store the graph
+        let adj = Array.from(
+            { length: n }, 
+            () =&gt; []
+        );
+        
+        // Adding edges to the graph
+        for (let flight of flights) {
+            adj[flight[0]].push([flight[1], flight[2]]);
+        }
+        
+        // To store minimum distance
+        let minDist = new Array(n).fill(Infinity);
+        minDist[src] = 0;
+        /* Queue storing the elements of 
+        the form {stops, {node, dist}} */
+        let q = [[0, src, 0]];
+        
+        // Until the queue is empty
+        while (q.length &gt; 0) {
+            
+            // Get the element from the queue
+            let [stops, node, dist] = q.shift();
+            
+            /* If the number of stops taken exceed k,
+            skip and move to the next element */
+            if (stops &gt; k) continue;
+            
+            // Traverse all the neighbors
+            for (let [adjNode, edgeWt] of adj[node]) {
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance and number 
+                of stops doesn&#x27;t exceed k */
+                if (dist + edgeWt &lt; minDist[adjNode] &amp;&amp; 
+                    stops &lt;= k) {
+                    
+                    // Update the known distance
+                    minDist[adjNode] = dist + edgeWt;
+                    
+                    // Add the new element to the queue
+                    q.push([stops + 1, adjNode, dist + edgeWt]);
+                }
+            }
+        }
+        
+        // If the destination is unreachable, return -1
+        if (minDist[dst] === Infinity) 
+            return -1;
+        
+        // Otherwise, return the result
+        return minDist[dst];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    
+    # Function to find cheapest price from 
+    # src to dst with at most k stops 
+    def CheapestFlight(self, n: int, flights: List[List[int]], 
+                       src: int, dst: int, k: int) -&gt; int:
+        
+        # To store the graph
+        adj = [[] for _ in range(n)]
+        
+        # Adding edges to the graph
+        for it in flights:
+            adj[it[0]].append((it[1], it[2]))
+        
+        # To store minimum distance
+        minDist = [float(&#x27;inf&#x27;)] * n
+        minDist[src] = 0
+        # Queue storing the elements of 
+        # the form {stops, {node, dist}}
+        q = deque([(0, src, 0)])
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the element from queue
+            stops, node, dist = q.popleft()
+            
+            # If the number of stops taken exceed k, 
+            # skip and move to the next element
+            if stops &gt; k:
+                continue
+            
+            # Traverse all the neighbors
+            for adjNode, edgeWt in adj[node]:
+                
+                # If the tentative distance to reach adjacent
+                # node is smaller than the known distance
+                # and number of stops doesn&#x27;t exceed k
+                if (dist + edgeWt &lt; minDist[adjNode] and 
+                    stops &lt;= k):
+                    
+                    # Update the known distance
+                    minDist[adjNode] = dist + edgeWt
+                    
+                    # Add the new element to queue
+                    q.append((stops + 1, adjNode, dist + edgeWt))
+        
+        # If the destination is unreachable, return -1
+        if minDist[dst] == float(&#x27;inf&#x27;):
+            return -1
+        
+        # Otherwise return the result
+        return minDist[dst]</code></pre></div>
+</body>
+</html>

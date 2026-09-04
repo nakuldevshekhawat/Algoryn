@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Implement Max Heap</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Implement Max Heap</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Heap (Priority Queue)</span><span>Data Structures</span><span>Implementation</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>You need to implement the Max Heap with the following given methods.</p><ul><li>insert (x) -> insert value x to the max heap</li><li>getMax -> Output the maximum value from the max heap</li><li>exctractMax -> Remove the maximum element from the heap</li><li>heapSize -> return the current size of the heap</li><li>isEmpty -> returns if heap is empty or not</li><li>changeKey (ind, val) -> update the value at given index to val (index will be given 0-based indexing)</li><li>initializeHeap -> Initialize the heap</li></ul><p><br></p><p><strong>Note:</strong> When extracting max, if both left and right children are equal, you must swap with the LEFT child.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 10<sup>5</sup></li><li>-10<sup>5</sup> <= nums[i] <= 10<sup>5</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> operation = [ "initializeHeap", "insert", "insert", "insert", "getMax", "heapSize", "isEmpty", "exctractMax", "changeKey" , "getMax" ]</p><p>nums = [ [4], [1], [10], [0, 16] ]</p><p><strong>Output :</strong> [ null, null, null, null, 10, 3, 0, null, null, 16 ]</p><p><strong>Explanation :</strong></p><p>In 1st operation we initialize the heap to empty heap.</p><p>In 2nd, 3rd, 4th operation we insert 4, 1, 10 to the heap respectively. The heap after 4th operation will be -> [10, 4, 1].</p><p>In 5th operation we output the maximum element from the heap i.e. 10.</p><p>In 6th operation we output the size of the current heap i.e. 3.</p><p>In 7th operation we output whether the heap is empty or not i.e. false (0).</p><p>In 8th operation we remove the maximum element from heap. So the ne heap becomes -> [4, 1].</p><p>In 9th operation we change the 0th index element to 16. So new heap becomes -> [16, 1]. After heapify -> [16, 1].</p><p>In 10th operation we output the maximum element of the heap i.e. 16.</p><h3>Example 2</h3><p><strong>Input :</strong> operation = [ "initializeHeap", "insert", "insert", "exctractMax", "getMax", "insert", "heapSize", "isEmpty", "exctractMax", "changeKey" , "getMax" ]</p><p>nums = [ [4], [1], [4], [0, 2] ]</p><p><strong>Output :</strong> [ null, null, null, null, 1, null, 2, 0, null, null, 2 ]</p><p><strong>Explanation :</strong></p><p>In 1st operation we initialize the heap to empty heap.</p><p>In 2nd, 3rd operation we insert 4, 1 to the heap respectively. The heap after 4th operation will be -> [4, 1].</p><p>In 4th operation we remove the maximum element from heap. So the ne heap becomes -> [1].</p><p>In 5th operation we output the maximum element of the heap i.e. 1.</p><p>In 6th operation we operation we insert 4 to the heap. The heap after 6th operation will be -> [4, 1].</p><p>In 7th operation we output the size of the current heap i.e. 2.</p><p>In 8th operation we output whether the heap is empty or not i.e. false (0).</p><p>In 9th operation we remove the maximum element from heap. So the ne heap becomes -> [1].</p><p>In 10th operation we change the 0th index element to 2. So new heap becomes -> [2].</p><p>In 11th operation we output the maximum element of the heap i.e. 2.</p></div>
+
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><strong>Pre-requisites:</strong> <a href="https://takeuforward.org/plus/dsa/problems/heaps-theory?category=heaps&subcategory=theory-and-implementation" target="_blank">Heap theory</a>, <a href="https://takeuforward.org/plus/dsa/problems/heapify-algorithm?category=heaps&subcategory=theory-and-implementation" target="_blank">Heapify Algorithm</a> <br>
+
+<h3>Approach:</h3>
+<p>
+    The goal is to implement a maximum heap data structure that will provide different operations to the user. The idea to use a list/array to store the elements in an order that follows the max-heap property. An array stores a complete binary tree without using extra pointers for child links. It allows calculating parent and child positions with simple index arithmetic and keeps all elements close together for faster memory access, making it both space-efficient and quick to update or reorder elements.
+
+    Here's how different function can be implemented: <br>
+    </p><h5>1. Insert(val):</h5> 
+    The element can be added at the back of the list. Since, this element may not follow the max-heap property, it can be heapified <strong>upwards</strong>. <br>
+
+    <h5>2. Get Maximum():</h5>
+    The maximum value will always be stored at the 0th index as the array follows the max-heap property. <br>
+
+    <h5>3. Extract Maximum():</h5>
+    If the largest value (located at 0th index) is removed directly, all the elements in the array will need to be shifted by one index making it a costly operation. Instead, the largest value can be swapped with the element at last index. The value at the last index (currently storing the largest value) can be popped out from the back of the array/list. <br><br>
+    Since, the element at the 0th index does not follow the max-heap property (because it was swapped), it must be heapified <strong>downwards</strong>. <br>
+
+    <h5>4. Heap Size():</h5>
+    The size of the array/list can be returned directly as the heap size. <br>
+
+    <h5>5. Is Empty():</h5>
+    If the array size is zero, the heap can be marked as empty. <br>
+
+    <h5>6. Change Key(ind, val):</h5>
+    The value at particular index can be easily updated in the list. This updated value might disturb the max-heap property of the array, so it needs to be heapified upwards or downwards accordingly. 
+<p></p>
+
+<h3>Solution:</h3>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    vector<int> arr; // list to store the max-heap
+    int count; // to store the count of elements in max-heap
+    
+    // Function to recursively heapify the array upwards
+    void heapifyUp(int ind) {
+        int parentInd = (ind - 1)/2; 
+
+        // If current index holds larger value than the parent
+        if(ind > 0 && arr[ind] > arr[parentInd]) {
+            // Swap the values at the two indices
+            swap(arr[ind], arr[parentInd]);
+            
+            // Recursively heapify the upper nodes
+            heapifyUp(parentInd);
+        } 
+
+        return;
+    }
+    
+    // Function to recursively heapify the array downwards
+    void heapifyDown(int ind) {
+        int n = arr.size(); // Size of the array
+
+        // To store the index of largest element
+        int largestInd = ind; 
+
+        // Indices of the left and right children
+        int leftChildInd = 2*ind + 1, rightChildInd = 2*ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if(leftChildInd < n && arr[leftChildInd] > arr[largestInd]) 
+            largestInd = leftChildInd;
+
+        // If the right child holds larger value, update the largest index
+        if(rightChildInd < n && arr[rightChildInd] > arr[largestInd]) 
+            largestInd = rightChildInd;
+
+        // If the largest element index is updated
+        if(largestInd != ind) {
+            // Swap the largest element with the current index
+            swap(arr[largestInd] , arr[ind]);
+
+            // Recursively heapify the lower subtree
+            heapifyDown(largestInd);
+        }
+
+        return; 
+    }
+    
+public:
+    // Method to intialize the max-heap data structure
+    void initializeHeap(){
+        arr.clear();
+        count = 0;
+    }
+    
+    // Method to insert a given value in the max-heap
+    void insert(int key){
+        // Insert the value at the back of the list 
+        arr.push_back(key);
+        
+        // Heapify upwards
+        heapifyUp(count);
+        count = count+1; // Increment the counter;
+        
+        return;
+    }
+        
+    // Method to change the value at a given index in max-heap
+    void changeKey(int index, int new_val){
+        // If the current value is replaced with a larger value
+        if(arr[index] < new_val) {
+            arr[index] = new_val;
+            heapifyUp(index);
+        }
+
+        // Otherwise (if the current value is replaced with smaller value)
+        else {
+            arr[index] = new_val;
+            heapifyDown(index);
+        }
+
+        return;
+    }
+    
+    // Method to extract the maximum value from the max-heap
+    void extractMax(){
+        int ele = arr[0]; // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        swap(arr[0], arr[count-1]); 
+        
+        arr.pop_back(); // Pop the maximum value from the list
+        count = count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        heapifyDown(0);
+    }
+    
+    // Method to return if the max-heap is empty
+    bool isEmpty(){
+        return (count == 0);
+    }
+    
+    // Method to return the maximum value in the max-heap
+    int getMax(){
+        // Return the value stored at the root
+        return arr[0];
+    }
+    
+    // Method to return the size of max-heap
+    int heapSize(){
+        return count;
+    }
+};
+
+// Driver code
+int main() {
+    // Creating an object of the Solution class
+    Solution heap;
+
+    // Initializing a max heap data structure 
+    heap.initializeHeap();
+    
+    // Performing different operations
+    heap.insert(4); cout << "Inserting 4 in the max-heap\n";
+    heap.insert(1); cout << "Inserting 1 in the max-heap\n";
+    heap.insert(10); cout << "Inserting 10 in the max-heap\n";
+    cout << "Maximum value in the heap is: " << heap.getMax() << "\n";
+    cout << "Size of max-heap is: " << heap.heapSize() << "\n";
+    cout << "Is heap empty: " << heap.isEmpty() << "\n";
+    cout << "Extracting maximum value from the heap\n"; heap.extractMax();
+    cout << "Changing value at index 0 to 16\n"; heap.changeKey(0, 16);
+    cout << "Maximum value in the heap is: " << heap.getMax();
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private List<Integer> arr; // list to store the max-heap
+    private int count; // to store the count of elements in max-heap
+    
+    // Constructor
+    public Solution() {
+        arr = new ArrayList<>();
+        count = 0;
+    }
+    
+    // Function to recursively heapify the array upwards
+    private void heapifyUp(int ind) {
+        int parentInd = (ind - 1)/2; 
+
+        // If current index holds larger value than the parent
+        if(ind > 0 && arr.get(ind) > arr.get(parentInd)) {
+            // Swap the values at the two indices
+            int temp = arr.get(ind);
+            arr.set(ind, arr.get(parentInd));
+            arr.set(parentInd, temp);
+            
+            // Recursively heapify the upper nodes
+            heapifyUp(parentInd);
+        } 
+
+        return;
+    }
+    
+    // Function to recursively heapify the array downwards
+    private void heapifyDown(int ind) {
+        int n = arr.size(); // Size of the array
+
+        // To store the index of largest element
+        int largestInd = ind; 
+
+        // Indices of the left and right children
+        int leftChildInd = 2*ind + 1;
+        int rightChildInd = 2*ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if(leftChildInd < n && arr.get(leftChildInd) > arr.get(largestInd)) 
+            largestInd = leftChildInd;
+
+        // If the right child holds larger value, update the largest index
+        if(rightChildInd < n && arr.get(rightChildInd) > arr.get(largestInd)) 
+            largestInd = rightChildInd;
+
+        // If the largest element index is updated
+        if(largestInd != ind) {
+            // Swap the largest element with the current index
+            int temp = arr.get(largestInd);
+            arr.set(largestInd, arr.get(ind));
+            arr.set(ind, temp);
+
+            // Recursively heapify the lower subtree
+            heapifyDown(largestInd);
+        }
+
+        return; 
+    }
+    
+    // Method to intialize the max-heap data structure
+    public void initializeHeap(){
+        arr.clear();
+        count = 0;
+    }
+    
+    // Method to insert a given value in the max-heap
+    public void insert(int key){
+        // Insert the value at the back of the list 
+        arr.add(key);
+        
+        // Heapify upwards
+        heapifyUp(count);
+        count = count + 1; // Increment the counter;
+        
+        return;
+    }
+        
+    // Method to change the value at a given index in max-heap
+    public void changeKey(int index, int new_val){
+        // If the current value is replaced with a larger value
+        if(arr.get(index) < new_val) {
+            arr.set(index, new_val);
+            heapifyUp(index);
+        }
+        // Otherwise (if the current value is replaced with smaller value)
+        else {
+            arr.set(index, new_val);
+            heapifyDown(index);
+        }
+
+        return;
+    }
+    
+    // Method to extract the maximum value from the max-heap
+    public void extractMax(){
+        int ele = arr.get(0); // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        int temp = arr.get(count - 1);
+        arr.set(count - 1, arr.get(0));
+        arr.set(0, temp);
+        
+        arr.remove(count - 1); // Pop the maximum value from the list
+        count = count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        if(count > 0) {
+            heapifyDown(0);
+        }
+    }
+    
+    // Method to return if the max-heap is empty
+    public boolean isEmpty(){
+        return (count == 0);
+    }
+    
+    // Method to return the maximum value in the max-heap
+    public int getMax(){
+        // Return the value stored at the root
+        return arr.get(0);
+    }
+    
+    // Method to return the size of max-heap
+    public int heapSize(){
+        return count;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        // Creating an object of the Solution class
+        Solution heap = new Solution();
+
+        // Initializing a max heap data structure 
+        heap.initializeHeap();
+        
+        // Performing different operations
+        heap.insert(4); System.out.println("Inserting 4 in the max-heap");
+        heap.insert(1); System.out.println("Inserting 1 in the max-heap");
+        heap.insert(10); System.out.println("Inserting 10 in the max-heap");
+        System.out.println("Maximum value in the heap is: " + heap.getMax());
+        System.out.println("Size of max-heap is: " + heap.heapSize());
+        System.out.println("Is heap empty: " + heap.isEmpty());
+        System.out.println("Extracting maximum value from the heap");
+        heap.extractMax();
+        System.out.println("Changing value at index 0 to 16");
+        heap.changeKey(0, 16);
+        System.out.println("Maximum value in the heap is: " + heap.getMax());
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def __init__(self):
+        self.arr = []  # list to store the max-heap
+        self.count = 0  # to store the count of elements in max-heap
+
+    # Function to recursively heapify the array upwards
+    def heapifyUp(self, ind):
+        parentInd = (ind - 1)//2
+
+        # If current index holds larger value than the parent
+        if ind > 0 and self.arr[ind] > self.arr[parentInd]:
+            # Swap the values at the two indices
+            self.arr[ind], self.arr[parentInd] = self.arr[parentInd], self.arr[ind]
+            
+            # Recursively heapify the upper nodes
+            self.heapifyUp(parentInd)
+        return
+
+    # Function to recursively heapify the array downwards
+    def heapifyDown(self, ind):
+        n = len(self.arr)  # Size of the array
+
+        # To store the index of largest element
+        largestInd = ind
+
+        # Indices of the left and right children
+        leftChildInd = 2*ind + 1
+        rightChildInd = 2*ind + 2
+        
+        # If the left child holds larger value, update the largest index
+        if leftChildInd < n and self.arr[leftChildInd] > self.arr[largestInd]:
+            largestInd = leftChildInd
+
+        # If the right child holds larger value, update the largest index
+        if rightChildInd < n and self.arr[rightChildInd] > self.arr[largestInd]:
+            largestInd = rightChildInd
+
+        # If the largest element index is updated
+        if largestInd != ind:
+            # Swap the largest element with the current index
+            self.arr[largestInd], self.arr[ind] = self.arr[ind], self.arr[largestInd]
+
+            # Recursively heapify the lower subtree
+            self.heapifyDown(largestInd)
+        return
+
+    # Method to intialize the max-heap data structure
+    def initializeHeap(self):
+        self.arr.clear()
+        self.count = 0
+
+    # Method to insert a given value in the max-heap
+    def insert(self, key):
+        # Insert the value at the back of the list
+        self.arr.append(key)
+        
+        # Heapify upwards
+        self.heapifyUp(self.count)
+        self.count += 1  # Increment the counter
+        return
+
+    # Method to change the value at a given index in max-heap
+    def changeKey(self, index, new_val):
+        # If the current value is replaced with a larger value
+        if self.arr[index] < new_val:
+            self.arr[index] = new_val
+            self.heapifyUp(index)
+        # Otherwise (if the current value is replaced with smaller value)
+        else:
+            self.arr[index] = new_val
+            self.heapifyDown(index)
+        return
+
+    # Method to extract the maximum value from the max-heap
+    def extractMax(self):
+        ele = self.arr[0]  # maximum value in the heap
+
+        # Swap the top value with the value at last index
+        self.arr[0], self.arr[self.count - 1] = self.arr[self.count - 1], self.arr[0]
+
+        # Pop the maximum value from the list
+        self.arr.pop()
+        self.count -= 1  # Decrement the counter
+
+        # Heapify the root value downwards
+        if self.count > 0:
+            self.heapifyDown(0)
+
+    # Method to return if the max-heap is empty
+    def isEmpty(self):
+        return (self.count == 0)
+
+    # Method to return the maximum value in the max-heap
+    def getMax(self):
+        # Return the value stored at the root
+        return self.arr[0]
+
+    # Method to return the size of max-heap
+    def heapSize(self):
+        return self.count
+
+
+# Driver code
+def main():
+    # Creating an object of the Solution class
+    heap = Solution()
+
+    # Initializing a max heap data structure
+    heap.initializeHeap()
+    
+    # Performing different operations
+    heap.insert(4); print("Inserting 4 in the max-heap")
+    heap.insert(1); print("Inserting 1 in the max-heap")
+    heap.insert(10); print("Inserting 10 in the max-heap")
+    print("Maximum value in the heap is:", heap.getMax())
+    print("Size of max-heap is:", heap.heapSize())
+    print("Is heap empty:", heap.isEmpty())
+    print("Extracting maximum value from the heap")
+    heap.extractMax()
+    print("Changing value at index 0 to 16")
+    heap.changeKey(0, 16)
+    print("Maximum value in the heap is:", heap.getMax())
+
+if __name__ == "__main__":
+    main()
+    </code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.arr = []; // list to store the max-heap
+        this.count = 0; // to store the count of elements in max-heap
+    }
+    
+    // Function to recursively heapify the array upwards
+    heapifyUp(ind) {
+        let parentInd = Math.floor((ind - 1) / 2);
+
+        // If current index holds larger value than the parent
+        if(ind > 0 && this.arr[ind] > this.arr[parentInd]) {
+            // Swap the values at the two indices
+            [this.arr[ind], this.arr[parentInd]] = [this.arr[parentInd], this.arr[ind]];
+            
+            // Recursively heapify the upper nodes
+            this.heapifyUp(parentInd);
+        }
+        return;
+    }
+    
+    // Function to recursively heapify the array downwards
+    heapifyDown(ind) {
+        let n = this.arr.length; // Size of the array
+
+        // To store the index of largest element
+        let largestInd = ind; 
+
+        // Indices of the left and right children
+        let leftChildInd = 2 * ind + 1;
+        let rightChildInd = 2 * ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if(leftChildInd < n && this.arr[leftChildInd] > this.arr[largestInd]) {
+            largestInd = leftChildInd;
+        }
+
+        // If the right child holds larger value, update the largest index
+        if(rightChildInd < n && this.arr[rightChildInd] > this.arr[largestInd]) {
+            largestInd = rightChildInd;
+        }
+
+        // If the largest element index is updated
+        if(largestInd !== ind) {
+            // Swap the largest element with the current index
+            [this.arr[largestInd], this.arr[ind]] = [this.arr[ind], this.arr[largestInd]];
+            
+            // Recursively heapify the lower subtree
+            this.heapifyDown(largestInd);
+        }
+        return;
+    }
+    
+    // Method to intialize the max-heap data structure
+    initializeHeap() {
+        this.arr = [];
+        this.count = 0;
+    }
+    
+    // Method to insert a given value in the max-heap
+    insert(key) {
+        // Insert the value at the back of the list 
+        this.arr.push(key);
+        
+        // Heapify upwards
+        this.heapifyUp(this.count);
+        this.count = this.count + 1; // Increment the counter;
+        
+        return;
+    }
+        
+    // Method to change the value at a given index in max-heap
+    changeKey(index, new_val) {
+        // If the current value is replaced with a larger value
+        if(this.arr[index] < new_val) {
+            this.arr[index] = new_val;
+            this.heapifyUp(index);
+        }
+        // Otherwise (if the current value is replaced with smaller value)
+        else {
+            this.arr[index] = new_val;
+            this.heapifyDown(index);
+        }
+        return;
+    }
+    
+    // Method to extract the maximum value from the max-heap
+    extractMax() {
+        let ele = this.arr[0]; // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        [this.arr[0], this.arr[this.count - 1]] = [this.arr[this.count - 1], this.arr[0]];
+        
+        this.arr.pop(); // Pop the maximum value from the list
+        this.count = this.count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        if(this.count > 0) {
+            this.heapifyDown(0);
+        }
+    }
+    
+    // Method to return if the max-heap is empty
+    isEmpty() {
+        return (this.count === 0);
+    }
+    
+    // Method to return the maximum value in the max-heap
+    getMax() {
+        // Return the value stored at the root
+        return this.arr[0];
+    }
+    
+    // Method to return the size of max-heap
+    heapSize() {
+        return this.count;
+    }
+}
+
+// Driver code
+function main() {
+    // Creating an object of the Solution class
+    let heap = new Solution();
+
+    // Initializing a max heap data structure 
+    heap.initializeHeap();
+    
+    // Performing different operations
+    heap.insert(4); console.log("Inserting 4 in the max-heap");
+    heap.insert(1); console.log("Inserting 1 in the max-heap");
+    heap.insert(10); console.log("Inserting 10 in the max-heap");
+    console.log("Maximum value in the heap is: " + heap.getMax());
+    console.log("Size of max-heap is: " + heap.heapSize());
+    console.log("Is heap empty: " + heap.isEmpty());
+    console.log("Extracting maximum value from the heap");
+    heap.extractMax();
+    console.log("Changing value at index 0 to 16");
+    heap.changeKey(0, 16);
+    console.log("Maximum value in the heap is: " + heap.getMax());
+}
+
+// Run the driver code
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    private List<int> arr; // list to store the max-heap
+    private int count; // to store the count of elements in max-heap
+
+    public Solution()
+    {
+        arr = new List<int>();
+        count = 0;
+    }
+
+    // Function to recursively heapify the array upwards
+    private void heapifyUp(int ind)
+    {
+        int parentInd = (ind - 1) / 2;
+
+        // If current index holds larger value than the parent
+        if (ind > 0 && arr[ind] > arr[parentInd])
+        {
+            // Swap the values at the two indices
+            int temp = arr[ind];
+            arr[ind] = arr[parentInd];
+            arr[parentInd] = temp;
+
+            // Recursively heapify the upper nodes
+            heapifyUp(parentInd);
+        }
+        return;
+    }
+
+    // Function to recursively heapify the array downwards
+    private void heapifyDown(int ind)
+    {
+        int n = arr.Count; // Size of the array
+
+        // To store the index of largest element
+        int largestInd = ind; 
+
+        // Indices of the left and right children
+        int leftChildInd = 2 * ind + 1;
+        int rightChildInd = 2 * ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if (leftChildInd < n && arr[leftChildInd] > arr[largestInd])
+        {
+            largestInd = leftChildInd;
+        }
+
+        // If the right child holds larger value, update the largest index
+        if (rightChildInd < n && arr[rightChildInd] > arr[largestInd])
+        {
+            largestInd = rightChildInd;
+        }
+
+        // If the largest element index is updated
+        if (largestInd != ind)
+        {
+            // Swap the largest element with the current index
+            int temp = arr[largestInd];
+            arr[largestInd] = arr[ind];
+            arr[ind] = temp;
+            
+            // Recursively heapify the lower subtree
+            heapifyDown(largestInd);
+        }
+        return;
+    }
+    
+    // Method to intialize the max-heap data structure
+    public void initializeHeap()
+    {
+        arr = new List<int>();
+        count = 0;
+    }
+    
+    // Method to insert a given value in the max-heap
+    public void insert(int key)
+    {
+        // Insert the value at the back of the list 
+        arr.Add(key);
+        
+        // Heapify upwards
+        heapifyUp(count);
+        count = count + 1; // Increment the counter;
+        
+        return;
+    }
+        
+    // Method to change the value at a given index in max-heap
+    public void changeKey(int index, int new_val)
+    {
+        // If the current value is replaced with a larger value
+        if (arr[index] < new_val)
+        {
+            arr[index] = new_val;
+            heapifyUp(index);
+        }
+        // Otherwise (if the current value is replaced with smaller value)
+        else
+        {
+            arr[index] = new_val;
+            heapifyDown(index);
+        }
+        return;
+    }
+    
+    // Method to extract the maximum value from the max-heap
+    public void extractMax()
+    {
+        int ele = arr[0]; // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        int temp = arr[0];
+        arr[0] = arr[count - 1];
+        arr[count - 1] = temp;
+        
+        arr.RemoveAt(count - 1); // Pop the maximum value from the list
+        count = count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        if (count > 0)
+        {
+            heapifyDown(0);
+        }
+    }
+    
+    // Method to return if the max-heap is empty
+    public bool isEmpty()
+    {
+        return (count == 0);
+    }
+    
+    // Method to return the maximum value in the max-heap
+    public int getMax()
+    {
+        // Return the value stored at the root
+        return arr[0];
+    }
+    
+    // Method to return the size of max-heap
+    public int heapSize()
+    {
+        return count;
+    }
+}
+
+// Driver code
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Creating an object of the Solution class
+        Solution heap = new Solution();
+
+        // Initializing a max heap data structure 
+        heap.initializeHeap();
+        
+        // Performing different operations
+        Console.WriteLine("Inserting 4 in the max-heap");
+        heap.insert(4);
+        Console.WriteLine("Inserting 1 in the max-heap");
+        heap.insert(1);
+        Console.WriteLine("Inserting 10 in the max-heap");
+        heap.insert(10);
+        Console.WriteLine($"Maximum value in the heap is: {heap.getMax()}");
+        Console.WriteLine($"Size of max-heap is: {heap.heapSize()}");
+        Console.WriteLine($"Is heap empty: {heap.isEmpty()}");
+        Console.WriteLine("Extracting maximum value from the heap");
+        heap.extractMax();
+        Console.WriteLine("Changing value at index 0 to 16");
+        heap.changeKey(0, 16);
+        Console.WriteLine($"Maximum value in the heap is: {heap.getMax()}");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+type MaxHeap struct {
+	arr   []int // list to store the max-heap
+	count int   // to store the count of elements in max-heap
+}
+
+// Function to recursively heapify the array upwards
+func (h *MaxHeap) heapifyUp(ind int) {
+	parentInd := (ind - 1) / 2
+
+	// If current index holds larger value than the parent
+	if ind > 0 && h.arr[ind] > h.arr[parentInd] {
+		// Swap the values at the two indices
+		h.arr[ind], h.arr[parentInd] = h.arr[parentInd], h.arr[ind]
+
+		// Recursively heapify the upper nodes
+		h.heapifyUp(parentInd)
+	}
+}
+
+// Function to recursively heapify the array downwards
+func (h *MaxHeap) heapifyDown(ind int) {
+	n := len(h.arr) // Size of the array
+
+	// To store the index of largest element
+	largestInd := ind
+
+	// Indices of the left and right children
+	leftChildInd := 2*ind + 1
+	rightChildInd := 2*ind + 2
+
+	// If the left child holds larger value, update the largest index
+	if leftChildInd < n && h.arr[leftChildInd] > h.arr[largestInd] {
+		largestInd = leftChildInd
+	}
+
+	// If the right child holds larger value, update the largest index
+	if rightChildInd < n && h.arr[rightChildInd] > h.arr[largestInd] {
+		largestInd = rightChildInd
+	}
+
+	// If the largest element index is updated
+	if largestInd != ind {
+		// Swap the largest element with the current index
+		h.arr[ind], h.arr[largestInd] = h.arr[largestInd], h.arr[ind]
+
+		// Recursively heapify the lower subtree
+		h.heapifyDown(largestInd)
+	}
+}
+
+// Method to initialize the max-heap data structure
+func (h *MaxHeap) initializeHeap() {
+	h.arr = []int{}
+	h.count = 0
+}
+
+// Method to insert a given value in the max-heap
+func (h *MaxHeap) insert(key int) {
+	// Insert the value at the back of the list
+	h.arr = append(h.arr, key)
+
+	// Heapify upwards
+	h.heapifyUp(h.count)
+	h.count++ // Increment the counter
+}
+
+// Method to change the value at a given index in max-heap
+func (h *MaxHeap) changeKey(index, newVal int) {
+	// If the current value is replaced with a larger value
+	if h.arr[index] < newVal {
+		h.arr[index] = newVal
+		h.heapifyUp(index)
+	} else {
+		// Otherwise, heapify down
+		h.arr[index] = newVal
+		h.heapifyDown(index)
+	}
+}
+
+// Method to extract the maximum value from the max-heap
+func (h *MaxHeap) extractMax() {
+	ele := h.arr[0] // maximum value in the heap
+
+	// Swap the top value with the value at last index
+	h.arr[0], h.arr[h.count-1] = h.arr[h.count-1], h.arr[0]
+
+	h.arr = h.arr[:h.count-1] // Pop the maximum value
+	h.count--                 // Decrement the counter
+
+	// Heapify the root value downwards
+	h.heapifyDown(0)
+
+	_ = ele // To avoid unused variable warning
+}
+
+// Method to return if the max-heap is empty
+func (h *MaxHeap) isEmpty() bool {
+	return h.count == 0
+}
+
+// Method to return the maximum value in the max-heap
+func (h *MaxHeap) getMax() int {
+	return h.arr[0]
+}
+
+// Method to return the size of max-heap
+func (h *MaxHeap) heapSize() int {
+	return h.count
+}
+
+// Driver code
+func main() {
+	// Creating an object of MaxHeap struct
+	var heap MaxHeap
+
+	// Initializing a max heap data structure
+	heap.initializeHeap()
+
+	// Performing different operations
+	heap.insert(4)
+	fmt.Println("Inserting 4 in the max-heap")
+
+	heap.insert(1)
+	fmt.Println("Inserting 1 in the max-heap")
+
+	heap.insert(10)
+	fmt.Println("Inserting 10 in the max-heap")
+
+	fmt.Println("Maximum value in the heap is:", heap.getMax())
+	fmt.Println("Size of max-heap is:", heap.heapSize())
+	fmt.Println("Is heap empty:", heap.isEmpty())
+
+	fmt.Println("Extracting maximum value from the heap")
+	heap.extractMax()
+
+	fmt.Println("Changing value at index 0 to 16")
+	heap.changeKey(0, 16)
+
+	fmt.Println("Maximum value in the heap is:", heap.getMax())
+}
+</code></pre></div></div></div>
+
+<h3>Complexity Analysis:</h3>
+<p>
+    Considering there are maximum N elements inserted in the heap data structure, <br><br>
+    <strong>Time Complexity:</strong> <br>
+    </p><ol>
+        <li><strong>Insert(val):</strong> Inserting and Heapifying upwards contribute to O(logN) time.</li>
+        <li><strong>Get Maximum():</strong> Constant time operation, i.e., O(1).</li>
+        <li><strong>Extract Maximum():</strong> Involves Heapifying downwards contributing to O(logN) time.</li>
+        <li><strong>Heap Size():</strong> Constant time operation, i.e., O(1).</li>
+        <li><strong>Is Empty():</strong> Constant time operation, i.e., O(1).</li>
+        <li><strong>Change Key(ind, val):</strong> Involves heapifying which takes O(logN) time.</li>
+    </ol> <br>
+
+    <strong>Space Complexity: O(N)</strong>, because of the array used to store the elements.
+<p></p>
+
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    vector&lt;int&gt; arr; // list to store the max-heap
+    int count; // to store the count of elements in max-heap
+    
+    // Function to recursively heapify the array upwards
+    void heapifyUp(int ind) {
+        int parentInd = (ind - 1)/2; 
+
+        // If current index holds larger value than the parent
+        if(ind &gt; 0 &amp;&amp; arr[ind] &gt; arr[parentInd]) {
+            // Swap the values at the two indices
+            swap(arr[ind], arr[parentInd]);
+            
+            // Recursively heapify the upper nodes
+            heapifyUp(parentInd);
+        } 
+
+        return;
+    }
+    
+    // Function to recursively heapify the array downwards
+    void heapifyDown(int ind) {
+        int n = arr.size(); // Size of the array
+
+        // To store the index of largest element
+        int largestInd = ind; 
+
+        // Indices of the left and right children
+        int leftChildInd = 2*ind + 1, rightChildInd = 2*ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if(leftChildInd &lt; n &amp;&amp; arr[leftChildInd] &gt; arr[largestInd]) 
+            largestInd = leftChildInd;
+
+        // If the right child holds larger value, update the largest index
+        if(rightChildInd &lt; n &amp;&amp; arr[rightChildInd] &gt; arr[largestInd]) 
+            largestInd = rightChildInd;
+
+        // If the largest element index is updated
+        if(largestInd != ind) {
+            // Swap the largest element with the current index
+            swap(arr[largestInd] , arr[ind]);
+
+            // Recursively heapify the lower subtree
+            heapifyDown(largestInd);
+        }
+
+        return; 
+    }
+    
+public:
+    // Method to intialize the max-heap data structure
+    void initializeHeap(){
+        arr.clear();
+        count = 0;
+    }
+    
+    // Method to insert a given value in the max-heap
+    void insert(int key){
+        // Insert the value at the back of the list 
+        arr.push_back(key);
+        
+        // Heapify upwards
+        heapifyUp(count);
+        count = count + 1; // Increment the counter;
+        
+        return;
+    }
+        
+    // Method to change the value at a given index in max-heap
+    void changeKey(int index, int new_val){
+        // If the current value is replaced with a larger value
+        if(arr[index] &lt; new_val) {
+            arr[index] = new_val;
+            heapifyUp(index);
+        }
+
+        // Otherwise (if the current value is replaced with smaller value)
+        else {
+            arr[index] = new_val;
+            heapifyDown(index);
+        }
+
+        return;
+    }
+    
+    // Method to extract the maximum value from the max-heap
+    void extractMax(){
+        int ele = arr[0]; // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        swap(arr[0], arr[count-1]); 
+        
+        arr.pop_back(); // Pop the maximum value from the list
+        count = count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        heapifyDown(0);
+    }
+    
+    // Method to return if the max-heap is empty
+    bool isEmpty(){
+        return (count == 0);
+    }
+    
+    // Method to return the maximum value in the max-heap
+    int getMax(){
+        // Return the value stored at the root
+        return arr[0];
+    }
+    
+    // Method to return the size of max-heap
+    int heapSize(){
+        return count;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    private List&lt;int&gt; arr; // list to store the max-heap
+    private int count; // to store the count of elements in max-heap
+
+    // Constructor to initialize the heap
+    public Solution() {
+        arr = new List&lt;int&gt;();
+        count = 0;
+    }
+
+    // Function to recursively heapify the array upwards
+    private void heapifyUp(int ind) {
+        int parentInd = (ind - 1) / 2;
+
+        // If current index holds larger value than the parent
+        if (ind &gt; 0 &amp;&amp; arr[ind] &gt; arr[parentInd]) {
+            // Swap the values at the two indices
+            int temp = arr[ind];
+            arr[ind] = arr[parentInd];
+            arr[parentInd] = temp;
+            
+            // Recursively heapify the upper nodes
+            heapifyUp(parentInd);
+        }
+        return;
+    }
+    
+    // Function to recursively heapify the array downwards
+    private void heapifyDown(int ind) {
+        int n = arr.Count; // Size of the array
+
+        // To store the index of largest element
+        int largestInd = ind; 
+
+        // Indices of the left and right children
+        int leftChildInd = 2 * ind + 1;
+        int rightChildInd = 2 * ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if (leftChildInd &lt; n &amp;&amp; arr[leftChildInd] &gt; arr[largestInd]) {
+            largestInd = leftChildInd;
+        }
+
+        // If the right child holds larger value, update the largest index
+        if (rightChildInd &lt; n &amp;&amp; arr[rightChildInd] &gt; arr[largestInd]) {
+            largestInd = rightChildInd;
+        }
+
+        // If the largest element index is updated
+        if (largestInd != ind) {
+            // Swap the largest element with the current index
+            int temp = arr[largestInd];
+            arr[largestInd] = arr[ind];
+            arr[ind] = temp;
+            
+            // Recursively heapify the lower subtree
+            heapifyDown(largestInd);
+        }
+        return;
+    }
+
+    public void initializeHeap() {
+        arr = new List&lt;int&gt;();
+        count = 0;
+    }
+
+    public void insert(int key) {
+        // Insert the value at the back of the list 
+        arr.Add(key);
+        
+        // Heapify upwards
+        heapifyUp(count);
+        count = count + 1; // Increment the counter;
+        
+        return;
+    }
+
+    public void changeKey(int index, int new_val) {
+        // If the current value is replaced with a larger value
+        if (arr[index] &lt; new_val) {
+            arr[index] = new_val;
+            heapifyUp(index);
+        }
+        // Otherwise (if the current value is replaced with smaller value)
+        else {
+            arr[index] = new_val;
+            heapifyDown(index);
+        }
+        return;
+    }
+
+    public void extractMax() {
+        int ele = arr[0]; // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        int temp = arr[0];
+        arr[0] = arr[count - 1];
+        arr[count - 1] = temp;
+        
+        arr.RemoveAt(count - 1); // Pop the maximum value from the list
+        count = count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        if (count &gt; 0) {
+            heapifyDown(0);
+        }
+    }
+
+    public bool isEmpty() {
+        return (count == 0);
+    }
+
+    public int getMax() {
+        // Return the value stored at the root
+        return arr[0];
+    }
+
+    public int heapSize() {
+        return count;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>type MaxHeap struct {
+	arr   []int // list to store the max-heap
+	count int   // to store the count of elements in max-heap
+}
+
+// Function to recursively heapify the array upwards
+func (h *MaxHeap) heapifyUp(ind int) {
+	parentInd := (ind - 1) / 2
+
+	// If current index holds larger value than the parent
+	if ind &gt; 0 &amp;&amp; h.arr[ind] &gt; h.arr[parentInd] {
+		// Swap the values at the two indices
+		h.arr[ind], h.arr[parentInd] = h.arr[parentInd], h.arr[ind]
+
+		// Recursively heapify the upper nodes
+		h.heapifyUp(parentInd)
+	}
+}
+
+// Function to recursively heapify the array downwards
+func (h *MaxHeap) heapifyDown(ind int) {
+	n := len(h.arr) // Size of the array
+
+	// To store the index of largest element
+	largestInd := ind
+
+	// Indices of the left and right children
+	leftChildInd := 2*ind + 1
+	rightChildInd := 2*ind + 2
+
+	// If the left child holds larger value, update the largest index
+	if leftChildInd &lt; n &amp;&amp; h.arr[leftChildInd] &gt; h.arr[largestInd] {
+		largestInd = leftChildInd
+	}
+
+	// If the right child holds larger value, update the largest index
+	if rightChildInd &lt; n &amp;&amp; h.arr[rightChildInd] &gt; h.arr[largestInd] {
+		largestInd = rightChildInd
+	}
+
+	// If the largest element index is updated
+	if largestInd != ind {
+		// Swap the largest element with the current index
+		h.arr[ind], h.arr[largestInd] = h.arr[largestInd], h.arr[ind]
+
+		// Recursively heapify the lower subtree
+		h.heapifyDown(largestInd)
+	}
+}
+
+// Method to initialize the max-heap data structure
+func (h *MaxHeap) initializeHeap() {
+	h.arr = []int{}
+	h.count = 0
+}
+
+// Method to insert a given value in the max-heap
+func (h *MaxHeap) insert(key int) {
+	// Insert the value at the back of the list
+	h.arr = append(h.arr, key)
+
+	// Heapify upwards
+	h.heapifyUp(h.count)
+	h.count++ // Increment the counter
+}
+
+// Method to change the value at a given index in max-heap
+func (h *MaxHeap) changeKey(index, newVal int) {
+	// If the current value is replaced with a larger value
+	if h.arr[index] &lt; newVal {
+		h.arr[index] = newVal
+		h.heapifyUp(index)
+	} else {
+		// Otherwise, heapify down
+		h.arr[index] = newVal
+		h.heapifyDown(index)
+	}
+}
+
+// Method to extract the maximum value from the max-heap
+func (h *MaxHeap) extractMax() {
+	ele := h.arr[0] // maximum value in the heap
+
+	// Swap the top value with the value at last index
+	h.arr[0], h.arr[h.count-1] = h.arr[h.count-1], h.arr[0]
+
+	h.arr = h.arr[:h.count-1] // Pop the maximum value
+	h.count--                 // Decrement the counter
+
+	// Heapify the root value downwards
+	h.heapifyDown(0)
+
+	_ = ele // To avoid unused variable warning
+}
+
+// Method to return if the max-heap is empty
+func (h *MaxHeap) isEmpty() bool {
+	return h.count == 0
+}
+
+// Method to return the maximum value in the max-heap
+func (h *MaxHeap) getMax() int {
+	return h.arr[0]
+}
+
+// Method to return the size of max-heap
+func (h *MaxHeap) heapSize() int {
+	return h.count
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    private List&lt;Integer&gt; arr; // list to store the max-heap
+    private int count; // to store the count of elements in max-heap
+    
+    // Constructor
+    public Solution() {
+        arr = new ArrayList&lt;&gt;();
+        count = 0;
+    }
+    
+    // Function to recursively heapify the array upwards
+    private void heapifyUp(int ind) {
+        int parentInd = (ind - 1)/2; 
+
+        // If current index holds larger value than the parent
+        if(ind &gt; 0 &amp;&amp; arr.get(ind) &gt; arr.get(parentInd)) {
+            // Swap the values at the two indices
+            int temp = arr.get(ind);
+            arr.set(ind, arr.get(parentInd));
+            arr.set(parentInd, temp);
+            
+            // Recursively heapify the upper nodes
+            heapifyUp(parentInd);
+        } 
+
+        return;
+    }
+    
+    // Function to recursively heapify the array downwards
+    private void heapifyDown(int ind) {
+        int n = arr.size(); // Size of the array
+
+        // To store the index of largest element
+        int largestInd = ind; 
+
+        // Indices of the left and right children
+        int leftChildInd = 2*ind + 1;
+        int rightChildInd = 2*ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if(leftChildInd &lt; n &amp;&amp; arr.get(leftChildInd) &gt; arr.get(largestInd)) 
+            largestInd = leftChildInd;
+
+        // If the right child holds larger value, update the largest index
+        if(rightChildInd &lt; n &amp;&amp; arr.get(rightChildInd) &gt; arr.get(largestInd)) 
+            largestInd = rightChildInd;
+
+        // If the largest element index is updated
+        if(largestInd != ind) {
+            // Swap the largest element with the current index
+            int temp = arr.get(largestInd);
+            arr.set(largestInd, arr.get(ind));
+            arr.set(ind, temp);
+
+            // Recursively heapify the lower subtree
+            heapifyDown(largestInd);
+        }
+
+        return; 
+    }
+    
+    // Method to intialize the max-heap data structure
+    public void initializeHeap(){
+        arr.clear();
+        count = 0;
+    }
+    
+    // Method to insert a given value in the max-heap
+    public void insert(int key){
+        // Insert the value at the back of the list 
+        arr.add(key);
+        
+        // Heapify upwards
+        heapifyUp(count);
+        count = count + 1; // Increment the counter;
+        
+        return;
+    }
+        
+    // Method to change the value at a given index in max-heap
+    public void changeKey(int index, int new_val){
+        // If the current value is replaced with a larger value
+        if(arr.get(index) &lt; new_val) {
+            arr.set(index, new_val);
+            heapifyUp(index);
+        }
+        // Otherwise (if the current value is replaced with smaller value)
+        else {
+            arr.set(index, new_val);
+            heapifyDown(index);
+        }
+
+        return;
+    }
+    
+    // Method to extract the maximum value from the max-heap
+    public void extractMax(){
+        int ele = arr.get(0); // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        int temp = arr.get(count - 1);
+        arr.set(count - 1, arr.get(0));
+        arr.set(0, temp);
+        
+        arr.remove(count - 1); // Pop the maximum value from the list
+        count = count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        if(count &gt; 0) {
+            heapifyDown(0);
+        }
+    }
+    
+    // Method to return if the max-heap is empty
+    public boolean isEmpty(){
+        return (count == 0);
+    }
+    
+    // Method to return the maximum value in the max-heap
+    public int getMax(){
+        // Return the value stored at the root
+        return arr.get(0);
+    }
+    
+    // Method to return the size of max-heap
+    public int heapSize(){
+        return count;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.arr = []; // list to store the max-heap
+        this.count = 0; // to store the count of elements in max-heap
+    }
+    
+    // Function to recursively heapify the array upwards
+    heapifyUp(ind) {
+        let parentInd = Math.floor((ind - 1) / 2);
+
+        // If current index holds larger value than the parent
+        if(ind &gt; 0 &amp;&amp; this.arr[ind] &gt; this.arr[parentInd]) {
+            // Swap the values at the two indices
+            [this.arr[ind], this.arr[parentInd]] = [this.arr[parentInd], this.arr[ind]];
+            
+            // Recursively heapify the upper nodes
+            this.heapifyUp(parentInd);
+        }
+        return;
+    }
+    
+    // Function to recursively heapify the array downwards
+    heapifyDown(ind) {
+        let n = this.arr.length; // Size of the array
+
+        // To store the index of largest element
+        let largestInd = ind; 
+
+        // Indices of the left and right children
+        let leftChildInd = 2 * ind + 1;
+        let rightChildInd = 2 * ind + 2;
+        
+        // If the left child holds larger value, update the largest index
+        if(leftChildInd &lt; n &amp;&amp; this.arr[leftChildInd] &gt; this.arr[largestInd]) {
+            largestInd = leftChildInd;
+        }
+
+        // If the right child holds larger value, update the largest index
+        if(rightChildInd &lt; n &amp;&amp; this.arr[rightChildInd] &gt; this.arr[largestInd]) {
+            largestInd = rightChildInd;
+        }
+
+        // If the largest element index is updated
+        if(largestInd !== ind) {
+            // Swap the largest element with the current index
+            [this.arr[largestInd], this.arr[ind]] = [this.arr[ind], this.arr[largestInd]];
+            
+            // Recursively heapify the lower subtree
+            this.heapifyDown(largestInd);
+        }
+        return;
+    }
+    
+    // Method to intialize the max-heap data structure
+    initializeHeap() {
+        this.arr = [];
+        this.count = 0;
+    }
+    
+    // Method to insert a given value in the max-heap
+    insert(key) {
+        // Insert the value at the back of the list 
+        this.arr.push(key);
+        
+        // Heapify upwards
+        this.heapifyUp(this.count);
+        this.count = this.count + 1; // Increment the counter;
+        
+        return;
+    }
+        
+    // Method to change the value at a given index in max-heap
+    changeKey(index, new_val) {
+        // If the current value is replaced with a larger value
+        if(this.arr[index] &lt; new_val) {
+            this.arr[index] = new_val;
+            this.heapifyUp(index);
+        }
+        // Otherwise (if the current value is replaced with smaller value)
+        else {
+            this.arr[index] = new_val;
+            this.heapifyDown(index);
+        }
+        return;
+    }
+    
+    // Method to extract the maximum value from the max-heap
+    extractMax() {
+        let ele = this.arr[0]; // maximum value in the heap
+        
+        // Swap the top value with the value at last index
+        [this.arr[0], this.arr[this.count - 1]] = [this.arr[this.count - 1], this.arr[0]];
+        
+        this.arr.pop(); // Pop the maximum value from the list
+        this.count = this.count - 1; // Decrement the counter
+        
+        // Heapify the root value downwards
+        if(this.count &gt; 0) {
+            this.heapifyDown(0);
+        }
+    }
+    
+    // Method to return if the max-heap is empty
+    isEmpty() {
+        return (this.count === 0);
+    }
+    
+    // Method to return the maximum value in the max-heap
+    getMax() {
+        // Return the value stored at the root
+        return this.arr[0];
+    }
+    
+    // Method to return the size of max-heap
+    heapSize() {
+        return this.count;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def __init__(self):
+        self.arr = []  # list to store the max-heap
+        self.count = 0  # to store the count of elements in max-heap
+
+    # Function to recursively heapify the array upwards
+    def heapifyUp(self, ind):
+        parentInd = (ind - 1)//2
+
+        # If current index holds larger value than the parent
+        if ind &gt; 0 and self.arr[ind] &gt; self.arr[parentInd]:
+            # Swap the values at the two indices
+            self.arr[ind], self.arr[parentInd] = self.arr[parentInd], self.arr[ind]
+            
+            # Recursively heapify the upper nodes
+            self.heapifyUp(parentInd)
+        return
+
+    # Function to recursively heapify the array downwards
+    def heapifyDown(self, ind):
+        n = len(self.arr)  # Size of the array
+
+        # To store the index of largest element
+        largestInd = ind
+
+        # Indices of the left and right children
+        leftChildInd = 2*ind + 1
+        rightChildInd = 2*ind + 2
+        
+        # If the left child holds larger value, update the largest index
+        if leftChildInd &lt; n and self.arr[leftChildInd] &gt; self.arr[largestInd]:
+            largestInd = leftChildInd
+
+        # If the right child holds larger value, update the largest index
+        if rightChildInd &lt; n and self.arr[rightChildInd] &gt; self.arr[largestInd]:
+            largestInd = rightChildInd
+
+        # If the largest element index is updated
+        if largestInd != ind:
+            # Swap the largest element with the current index
+            self.arr[largestInd], self.arr[ind] = self.arr[ind], self.arr[largestInd]
+
+            # Recursively heapify the lower subtree
+            self.heapifyDown(largestInd)
+        return
+
+    # Method to intialize the max-heap data structure
+    def initializeHeap(self):
+        self.arr.clear()
+        self.count = 0
+
+    # Method to insert a given value in the max-heap
+    def insert(self, key):
+        # Insert the value at the back of the list
+        self.arr.append(key)
+        
+        # Heapify upwards
+        self.heapifyUp(self.count)
+        self.count += 1  # Increment the counter
+        return
+
+    # Method to change the value at a given index in max-heap
+    def changeKey(self, index, new_val):
+        # If the current value is replaced with a larger value
+        if self.arr[index] &lt; new_val:
+            self.arr[index] = new_val
+            self.heapifyUp(index)
+        # Otherwise (if the current value is replaced with smaller value)
+        else:
+            self.arr[index] = new_val
+            self.heapifyDown(index)
+        return
+
+    # Method to extract the maximum value from the max-heap
+    def extractMax(self):
+        ele = self.arr[0]  # maximum value in the heap
+
+        # Swap the top value with the value at last index
+        self.arr[0], self.arr[self.count - 1] = self.arr[self.count - 1], self.arr[0]
+
+        # Pop the maximum value from the list
+        self.arr.pop()
+        self.count -= 1  # Decrement the counter
+
+        # Heapify the root value downwards
+        if self.count &gt; 0:
+            self.heapifyDown(0)
+
+    # Method to return if the max-heap is empty
+    def isEmpty(self):
+        return (self.count == 0)
+
+    # Method to return the maximum value in the max-heap
+    def getMax(self):
+        # Return the value stored at the root
+        return self.arr[0]
+
+    # Method to return the size of max-heap
+    def heapSize(self):
+        return self.count</code></pre></div>
+</body>
+</html>

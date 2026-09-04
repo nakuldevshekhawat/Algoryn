@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vertical Order Traversal</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Vertical Order Traversal</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Binary Tree</span><span>Breadth-First Search</span><span>Depth-First Search</span><span>Hash Table</span><span>Sorting</span><span>Tree</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Compute the binary tree's vertical order traversal given its root.</p><p>The left and right children of a node at location (row, col) will be at (row + 1, col - 1) and (row + 1, col + 1), respectively. The tree's root is located at (0, 0).</p><p><br></p><p>The vertical order traversal of a binary tree is a list of top-to-bottom orderings for each column index starting from the leftmost column and ending on the rightmost column. There may be multiple nodes in the same row and same column. In such a case, sort these nodes by their values. Return the binary tree's <strong>vertical order traversal</strong>.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= Number of Nodes <= 10<sup>4</sup></li><li>-10<sup>3</sup> <= Node.val <= 10<sup>3</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> root = [3, 9, 20, null, null, 15, 7]</p><p><strong>Output :</strong> [ [9] , [3, 15] , [20] , [7] ]</p><p><strong>Explanation :</strong></p><p>Column -1: Only node 9 is in this column.</p><p>Column 0: Nodes 3 and 15 are in this column in that order from top to bottom.</p><p>Column 1: Only node 20 is in this column.</p><p>Column 2: Only node 7 is in this column.</p><p><img src="https://static.takeuforward.org/content/ProblemSetter-Ys33Ay3r"></p><h3>Example 2</h3><p><strong>Input :</strong> root = [1, 2, 3, 4, 5, 6, 7]</p><p><strong>Output :</strong> [ [4] , [2] , [1, 5, 6] , [3] , [7] ]</p><p><strong>Explanation :</strong></p><p>Column -2: Only node 4 is in this column.</p><p>Column -1: Only node 2 is in this column.</p><p>Column 0: Nodes 1, 5, and 6 are in this column.1 is at the top, so it comes first. 5 and 6 are at the same position (2, 0), so we sort them by their value, 5 before 6.</p><p>Column 1: Only node 3 is in this column.</p><p>Column 2: Only node 7 is in this column.</p><p><img src="https://static.takeuforward.org/content/ProblemSetter-_KMwKgfE"></p><h3>Example 3</h3><p><strong>Input :</strong> root = [5, 1, 2, 8, null, 4, 5, null, 6]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The process of computing a binary tree's vertical order traversal is used in practical software development in data visualization and UI design. For example, organizational chart layouts and displaying hierarchical data, where nodes represent entities and edges represent relationships between entities, utilize this concept. Being able to depict this data in a visually digestible form, using a vertical traversal pattern, allows users to make more informed decisions based on these relationships. Efficient implementation of this problem is essential for ensuring the process is run effectively and quickly, enhancing the user experience.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h2>Intuition</h2>
+<p>The vertical order traversal of a binary tree involves organizing nodes based on their horizontal and vertical positions relative to their parent nodes. Each node can be categorized by its vertical column ('x') and level ('y'). Nodes with the same 'x' value are aligned vertically, forming columns, while 'y' represents the depth or level within the tree.</p>
+<p>To achieve this traversal, use a level order BFS approach, starting from the root node. This ensures that nodes are processed level by level, and within each level, nodes are processed from left to right. By maintaining a map structure that uses 'x' as keys for vertical columns and 'y' as keys within a nested map for levels, we store node values in a multiset to maintain uniqueness and sorting.</p>
+
+<img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/-_vhpULyo">
+
+<h2>Approach</h2>
+<ul>
+  <li>Begin by initializing an empty map to store nodes according to their 'x' (vertical column) and 'y' (level) coordinates. Utilize a multiset within this map to maintain the correct order of nodes that fall under the same vertical column and level.</li>
+  
+  <li>Set up a queue for performing a breadth-first search (BFS) traversal of the tree, starting with the root node positioned at coordinates (0, 0), where '0' represents the root's vertical column and level.</li>
+  
+  <li>While the queue is not empty, perform the following steps: dequeue a node, and record its value in the map at its corresponding 'x' and 'y' coordinates. Then, enqueue the left and right children of the node with updated coordinates: the left child is enqueued with 'x' decremented by 1 and 'y' incremented by 1, while the right child is enqueued with 'x' incremented by 1 and 'y' incremented by 1.</li>
+  
+  <li>After completing the BFS traversal, process the map to create a list of node values for each vertical column. This involves iterating through the map, collecting values from the multiset for each vertical column, and assembling these values into column vectors.</li>
+  
+  <li>Finally, compile these column vectors into a 2D vector that represents the vertical order traversal of the binary tree, ensuring that nodes are ordered by their vertical column positions.</li>
+</ul>
+
+<h2>Dry Run</h2>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 1.png-LypIr9ZR" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 2.png-ZDDCvnYv" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 3.png-VNhUDhQP" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 4.png-ZFYQ99J1" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 5.png-VNg3cpCA" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 6.png-8yoOvng9" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 7.png-SA4dTmvR" alt="Image 7"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 8.png-QH1NHE3z" alt="Image 8"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 1.png-LypIr9ZR" alt="Image 1"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 2.png-ZDDCvnYv" alt="Image 2"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 3.png-VNhUDhQP" alt="Image 3"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 4.png-ZFYQ99J1" alt="Image 4"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 5.png-VNg3cpCA" alt="Image 5"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 6.png-8yoOvng9" alt="Image 6"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 7.png-SA4dTmvR" alt="Image 7"><img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Vertical Order Traversal/Vertical order traversal - 8.png-QH1NHE3z" alt="Image 8"></div></div>
+
+
+<h3> Solution </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include<bits/stdc++.h>
+using namespace std;
+
+struct TreeNode {
+    int data;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int val) : data(val), left(nullptr), right(nullptr) {}
+};
+
+class Solution {
+public:
+    vector<vector<int>> verticalTraversal(TreeNode* root) {
+        // List to store the final result
+        vector<vector<int>> result;
+
+        if (root == nullptr) {
+            return result;
+        }
+
+        // Map to store the nodes at each vertical distance and level
+        map<int, map<int, priority_queue<int, vector<int>, greater<int>>>> nodesMap;
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        queue<pair<TreeNode*, pair<int, int>>> q;
+        q.push({root, {0, 0}});  // (node, {x, y})
+
+        // Perform BFS
+        while (!q.empty()) {
+            auto p = q.front();
+            q.pop();
+            TreeNode* node = p.first;
+            int x = p.second.first;
+            int y = p.second.second;
+
+            // Add the node's value to the map at the correct x and y
+            nodesMap[x][y].push(node->data);
+
+            // Add the left child with updated coordinates to the queue
+            if (node->left != nullptr) {
+                q.push({node->left, {x - 1, y + 1}});
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node->right != nullptr) {
+                q.push({node->right, {x + 1, y + 1}});
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        for (auto& p : nodesMap) {
+            vector<int> column;
+            for (auto& q : p.second) {
+                while (!q.second.empty()) {
+                    column.push_back(q.second.top());
+                    q.second.pop();
+                }
+            }
+            result.push_back(column);
+        }
+
+        return result;
+    }
+};
+
+
+// Main method to test the verticalTraversal function
+int main() {
+    // Creating a binary tree
+    TreeNode* root = new TreeNode(1);
+    root->left = new TreeNode(2);
+    root->right = new TreeNode(3);
+    root->left->left = new TreeNode(4);
+    root->left->right = new TreeNode(5);
+    root->right->left = new TreeNode(6);
+    root->right->right = new TreeNode(7);
+
+    // Creating an instance of Solution
+    Solution sol;
+
+    // Getting the vertical order traversal
+    vector<vector<int>> result = sol.verticalTraversal(root);
+
+    // Printing the result
+    cout << "Vertical Order Traversal: " << endl;
+    for (const auto& col : result) {
+        for (int num : col) {
+            cout << num << " ";
+        }
+        cout << endl;
+    }
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class TreeNode {
+    int data;
+    TreeNode left;
+    TreeNode right;
+
+    TreeNode(int val) {
+        data = val;
+        left = null;
+        right = null;
+    }
+}
+
+class Solution {
+    // Nested static class Tuple
+    static class Tuple {
+        TreeNode node;
+        int x; // Vertical distance
+        int y; // Level
+
+        Tuple(TreeNode node, int x, int y) {
+            this.node = node;
+            this.x = x;
+            this.y = y;
+        }
+    }
+  
+    public List<List<Integer>> verticalTraversal(TreeNode root) {
+        List<List<Integer>> result = new ArrayList<>();
+
+        if (root == null) {
+            return result;
+        }
+
+        // TreeMap to store the nodes at each vertical distance
+        TreeMap<Integer, TreeMap<Integer, PriorityQueue<Integer>>> nodesMap = new TreeMap<>();
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        Queue<Tuple> queue = new LinkedList<>();
+        queue.offer(new Tuple(root, 0, 0)); // (node, x, y)
+
+        // Perform BFS
+        while (!queue.isEmpty()) {
+            Tuple tuple = queue.poll();
+            TreeNode node = tuple.node;
+            int x = tuple.x;
+            int y = tuple.y;
+
+            // Add the node's value to the map at the correct x and y
+            nodesMap.putIfAbsent(x, new TreeMap<>());
+            nodesMap.get(x).putIfAbsent(y, new PriorityQueue<>());
+            nodesMap.get(x).get(y).offer(node.data);
+
+            // Add the left child with updated coordinates to the queue
+            if (node.left != null) {
+                queue.offer(new Tuple(node.left, x - 1, y + 1));
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node.right != null) {
+                queue.offer(new Tuple(node.right, x + 1, y + 1));
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        for (TreeMap<Integer, PriorityQueue<Integer>> yMap : nodesMap.values()) {
+            List<Integer> column = new ArrayList<>();
+            for (PriorityQueue<Integer> nodes : yMap.values()) {
+                while (!nodes.isEmpty()) {
+                    column.add(nodes.poll());
+                }
+            }
+            result.add(column);
+        }
+
+        return result;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(1);
+        root.left = new TreeNode(2);
+        root.right = new TreeNode(3);
+        root.left.left = new TreeNode(4);
+        root.left.right = new TreeNode(5);
+        root.right.left = new TreeNode(6);
+        root.right.right = new TreeNode(7);
+
+        Solution solution = new Solution();
+        List<List<Integer>> result = solution.verticalTraversal(root);
+
+        System.out.println("Vertical Traversal:");
+        for (List column : result) {
+            System.out.println(column);
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import defaultdict, deque
+
+# Definition for a binary tree node.
+class TreeNode(object):
+    def __init__(self, val=0, left=None, right=None):
+        self.data = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def verticalTraversal(self, root):
+        """
+        Perform vertical order traversal of a binary tree.
+
+        :param root: TreeNode - The root of the binary tree.
+        :return: List[List[int]] - A list of lists containing the vertical order traversal.
+        """
+
+        if not root:
+            return []
+
+        # Dictionary to store the nodes at each vertical distance and level.
+        # nodes_map[x][y] will hold a list of nodes at vertical distance x and level y.
+        nodes_map = defaultdict(lambda: defaultdict(list))
+
+        # Queue for BFS traversal (stores node along with its x and y coordinates)
+        queue = deque([(root, 0, 0)])  # (node, x, y)
+
+        # Perform BFS to populate nodes_map with nodes at each (x, y) coordinate.
+        while queue:
+            node, x, y = queue.popleft()
+
+            # Add the node's value to the map at the correct x and y
+            nodes_map[x][y].append(node.data)
+
+            # Add the left child with updated coordinates to the queue
+            if node.left:
+                queue.append((node.left, x - 1, y + 1))
+
+            # Add the right child with updated coordinates to the queue
+            if node.right:
+                queue.append((node.right, x + 1, y + 1))
+
+        # Prepare the result by sorting keys and compiling nodes
+        result = []
+        for x in sorted(nodes_map):
+            column = []
+            for y in sorted(nodes_map[x]):
+                # Sort the nodes at the same position to maintain the order
+                column.extend(sorted(nodes_map[x][y]))
+            result.append(column)
+
+        return result
+
+# Main method to test the verticalTraversal function
+if __name__ == "__main__":
+    # Creating a binary tree
+    root = TreeNode(1)
+    root.left = TreeNode(2)
+    root.right = TreeNode(3)
+    root.left.left = TreeNode(4)
+    root.left.right = TreeNode(5)
+    root.right.left = TreeNode(6)
+    root.right.right = TreeNode(7)
+
+    # Creating an instance of Solution
+    sol = Solution()
+
+    # Getting the vertical order traversal
+    result = sol.verticalTraversal(root)
+
+    # Printing the result
+    print("Vertical Order Traversal:", result)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Definition for a binary tree node.
+class TreeNode {
+    constructor(val = 0, left = null, right = null){
+        this.data = val;
+        this.left = left;
+        this.right = right;
+      }
+}
+
+
+class Solution {
+    verticalTraversal(root) {
+        // If the root is null, return an empty array
+        if (!root) {
+            return [];
+        }
+
+        // Map to store the nodes at each vertical distance and level
+        const nodesMap = new Map();
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        const queue = [{ node: root, x: 0, y: 0 }];
+
+        // Perform BFS
+        while (queue.length > 0) {
+            const { node, x, y } = queue.shift();
+
+            // Add the node's value to the map at the correct x and y
+            if (!nodesMap.has(x)) {
+                nodesMap.set(x, new Map());
+            }
+            if (!nodesMap.get(x).has(y)) {
+                nodesMap.get(x).set(y, []);
+            }
+            nodesMap.get(x).get(y).push(node.data);
+
+            // Add the left child with updated coordinates to the queue
+            if (node.left) {
+                queue.push({ node: node.left, x: x - 1, y: y + 1 });
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node.right) {
+                queue.push({ node: node.right, x: x + 1, y: y + 1 });
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        const result = [];
+        const sortedXKeys = Array.from(nodesMap.keys()).sort((a, b) => a - b);
+
+        for (const x of sortedXKeys) {
+            const yMap = nodesMap.get(x);
+            const sortedYKeys = Array.from(yMap.keys()).sort((a, b) => a - b);
+            const column = [];
+
+            for (const y of sortedYKeys) {
+                const nodes = yMap.get(y);
+                nodes.sort((a, b) => a - b);
+                column.push(...nodes);
+            }
+
+            result.push(column);
+        }
+
+        return result;
+    }
+}
+
+// Main method to test the verticalTraversal function
+// Creating a binary tree
+const root = new TreeNode(1);
+root.left = new TreeNode(2);
+root.right = new TreeNode(3);
+root.left.left = new TreeNode(4);
+root.left.right = new TreeNode(5);
+root.right.left = new TreeNode(6);
+root.right.right = new TreeNode(7);
+
+// Creating an instance of Solution
+const sol = new Solution();
+
+// Getting the vertical order traversal
+const result = sol.verticalTraversal(root);
+
+// Printing the result
+console.log("Vertical Order Traversal:", result);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+// Definition for a binary tree node.
+public class TreeNode {
+    public int val;
+    public TreeNode left;
+    public TreeNode right;
+    public TreeNode(int val = 0, TreeNode left = null, TreeNode right = null) {
+        this.val = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public class Solution {
+    public IList<IList<int>> VerticalTraversal(TreeNode root) {
+        // If the root is null, return an empty array
+        if (root == null) {
+            return new List<IList<int>>();
+        }
+
+        // Map to store the nodes at each vertical distance and level
+        var nodesMap = new Dictionary<int, Dictionary<int, List<int>>>();
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        var queue = new Queue<Tuple<TreeNode, int, int>>();
+        queue.Enqueue(Tuple.Create(root, 0, 0));
+
+        // Perform BFS
+        while (queue.Count > 0) {
+            var current = queue.Dequeue();
+            TreeNode node = current.Item1;
+            int x = current.Item2;
+            int y = current.Item3;
+
+            // Add the node's value to the map at the correct x and y
+            if (!nodesMap.ContainsKey(x)) {
+                nodesMap[x] = new Dictionary<int, List<int>>();
+            }
+            if (!nodesMap[x].ContainsKey(y)) {
+                nodesMap[x][y] = new List<int>();
+            }
+            nodesMap[x][y].Add(node.val);
+
+            // Add the left child with updated coordinates to the queue
+            if (node.left != null) {
+                queue.Enqueue(Tuple.Create(node.left, x - 1, y + 1));
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node.right != null) {
+                queue.Enqueue(Tuple.Create(node.right, x + 1, y + 1));
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        var result = new List<IList<int>>();
+        var sortedXKeys = nodesMap.Keys.ToList();
+        sortedXKeys.Sort();
+
+        foreach (int x in sortedXKeys) {
+            var yMap = nodesMap[x];
+            var sortedYKeys = yMap.Keys.ToList();
+            sortedYKeys.Sort();
+            var column = new List<int>();
+
+            foreach (int y in sortedYKeys) {
+                var nodes = yMap[y];
+                nodes.Sort();
+                column.AddRange(nodes);
+            }
+
+            result.Add(column);
+        }
+
+        return result;
+    }
+}
+
+public class Program {
+    public static void Main(string[] args) {
+        // Creating a binary tree
+        TreeNode root = new TreeNode(1);
+        root.left = new TreeNode(2);
+        root.right = new TreeNode(3);
+        root.left.left = new TreeNode(4);
+        root.left.right = new TreeNode(5);
+        root.right.left = new TreeNode(6);
+        root.right.right = new TreeNode(7);
+
+        // Creating an instance of Solution
+        Solution sol = new Solution();
+
+        // Getting the vertical order traversal
+        IList<IList<int>> result = sol.VerticalTraversal(root);
+
+        // Printing the result
+        Console.WriteLine("Vertical Order Traversal:");
+        foreach (var column in result) {
+            Console.WriteLine($"[{string.Join(", ", column)}]");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"container/heap"
+	"fmt"
+	"sort"
+)
+
+// TreeNode definition with Data, Left, Right fields
+type TreeNode struct {
+	Data  int
+	Left  *TreeNode
+	Right *TreeNode
+}
+
+// priorityQueue implements a min-heap of ints
+type priorityQueue []int
+
+func (pq priorityQueue) Len() int           { return len(pq) }
+func (pq priorityQueue) Less(i, j int) bool { return pq[i] < pq[j] } // min-heap
+func (pq priorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+
+func (pq *priorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(int))
+}
+
+func (pq *priorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	val := old[n-1]
+	*pq = old[:n-1]
+	return val
+}
+
+// verticalTraversal performs the vertical order traversal on a binary tree
+func verticalTraversal(root *TreeNode) [][]int {
+	// List to store the final result
+	var result [][]int
+
+	if root == nil {
+		return result
+	}
+
+	// Map to store the nodes at each vertical distance (x) and level (y)
+	nodesMap := make(map[int]map[int]*priorityQueue)
+
+	// Queue for BFS traversal (stores node along with its x and y coordinates)
+	type QData struct {
+		node *TreeNode
+		x, y int
+	}
+	queue := []QData{{root, 0, 0}} // (node, x, y)
+
+	// Perform BFS
+	for len(queue) > 0 {
+		p := queue[0]
+		queue = queue[1:]
+		node := p.node
+		x := p.x
+		y := p.y
+
+		// Add the node's value to the map at the correct x and y
+		if nodesMap[x] == nil {
+			nodesMap[x] = make(map[int]*priorityQueue)
+		}
+		if nodesMap[x][y] == nil {
+			nodesMap[x][y] = &priorityQueue{}
+		}
+		heap.Push(nodesMap[x][y], node.Data)
+
+		// Add the left child with updated coordinates to the queue
+		if node.Left != nil {
+			queue = append(queue, QData{node.Left, x - 1, y + 1})
+		}
+
+		// Add the right child with updated coordinates to the queue
+		if node.Right != nil {
+			queue = append(queue, QData{node.Right, x + 1, y + 1})
+		}
+	}
+
+	// Prepare the result by sorting keys and compiling nodes
+	var xKeys []int
+	for k := range nodesMap {
+		xKeys = append(xKeys, k)
+	}
+	sort.Ints(xKeys)
+
+	for _, x := range xKeys {
+		levelMap := nodesMap[x]
+		var yKeys []int
+		for y := range levelMap {
+			yKeys = append(yKeys, y)
+		}
+		sort.Ints(yKeys)
+
+		var column []int
+		for _, y := range yKeys {
+			pq := levelMap[y]
+			for pq.Len() > 0 {
+				column = append(column, heap.Pop(pq).(int))
+			}
+		}
+
+		result = append(result, column)
+	}
+
+	return result
+}
+
+// Main function to test the verticalTraversal function
+func main() {
+	// Creating a binary tree directly
+	root := &TreeNode{Data: 1}
+	root.Left = &TreeNode{Data: 2}
+	root.Right = &TreeNode{Data: 3}
+	root.Left.Left = &TreeNode{Data: 4}
+	root.Left.Right = &TreeNode{Data: 5}
+	root.Right.Left = &TreeNode{Data: 6}
+	root.Right.Right = &TreeNode{Data: 7}
+
+	// Getting the vertical order traversal
+	result := verticalTraversal(root)
+
+	// Printing the result
+	fmt.Println("Vertical Order Traversal:")
+	for _, col := range result {
+		for _, num := range col {
+			fmt.Printf("%d ", num)
+		}
+		fmt.Println()
+	}
+}
+</code></pre></div></div></div>
+
+<h3>  Complexity Analysis </h3>
+<p><strong>Time Complexity:O(N * log2N * log2N * log2N) </strong> : This complexity arises from performing postorder traversal using BFS, where each node's insertion and retrieval operations in nested maps take logarithmic time. Overall, it reflects the combined cost of processing each node and managing the node mappings.</p>
+
+<p><strong>Space Complexity: O(N + N/2) </strong>: The space usage is dominated by the map storing nodes by their vertical and level information, occupying O(N) space. Additionally, the queue for BFS can occupy up to O(N/2) space in a balanced tree's worst-case scenario, contributing to the total space complexity.</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    vector&lt;vector&lt;int&gt;&gt; verticalTraversal(TreeNode* root) {
+        // List to store the final result
+        vector&lt;vector&lt;int&gt;&gt; result;
+
+        if (root == nullptr) {
+            return result;
+        }
+
+        // Map to store the nodes at each vertical distance and level
+        map&lt;int, map&lt;int, priority_queue&lt;int, vector&lt;int&gt;, greater&lt;int&gt;&gt;&gt;&gt; nodesMap;
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        queue&lt;pair&lt;TreeNode*, pair&lt;int, int&gt;&gt;&gt; q;
+        q.push({root, {0, 0}});  // (node, {x, y})
+
+        // Perform BFS
+        while (!q.empty()) {
+            auto p = q.front();
+            q.pop();
+            TreeNode* node = p.first;
+            int x = p.second.first;
+            int y = p.second.second;
+
+            // Add the node&#x27;s value to the map at the correct x and y
+            nodesMap[x][y].push(node-&gt;data);
+
+            // Add the left child with updated coordinates to the queue
+            if (node-&gt;left != nullptr) {
+                q.push({node-&gt;left, {x - 1, y + 1}});
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node-&gt;right != nullptr) {
+                q.push({node-&gt;right, {x + 1, y + 1}});
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        for (auto&amp; p : nodesMap) {
+            vector&lt;int&gt; column;
+            for (auto&amp; q : p.second) {
+                while (!q.second.empty()) {
+                    column.push_back(q.second.top());
+                    q.second.pop();
+                }
+            }
+            result.push_back(column);
+        }
+
+        return result;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public int val;
+ *     public TreeNode left;
+ *     public TreeNode right;
+ *     public TreeNode(int val=0, TreeNode left=null, TreeNode right=null) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+public class Solution
+{
+    public IList&lt;IList&lt;int&gt;&gt; VerticalTraversal(TreeNode root)
+    {
+        // If the root is null, return an empty array
+        if (root == null) {
+            return new List&lt;IList&lt;int&gt;&gt;();
+        }
+
+        // Map to store the nodes at each vertical distance and level
+        var nodesMap = new Dictionary&lt;int, Dictionary&lt;int, List&lt;int&gt;&gt;&gt;();
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        var queue = new Queue&lt;Tuple&lt;TreeNode, int, int&gt;&gt;();
+        queue.Enqueue(Tuple.Create(root, 0, 0));
+
+        // Perform BFS
+        while (queue.Count &gt; 0) {
+            var current = queue.Dequeue();
+            TreeNode node = current.Item1;
+            int x = current.Item2;
+            int y = current.Item3;
+
+            // Add the node&#x27;s value to the map at the correct x and y
+            if (!nodesMap.ContainsKey(x)) {
+                nodesMap[x] = new Dictionary&lt;int, List&lt;int&gt;&gt;();
+            }
+            if (!nodesMap[x].ContainsKey(y)) {
+                nodesMap[x][y] = new List&lt;int&gt;();
+            }
+            nodesMap[x][y].Add(node.val);
+
+            // Add the left child with updated coordinates to the queue
+            if (node.left != null) {
+                queue.Enqueue(Tuple.Create(node.left, x - 1, y + 1));
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node.right != null) {
+                queue.Enqueue(Tuple.Create(node.right, x + 1, y + 1));
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        var result = new List&lt;IList&lt;int&gt;&gt;();
+        var sortedXKeys = nodesMap.Keys.ToList();
+        sortedXKeys.Sort();
+
+        foreach (int x in sortedXKeys) {
+            var yMap = nodesMap[x];
+            var sortedYKeys = yMap.Keys.ToList();
+            sortedYKeys.Sort();
+            var column = new List&lt;int&gt;();
+
+            foreach (int y in sortedYKeys) {
+                var nodes = yMap[y];
+                nodes.Sort();
+                column.AddRange(nodes);
+            }
+
+            result.Add(column);
+        }
+
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import (&quot;container/heap&quot;)
+import &quot;sort&quot;
+
+// priorityQueue implements a min-heap of ints
+type priorityQueue []int
+
+func (pq priorityQueue) Len() int           { return len(pq) }
+func (pq priorityQueue) Less(i, j int) bool { return pq[i] &lt; pq[j] } // min-heap
+func (pq priorityQueue) Swap(i, j int)      { pq[i], pq[j] = pq[j], pq[i] }
+
+func (pq *priorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(int))
+}
+
+func (pq *priorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	val := old[n-1]
+	*pq = old[:n-1]
+	return val
+}
+
+// verticalTraversal performs the vertical order traversal on a binary tree
+func verticalTraversal(root *TreeNode) [][]int {
+	// List to store the final result
+	var result [][]int
+
+	if root == nil {
+		return result
+	}
+
+	// Map to store the nodes at each vertical distance (x) and level (y)
+	nodesMap := make(map[int]map[int]*priorityQueue)
+
+	// Queue for BFS traversal (stores node along with its x and y coordinates)
+	type QData struct {
+		node *TreeNode
+		x, y int
+	}
+	queue := []QData{{root, 0, 0}} // (node, x, y)
+
+	// Perform BFS
+	for len(queue) &gt; 0 {
+		p := queue[0]
+		queue = queue[1:]
+		node := p.node
+		x := p.x
+		y := p.y
+
+		// Add the node&#x27;s value to the map at the correct x and y
+		if nodesMap[x] == nil {
+			nodesMap[x] = make(map[int]*priorityQueue)
+		}
+		if nodesMap[x][y] == nil {
+			nodesMap[x][y] = &amp;priorityQueue{}
+		}
+		heap.Push(nodesMap[x][y], node.Data)
+
+		// Add the left child with updated coordinates to the queue
+		if node.Left != nil {
+			queue = append(queue, QData{node.Left, x - 1, y + 1})
+		}
+
+		// Add the right child with updated coordinates to the queue
+		if node.Right != nil {
+			queue = append(queue, QData{node.Right, x + 1, y + 1})
+		}
+	}
+
+	// Prepare the result by sorting keys and compiling nodes
+	var xKeys []int
+	for k := range nodesMap {
+		xKeys = append(xKeys, k)
+	}
+	sort.Ints(xKeys)
+
+	for _, x := range xKeys {
+		levelMap := nodesMap[x]
+		var yKeys []int
+		for y := range levelMap {
+			yKeys = append(yKeys, y)
+		}
+		sort.Ints(yKeys)
+
+		var column []int
+		for _, y := range yKeys {
+			pq := levelMap[y]
+			for pq.Len() &gt; 0 {
+				column = append(column, heap.Pop(pq).(int))
+			}
+		}
+
+		result = append(result, column)
+	}
+
+	return result
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Nested static class Tuple
+    static class Tuple {
+        TreeNode node;
+        int x; // Vertical distance
+        int y; // Level
+
+        Tuple(TreeNode node, int x, int y) {
+            this.node = node;
+            this.x = x;
+            this.y = y;
+        }
+    }
+  
+    public List&lt;List&lt;Integer&gt;&gt; verticalTraversal(TreeNode root) {
+        List&lt;List&lt;Integer&gt;&gt; result = new ArrayList&lt;&gt;();
+
+        if (root == null) {
+            return result;
+        }
+
+        // TreeMap to store the nodes at each vertical distance
+        TreeMap&lt;Integer, TreeMap&lt;Integer, PriorityQueue&lt;Integer&gt;&gt;&gt; nodesMap = new TreeMap&lt;&gt;();
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        Queue&lt;Tuple&gt; queue = new LinkedList&lt;&gt;();
+        queue.offer(new Tuple(root, 0, 0)); // (node, x, y)
+
+        // Perform BFS
+        while (!queue.isEmpty()) {
+            Tuple tuple = queue.poll();
+            TreeNode node = tuple.node;
+            int x = tuple.x;
+            int y = tuple.y;
+
+            // Add the node&#x27;s value to the map at the correct x and y
+            nodesMap.putIfAbsent(x, new TreeMap&lt;&gt;());
+            nodesMap.get(x).putIfAbsent(y, new PriorityQueue&lt;&gt;());
+            nodesMap.get(x).get(y).offer(node.data);
+
+            // Add the left child with updated coordinates to the queue
+            if (node.left != null) {
+                queue.offer(new Tuple(node.left, x - 1, y + 1));
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node.right != null) {
+                queue.offer(new Tuple(node.right, x + 1, y + 1));
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        for (TreeMap&lt;Integer, PriorityQueue&lt;Integer&gt;&gt; yMap : nodesMap.values()) {
+            List&lt;Integer&gt; column = new ArrayList&lt;&gt;();
+            for (PriorityQueue&lt;Integer&gt; nodes : yMap.values()) {
+                while (!nodes.isEmpty()) {
+                    column.add(nodes.poll());
+                }
+            }
+            result.add(column);
+        }
+
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    verticalTraversal(root) {
+        // If the root is null, return an empty array
+        if (!root) {
+            return [];
+        }
+
+        // Map to store the nodes at each vertical distance and level
+        const nodesMap = new Map();
+
+        // Queue for BFS traversal (stores node along with its x and y coordinates)
+        const queue = [{ node: root, x: 0, y: 0 }];
+
+        // Perform BFS
+        while (queue.length &gt; 0) {
+            const { node, x, y } = queue.shift();
+
+            // Add the node&#x27;s value to the map at the correct x and y
+            if (!nodesMap.has(x)) {
+                nodesMap.set(x, new Map());
+            }
+            if (!nodesMap.get(x).has(y)) {
+                nodesMap.get(x).set(y, []);
+            }
+            nodesMap.get(x).get(y).push(node.data);
+
+            // Add the left child with updated coordinates to the queue
+            if (node.left) {
+                queue.push({ node: node.left, x: x - 1, y: y + 1 });
+            }
+
+            // Add the right child with updated coordinates to the queue
+            if (node.right) {
+                queue.push({ node: node.right, x: x + 1, y: y + 1 });
+            }
+        }
+
+        // Prepare the result by sorting keys and compiling nodes
+        const result = [];
+        const sortedXKeys = Array.from(nodesMap.keys()).sort((a, b) =&gt; a - b);
+
+        for (const x of sortedXKeys) {
+            const yMap = nodesMap.get(x);
+            const sortedYKeys = Array.from(yMap.keys()).sort((a, b) =&gt; a - b);
+            const column = [];
+
+            for (const y of sortedYKeys) {
+                const nodes = yMap.get(y);
+                nodes.sort((a, b) =&gt; a - b);
+                column.push(...nodes);
+            }
+
+            result.push(column);
+        }
+
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class TreeNode(object):
+    def __init__(self, val=0, left=None, right=None):
+        self.data = val
+        self.left = left
+        self.right = right
+
+class Solution:
+    def verticalTraversal(self, root):
+        &quot;&quot;&quot;
+        Perform vertical order traversal of a binary tree.
+
+        :param root: TreeNode - The root of the binary tree.
+        :return: List[List[int]] - A list of lists containing the vertical order traversal.
+        &quot;&quot;&quot;
+
+        if not root:
+            return []
+
+        # Dictionary to store the nodes at each vertical distance and level.
+        # nodes_map[x][y] will hold a list of nodes at vertical distance x and level y.
+        nodes_map = defaultdict(lambda: defaultdict(list))
+
+        # Queue for BFS traversal (stores node along with its x and y coordinates)
+        queue = deque([(root, 0, 0)])  # (node, x, y)
+
+        # Perform BFS to populate nodes_map with nodes at each (x, y) coordinate.
+        while queue:
+            node, x, y = queue.popleft()
+
+            # Add the node&#x27;s value to the map at the correct x and y
+            nodes_map[x][y].append(node.data)
+
+            # Add the left child with updated coordinates to the queue
+            if node.left:
+                queue.append((node.left, x - 1, y + 1))
+
+            # Add the right child with updated coordinates to the queue
+            if node.right:
+                queue.append((node.right, x + 1, y + 1))
+
+        # Prepare the result by sorting keys and compiling nodes
+        result = []
+        for x in sorted(nodes_map):
+            column = []
+            for y in sorted(nodes_map[x]):
+                # Sort the nodes at the same position to maintain the order
+                column.extend(sorted(nodes_map[x][y]))
+            result.append(column)
+
+        return result</code></pre></div>
+</body>
+</html>

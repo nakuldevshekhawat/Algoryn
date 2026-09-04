@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rat in a Maze</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Rat in a Maze</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Recursion</span><span>Backtracking</span><span>Hash Table</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a grid of dimensions n x n. A rat is placed at coordinates (0, 0) and wants to reach at coordinates (n-1, n-1).</p><p><br></p><p>Find all possible paths that rat can take to travel from (0, 0) to (n-1, n-1). The directions in which rat can move are <strong>'U' (up) , 'D' (down) , 'L' (left) , 'R' (right)</strong>.</p><p><br></p><p>The value 0 in grid denotes that the cell is blocked and rat cannot use that cell for travelling, whereas value 1 represents that rat can travel through the cell. If the cell (0, 0) has 0 value, then mouse cannot move to any other cell.</p><p><br></p><p><strong>Note :</strong></p><ul><li>In a path no cell can be visited more than once.</li><li>If there is no possible path then return empty vector.</li></ul>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>2 <= n <= 5</li><li>0 <= grid[i][j] <= 1</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> n = 4 , grid = [ [1, 0, 0, 0] , [1, 1, 0, 1], [1, 1, 0, 0], [0, 1, 1, 1] ]</p><p><strong>Output :</strong> [ "DDRDRR" , "DRDDRR" ]</p><p><strong>Explanation :</strong> The rat has two different path to reach (3, 3).</p><p>The first path is (0, 0) => (1, 0) => (2, 0) => (2, 1) => (3, 1) => (3, 2) => (3, 3).</p><p>The second path is (0,0) => (1,0) => (1,1) => (2,1) => (3,1) => (3,2) => (3,3).</p><h3>Example 2</h3><p><strong>Input :</strong> n = 2 , grid = [ [1, 0] , [1, 0] ]</p><p><strong>Output :</strong> -1</p><p><strong>Explanation :</strong> There is no path that rat can choose to travel from (0,0) to (1,1).</p><h3>Example 3</h3><p><strong>Input :</strong> n = 3 , grid = [ [1, 0, 0] , [1, 1, 0], [0, 1, 1] ]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem statement is a practical manifestation of pathfinding algorithms used in a variety of disciplines in software development. A prime example can be found in video game development, where these algorithms allow characters to navigate around obstacles in an environment. In particular, the A* (A-star) search algorithm, which incorporates heuristic information, is commonly used for its efficiency and accuracy in finding the shortest path. Additionally, similar problem-solving structures are used in web routing protocols and Global Positioning System (GPS) for finding the shortest route between two locations.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h2>Real-life Problem Solving</h2>
+    <p>
+        Imagine being in a maze with walls and open paths, starting at the top-left corner and needing to reach the bottom-right corner. The task involves finding all possible paths from the start to the destination. Each step taken must be carefully considered to avoid walls and ensure a valid route to the end. If a path is blocked, the process involves backtracking and trying another direction, keeping track of each step to ensure no part of the maze is visited twice unnecessarily.
+    </p>
+
+    <h2>Intuition Behind Recursion Process</h2>
+    <p>
+        This maze-solving process can be translated into a recursive function. The starting position in the maze is equivalent to the initial call of the recursive function. Each possible direction (up, down, left, right) corresponds to a recursive call exploring that direction. Upon finding a valid move (an open path), the current path is updated and the function proceeds to the next step. When a dead end is encountered (a blocked path), the function backtracks to the previous step and explores alternative directions. This recursive exploration continues until the destination is reached, recording all possible paths.
+    </p>
+
+    <h2>Approach</h2>
+    <ul>
+        <li>Start from the initial position (0,0) in the grid.</li>
+        <li>Check if the current position is the destination. If so, add the current path to the results.</li>
+        <li>If the current cell is blocked (value is 0), return.</li>
+        <li>Mark the current cell as visited by setting its value to 0.</li>
+        <li>Explore all possible directions (up, down, left, right) from the current cell:</li>
+        <ul>
+            <li>Move up if the current cell is not in the topmost row.</li>
+            <li>Move left if the current cell is not in the leftmost column.</li>
+            <li>Move down if the current cell is not in the bottommost row.</li>
+            <li>Move right if the current cell is not in the rightmost column.</li>
+        </ul>
+        <li>After exploring all directions, unmark the current cell by resetting its value to 1 to allow other paths to pass through it.</li>
+        <li>Repeat the above steps recursively until all possible paths are explored.</li>
+        <li>Sort the resulting paths alphabetically.</li>
+    </ul>
+
+<h3> Dry Run </h3>
+<img src="https://static.takeuforward.org/premium/Recursion/FAQs Hard/Rat in a Maze/-WE5FzHgz">
+
+
+<h3> Solution </h3>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include<bits/stdc++.h>
+using namespace std;
+
+// Vector to store the resulting paths
+vector<string> result;
+
+class Solution {
+public:
+    // Recursive function to find paths
+    void path(vector<vector<int>>& m, int x, int y, string dir, int n) {
+        // If destination is reached, add path to result
+        if (x == n - 1 && y == n - 1) {
+            result.push_back(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] == 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x > 0) path(m, x - 1, y, dir + 'U', n);
+        // Move left if possible
+        if (y > 0) path(m, x, y - 1, dir + 'L', n);
+        // Move down if possible
+        if (x < n - 1) path(m, x + 1, y, dir + 'D', n);
+        // Move right if possible
+        if (y < n - 1) path(m, x, y + 1, dir + 'R', n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    // Function to find all paths
+    vector<string> findPath(vector<vector<int>>& grid) {
+        int n = grid.size();
+       
+        // Clear previous results
+        result.clear();
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] == 0 || grid[n - 1][n - 1] == 0) return result;
+
+        // Start finding paths from (0, 0)
+        path(grid, 0, 0, "", n);
+
+        // Sort the result paths
+        sort(result.begin(), result.end());
+
+        return result;
+    }
+};
+
+int main() {
+    // Define the grid
+    vector<vector<int>> grid = {
+        {1, 0, 0, 0, 0},
+        {1, 1, 0, 1, 1},
+        {0, 1, 0, 0, 1},
+        {0, 1, 1, 1, 1},
+        {0, 0, 0, 0, 1}
+    };
+
+    // Create an instance of the Solution class
+    Solution sol;
+
+    // Find all paths in the grid
+    vector<string> paths = sol.findPath(grid);
+
+    // Print all the found paths
+    for (const string& path : paths) {
+        cout << path << endl;
+    }
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // List to store the resulting paths
+    List<String> result = new ArrayList<>();
+
+    // Recursive function to find paths
+    private void path(int[][] m, int x, int y, String dir, int n) {
+        // If destination is reached, add path to result
+        if (x == n - 1 && y == n - 1) {
+            result.add(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] == 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x > 0) path(m, x - 1, y, dir + 'U', n);
+        // Move left if possible
+        if (y > 0) path(m, x, y - 1, dir + 'L', n);
+        // Move down if possible
+        if (x < n - 1) path(m, x + 1, y, dir + 'D', n);
+        // Move right if possible
+        if (y < n - 1) path(m, x, y + 1, dir + 'R', n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    public List<String> findPath(int[][] grid) {
+        int n = grid.length;
+
+        // Clear previous results
+        result.clear();
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] == 0 || grid[n - 1][n - 1] == 0) return result;
+
+        // Start finding paths from (0, 0)
+        path(grid, 0, 0, "", n);
+
+        // Sort the result paths
+        Collections.sort(result);
+
+        return result;
+    }
+
+    public static void main(String[] args) {
+        Solution sol = new Solution();
+        int[][] grid = {
+            {1, 0, 0, 0, 0},
+            {1, 1, 0, 1, 1},
+            {0, 1, 0, 0, 1},
+            {0, 1, 1, 1, 1},
+            {0, 0, 0, 0, 1}
+        };
+
+        List<String> paths = sol.findPath(grid);
+
+        for (String path : paths) {
+            System.out.println(path);
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def __init__(self):
+        self.result = []
+
+    # Recursive function to find paths
+    def path(self, m, x, y, dir, n):
+        # If destination is reached, add path to result
+        if x == n - 1 and y == n - 1:
+            self.result.append(dir)
+            return
+
+        # If cell is blocked, return
+        if m[x][y] == 0:
+            return
+
+        # Mark cell as visited by setting it to 0
+        m[x][y] = 0
+
+        # Move up if possible
+        if x > 0:
+            self.path(m, x - 1, y, dir + 'U', n)
+        # Move left if possible
+        if y > 0:
+            self.path(m, x, y - 1, dir + 'L', n)
+        # Move down if possible
+        if x < n - 1:
+            self.path(m, x + 1, y, dir + 'D', n)
+        # Move right if possible
+        if y < n - 1:
+            self.path(m, x, y + 1, dir + 'R', n)
+
+        # Unmark cell as visited by setting it to 1
+        m[x][y] = 1
+
+    def findPath(self, grid):
+        n = len(grid)
+        self.result = []
+
+        # If starting or ending cell is blocked, return empty result
+        if grid[0][0] == 0 or grid[n - 1][n - 1] == 0:
+            return self.result
+
+        # Start finding paths from (0, 0)
+        self.path(grid, 0, 0, "", n)
+
+        # Sort the result paths
+        self.result.sort()
+
+        return self.result
+
+# Example usage
+if __name__ == "__main__":
+    sol = Solution()
+    grid = [
+        [1, 0, 0, 0, 0],
+        [1, 1, 0, 1, 1],
+        [0, 1, 0, 0, 1],
+        [0, 1, 1, 1, 1],
+        [0, 0, 0, 0, 1]
+    ]
+
+    paths = sol.findPath(grid)
+
+    for path in paths:
+        print(path)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.result = [];
+    }
+
+    // Recursive function to find paths
+    path(m, x, y, dir, n) {
+        // If destination is reached, add path to result
+        if (x === n - 1 && y === n - 1) {
+            this.result.push(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] === 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x > 0) this.path(m, x - 1, y, dir + 'U', n);
+        // Move left if possible
+        if (y > 0) this.path(m, x, y - 1, dir + 'L', n);
+        // Move down if possible
+        if (x < n - 1) this.path(m, x + 1, y, dir + 'D', n);
+        // Move right if possible
+        if (y < n - 1) this.path(m, x, y + 1, dir + 'R', n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    findPath(grid) {
+        const n = grid.length;
+        this.result = [];
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] === 0 || grid[n - 1][n - 1] === 0) return this.result;
+
+        // Start finding paths from (0, 0)
+        this.path(grid, 0, 0, "", n);
+
+        // Sort the result paths
+        this.result.sort();
+
+        return this.result;
+    }
+}
+
+// Example usage
+const sol = new Solution();
+const grid = [
+    [1, 0, 0, 0, 0],
+    [1, 1, 0, 1, 1],
+    [0, 1, 0, 0, 1],
+    [0, 1, 1, 1, 1],
+    [0, 0, 0, 0, 1]
+];
+
+const paths = sol.findPath(grid);
+
+for (const path of paths) {
+    console.log(path);
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    private List<string> result;
+
+    public Solution()
+    {
+        this.result = new List<string>();
+    }
+
+    // Recursive function to find paths
+    private void path(int[][] m, int x, int y, string dir, int n)
+    {
+        // If destination is reached, add path to result
+        if (x == n - 1 && y == n - 1)
+        {
+            this.result.Add(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] == 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x > 0) this.path(m, x - 1, y, dir + 'U', n);
+        // Move left if possible
+        if (y > 0) this.path(m, x, y - 1, dir + 'L', n);
+        // Move down if possible
+        if (x < n - 1) this.path(m, x + 1, y, dir + 'D', n);
+        // Move right if possible
+        if (y < n - 1) this.path(m, x, y + 1, dir + 'R', n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    public List<string> findPath(int[][] grid)
+    {
+        int n = grid.Length;
+        this.result = new List<string>(); // Re-initialize result for each call
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] == 0 || grid[n - 1][n - 1] == 0) return this.result;
+
+        // Start finding paths from (0, 0)
+        this.path(grid, 0, 0, "", n);
+
+        // Sort the result paths
+        this.result.Sort();
+
+        return this.result;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        Solution sol = new Solution();
+        int[][] grid = new int[][]
+        {
+            new int[] {1, 0, 0, 0, 0},
+            new int[] {1, 1, 0, 1, 1},
+            new int[] {0, 1, 0, 0, 1},
+            new int[] {0, 1, 1, 1, 1},
+            new int[] {0, 0, 0, 0, 1}
+        };
+
+        List<string> paths = sol.findPath(grid);
+
+        foreach (string path in paths)
+        {
+            Console.WriteLine(path);
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+    "sort"
+)
+
+// Recursive function to find paths
+func path(m [][]int, x, y int, dir string, n int, result *[]string) {
+    if x == n-1 && y == n-1 {
+        *result = append(*result, dir)
+        return
+    }
+    if m[x][y] == 0 {
+        return
+    }
+
+    m[x][y] = 0
+
+    if x > 0 {
+        path(m, x-1, y, dir+"U", n, result)
+    }
+    if y > 0 {
+        path(m, x, y-1, dir+"L", n, result)
+    }
+    if x < n-1 {
+        path(m, x+1, y, dir+"D", n, result)
+    }
+    if y < n-1 {
+        path(m, x, y+1, dir+"R", n, result)
+    }
+
+    m[x][y] = 1
+}
+
+// Function to find all paths
+func findPath(grid [][]int) []string {
+    n := len(grid)
+    var result []string
+    if grid[0][0] == 0 || grid[n-1][n-1] == 0 {
+        return result
+    }
+    path(grid, 0, 0, "", n, &result)
+    sort.Strings(result)
+    return result
+}
+
+func main() {
+    grid := [][]int{
+        {1, 0, 0, 0, 0},
+        {1, 1, 0, 1, 1},
+        {0, 1, 0, 0, 1},
+        {0, 1, 1, 1, 1},
+        {0, 0, 0, 0, 1},
+    }
+
+    paths := findPath(grid)
+
+    for _, p := range paths {
+        fmt.Println(p)
+    }
+}
+</code></pre></div></div></div>
+
+<h3> Complexity Analysis </h3>
+<p><strong>Time Complexity </strong> : The time complexity is O(4^(N^2)) due to recursion exploring all paths in the grid. </p>
+<p><strong>Space Complexity</strong> :The space complexity is O(N^2) for the recursion stack and result storage. </p></body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>// Vector to mark visited cells
+vector&lt;vector&lt;int&gt;&gt; visited(5, vector&lt;int&gt;(5, 0));
+
+// Vector to store the resulting paths
+vector&lt;string&gt; result;
+
+class Solution {
+public:
+    // Recursive function to find paths
+    void path(vector&lt;vector&lt;int&gt;&gt;&amp; m, int x, int y, string dir, int n) {
+        // If destination is reached, add path to result
+        if (x == n - 1 &amp;&amp; y == n - 1) {
+            result.push_back(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] == 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x &gt; 0) path(m, x - 1, y, dir + &#x27;U&#x27;, n);
+        // Move left if possible
+        if (y &gt; 0) path(m, x, y - 1, dir + &#x27;L&#x27;, n);
+        // Move down if possible
+        if (x &lt; n - 1) path(m, x + 1, y, dir + &#x27;D&#x27;, n);
+        // Move right if possible
+        if (y &lt; n - 1) path(m, x, y + 1, dir + &#x27;R&#x27;, n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    // Function to find all paths
+    vector&lt;string&gt; findPath(vector&lt;vector&lt;int&gt;&gt;&amp; grid) {
+        int n = grid.size();
+       
+        // Clear previous results
+        result.clear();
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] == 0 || grid[n - 1][n - 1] == 0) return result;
+
+        // Start finding paths from (0, 0)
+        path(grid, 0, 0, &quot;&quot;, n);
+
+        // Sort the result paths
+        sort(result.begin(), result.end());
+
+        return result;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    private System.Collections.Generic.List&lt;string&gt; result;
+
+    // Recursive function to find paths
+    private void path(int[][] m, int x, int y, string dir, int n)
+    {
+        // If destination is reached, add path to result
+        if (x == n - 1 &amp;&amp; y == n - 1)
+        {
+            result.Add(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] == 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x &gt; 0) path(m, x - 1, y, dir + &#x27;U&#x27;, n);
+        // Move left if possible
+        if (y &gt; 0) path(m, x, y - 1, dir + &#x27;L&#x27;, n);
+        // Move down if possible
+        if (x &lt; n - 1) path(m, x + 1, y, dir + &#x27;D&#x27;, n);
+        // Move right if possible
+        if (y &lt; n - 1) path(m, x, y + 1, dir + &#x27;R&#x27;, n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    public System.Collections.Generic.List&lt;string&gt; findPath(int[][] grid)
+    {
+        //your code goes here
+        int n = grid.Length;
+        result = new System.Collections.Generic.List&lt;string&gt;(); // Initialize result for each call
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] == 0 || grid[n - 1][n - 1] == 0) return result;
+
+        // Start finding paths from (0, 0)
+        path(grid, 0, 0, &quot;&quot;, n);
+
+        // Sort the result paths
+        result.Sort();
+
+        return result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>func path(m [][]int, x, y int, dir string, n int, result *[]string) {
+    if x == n-1 &amp;&amp; y == n-1 {
+        *result = append(*result, dir)
+        return
+    }
+    if m[x][y] == 0 {
+        return
+    }
+
+    m[x][y] = 0
+
+    if x &gt; 0 {
+        path(m, x-1, y, dir+&quot;U&quot;, n, result)
+    }
+    if y &gt; 0 {
+        path(m, x, y-1, dir+&quot;L&quot;, n, result)
+    }
+    if x &lt; n-1 {
+        path(m, x+1, y, dir+&quot;D&quot;, n, result)
+    }
+    if y &lt; n-1 {
+        path(m, x, y+1, dir+&quot;R&quot;, n, result)
+    }
+
+    m[x][y] = 1
+}
+
+// Function to find all paths
+func findPath(grid [][]int) []string {
+    n := len(grid)
+    var result []string
+    if grid[0][0] == 0 || grid[n-1][n-1] == 0 {
+        return result
+    }
+    path(grid, 0, 0, &quot;&quot;, n, &amp;result)
+    sort.Strings(result)
+    return result
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // List to store the resulting paths
+    List&lt;String&gt; result = new ArrayList&lt;&gt;();
+
+    // Recursive function to find paths
+    private void path(int[][] m, int x, int y, String dir, int n) {
+        // If destination is reached, add path to result
+        if (x == n - 1 &amp;&amp; y == n - 1) {
+            result.add(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] == 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x &gt; 0) path(m, x - 1, y, dir + &#x27;U&#x27;, n);
+        // Move left if possible
+        if (y &gt; 0) path(m, x, y - 1, dir + &#x27;L&#x27;, n);
+        // Move down if possible
+        if (x &lt; n - 1) path(m, x + 1, y, dir + &#x27;D&#x27;, n);
+        // Move right if possible
+        if (y &lt; n - 1) path(m, x, y + 1, dir + &#x27;R&#x27;, n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    public List&lt;String&gt; findPath(int[][] grid) {
+        int n = grid.length;
+
+        // Clear previous results
+        result.clear();
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] == 0 || grid[n - 1][n - 1] == 0) return result;
+
+        // Start finding paths from (0, 0)
+        path(grid, 0, 0, &quot;&quot;, n);
+
+        // Sort the result paths
+        Collections.sort(result);
+
+        return result;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.result = [];
+    }
+
+    // Recursive function to find paths
+    path(m, x, y, dir, n) {
+        // If destination is reached, add path to result
+        if (x === n - 1 &amp;&amp; y === n - 1) {
+            this.result.push(dir);
+            return;
+        }
+
+        // If cell is blocked, return
+        if (m[x][y] === 0) return;
+
+        // Mark cell as visited by setting it to 0
+        m[x][y] = 0;
+
+        // Move up if possible
+        if (x &gt; 0) this.path(m, x - 1, y, dir + &#x27;U&#x27;, n);
+        // Move left if possible
+        if (y &gt; 0) this.path(m, x, y - 1, dir + &#x27;L&#x27;, n);
+        // Move down if possible
+        if (x &lt; n - 1) this.path(m, x + 1, y, dir + &#x27;D&#x27;, n);
+        // Move right if possible
+        if (y &lt; n - 1) this.path(m, x, y + 1, dir + &#x27;R&#x27;, n);
+
+        // Unmark cell as visited by setting it to 1
+        m[x][y] = 1;
+    }
+
+    findPath(grid) {
+        const n = grid.length;
+        this.result = [];
+
+        // If starting or ending cell is blocked, return empty result
+        if (grid[0][0] === 0 || grid[n - 1][n - 1] === 0) return this.result;
+
+        // Start finding paths from (0, 0)
+        this.path(grid, 0, 0, &quot;&quot;, n);
+
+        // Sort the result paths
+        this.result.sort();
+
+        return this.result;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def __init__(self):
+        self.result = []
+
+    # Recursive function to find paths
+    def path(self, m, x, y, dir, n):
+        # If destination is reached, add path to result
+        if x == n - 1 and y == n - 1:
+            self.result.append(dir)
+            return
+
+        # If cell is blocked, return
+        if m[x][y] == 0:
+            return
+
+        # Mark cell as visited by setting it to 0
+        m[x][y] = 0
+
+        # Move up if possible
+        if x &gt; 0:
+            self.path(m, x - 1, y, dir + &#x27;U&#x27;, n)
+        # Move left if possible
+        if y &gt; 0:
+            self.path(m, x, y - 1, dir + &#x27;L&#x27;, n)
+        # Move down if possible
+        if x &lt; n - 1:
+            self.path(m, x + 1, y, dir + &#x27;D&#x27;, n)
+        # Move right if possible
+        if y &lt; n - 1:
+            self.path(m, x, y + 1, dir + &#x27;R&#x27;, n)
+
+        # Unmark cell as visited by setting it to 1
+        m[x][y] = 1
+
+    def findPath(self, grid):
+        n = len(grid)
+        self.result = []
+
+        # If starting or ending cell is blocked, return empty result
+        if grid[0][0] == 0 or grid[n - 1][n - 1] == 0:
+            return self.result
+
+        # Start finding paths from (0, 0)
+        self.path(grid, 0, 0, &quot;&quot;, n)
+
+        # Sort the result paths
+        self.result.sort()
+
+        return self.result</code></pre></div>
+</body>
+</html>

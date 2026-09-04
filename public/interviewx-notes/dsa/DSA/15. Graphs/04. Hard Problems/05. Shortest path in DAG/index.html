@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shortest path in DAG</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Shortest path in DAG</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Graph</span><span>Topological Sort</span><span>Hash Table</span><span>Breadth-First Search</span><span>Depth-First Search</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a Directed Acyclic Graph of N vertices from 0 to N-1 and M edges and a 2D Integer array edges, where there is a directed edge from vertex edge[i][0] to vertex edge[i][1] with a distance of edge[i][2] for all i.</p><p><br></p><p>Find the <strong>shortest path</strong> from source vertex to all the vertices and if it is impossible to reach any vertex, then return -1 for that vertex. The source vertex is assumed to be 0.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ N,M ≤ 5*10<sup>4</sup></li><li>0 ≤ edge[i][0],edge[i][1] < N-1</li><li>1 ≤ edge[i][2] < 10<sup>4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-yfJ4sh6m"></p><p><strong>Input:</strong> N = 4, M = 2 edge = [[0,1,2],[0,2,1]]</p><p><br></p><p><strong>Output:</strong> 0 2 1 -1</p><p><br></p><p><strong>Explanation:</strong></p><p>Shortest path from 0 to 1 is 0->1 with edge weight 2. </p><p>Shortest path from 0 to 2 is 0->2 with edge weight 1.</p><p>There is no way we can reach 3, so it's -1 for 3.</p><h3>Example 2</h3><p><strong>Input:</strong> N = 6, M = 7 edge = [[0,1,2],[0,4,1],[4,5,4],[4,2,2],[1,2,3],[2,3,6],[5,3,1]]</p><p><br></p><p><strong>Output:</strong> 0 2 3 6 1 5</p><p><br></p><p><strong>Explanation:</strong></p><p>Shortest path from 0 to 1 is 0->1 with edge weight 2. </p><p>Shortest path from 0 to 2 is 0->4->2 with edge weight 1+2=3.</p><p>Shortest path from 0 to 3 is 0->4->5->3 with edge weight 1+4+1=6.</p><p>Shortest path from 0 to 4 is 0->4 with edge weight 1.</p><p>Shortest path from 0 to 5 is 0->4->5 with edge weight 1+4=5.</p><h3>Example 3</h3><p>Input: N = 3, M = 3 edge = [[0, 1, 4], [0, 2, 2], [1, 2, 5]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>A practical application of this programming problem lies in routing and navigation software, such as Google Maps or Waze. The "Directed Acyclic Graph" represents the map's network of roads, with the "vertices" representing intersections and the "edges" representing the roads themselves. The algorithm to find the "shortest path" from a source (user's starting point) to all vertices (possible destinations) is a fundamental operation of these services. This would allow them to provide real-time directions and traffic updates, indicating the fastest route to the destination. If a path can't be found (represented by '-1'), it means that destination is unreachable from the current location.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    Finding the shortest path to a node is easy if the shortest paths to all the nodes that can precede it are known. Processing the nodes in topological order ensures that by the time a node is reached, all the nodes that can precede have already been processed, reducing the computation time significantly. <br>
+    Thus, for the solution, the nodes will be traversed sequentially according to their reachability from the source.
+    <br><br>
+    Once the topological ordering is obtained, all the nodes can be processed one by one. For every vertex being processed, we update the distances of its adjacent using the distance of the current vertex.
+</p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>The graph is represented using an adjacency list where each node points to its neighboring nodes along with the edge weights.</li>
+    <li>Perform a Depth First Search (DFS) to obtain a topological order of the nodes, ensuring each node is processed before its successors.</li>
+    <li> Initialize a distance array with a high value (indicating infinity) for all nodes except the source node, which is set to zero.</li>
+    <li>Using the topological order, update the shortest distance for each node by relaxing the edges, meaning if a shorter path is found to a neighboring node, update its distance.</li>
+    <li> Mark nodes that remain unreachable with a distance of -1. Return the shortest distances from the source to all nodes.
+    </li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/2.drawio.png--iHiPu-o" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/3.drawio.png-80cgdIKX" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/4.drawio.png-mVn17nZl" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/5.drawio.png-twiZ6ivn" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/6.drawio.png-bp2La4NC" alt="Image 5"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/2.drawio.png--iHiPu-o" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/3.drawio.png-80cgdIKX" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/4.drawio.png-mVn17nZl" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/5.drawio.png-twiZ6ivn" alt="Image 4"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Shortest path in DAG/6.drawio.png-bp2La4NC" alt="Image 5"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    // Function to perform DFS traversal
+    void topoSort(int node, vector <pair<int,int>> adj[],
+                  vector<bool> &vis, stack <int> & st) {
+                
+        // Mark the node as visited 
+        vis[node] = 1;
+        
+        // Traverse all the neighbors
+        for (auto it: adj[node]) {
+            
+            // Get the node
+            int v = it.first;
+            
+            // If not visited, recursively perform DFS.
+            if (!vis[v]) {
+                topoSort(v, adj, vis, st);
+            }
+        }
+        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+    
+public:
+
+    /* Function to get the shortest path 
+    for every node from source node 0 */
+    vector<int> shortestPath(int N, int M, 
+            vector<vector<int>> &edges) {
+
+        // To store the graph
+        vector <pair<int,int>> adj[N];
+        
+        // Add edges to the graph
+        for (int i = 0; i < M; i++) {
+            int u = edges[i][0]; // node 1
+            int v = edges[i][1]; // node 2
+            int wt = edges[i][2]; // edge weight
+            
+            // Add the weighted edge 
+            adj[u].push_back({v, wt}); 
+        }
+        
+        
+        // Visited array
+        vector<bool> vis(N, false);
+        
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        stack <int> st;
+        
+        // Get the topological ordering
+        for (int i = 0; i < N; i++) {
+            if (!vis[i]) {
+              topoSort(i, adj, vis, st);
+            }
+        }
+        
+        // Distance array to store the shortest paths
+        vector <int> dist(N, 1e9);
+        
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+        
+        // Until the stack is not empty
+        while (!st.empty()) {
+            
+            // Get the node from top of stack
+            int node = st.top();
+            st.pop();
+            
+            // Update the distances of adjacent nodes
+            for (auto it: adj[node]) {
+                int v = it.first; // adjacent node
+                int wt = it.second; // edge weight
+                
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance*/
+                if (dist[node] + wt < dist[v]) {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+        
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (int i = 0; i < N; i++) {
+            if (dist[i] == 1e9) 
+                dist[i] = -1;
+        }
+        
+        // Return the result
+        return dist;
+    }
+};
+
+int main() {
+    
+    int N = 4, M = 2;
+    vector<vector<int>> edges = {
+        {0, 1, 2}, {0, 2, 1}  
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine order of 
+	letters based on alien dictionary */
+    vector<int> ans = sol.shortestPath(N, M, edges);
+    
+    // Output
+    cout << "The shortest distance of every node from source node is:\n";
+    for(int i=0; i < N; i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Pair implementation
+    static class Pair {
+        int first, second;
+
+        Pair(int first, int second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+    
+    private void topoSort(int node, List<List<Pair>> adj,
+                          boolean[] vis, Stack<Integer> st) {
+        // Mark the node as visited 
+        vis[node] = true;
+
+        // Traverse all the neighbors
+        for (Pair it : adj.get(node)) {
+
+            // Get the node
+            int v = it.first;
+
+            // If not visited, recursively perform DFS
+            if (!vis[v]) {
+                topoSort(v, adj, vis, st);
+            }
+        }
+
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+
+    public int[] shortestPath(int N, int M, int[][] edges) {
+
+        // To store the graph
+        List<List<Pair>> adj = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            adj.add(new ArrayList<>());
+        }
+
+        // Add edges to the graph
+        for (int i = 0; i < M; i++) {
+            int u = edges[i][0]; // node 1
+            int v = edges[i][1]; // node 2
+            int wt = edges[i][2]; // edge weight
+
+            // Add the weighted edge 
+            adj.get(u).add(new Pair(v, wt));
+        }
+
+        // Visited array
+        boolean[] vis = new boolean[N];
+
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        Stack<Integer> st = new Stack<>();
+
+        // Get the topological ordering
+        for (int i = 0; i < N; i++) {
+            if (!vis[i]) {
+                topoSort(i, adj, vis, st);
+            }
+        }
+
+        // Distance array to store the shortest paths
+        int[] dist = new int[N];
+        Arrays.fill(dist, (int)1e9);
+
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+
+        // Until the stack is not empty
+        while (!st.isEmpty()) {
+
+            // Get the node from top of stack
+            int node = st.pop();
+
+            // Update the distances of adjacent nodes
+            for (Pair it : adj.get(node)) {
+                int v = it.first; // adjacent node
+                int wt = it.second; // edge weight
+
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance */
+                if (dist[node] + wt < dist[v]) {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (int i = 0; i < N; i++) {
+            if (dist[i] == (int)1e9)
+                dist[i] = -1;
+        }
+
+        // Return the result
+        return dist;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+
+        int N = 4, M = 2;
+        int[][] edges = {
+            {0, 1, 2}, {0, 2, 1}
+        };
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to determine order of 
+        // letters based on alien dictionary
+        int[] ans = sol.shortestPath(N, M, edges);
+
+        // Output
+        System.out.println("The shortest distance of every node from source node is:");
+        for (int i : ans) {
+            System.out.print(i + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import defaultdict
+from typing import List
+
+class Solution:
+    
+    # Function to perform DFS traversal
+    def topoSort(self, node, adj, vis, st):
+        # Mark the node as visited 
+        vis[node] = True
+        
+        # Traverse all the neighbors
+        for v, _ in adj[node]:
+            
+            # If not visited, recursively perform DFS
+            if not vis[v]:
+                self.topoSort(v, adj, vis, st)
+        
+        """ Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed """
+        st.append(node)
+    
+    # Function to get the shortest path 
+    # for every node from source node 0
+    def shortestPath(self, N, M, edges):
+        
+        # To store the graph
+        adj = defaultdict(list)
+        
+        # Add edges to the graph
+        for u, v, wt in edges:
+            # Add the weighted edge 
+            adj[u].append((v, wt))
+        
+        # Visited array
+        vis = [False] * N
+        
+        """ Stack to facilitate topological 
+        sorting using DFS traversal """
+        st = []
+        
+        # Get the topological ordering
+        for i in range(N):
+            if not vis[i]:
+                self.topoSort(i, adj, vis, st)
+        
+        # Distance array to store the shortest paths
+        dist = [1e9] * N
+        
+        # Distance of source node to itself is zero
+        dist[0] = 0
+        
+        # Until the stack is not empty
+        while st:
+            
+            # Get the node from top of stack
+            node = st.pop()
+            
+            # Update the distances of adjacent nodes
+            for v, wt in adj[node]:
+                """ Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance """
+                if dist[node] + wt < dist[v]:
+                    dist[v] = wt + dist[node]
+        
+        """ If a node is unreachable, 
+        updating its distance to -1 """
+        for i in range(N):
+            if dist[i] == 1e9:
+                dist[i] = -1
+        
+        # Return the result
+        return dist
+
+
+# Example usage
+N, M = 4, 2
+edges = [
+    [0, 1, 2], [0, 2, 1]
+]
+
+# Creating an instance of Solution class
+sol = Solution()
+
+# Function call to determine order of 
+# letters based on alien dictionary
+ans = sol.shortestPath(N, M, edges)
+
+# Output
+print("The shortest distance of every node from source node is:")
+print(*ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    
+    // Function to perform DFS traversal
+    topoSort(node, adj, vis, st) {
+                
+        // Mark the node as visited 
+        vis[node] = true;
+        
+        // Traverse all the neighbors
+        for (let it of adj[node]) {
+            
+            // Get the node
+            let v = it[0];
+            
+            // If not visited, recursively perform DFS.
+            if (!vis[v]) {
+                this.topoSort(v, adj, vis, st);
+            }
+        }
+        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+    
+    /* Function to get the shortest path 
+    for every node from source node 0 */
+    shortestPath(N, M, edges) {
+        
+        // To store the graph
+        let adj = Array.from({ length: N }, () => []);
+        
+        // Add edges to the graph
+        for (let i = 0; i < M; i++) {
+            let u = edges[i][0]; // node 1
+            let v = edges[i][1]; // node 2
+            let wt = edges[i][2]; // edge weight
+            
+            // Add the weighted edge 
+            adj[u].push([v, wt]);
+        }
+        
+        // Visited array
+        let vis = new Array(N).fill(false);
+        
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        let st = [];
+        
+        // Get the topological ordering
+        for (let i = 0; i < N; i++) {
+            if (!vis[i]) {
+                this.topoSort(i, adj, vis, st);
+            }
+        }
+        
+        // Distance array to store the shortest paths
+        let dist = new Array(N).fill(1e9);
+        
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+        
+        // Until the stack is not empty
+        while (st.length > 0) {
+            
+            // Get the node from top of stack
+            let node = st.pop();
+            
+            // Update the distances of adjacent nodes
+            for (let it of adj[node]) {
+                let v = it[0]; // adjacent node
+                let wt = it[1]; // edge weight
+                
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance*/
+                if (dist[node] + wt < dist[v]) {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+        
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (let i = 0; i < N; i++) {
+            if (dist[i] === 1e9) 
+                dist[i] = -1;
+        }
+        
+        // Return the result
+        return dist;
+    }
+}
+
+// Example usage
+let N = 4, M = 2;
+let edges = [
+    [0, 1, 2], [0, 2, 1]
+];
+
+// Creating an instance of Solution class
+let sol = new Solution();
+
+// Function call to determine order of letters based on alien dictionary
+let ans = sol.shortestPath(N, M, edges);
+
+// Output
+console.log("The shortest distance of every node from source node is:");
+for (let i = 0; i < N; i++) {
+    console.log(ans[i] + " ");
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    // Function to perform DFS traversal
+    private void topoSort(int node, List<List<int[]>> adj, bool[] vis, Stack<int> st)
+    {
+                
+        // Mark the node as visited 
+        vis[node] = true;
+        
+        // Traverse all the neighbors
+        foreach (int[] it in adj[node])
+        {
+            
+            // Get the node
+            int v = it[0];
+            
+            // If not visited, recursively perform DFS.
+            if (!vis[v])
+            {
+                topoSort(v, adj, vis, st);
+            }
+        }
+        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.Push(node);
+    }
+    
+    /* Function to get the shortest path 
+    for every node from source node 0 */
+    public List<int> ShortestPath(int N, int M, List<List<int>> edges)
+    {
+        
+        // To store the graph
+        List<List<int[]>> adj = new List<List<int[]>>();
+        for (int i = 0; i < N; i++)
+        {
+            adj.Add(new List<int[]>());
+        }
+        
+        // Add edges to the graph
+        for (int i = 0; i < M; i++)
+        {
+            int u = edges[i][0]; // node 1
+            int v = edges[i][1]; // node 2
+            int wt = edges[i][2]; // edge weight
+            
+            // Add the weighted edge 
+            adj[u].Add(new int[] { v, wt });
+        }
+        
+        // Visited array
+        bool[] vis = new bool[N]; // Default initialized to false
+        
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        Stack<int> st = new Stack<int>();
+        
+        // Get the topological ordering
+        for (int i = 0; i < N; i++)
+        {
+            if (!vis[i])
+            {
+                topoSort(i, adj, vis, st);
+            }
+        }
+        
+        // Distance array to store the shortest paths
+        int[] dist = new int[N];
+        for (int i = 0; i < N; i++)
+        {
+            dist[i] = (int)1e9;
+        }
+        
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+        
+        // Until the stack is not empty
+        while (st.Count > 0)
+        {
+            
+            // Get the node from top of stack
+            int node = st.Pop();
+            
+            // Update the distances of adjacent nodes
+            foreach (int[] it in adj[node])
+            {
+                int v = it[0]; // adjacent node
+                int wt = it[1]; // edge weight
+                
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance*/
+                if (dist[node] + wt < dist[v])
+                {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+        
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (int i = 0; i < N; i++)
+        {
+            if (dist[i] == (int)1e9) 
+                dist[i] = -1;
+        }
+        
+        // Return the result
+        return dist.ToList();
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        int N = 4, M = 2;
+        List<List<int>> edges = new List<List<int>>
+        {
+            new List<int> {0, 1, 2},
+            new List<int> {0, 2, 1}
+        };
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to determine order of letters based on alien dictionary
+        List<int> ans = sol.ShortestPath(N, M, edges);
+
+        // Output
+        Console.WriteLine("The shortest distance of every node from source node is:");
+        for (int i = 0; i < N; i++)
+        {
+            Console.Write(ans[i] + " ");
+        }
+        Console.WriteLine();
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"math"
+)
+
+/* Function to perform DFS traversal
+   to get topological ordering */
+func topoSort(node int, adj [][][2]int, vis []bool, st *[]int) {
+
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all the neighbors
+	for _, it := range adj[node] {
+		v := it[0]
+
+		// If not visited, recursively perform DFS
+		if !vis[v] {
+			topoSort(v, adj, vis, st)
+		}
+	}
+
+	/* Add the current node to stack
+	   once all the nodes connected to it
+	   have been processed */
+	*st = append(*st, node)
+}
+
+/* Function to get the shortest path
+   for every node from source node 0 */
+func shortestPath(N int, M int, edges [][]int) []int {
+
+	// To store the graph
+	adj := make([][][2]int, N)
+
+	// Add edges to the graph
+	for i := 0; i < M; i++ {
+		u := edges[i][0] // node 1
+		v := edges[i][1] // node 2
+		wt := edges[i][2] // edge weight
+
+		// Add the weighted edge
+		adj[u] = append(adj[u], [2]int{v, wt})
+	}
+
+	// Visited array
+	vis := make([]bool, N)
+
+	/* Stack to facilitate topological
+	   sorting using DFS traversal */
+	st := []int{}
+
+	// Get the topological ordering
+	for i := 0; i < N; i++ {
+		if !vis[i] {
+			topoSort(i, adj, vis, &st)
+		}
+	}
+
+	// Distance array to store the shortest paths
+	dist := make([]int, N)
+	for i := range dist {
+		dist[i] = math.MaxInt32
+	}
+
+	// Distance of source node to itself is zero
+	dist[0] = 0
+
+	// Until the stack is not empty
+	for len(st) > 0 {
+
+		// Get the node from top of stack
+		node := st[len(st)-1]
+		st = st[:len(st)-1]
+
+		// Update the distances of adjacent nodes
+		if dist[node] != math.MaxInt32 {
+			for _, it := range adj[node] {
+				v := it[0]   // adjacent node
+				wt := it[1]  // edge weight
+
+				/* Relaxing the edge, i.e., if a
+				   shorter path is found, update its
+				   distance to new shorter distance */
+				if dist[node]+wt < dist[v] {
+					dist[v] = dist[node] + wt
+				}
+			}
+		}
+	}
+
+	/* If a node is unreachable,
+	   updating its distance to -1 */
+	for i := 0; i < N; i++ {
+		if dist[i] == math.MaxInt32 {
+			dist[i] = -1
+		}
+	}
+
+	// Return the result
+	return dist
+}
+
+func main() {
+
+	N, M := 4, 2
+	edges := [][]int{{0, 1, 2}, {0, 2, 1}}
+
+	/* Function call to determine the shortest
+	   distance of every node from source node */
+	ans := shortestPath(N, M, edges)
+
+	// Output
+	fmt.Println("The shortest distance of every node from source node is:")
+	for _, v := range ans {
+		fmt.Print(v, " ")
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N+M)</strong> <br>
+    </p><ul>
+        <li>Topological Sorting takes O(N+M) time.</li>
+        <li>To relax all the vertices, each node and its adjacent nodes are traversed taking O(M) time.</li>
+    </ul>
+<p></p>
+
+<p><strong>Space Complexity: O(N+M)</strong> <br>
+</p><ul>
+    <li>Storing the graph takes O(M) space.</li>
+    <li>The stack storing the topological ordering takes O(N) space.</li>
+    <li>The topological sorting algorithm uses O(N) space due to visited array and recursion stack space.</li>
+</ul><p></p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    // Function to perform DFS traversal
+    void topoSort(int node, vector &lt;pair&lt;int,int&gt;&gt; adj[],
+                  vector&lt;bool&gt; &amp;vis, stack &lt;int&gt; &amp; st) {
+                
+        // Mark the node as visited 
+        vis[node] = 1;
+        
+        // Traverse all the neighbors
+        for (auto it: adj[node]) {
+            
+            // Get the node
+            int v = it.first;
+            
+            // If not visited, recursively perform DFS.
+            if (!vis[v]) {
+                topoSort(v, adj, vis, st);
+            }
+        }
+        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+    
+public:
+
+    /* Function to get the shortest path 
+    for every node from source node 0 */
+    vector&lt;int&gt; shortestPath(int N, int M, 
+            vector&lt;vector&lt;int&gt;&gt; &amp;edges) {
+
+        // To store the graph
+        vector &lt;pair&lt;int,int&gt;&gt; adj[N];
+        
+        // Add edges to the graph
+        for (int i = 0; i &lt; M; i++) {
+            int u = edges[i][0]; // node 1
+            int v = edges[i][1]; // node 2
+            int wt = edges[i][2]; // edge weight
+            
+            // Add the weighted edge 
+            adj[u].push_back({v, wt}); 
+        }
+        
+        
+        // Visited array
+        vector&lt;bool&gt; vis(N, false);
+        
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        stack &lt;int&gt; st;
+        
+        // Get the topological ordering
+        for (int i = 0; i &lt; N; i++) {
+            if (!vis[i]) {
+              topoSort(i, adj, vis, st);
+            }
+        }
+        
+        // Distance array to store the shortest paths
+        vector &lt;int&gt; dist(N, 1e9);
+        
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+        
+        // Until the stack is not empty
+        while (!st.empty()) {
+            
+            // Get the node from top of stack
+            int node = st.top();
+            st.pop();
+            
+            // Update the distances of adjacent nodes
+            for (auto it: adj[node]) {
+                int v = it.first; // adjacent node
+                int wt = it.second; // edge weight
+                
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance*/
+                if (dist[node] + wt &lt; dist[v]) {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+        
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (int i = 0; i &lt; N; i++) {
+            if (dist[i] == 1e9) 
+                dist[i] = -1;
+        }
+        
+        // Return the result
+        return dist;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to perform DFS traversal
+    private void topoSort(int node, List&lt;List&lt;int[]&gt;&gt; adj, bool[] vis, Stack&lt;int&gt; st)
+    {
+                
+        // Mark the node as visited 
+        vis[node] = true;
+        
+        // Traverse all the neighbors
+        foreach (int[] it in adj[node])
+        {
+            
+            // Get the node
+            int v = it[0];
+            
+            // If not visited, recursively perform DFS.
+            if (!vis[v])
+            {
+                topoSort(v, adj, vis, st);
+            }
+        }
+        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.Push(node);
+    }
+
+    public List&lt;int&gt; ShortestPath(int N, int M, List&lt;List&lt;int&gt;&gt; edges) {
+        
+        // To store the graph
+        List&lt;List&lt;int[]&gt;&gt; adj = new List&lt;List&lt;int[]&gt;&gt;();
+        for (int i = 0; i &lt; N; i++)
+        {
+            adj.Add(new List&lt;int[]&gt;());
+        }
+        
+        // Add edges to the graph
+        for (int i = 0; i &lt; M; i++)
+        {
+            int u = edges[i][0]; // node 1
+            int v = edges[i][1]; // node 2
+            int wt = edges[i][2]; // edge weight
+            
+            // Add the weighted edge 
+            adj[u].Add(new int[] { v, wt });
+        }
+        
+        // Visited array
+        bool[] vis = new bool[N]; // Default initialized to false
+        
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        System.Collections.Generic.Stack&lt;int&gt; st = new System.Collections.Generic.Stack&lt;int&gt;();
+        
+        // Get the topological ordering
+        for (int i = 0; i &lt; N; i++)
+        {
+            if (!vis[i])
+            {
+                topoSort(i, adj, vis, st);
+            }
+        }
+        
+        // Distance array to store the shortest paths
+        int[] dist = new int[N];
+        for (int i = 0; i &lt; N; i++)
+        {
+            dist[i] = (int)1e9;
+        }
+        
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+        
+        // Until the stack is not empty
+        while (st.Count &gt; 0)
+        {
+            
+            // Get the node from top of stack
+            int node = st.Pop();
+            
+            // Update the distances of adjacent nodes
+            foreach (int[] it in adj[node])
+            {
+                int v = it[0]; // adjacent node
+                int wt = it[1]; // edge weight
+                
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance*/
+                if (dist[node] + wt &lt; dist[v])
+                {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+        
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (int i = 0; i &lt; N; i++)
+        {
+            if (dist[i] == (int)1e9) 
+                dist[i] = -1;
+        }
+        
+        // Return the result
+        return System.Linq.Enumerable.ToList(dist);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to perform DFS traversal
+   to get topological ordering */
+func topoSort(node int, adj [][][2]int, vis []bool, st *[]int) {
+
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all the neighbors
+	for _, it := range adj[node] {
+		v := it[0]
+
+		// If not visited, recursively perform DFS
+		if !vis[v] {
+			topoSort(v, adj, vis, st)
+		}
+	}
+
+	/* Add the current node to stack
+	   once all the nodes connected to it
+	   have been processed */
+	*st = append(*st, node)
+}
+
+/* Function to get the shortest path
+   for every node from source node 0 */
+func shortestPath(N int, M int, edges [][]int) []int {
+
+	// To store the graph
+	adj := make([][][2]int, N)
+
+	// Add edges to the graph
+	for i := 0; i &lt; M; i++ {
+		u := edges[i][0] // node 1
+		v := edges[i][1] // node 2
+		wt := edges[i][2] // edge weight
+
+		// Add the weighted edge
+		adj[u] = append(adj[u], [2]int{v, wt})
+	}
+
+	// Visited array
+	vis := make([]bool, N)
+
+	/* Stack to facilitate topological
+	   sorting using DFS traversal */
+	st := []int{}
+
+	// Get the topological ordering
+	for i := 0; i &lt; N; i++ {
+		if !vis[i] {
+			topoSort(i, adj, vis, &amp;st)
+		}
+	}
+
+	// Distance array to store the shortest paths
+	dist := make([]int, N)
+	for i := range dist {
+		dist[i] = math.MaxInt32
+	}
+
+	// Distance of source node to itself is zero
+	dist[0] = 0
+
+	// Until the stack is not empty
+	for len(st) &gt; 0 {
+
+		// Get the node from top of stack
+		node := st[len(st)-1]
+		st = st[:len(st)-1]
+
+		// Update the distances of adjacent nodes
+		if dist[node] != math.MaxInt32 {
+			for _, it := range adj[node] {
+				v := it[0]   // adjacent node
+				wt := it[1]  // edge weight
+
+				/* Relaxing the edge, i.e., if a
+				   shorter path is found, update its
+				   distance to new shorter distance */
+				if dist[node]+wt &lt; dist[v] {
+					dist[v] = dist[node] + wt
+				}
+			}
+		}
+	}
+
+	/* If a node is unreachable,
+	   updating its distance to -1 */
+	for i := 0; i &lt; N; i++ {
+		if dist[i] == math.MaxInt32 {
+			dist[i] = -1
+		}
+	}
+
+	// Return the result
+	return dist
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    // Pair implementation
+    static class Pair {
+        int first, second;
+
+        Pair(int first, int second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+    
+    private void topoSort(int node, List&lt;List&lt;Pair&gt;&gt; adj,
+                          boolean[] vis, Stack&lt;Integer&gt; st) {
+        // Mark the node as visited 
+        vis[node] = true;
+
+        // Traverse all the neighbors
+        for (Pair it : adj.get(node)) {
+
+            // Get the node
+            int v = it.first;
+
+            // If not visited, recursively perform DFS
+            if (!vis[v]) {
+                topoSort(v, adj, vis, st);
+            }
+        }
+
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+
+    public int[] shortestPath(int N, int M, int[][] edges) {
+
+        // To store the graph
+        List&lt;List&lt;Pair&gt;&gt; adj = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt; N; i++) {
+            adj.add(new ArrayList&lt;&gt;());
+        }
+
+        // Add edges to the graph
+        for (int i = 0; i &lt; M; i++) {
+            int u = edges[i][0]; // node 1
+            int v = edges[i][1]; // node 2
+            int wt = edges[i][2]; // edge weight
+
+            // Add the weighted edge 
+            adj.get(u).add(new Pair(v, wt));
+        }
+
+        // Visited array
+        boolean[] vis = new boolean[N];
+
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        Stack&lt;Integer&gt; st = new Stack&lt;&gt;();
+
+        // Get the topological ordering
+        for (int i = 0; i &lt; N; i++) {
+            if (!vis[i]) {
+                topoSort(i, adj, vis, st);
+            }
+        }
+
+        // Distance array to store the shortest paths
+        int[] dist = new int[N];
+        Arrays.fill(dist, (int)1e9);
+
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+
+        // Until the stack is not empty
+        while (!st.isEmpty()) {
+
+            // Get the node from top of stack
+            int node = st.pop();
+
+            // Update the distances of adjacent nodes
+            for (Pair it : adj.get(node)) {
+                int v = it.first; // adjacent node
+                int wt = it.second; // edge weight
+
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance */
+                if (dist[node] + wt &lt; dist[v]) {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (int i = 0; i &lt; N; i++) {
+            if (dist[i] == (int)1e9)
+                dist[i] = -1;
+        }
+
+        // Return the result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to perform DFS traversal
+    topoSort(node, adj, vis, st) {
+        // Mark the node as visited 
+        vis[node] = true;
+        
+        // Traverse all the neighbors
+        for (let it of adj[node]) {
+            // Get the node
+            let v = it[0];
+            
+            // If not visited, recursively perform DFS.
+            if (!vis[v]) {
+                this.topoSort(v, adj, vis, st);
+            }
+        }        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+    
+    /* Function to get the shortest path 
+    for every node from source node 0 */
+    shortestPath(N, M, edges) {
+        // To store the graph
+        let adj = Array.from({ length: N }, () =&gt; []);
+        
+        // Add edges to the graph
+        for (let i = 0; i &lt; M; i++) {
+            let u = edges[i][0]; // node 1
+            let v = edges[i][1]; // node 2
+            let wt = edges[i][2]; // edge weight
+            
+            // Add the weighted edge 
+            adj[u].push([v, wt]);
+        }
+        
+        // Visited array
+        let vis = new Array(N).fill(false);
+        
+        /* Stack to facilitate topological 
+        sorting using DFS traversal */
+        let st = [];
+        
+        // Get the topological ordering
+        for (let i = 0; i &lt; N; i++) {
+            if (!vis[i]) {
+                this.topoSort(i, adj, vis, st);
+            }
+        }
+        
+        // Distance array to store the shortest paths
+        let dist = new Array(N).fill(1e9);
+        
+        // Distance of source node to itself is zero
+        dist[0] = 0;
+        
+        // Until the stack is not empty
+        while (st.length &gt; 0) {
+            // Get the node from top of stack
+            let node = st.pop();
+            
+            // Update the distances of adjacent nodes
+            for (let it of adj[node]) {
+                let v = it[0]; // adjacent node
+                let wt = it[1]; // edge weight
+                
+                /* Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance*/
+                if (dist[node] + wt &lt; dist[v]) {
+                    dist[v] = wt + dist[node];
+                }
+            }
+        }
+        
+        /* If a node is unreachable, 
+        updating its distance to -1 */
+        for (let i = 0; i &lt; N; i++) {
+            if (dist[i] === 1e9) 
+                dist[i] = -1;
+        }
+        
+        // Return the result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    
+    # Function to perform DFS traversal
+    def topoSort(self, node, adj, vis, st):
+        # Mark the node as visited 
+        vis[node] = True
+        
+        # Traverse all the neighbors
+        for v, _ in adj[node]:
+            
+            # If not visited, recursively perform DFS
+            if not vis[v]:
+                self.topoSort(v, adj, vis, st)
+        
+        &quot;&quot;&quot; Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed &quot;&quot;&quot;
+        st.append(node)
+    
+    # Function to get the shortest path 
+    # for every node from source node 0
+    def shortestPath(self, N, M, edges):
+        
+        # To store the graph
+        adj = defaultdict(list)
+        
+        # Add edges to the graph
+        for u, v, wt in edges:
+            # Add the weighted edge 
+            adj[u].append((v, wt))
+        
+        # Visited array
+        vis = [False] * N
+        
+        &quot;&quot;&quot; Stack to facilitate topological 
+        sorting using DFS traversal &quot;&quot;&quot;
+        st = []
+        
+        # Get the topological ordering
+        for i in range(N):
+            if not vis[i]:
+                self.topoSort(i, adj, vis, st)
+        
+        # Distance array to store the shortest paths
+        dist = [1e9] * N
+        
+        # Distance of source node to itself is zero
+        dist[0] = 0
+        
+        # Until the stack is not empty
+        while st:
+            
+            # Get the node from top of stack
+            node = st.pop()
+            
+            # Update the distances of adjacent nodes
+            for v, wt in adj[node]:
+                &quot;&quot;&quot; Relaxing the edge, i.e., if a 
+                shorter path is found, update its
+                distance to new shorter distance &quot;&quot;&quot;
+                if dist[node] + wt &lt; dist[v]:
+                    dist[v] = wt + dist[node]
+        
+        &quot;&quot;&quot; If a node is unreachable, 
+        updating its distance to -1 &quot;&quot;&quot;
+        for i in range(N):
+            if dist[i] == 1e9:
+                dist[i] = -1
+        
+        # Return the result
+        return dist</code></pre></div>
+</body>
+</html>

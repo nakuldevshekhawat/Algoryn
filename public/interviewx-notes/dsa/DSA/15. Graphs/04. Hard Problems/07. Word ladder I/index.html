@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word ladder I</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Word ladder I</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Breadth-First Search</span><span>Hash Table</span><span>String</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given are the two distinct words startWord and targetWord, and a list of size N, denoting wordList of <strong>unique words</strong> of equal size M. Find the length of the shortest transformation sequence from startWord to targetWord.</p><p><br></p><p>Keep the following conditions in mind:</p><p><br></p><ul><li>A word can only consist of lowercase characters.</li><li>Only one letter can be changed in each transformation.</li><li>Each transformed word must exist in the wordList including the targetWord.</li><li>startWord may or may not be part of the wordList</li></ul><p><br></p><p><strong>Note:</strong> If there’s no possible way to transform the sequence from startWord to targetWord return 0.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ wordList.length ≤ 100</li><li>1 ≤ wordList[i].length ≤ 10</li><li>startWord.length == targetWord.length == wordList[i].length</li><li>startWord, targetWord, and wordList[i] consist of lowercase English letters.</li><li>startWord!= targetWord</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> wordList = ["des","der","dfr","dgt","dfs"], startWord = "der", targetWord = "dfs"</p><p><strong>Output:</strong> 3</p><p><strong>Explanation:</strong> </p><ul><li>The length of the smallest transformation sequence from "der" to "dfs" is 3</li><li>i.e. "der" -> (replace ‘e’ by ‘f’) -> "dfr" -> (replace ‘r’ by ‘s’) -> "dfs".</li><li>So, it takes 3 different strings for us to reach the targetWord. Each of these strings are present in the wordList.</li></ul><h3>Example 2</h3><p><strong>Input:</strong> wordList = ["geek", "gefk"], startWord = "gedk", targetWord= "geek"</p><p><strong>Output:</strong> 2</p><p><strong>Explanation:</strong> </p><ul><li>The length of the smallest transformation sequence from "gedk" to "geek" is 2</li><li>i.e. "gedk" -> (replace ‘d’ by ‘e’) -> "geek" .</li><li>So, it takes 2 different strings for us to reach the targetWord. Each of these strings are present in the wordList.</li></ul><h3>Example 3</h3><p><strong>Input:</strong> wordList = ["hot", "dot", "dog", "lot", "log"], startWord = "hit", targetWord = "cog"</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This type of problem is actually commonplace in natural language processing (NLP) and machine learning applications, specifically word ladder problems. A real-world application would be in the development of language-based games or language learning applications. For example, applications like Duolingo may use similar transformation sequence algorithms to create exercises that progressively change words by a single letter. Furthermore, the ability to change one word into another using minute transformations can also be used in text-detection algorithms and spelling correction systems, which is a key feature in most word processors and search engines.</p></div>
+<div class="section"><h2>Editorial: Soution</h2></div>
+<h3>Intuition:</h3> 
+<p>
+    <h5>How to identify this as a graph problem?</h5>
+    Consider the following example:
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/-Ff1QO99h">
+    <br><br>
+    It can be seen that in order to find the shortest transformation sequence, the level wise fashion helps in determining the shortest steps to go from <strong>startWord</strong> to <strong>targetWord</strong>. <br><br>
+    Thus, a BFS-traversal will come in use for this problem making it a graph problem.
+
+    <h5>Understanding:</h5>
+    The levels of the transformation comprises of the words that can be formed from the words of the previous level (by changing only one letter). Thus, the BFS traversal can be performed starting from the <strong>startWord</strong>, exploring every possible word that can be made by changing one letter during each transformation. <br><br>
+
+    Now consider the following example: 
+    <img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/-31vzx9Fp"><br><br>
+    The first thing that needs to be done is that all the possible transformations from a given word needs to be generated. Out of all the possible words generated, the transformation can be done in only those words which are present in the <strong>wordList</strong>. Now to check whether a word exists in the wordList or not, a set data structure can be used, which can help find answer this query in O(1) time. 
+
+    <h5>Observation:</h5>
+    Consider a scenario where word <strong>"hit"</strong> also exist in the <strong>wordList</strong> and is transformed to <strong>"hot"</strong> and in the next transformation converted back to <strong>"hit"</strong>. To avoid such unnecessary transformations, once a word is found, it can be deleted from the set which is also a O(1) operation. 
+    <br>
+    The deletion operation is safe because when a word is found via the shortest transformations, there is no use of finding it again through some other path requiring more transformations.
+
+</p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Use a queue to store pairs of words and their corresponding transformation steps. Start with the initial word and step count of 1.</li>
+    <li>Convert the word list into a hash set for efficient word existence checks and removal operations.</li>
+    <li>While the queue is not empty:
+        <ul>
+            <li>Extract the current word and its step count.</li>
+            <li>If the current word matches the target word, return the step count.</li>
+        </ul>
+    </li>
+    <li>For each character in the current word, change it to every letter from 'a' to 'z'. For each transformation:
+        <ul>
+            <li>Check if the new word is in the hash set.</li>
+            <li>If found, remove it from the set, marking it as visited, and add it to the queue with an incremented step count.</li>
+        </ul>
+    </li>
+    <li>If the queue is exhausted without finding the target word, return 0.</li>
+</ol>
+
+<h4>Key Points:</h4>
+<p>
+    <ul>
+        <li>BFS ensures the shortest path by exploring all nodes level by level.</li>
+        <li>Hash set enables O(1) lookups and deletions, making the process efficient.</li>
+        <li>The algorithm returns the shortest transformation sequence length or 0 if no valid sequence exists.</li>
+    </ul>
+</p>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/4.drawio.png-j4lvbAK9" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/5.drawio.png-iEwVFuJS" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/6.drawio.png-CDZWM1aB" alt="Image 3"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/4.drawio.png-j4lvbAK9" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/5.drawio.png-iEwVFuJS" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder I/6.drawio.png-CDZWM1aB" alt="Image 3"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    
+    /* Function to determine number of steps
+    to reach from start ward to target word */
+    int wordLadderLength(string startWord, 
+                        string targetWord,
+                        vector<string> &wordList) {
+            
+        
+        /* Queue data structure to store pair:
+         {"word", steps to reach "word"} */
+        queue<pair<string, int>> q;
+
+        // Add the starting word to queue
+        q.push({startWord, 1});
+
+        // Add all the words to a hashset
+        unordered_set<string> st(wordList.begin(), 
+                                 wordList.end());
+        
+        /* If target word is not there in word list,
+        return 0 as it is not possible to transform */
+        if(st.find(targetWord) == st.end()) return 0;
+
+        /* Erase the starting word 
+        from set (if it exists) */
+        st.erase(startWord);
+        
+        // Until the queue is empty
+        while (!q.empty()){
+            
+            // Get the word from queue
+            string word = q.front().first;
+            
+            // Get the steps from queue
+            int steps = q.front().second;
+            q.pop();
+
+            // Return steps if target word is achieved
+            if (word == targetWord)
+                return steps;
+            
+            // Iterate on every character
+            for (int i=0; i < word.size(); i++) {
+                // Store the original letter 
+                char original = word[i];
+                
+                /* Replacing current character with
+                letters from 'a' to 'z' to match 
+                any possible word from set */
+                
+                for (char ch = 'a'; ch <= 'z'; ch++) {
+                    word[i] = ch;
+                    
+                    // Check if it exists in the set
+                    if (st.find(word) != st.end()) {
+                         
+                        // Erase the word from set 
+                        st.erase(word);
+                        
+                        // Add the transition to the queue
+                        q.push({word, steps + 1});
+                    }
+                }
+                
+                // Update the original letter back
+                word[i] = original;
+            }
+        }
+        
+        /* If no transformation sequence 
+        is found, return 0 */
+        return 0;
+    }
+};
+
+int main() {
+    
+    string startWord = "der", targetWord = "dfs";
+    vector<string> wordList = 
+        {"des","der","dfr","dgt","dfs"};
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine number of 
+    steps to reach from start ward to target word */
+    int ans = 
+        sol.wordLadderLength(startWord, targetWord, wordList);
+    
+    // Output
+    cout << "Word ladder length is: " << ans;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to determine number of steps
+       to reach from start word to target word */
+    public int wordLadderLength(String startWord, String targetWord, List<String> wordList) {
+        
+        /* Queue data structure to store pair:
+           {"word", steps to reach "word"} */
+        Queue<AbstractMap.SimpleEntry<String, Integer>> q = new LinkedList<>();
+
+        // Add the starting word to queue
+        q.add(new AbstractMap.SimpleEntry<>(startWord, 1));
+
+        // Add all the words to a hashset
+        Set<String> st = new HashSet<>(wordList);
+
+        /* If target word is not there in word list,
+           return 0 as it is not possible to transform */
+        if (!st.contains(targetWord)) return 0;
+
+        /* Erase the starting word 
+           from set (if it exists) */
+        st.remove(startWord);
+
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+
+            // Get the word from queue
+            String word = q.peek().getKey();
+
+            // Get the steps from queue
+            int steps = q.peek().getValue();
+            q.poll();
+
+            // Return steps if target word is achieved
+            if (word.equals(targetWord))
+                return steps;
+
+            // Iterate on every character
+            char[] wordArr = word.toCharArray();
+            for (int i = 0; i < wordArr.length; i++) {
+                // Store the original letter 
+                char original = wordArr[i];
+
+                /* Replacing current character with
+                   letters from 'a' to 'z' to match 
+                   any possible word from set */
+                for (char ch = 'a'; ch <= 'z'; ch++) {
+                    wordArr[i] = ch;
+                    String newWord = new String(wordArr);
+
+                    // Check if it exists in the set
+                    if (st.contains(newWord)) {
+
+                        // Erase the word from set 
+                        st.remove(newWord);
+
+                        // Add the transition to the queue
+                        q.add(new AbstractMap.SimpleEntry<>(newWord, steps + 1));
+                    }
+                }
+
+                // Update the original letter back
+                wordArr[i] = original;
+            }
+        }
+
+        /* If no transformation sequence 
+           is found, return 0 */
+        return 0;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String startWord = "der", targetWord = "dfs";
+        List<String> wordList = Arrays.asList("des", "der", "dfr", "dgt", "dfs");
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to determine number of steps
+        int ans = sol.wordLadderLength(startWord, targetWord, wordList);
+
+        // Output
+        System.out.println("Word ladder length is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+class Solution:
+    
+    # Function to determine number of steps
+    # to reach from start ward to target word
+    def wordLadderLength(self, startWord, 
+                        targetWord, wordList):
+                            
+        # Queue data structure to store pair:
+        # {"word", steps to reach "word"}
+        q = deque([(startWord, 1)])
+
+        # Add all the words to a hashset
+        st = set(wordList)
+        
+        # If target word is not there in word list,
+        # return 0 as it is not possible to transform
+        if targetWord not in st:
+            return 0
+        
+        # Erase the starting word 
+        # from set (if it exists)
+        st.discard(startWord)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the word from queue
+            word, steps = q.popleft()
+
+            # Return steps if target word is achieved
+            if word == targetWord:
+                return steps
+            
+            # Iterate on every character
+            for i in range(len(word)):
+                # Store the original letter 
+                original = word[i]
+                
+                # Replacing current character with
+                # letters from 'a' to 'z' to match 
+                # any possible word from set
+                for ch in range(ord('a'), ord('z') + 1):
+                    word = word[:i] + chr(ch) + word[i+1:]
+                    
+                    # Check if it exists in the set
+                    if word in st:
+                        
+                        # Erase the word from set 
+                        st.remove(word)
+                        
+                        # Add the transition to the queue
+                        q.append((word, steps + 1))
+                
+                # Update the original letter back
+                word = word[:i] + original + word[i+1:]
+        
+        # If no transformation sequence 
+        # is found, return 0
+        return 0
+
+if __name__ == "__main__":
+    
+    startWord = "der"
+    targetWord = "dfs"
+    wordList = ["des", "der", "dfr", "dgt", "dfs"]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to determine number of 
+    # steps to reach from start ward to target word
+    ans = sol.wordLadderLength(startWord, targetWord, wordList)
+    
+    # Output
+    print("Word ladder length is:", ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to determine number of steps
+       to reach from start word to target word */
+    wordLadderLength(startWord, targetWord, wordList) {
+
+        /* Queue data structure to store pair:
+           {"word", steps to reach "word"} */
+        let q = [];
+        q.push([startWord, 1]);
+
+        // Add all the words to a set
+        let st = new Set(wordList);
+
+        /* If target word is not there in word list,
+           return 0 as it is not possible to transform */
+        if (!st.has(targetWord)) return 0;
+
+        /* Erase the starting word 
+           from set (if it exists) */
+        st.delete(startWord);
+
+        // Until the queue is empty
+        while (q.length > 0) {
+            let [word, steps] = q.shift();
+
+            // Return steps if target word is achieved
+            if (word === targetWord)
+                return steps;
+
+            // Iterate on every character
+            for (let i = 0; i < word.length; i++) {
+                // Store the original letter
+                let arr = word.split('');
+                let original = arr[i];
+
+                /* Replacing current character with
+                   letters from 'a' to 'z' to match 
+                   any possible word from set */
+                for (let chCode = 97; chCode <= 122; chCode++) {
+                    arr[i] = String.fromCharCode(chCode);
+                    let newWord = arr.join('');
+
+                    // Check if it exists in the set
+                    if (st.has(newWord)) {
+                        // Erase the word from set 
+                        st.delete(newWord);
+
+                        // Add the transition to the queue
+                        q.push([newWord, steps + 1]);
+                    }
+                }
+
+                // Update the original letter back
+                arr[i] = original;
+            }
+        }
+
+        /* If no transformation sequence 
+           is found, return 0 */
+        return 0;
+    }
+}
+
+const startWord = "der", targetWord = "dfs";
+const wordList = ["des", "der", "dfr", "dgt", "dfs"];
+
+// Creating an instance of Solution class
+const sol = new Solution();
+
+// Function call to determine number of steps
+const ans = sol.wordLadderLength(startWord, targetWord, wordList);
+
+// Output
+console.log("Word ladder length is:", ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    /* Function to determine number of steps
+       to reach from start word to target word */
+    public int WordLadderLength(string startWord, string targetWord, List<string> wordList)
+    {
+        /* Queue data structure to store pair:
+           {"word", steps to reach "word"} */
+        Queue<(string, int)> q = new Queue<(string, int)>();
+
+        // Add the starting word to queue
+        q.Enqueue((startWord, 1));
+
+        // Add all the words to a hashset
+        HashSet<string> st = new HashSet<string>(wordList);
+
+        /* If target word is not there in word list,
+           return 0 as it is not possible to transform */
+        if (!st.Contains(targetWord)) return 0;
+
+        /* Erase the starting word 
+           from set (if it exists) */
+        st.Remove(startWord);
+
+        // Until the queue is empty
+        while (q.Count > 0)
+        {
+            var (word, steps) = q.Dequeue();
+
+            // Return steps if target word is achieved
+            if (word == targetWord)
+                return steps;
+
+            // Iterate on every character
+            char[] arr = word.ToCharArray();
+            for (int i = 0; i < arr.Length; i++)
+            {
+                // Store the original letter 
+                char original = arr[i];
+
+                /* Replacing current character with
+                   letters from 'a' to 'z' to match 
+                   any possible word from set */
+                for (char ch = 'a'; ch <= 'z'; ch++)
+                {
+                    arr[i] = ch;
+                    string newWord = new string(arr);
+
+                    // Check if it exists in the set
+                    if (st.Contains(newWord))
+                    {
+                        // Erase the word from set 
+                        st.Remove(newWord);
+
+                        // Add the transition to the queue
+                        q.Enqueue((newWord, steps + 1));
+                    }
+                }
+
+                // Update the original letter back
+                arr[i] = original;
+            }
+        }
+
+        /* If no transformation sequence 
+           is found, return 0 */
+        return 0;
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        string startWord = "der", targetWord = "dfs";
+        List<string> wordList = new List<string> { "des", "der", "dfr", "dgt", "dfs" };
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to determine number of steps
+        int ans = sol.WordLadderLength(startWord, targetWord, wordList);
+
+        // Output
+        Console.WriteLine("Word ladder length is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+/* Function to determine number of steps
+to reach from start word to target word */
+func wordLadderLength(startWord string, targetWord string, wordList []string) int {
+
+	/* Queue data structure to store pair:
+	   {"word", steps to reach "word"} */
+	type Pair struct {
+		word  string
+		steps int
+	}
+
+	q := []Pair{}
+
+	// Add the starting word to queue
+	q = append(q, Pair{startWord, 1})
+
+	// Add all the words to a hashset (map in Go)
+	st := make(map[string]bool)
+	for _, w := range wordList {
+		st[w] = true
+	}
+	
+	/* If target word is not there in word list,
+       return 0 as it is not possible to transform */
+    if !st[targetWord] {
+        return 0
+    }
+
+	/* Erase the starting word
+	   from set (if it exists) */
+	delete(st, startWord)
+
+	// Until the queue is empty
+	for len(q) > 0 {
+
+		// Get the word from queue
+		word := q[0].word
+
+		// Get the steps from queue
+		steps := q[0].steps
+		q = q[1:]
+
+		// Return steps if target word is achieved
+		if word == targetWord {
+			return steps
+		}
+
+		// Iterate on every character
+		wordRunes := []rune(word)
+		for i := 0; i < len(wordRunes); i++ {
+
+			// Store the original letter
+			original := wordRunes[i]
+
+			/* Replacing current character with
+			   letters from 'a' to 'z' to match
+			   any possible word from set */
+			for ch := 'a'; ch <= 'z'; ch++ {
+				wordRunes[i] = ch
+				newWord := string(wordRunes)
+
+				// Check if it exists in the set
+				if st[newWord] {
+					// Erase the word from set
+					delete(st, newWord)
+
+					// Add the transition to the queue
+					q = append(q, Pair{newWord, steps + 1})
+				}
+			}
+
+			// Update the original letter back
+			wordRunes[i] = original
+		}
+	}
+
+	/* If no transformation sequence
+	   is found, return 0 */
+	return 0
+}
+
+func main() {
+
+	startWord := "der"
+	targetWord := "dfs"
+	wordList := []string{"des", "der", "dfr", "dgt", "dfs"}
+
+	/* Function call to determine number of
+	   steps to reach from start word to target word */
+	ans := wordLadderLength(startWord, targetWord, wordList)
+
+	// Output
+	fmt.Println("Word ladder length is:", ans)
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N*M*26)</strong><br>
+    <ul>
+        <li>In the worst case, the steps required to reach from <strong>startWord</strong> to <strong>targetWord</strong> can go up to N. During each step, all the characters for the word are replaced from 'a' to 'z' taking O(M*26) time.</li>
+        <li>Adding all the words in <strong>wordList</strong> takes O(N) time.</li>
+    </ul>
+    <strong>Note:</strong>
+    If an ordered set is used in place of an unordered set then there will be a logN factor adding to the time complexity, since delete and update operations take O(logN) time for the ordered set.
+</p>
+
+<p><strong>Space Complexity: O(N)</strong> <br>
+A Hashset is used to store words in <strong>wordList</strong> taking O(N) space.</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    
+    /* Function to determine number of steps
+    to reach from start ward to target word */
+    int wordLadderLength(string startWord, 
+                        string targetWord,
+                        vector&lt;string&gt; &amp;wordList) {
+            
+        
+        /* Queue data structure to store pair:
+         {&quot;word&quot;, steps to reach &quot;word&quot;} */
+        queue&lt;pair&lt;string, int&gt;&gt; q;
+
+        // Add the starting word to queue
+        q.push({startWord, 1});
+
+        // Add all the words to a hashset
+        unordered_set&lt;string&gt; st(wordList.begin(), 
+                                 wordList.end());
+        
+        /* If target word is not there in word list,
+        return 0 as it is not possible to transform */
+        if(st.find(targetWord) == st.end()) return 0;
+
+        /* Erase the starting word 
+        from set (if it exists) */
+        st.erase(startWord);
+        
+        // Until the queue is empty
+        while (!q.empty()){
+            
+            // Get the word from queue
+            string word = q.front().first;
+            
+            // Get the steps from queue
+            int steps = q.front().second;
+            q.pop();
+
+            // Return steps if target word is achieved
+            if (word == targetWord)
+                return steps;
+            
+            // Iterate on every character
+            for (int i=0; i &lt; word.size(); i++) {
+                // Store the original letter 
+                char original = word[i];
+                
+                /* Replacing current character with
+                letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                any possible word from set */
+                
+                for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                    word[i] = ch;
+                    
+                    // Check if it exists in the set
+                    if (st.find(word) != st.end()) {
+                         
+                        // Erase the word from set 
+                        st.erase(word);
+                        
+                        // Add the transition to the queue
+                        q.push({word, steps + 1});
+                    }
+                }
+                
+                // Update the original letter back
+                word[i] = original;
+            }
+        }
+        
+        /* If no transformation sequence 
+        is found, return 0 */
+        return 0;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to determine number of steps
+       to reach from start word to target word */
+    public int WordLadderLength(string startWord, string targetWord, List&lt;string&gt; wordList)
+    {
+        /* Queue data structure to store pair:
+           {&quot;word&quot;, steps to reach &quot;word&quot;} */
+        Queue&lt;(string, int)&gt; q = new Queue&lt;(string, int)&gt;();
+
+        // Add the starting word to queue
+        q.Enqueue((startWord, 1));
+
+        // Add all the words to a hashset
+        HashSet&lt;string&gt; st = new HashSet&lt;string&gt;(wordList);
+
+        /* If target word is not there in word list,
+           return 0 as it is not possible to transform */
+        if (!st.Contains(targetWord)) return 0;
+
+        /* Erase the starting word 
+           from set (if it exists) */
+        st.Remove(startWord);
+
+        // Until the queue is empty
+        while (q.Count &gt; 0)
+        {
+            var (word, steps) = q.Dequeue();
+
+            // Return steps if target word is achieved
+            if (word == targetWord)
+                return steps;
+
+            // Iterate on every character
+            char[] arr = word.ToCharArray();
+            for (int i = 0; i &lt; arr.Length; i++)
+            {
+                // Store the original letter 
+                char original = arr[i];
+
+                /* Replacing current character with
+                   letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                   any possible word from set */
+                for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++)
+                {
+                    arr[i] = ch;
+                    string newWord = new string(arr);
+
+                    // Check if it exists in the set
+                    if (st.Contains(newWord))
+                    {
+                        // Erase the word from set 
+                        st.Remove(newWord);
+
+                        // Add the transition to the queue
+                        q.Enqueue((newWord, steps + 1));
+                    }
+                }
+
+                // Update the original letter back
+                arr[i] = original;
+            }
+        }
+
+        /* If no transformation sequence 
+           is found, return 0 */
+        return 0;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to determine number of steps
+to reach from start word to target word */
+func wordLadderLength(startWord string, targetWord string, wordList []string) int {
+
+	/* Queue data structure to store pair:
+	   {&quot;word&quot;, steps to reach &quot;word&quot;} */
+	type Pair struct {
+		word  string
+		steps int
+	}
+
+	q := []Pair{}
+
+	// Add the starting word to queue
+	q = append(q, Pair{startWord, 1})
+
+	// Add all the words to a hashset (map in Go)
+	st := make(map[string]bool)
+	for _, w := range wordList {
+		st[w] = true
+	}
+	
+	/* If target word is not there in word list,
+       return 0 as it is not possible to transform */
+    if !st[targetWord] {
+        return 0
+    }
+
+	/* Erase the starting word
+	   from set (if it exists) */
+	delete(st, startWord)
+
+	// Until the queue is empty
+	for len(q) &gt; 0 {
+
+		// Get the word from queue
+		word := q[0].word
+
+		// Get the steps from queue
+		steps := q[0].steps
+		q = q[1:]
+
+		// Return steps if target word is achieved
+		if word == targetWord {
+			return steps
+		}
+
+		// Iterate on every character
+		wordRunes := []rune(word)
+		for i := 0; i &lt; len(wordRunes); i++ {
+
+			// Store the original letter
+			original := wordRunes[i]
+
+			/* Replacing current character with
+			   letters from &#x27;a&#x27; to &#x27;z&#x27; to match
+			   any possible word from set */
+			for ch := &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++ {
+				wordRunes[i] = ch
+				newWord := string(wordRunes)
+
+				// Check if it exists in the set
+				if st[newWord] {
+					// Erase the word from set
+					delete(st, newWord)
+
+					// Add the transition to the queue
+					q = append(q, Pair{newWord, steps + 1})
+				}
+			}
+
+			// Update the original letter back
+			wordRunes[i] = original
+		}
+	}
+
+	/* If no transformation sequence
+	   is found, return 0 */
+	return 0
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to determine number of steps
+       to reach from start word to target word */
+    public int wordLadderLength(String startWord, String targetWord, List&lt;String&gt; wordList) {
+        
+        /* Queue data structure to store pair:
+           {&quot;word&quot;, steps to reach &quot;word&quot;} */
+        Queue&lt;AbstractMap.SimpleEntry&lt;String, Integer&gt;&gt; q = new LinkedList&lt;&gt;();
+
+        // Add the starting word to queue
+        q.add(new AbstractMap.SimpleEntry&lt;&gt;(startWord, 1));
+
+        // Add all the words to a hashset
+        Set&lt;String&gt; st = new HashSet&lt;&gt;(wordList);
+
+        /* If target word is not there in word list,
+           return 0 as it is not possible to transform */
+        if (!st.contains(targetWord)) return 0;
+
+        /* Erase the starting word 
+           from set (if it exists) */
+        st.remove(startWord);
+
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+
+            // Get the word from queue
+            String word = q.peek().getKey();
+
+            // Get the steps from queue
+            int steps = q.peek().getValue();
+            q.poll();
+
+            // Return steps if target word is achieved
+            if (word.equals(targetWord))
+                return steps;
+
+            // Iterate on every character
+            char[] wordArr = word.toCharArray();
+            for (int i = 0; i &lt; wordArr.length; i++) {
+                // Store the original letter 
+                char original = wordArr[i];
+
+                /* Replacing current character with
+                   letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                   any possible word from set */
+                for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                    wordArr[i] = ch;
+                    String newWord = new String(wordArr);
+
+                    // Check if it exists in the set
+                    if (st.contains(newWord)) {
+
+                        // Erase the word from set 
+                        st.remove(newWord);
+
+                        // Add the transition to the queue
+                        q.add(new AbstractMap.SimpleEntry&lt;&gt;(newWord, steps + 1));
+                    }
+                }
+
+                // Update the original letter back
+                wordArr[i] = original;
+            }
+        }
+
+        /* If no transformation sequence 
+           is found, return 0 */
+        return 0;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to determine number of steps
+       to reach from start word to target word */
+    wordLadderLength(startWord, targetWord, wordList) {
+
+        /* Queue data structure to store pair:
+           {&quot;word&quot;, steps to reach &quot;word&quot;} */
+        let q = [];
+        q.push([startWord, 1]);
+
+        // Add all the words to a set
+        let st = new Set(wordList);
+
+        /* If target word is not there in word list,
+           return 0 as it is not possible to transform */
+        if (!st.has(targetWord)) return 0;
+
+        /* Erase the starting word 
+           from set (if it exists) */
+        st.delete(startWord);
+
+        // Until the queue is empty
+        while (q.length &gt; 0) {
+            let [word, steps] = q.shift();
+
+            // Return steps if target word is achieved
+            if (word === targetWord)
+                return steps;
+
+            // Iterate on every character
+            for (let i = 0; i &lt; word.length; i++) {
+                // Store the original letter
+                let arr = word.split(&#x27;&#x27;);
+                let original = arr[i];
+
+                /* Replacing current character with
+                   letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                   any possible word from set */
+                for (let chCode = 97; chCode &lt;= 122; chCode++) {
+                    arr[i] = String.fromCharCode(chCode);
+                    let newWord = arr.join(&#x27;&#x27;);
+
+                    // Check if it exists in the set
+                    if (st.has(newWord)) {
+                        // Erase the word from set 
+                        st.delete(newWord);
+
+                        // Add the transition to the queue
+                        q.push([newWord, steps + 1]);
+                    }
+                }
+
+                // Update the original letter back
+                arr[i] = original;
+            }
+        }
+
+        /* If no transformation sequence 
+           is found, return 0 */
+        return 0;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>from collections import deque
+
+class Solution:
+    
+    # Function to determine number of steps
+    # to reach from start ward to target word
+    def wordLadderLength(self, startWord, 
+                        targetWord, wordList):
+                            
+        # Queue data structure to store pair:
+        # {&quot;word&quot;, steps to reach &quot;word&quot;}
+        q = deque([(startWord, 1)])
+
+        # Add all the words to a hashset
+        st = set(wordList)
+        
+        # If target word is not there in word list,
+        # return 0 as it is not possible to transform
+        if targetWord not in st:
+            return 0
+        
+        # Erase the starting word 
+        # from set (if it exists)
+        st.discard(startWord)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the word from queue
+            word, steps = q.popleft()
+
+            # Return steps if target word is achieved
+            if word == targetWord:
+                return steps
+            
+            # Iterate on every character
+            for i in range(len(word)):
+                # Store the original letter 
+                original = word[i]
+                
+                # Replacing current character with
+                # letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                # any possible word from set
+                for ch in range(ord(&#x27;a&#x27;), ord(&#x27;z&#x27;) + 1):
+                    word = word[:i] + chr(ch) + word[i+1:]
+                    
+                    # Check if it exists in the set
+                    if word in st:
+                        
+                        # Erase the word from set 
+                        st.remove(word)
+                        
+                        # Add the transition to the queue
+                        q.append((word, steps + 1))
+                
+                # Update the original letter back
+                word = word[:i] + original + word[i+1:]
+        
+        # If no transformation sequence 
+        # is found, return 0
+        return 0</code></pre></div>
+</body>
+</html>

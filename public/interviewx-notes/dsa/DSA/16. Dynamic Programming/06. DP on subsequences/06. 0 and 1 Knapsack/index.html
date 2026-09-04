@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>0 and 1 Knapsack</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>0 and 1 Knapsack</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two integer arrays, val and wt, each of size N, which represent the values and weights of N items respectively, and an integer W representing the maximum capacity of a knapsack, determine the <strong>maximum</strong> value achievable by selecting a <strong>subset</strong> of the items such that the total weight of the selected items does not exceed the knapsack capacity W.</p><p><br></p><p>Each item can either be picked in its entirety or not picked at all (0-1 property). The goal is to <strong>maximize</strong> the sum of the values of the selected items while keeping the total weight within the <strong>knapsack's</strong> capacity.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ N ≤ 500</li><li>1 ≤ W ≤ 1000</li><li>1 ≤ wt[i] ≤ 500</li><li>1 ≤ val[i] ≤ 500</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> val = [60, 100, 120], wt = [10, 20, 30], W = 50</p><p><strong>Output:</strong> 220</p><p><strong>Explanation:</strong> Select items with weights 20 and 30 for a total value of 100 + 120 = 220.</p><h3>Example 2</h3><p><strong>Input:</strong> val = [10, 40, 30, 50], wt = [5, 4, 6, 3], W = 10</p><p><strong>Output:</strong> 90</p><p><strong>Explanation:</strong> Select items with weights 4 and 3 for a total value of 40 + 50 = 90.</p><h3>Example 3</h3><p><strong>Input: </strong>val = [20, 5, 10, 40, 15, 25], wt = [1, 2, 3, 8, 7, 4], W = 10</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The concept behind this knapsack problem is practically used in Resource Allocation and Load Balancing in Cloud Computing. In cloud computing, resources (like processing power, storage, etc.) are finite and there's a need to optimize. The knapsack problem revolves around optimizing the value of items that can fit in a limited-size knapsack, making it a perfect model for allocating finite resources. Choices must be made about which virtual machines or jobs to allocate to each server, so that server capacity (weight limit in knapsack) isn't exceeded and efficiency or performance (value in knapsack) is maximized. It's a key aspect in determining how to distribute loads in order to get the maximal utility.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Why a Greedy Solution will not work:</strong></h5>
+
+<p>As the question is asking for maximum value, the first approach that comes to our mind is greedy. A greedy solution will fail in this problem because there is no ‘uniformity’ in data. While selecting a local better choice we may choose an item that will in long term give less value. So we will solve this problem using recursion.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/0 and 1 Knapsack/-cjOEFW4h"><br>
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes:</b>We are given ‘n’ items. Their weight is represented by the ‘wt’ array and value by the ‘val’ array. So clearly one parameter will be ‘ind’, i.e index up to which the array items are being considered. There is one more parameter 'W', the capacity of the knapsack to decide whether we can pick an array item or not in the knapsack.</p>
+
+<p>So initially, we need to find f(n-1, W) where W is the overall capacity given to us. f(n-1, W) gives the maximum value of items that we can get from index 0 to n-1 with capacity W of the knapsack.</p>
+
+<li><b>Try out all possible choices at a given index:</b>We need to generate all the subsequences. We will use the pick/non-pick technique. There will be two choices:</li>
+
+<p><b>Exclude the current element from the subsequence:</b> First try to find a subsequence without considering the current index item. If we exclude the current item, the capacity of the bag will not be affected and the value added will be 0 for the current item. So we will call the recursive function f(ind-1,W),</p>
+
+<p><b>Include the current element in the subsequence:</b> Try to find a subsequence by considering the current item to the knapsack. As we have included the item, the capacity of the knapsack will be updated to (W-wt[ind]) and the current item’s value (val[ind] will also be added to the further recursive call answer. We will make a recursive call to f(ind-1, W- wt[ind]).</p>
+
+<p><b>Note:</b> We will consider the current item in the subsequence only when the current element’s weight is less than or equal to the capacity ‘W’ of the knapsack, if it isn’t we will not be considering it.</p>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, W){
+    notTake = 0 + f(ind-1, W)
+    take = INT_MIN
+    if(wt[ind] <= W)
+         take = val[ind] + f(ind-1, W-wt[ind])
+}</code></pre></div></div></div>
+
+<li><b>Return the maximum of take and notTake: </b>As we have to return the maximum amount of value, we will return the maximum of take and notTake as our answer.</li><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">f(ind, W){
+    notTake = 0 + f(ind-1, W)
+    take = INT_MIN
+    if(wt[ind] <= W)
+         take = val[ind] + f(ind-1, W-wt[ind])
+    return max(take, notTake)
+}</code></pre></div></div></div>
+
+<li><b>Base Cases: </b>There are two base cases:
+<ul>
+<li>If ind < 0, it means we are out of items, so in that case we can simply return 0.</li>
+<li>If W == 0, it means the knapsack has no capacity, so in this case as well, we can simply return 0. 
+</ul>
+  </li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    // Function to solve 0/1 Knapsack problem using memoization
+    int func(vector<int>& wt, vector<int>& val, int ind, int W) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind < 0 || W == 0) {
+            return 0;
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        int notTaken = func(wt, val, ind - 1, W);
+        
+        int taken = 0;
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity*/
+        if (wt[ind] <= W) {
+            taken = val[ind] + func(wt, val, ind - 1, W - wt[ind]);
+        }
+
+        // Return the result 
+        return max(notTaken, taken);
+    }
+public:  
+    // Function to solve the 0/1 Knapsack problem
+    int knapsack01(vector<int>& wt, vector<int>& val, int n, int W) {
+        return func(wt, val, n - 1, W);
+    }
+};
+
+int main() {
+    vector<int> wt = {1, 2, 4, 5};
+    vector<int> val = {5, 4, 8, 6};
+    int W = 5;
+    int n = wt.size();
+
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    // Call the function to find the minimum coins
+    int result = sol.knapsack01(wt, val, n, W);
+    
+    // Output the result
+    cout << "The Maximum value of items is " << result << endl;
+    
+    return 0; 
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve 0/1 Knapsack problem using memoization
+    private int func(int[] wt, int[] val, int ind, int W) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0 */
+        if (ind < 0 || W == 0) {
+            return 0;
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it */
+        int notTaken = func(wt, val, ind - 1, W);
+        
+        int taken = 0;
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity */
+        if (wt[ind] <= W) {
+            taken = val[ind] + func(wt, val, ind - 1, W - wt[ind]);
+        }
+
+        // Return the result 
+        return Math.max(notTaken, taken);
+    }
+
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W) {
+        return func(wt, val, n - 1, W);
+    }
+
+    public static void main(String[] args) {
+        int[] wt = {1, 2, 4, 5};
+        int[] val = {5, 4, 8, 6};
+        int W = 5;
+        int n = wt.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the maximum value
+        int result = sol.knapsack01(wt, val, n, W);
+
+        // Output the result
+        System.out.println("The Maximum value of items is " + result);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve 0/1 Knapsack problem using memoization
+    def func(self, wt, val, ind, W):
+        """ Base case: If there are no items left
+        or the knapsack has no capacity, return 0 """
+        if ind < 0 or W == 0:
+            return 0
+
+        """ Calculate the maximum value by either
+        excluding the current item or including it """
+        notTaken = self.func(wt, val, ind - 1, W)
+        
+        taken = 0
+        """ Check if the current item can be included
+        without exceeding the knapsack's capacity"""
+        if wt[ind] <= W:
+            taken = val[ind] + self.func(wt, val, ind - 1, W - wt[ind])
+
+        # Return the result 
+        return max(notTaken, taken)
+
+    # Function to solve the 0/1 Knapsack problem
+    def knapsack01(self, wt, val, n, W):
+        return self.func(wt, val, n - 1, W)
+
+wt = [1, 2, 4, 5]
+val = [5, 4, 8, 6]
+W = 5
+n = len(wt)
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the function to find the maximum value
+result = sol.knapsack01(wt, val, n, W)
+
+# Output the result
+print("The Maximum value of items is", result)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve 0/1 Knapsack problem using memoization
+    func(wt, val, ind, W) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0 */
+        if (ind < 0 || W === 0) {
+            return 0;
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it */
+        let notTaken = this.func(wt, val, ind - 1, W);
+        
+        let taken = 0;
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity */
+        if (wt[ind] <= W) {
+            taken = val[ind] + this.func(wt, val, ind - 1, W - wt[ind]);
+        }
+
+        // Store the result in the DP table and return
+        return Math.max(notTaken, taken);
+    }
+
+    // Function to solve the 0/1 Knapsack problem
+    knapsack01(wt, val, n, W) {
+        return this.func(wt, val, n - 1, W);
+    }
+}
+
+const wt = [1, 2, 4, 5];
+const val = [5, 4, 8, 6];
+const W = 5;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call the function to find the maximum value
+const result = sol.knapsack01(wt, val, n, W);
+
+// Output the result
+console.log("The Maximum value of items is " + result);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    // Function to solve 0/1 Knapsack problem using memoization
+    private int Func(int[] wt, int[] val, int ind, int W)
+    {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind < 0 || W == 0)
+        {
+            return 0;
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        int notTaken = Func(wt, val, ind - 1, W);
+        
+        int taken = 0;
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity*/
+        if (wt[ind] <= W)
+        {
+            taken = val[ind] + Func(wt, val, ind - 1, W - wt[ind]);
+        }
+
+        // Return the result 
+        return Math.Max(notTaken, taken);
+    }
+
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        return Func(wt, val, n - 1, W);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] wt = {1, 2, 4, 5};
+        int[] val = {5, 4, 8, 6};
+        int W = 5;
+        int n = wt.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the maximum value
+        int result = sol.knapsack01(wt, val, n, W);
+
+        // Output the result
+        Console.WriteLine("The Maximum value of items is " + result);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to solve 0/1 Knapsack problem using recursion
+func funcRec(wt, val []int, ind, W int) int {
+	/* Base case: If there are no items left
+	or the knapsack has no capacity, return 0 */
+	if ind < 0 || W == 0 {
+		return 0
+	}
+
+	/* Calculate the maximum value by either
+	excluding the current item or including it */
+	notTaken := funcRec(wt, val, ind-1, W)
+
+	taken := 0
+	/* Check if the current item can be included
+	without exceeding the knapsack's capacity */
+	if wt[ind] <= W {
+		taken = val[ind] + funcRec(wt, val, ind-1, W-wt[ind])
+	}
+
+	// Return the result
+	if taken > notTaken {
+		return taken
+	}
+	return notTaken
+}
+
+// Function to solve the 0/1 Knapsack problem
+func knapsack01(wt, val []int, n, W int) int {
+	return funcRec(wt, val, n-1, W)
+}
+
+func main() {
+	wt := []int{1, 2, 4, 5}
+	val := []int{5, 4, 8, 6}
+	W := 5
+	n := len(wt)
+
+	// Call the function to find the maximum value
+	result := knapsack01(wt, val, n, W)
+
+	// Output the result
+	fmt.Printf("The Maximum value of items is %d\n", result)
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(2<sup>N</sup>), Where N is size of the array. As there are 2 choices for each index.<br><br>
+<strong>Space Complexity:</strong>O(N), As we are using a recursion stack space of N.</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/0 and 1 Knapsack/-HUPHc5xV"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][W+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'target'. The size of the input array is ‘N’, so the index will always lie between ‘0’ and ‘n-1’. The capacity can take any value between ‘0’ and ‘W’. Therefore 2D dp array(dp[n][W+1]) is needed.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    // Function to solve the 0/1 Knapsack problem with arrays
+    int func(vector<int> &wt, vector<int> &val, int ind, int W, vector<vector<int>>& dp) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0 */
+        if (ind < 0 || W == 0) {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it */
+        if (dp[ind][W] != -1) {
+            return dp[ind][W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it */
+        int notTaken = func(wt, val, ind - 1, W, dp);
+        int taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity */
+        if (wt[ind] <= W) {
+            taken = val[ind] + func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        return dp[ind][W] = max(notTaken, taken);
+    }
+
+public:
+    /* Function to return max value that
+    can be put in knapsack of capacity W.*/
+    int knapsack01(vector<int> wt, vector<int> val, int n, int W) { 
+        // Initialize DP table with -1
+        vector<vector<int>> dp(n, vector<int>(W + 1, -1));
+        return func(wt, val, n - 1, W, dp);
+    }
+};
+int main() {
+    vector<int> wt = {1, 2, 4, 5};
+    vector<int> val = {5, 4, 8, 6};
+    int W = 5;
+    int n = wt.size();
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    cout << "The Maximum value of items is " << sol.knapsack01(wt, val, n, W);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the 0/1 Knapsack problem with arrays
+    private int func(int[] wt, int[] val, int ind, int W, int[][] dp) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0 */
+        if (ind < 0 || W == 0) {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it */
+        if (dp[ind][W] != -1) {
+            return dp[ind][W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it */
+        int notTaken = func(wt, val, ind - 1, W, dp);
+        int taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity */
+        if (wt[ind] <= W) {
+            taken = val[ind] + func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        dp[ind][W] = Math.max(notTaken, taken);
+        return dp[ind][W];
+    }
+
+    public int knapsack01(int[] wt, int[] val, int n, int W) { 
+        // Initialize DP table with -1
+        int[][] dp = new int[n][W + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+        return func(wt, val, n - 1, W, dp);
+    }
+
+    public static void main(String[] args) {
+        int[] wt = {1, 2, 4, 5};
+        int[] val = {5, 4, 8, 6};
+        int W = 5;
+        int n = wt.length;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        System.out.println("The Maximum value of items is " + sol.knapsack01(wt, val, n, W));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the 0/1 Knapsack problem with arrays
+    def func(self, wt, val, ind, W, dp):
+        """ Base case: If there are no items left 
+        or the knapsack has no capacity, return 0"""
+        if ind < 0 or W == 0:
+            return 0
+
+        """ If the result for this state is
+        already calculated, return it"""
+        if dp[ind][W] != -1:
+            return dp[ind][W]
+
+        """ Calculate the maximum value by either
+        excluding the current item or including it"""
+        not_taken = self.func(wt, val, ind - 1, W, dp)
+        taken = 0
+
+        """ Check if the current item can be included
+        without exceeding the knapsack's capacity"""
+        if wt[ind] <= W:
+            taken = val[ind] + self.func(wt, val, ind - 1, W - wt[ind], dp)
+
+        # Store the result in the DP table and return
+        dp[ind][W] = max(not_taken, taken)
+        return dp[ind][W]
+
+    def knapsack01(self, wt, val, n, W):
+        # Initialize DP table with -1
+        dp = [[-1 for _ in range(W + 1)] for _ in range(n)]
+        return self.func(wt, val, n - 1, W, dp)
+
+# Main execution
+if __name__ == "__main__":
+    wt = [1, 2, 4, 5]
+    val = [5, 4, 8, 6]
+    W = 5
+    n = len(wt)
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    print("The Maximum value of items is", sol.knapsack01(wt, val, n, W))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the 0/1 Knapsack problem with arrays
+    func(wt, val, ind, W, dp) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind < 0 || W === 0) {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][W] !== -1) {
+            return dp[ind][W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        const notTaken = this.func(wt, val, ind - 1, W, dp);
+        let taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity*/
+        if (wt[ind] <= W) {
+            taken = val[ind] + this.func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        dp[ind][W] = Math.max(notTaken, taken);
+        return dp[ind][W];
+    }
+
+    knapsack01(wt, val, n, W) {
+        // Initialize DP table with -1
+        const dp = Array.from({ length: n }, () => Array(W + 1).fill(-1));
+        return this.func(wt, val, n - 1, W, dp);
+    }
+}
+
+// Main execution
+const wt = [1, 2, 4, 5];
+const val = [5, 4, 8, 6];
+const W = 5;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+console.log("The Maximum value of items is", sol.knapsack01(wt, val, n, W));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    // Function to solve the 0/1 Knapsack problem with arrays
+    private int func(int[] wt, int[] val, int ind, int W, int[,] dp)
+    {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind < 0 || W == 0)
+        {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind, W] != -1)
+        {
+            return dp[ind, W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        int notTaken = this.func(wt, val, ind - 1, W, dp);
+        int taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack's capacity*/
+        if (wt[ind] <= W)
+        {
+            taken = val[ind] + this.func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        dp[ind, W] = Math.Max(notTaken, taken);
+        return dp[ind, W];
+    }
+
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        // Initialize DP table with -1
+        int[,] dp = new int[n, W + 1];
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j <= W; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+        return this.func(wt, val, n - 1, W, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Main execution
+        int[] wt = new int[] { 1, 2, 4, 5 };
+        int[] val = new int[] { 5, 4, 8, 6 };
+        int W = 5;
+        int n = wt.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        Console.WriteLine("The Maximum value of items is " + sol.knapsack01(wt, val, n, W));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to solve the 0/1 Knapsack problem with arrays
+func funcKnapsack(wt, val []int, ind, W int, dp [][]int) int {
+	// Base case: If there are no items left or the knapsack has no capacity
+	if ind < 0 || W == 0 {
+		return 0
+	}
+
+	// If the result for this state is already calculated
+	if dp[ind][W] != -1 {
+		return dp[ind][W]
+	}
+
+	// Calculate the maximum value by excluding or including the current item
+	notTaken := funcKnapsack(wt, val, ind-1, W, dp)
+	taken := 0
+
+	// Check if the current item can be included without exceeding capacity
+	if wt[ind] <= W {
+		taken = val[ind] + funcKnapsack(wt, val, ind-1, W-wt[ind], dp)
+	}
+
+	// Store the result in DP table and return
+	if notTaken > taken {
+		dp[ind][W] = notTaken
+	} else {
+		dp[ind][W] = taken
+	}
+	return dp[ind][W]
+}
+
+// Function to return max value that can be put in knapsack of capacity W
+func knapsack01(wt, val []int, n, W int) int {
+	// Initialize DP table with -1
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, W+1)
+		for j := 0; j <= W; j++ {
+			dp[i][j] = -1
+		}
+	}
+	return funcKnapsack(wt, val, n-1, W, dp)
+}
+
+func main() {
+	wt := []int{1, 2, 4, 5}
+	val := []int{5, 4, 8, 6}
+	W := 5
+	n := len(wt)
+
+	fmt.Println("The Maximum value of items is", knapsack01(wt, val, n, W))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*W), where N is the size of the array and W is the capacity of the knapsack. There are N*W states therefore at max ‘N*W’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*W) + O(N), We are using a recursion stack space(O(N)) and a 2D array ( O(N*W)).</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here
+    are the steps:</p>
+<ol>
+    <li><strong>Declare a dp array of size [n][W+1]: </strong>As there are two changing parameters in the recursive
+        solution, 'ind' and 'target'. The size of the input array is ‘N’, so the index will always lie between ‘0’ and
+        ‘n-1’. The capacity can take any value between ‘0’ and ‘W’. Therefore 2D dp array(dp[n][W+1]) is needed. Set its
+        type as int and initialize it as 0.</li>
+    <li><strong>Setting Base Cases in the Array: </strong>In the recursive code, our base condition was when ind == 0,
+        it meant we were at the first item, so in that case were checking whether this item’s weight is less than or
+        equal to the current capacity W, if it was, we were simply returning its value (val[0]) else we were returning
+        0. So, will set the same value for 'ind' = 0 in the dp array.</li>
+    <li><strong>Iterative Computation Using Loops: </strong>Initialize two nested for loops to traverse the dp array.
+        First loop will run from 1 to n-1 as we are done for the ind = 0 for the base case and the second loop will run
+        from 0 to 'W'.</li>
+    <li>Now, following the same logic as discussed in the recursive approach, set the value of each cell in the 2D dp
+        array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.</li>
+    <li><strong>Returning the answer: </strong>At last dp[n-1][W] will hold the solution after the completion of whole
+        process, as we are doing the calculations in bottom-up manner.</li>
+</ol>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:  
+    // Function to solve the 0/1 Knapsack problem
+    int knapsack01(vector<int>& wt, vector<int>& val, int n, int W) {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        vector<vector<int>> dp(n, vector<int>(W + 1, 0));
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (int i = wt[0]; i <= W; i++) {
+            dp[0][i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = 0; cap <= W; cap++) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = dp[ind - 1][cap];
+                int taken = INT_MIN;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap) {
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind][cap] = max(notTaken, taken);
+            }
+        }
+
+        // The final result is in last cell
+        return dp[n - 1][W];
+    }
+};
+
+int main() {
+    vector<int> wt = {1, 2, 4, 5};
+    vector<int> val = {5, 4, 8, 6};
+    int W = 5;
+    int n = wt.size();
+
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    // Call the function to find the minimum coins
+    int result = sol.knapsack01(wt, val, n, W);
+    
+    // Output the result
+    cout << "The Maximum value of items is " << result << endl;
+    
+    return 0; 
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Arrays;
+
+class Solution {
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W) {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        int[][] dp = new int[n][W + 1];
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (int i = wt[0]; i <= W; i++) {
+            dp[0][i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = 0; cap <= W; cap++) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = dp[ind - 1][cap];
+                int taken = Integer.MIN_VALUE;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap) {
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+
+        // The final result is in the last cell
+        return dp[n - 1][W];
+    }
+
+    public static void main(String[] args) {
+        int[] wt = {1, 2, 4, 5};
+        int[] val = {5, 4, 8, 6};
+        int W = 5;
+        int n = wt.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Call the function to find the maximum value
+        int result = sol.knapsack01(wt, val, n, W);
+        
+        // Output the result
+        System.out.println("The Maximum value of items is " + result);
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve 0/1 Knapsack problem
+    def knapsack01(self, wt, val, n, W):
+        """ Declare a 2D DP table with dimensions 
+        n x W+1 and initialize it with zeros"""
+        dp = [[0] * (W + 1) for _ in range(n)]
+
+        """ Base condition: Fill in the first row 
+        for the weight of the first item"""
+        for i in range(wt[0], W + 1):
+            dp[0][i] = val[0]
+
+        # Fill in DP table using a bottom-up approach
+        for ind in range(1, n):
+            for cap in range(W + 1):
+                """ Calculate the maximum value by either 
+                excluding the current item or including it"""
+                notTaken = dp[ind - 1][cap]
+                taken = float('-inf')
+
+                """ Check if the current item can be included 
+                without exceeding the knapsack's capacity"""
+                if wt[ind] <= cap:
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]]
+
+                # Update the DP table
+                dp[ind][cap] = max(notTaken, taken)
+
+        # The final result is in the last cell
+        return dp[n - 1][W]
+
+wt = [1, 2, 4, 5]
+val = [5, 4, 8, 6]
+W = 5
+n = len(wt)
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the function to find the maximum value
+result = sol.knapsack01(wt, val, n, W)
+
+# Output the result
+print("The Maximum value of items is", result)</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the 0/1 Knapsack problem
+    knapsack01(wt, val, n, W) {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        let dp = Array.from({ length: n }, () => Array(W + 1).fill(0));
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (let i = wt[0]; i <= W; i++) {
+            dp[0][i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (let ind = 1; ind < n; ind++) {
+            for (let cap = 0; cap <= W; cap++) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                let notTaken = dp[ind - 1][cap];
+                let taken = Number.NEGATIVE_INFINITY;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap) {
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+
+        // The final result is in the last cell
+        return dp[n - 1][W];
+    }
+}
+
+const wt = [1, 2, 4, 5];
+const val = [5, 4, 8, 6];
+const W = 5;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call the function to find the maximum value
+const result = sol.knapsack01(wt, val, n, W);
+
+// Output the result
+console.log("The Maximum value of items is " + result);</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        int[,] dp = new int[n, W + 1];
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (int i = wt[0]; i <= W; i++)
+        {
+            dp[0, i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++)
+        {
+            for (int cap = 0; cap <= W; cap++)
+            {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = dp[ind - 1, cap];
+                int taken = int.MinValue;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap)
+                {
+                    taken = val[ind] + dp[ind - 1, cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind, cap] = Math.Max(notTaken, taken);
+            }
+        }
+
+        // The final result is in the last cell
+        return dp[n - 1, W];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] wt = { 1, 2, 4, 5 };
+        int[] val = { 5, 4, 8, 6 };
+        int W = 5;
+        int n = wt.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the maximum value
+        int result = sol.knapsack01(wt, val, n, W);
+
+        // Output the result
+        Console.WriteLine("The Maximum value of items is " + result);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Function to solve the 0/1 Knapsack problem
+func knapsack01(wt, val []int, n, W int) int {
+	// Declare a 2D DP table with dimensions n x W+1 and initialize it with zeros
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, W+1)
+	}
+
+	// Base condition: Fill in the first row for the weight of the first item
+	for i := wt[0]; i <= W; i++ {
+		dp[0][i] = val[0]
+	}
+
+	// Fill in DP table using a bottom-up approach
+	for ind := 1; ind < n; ind++ {
+		for cap := 0; cap <= W; cap++ {
+			// Exclude current item
+			notTaken := dp[ind-1][cap]
+			// A very small value (acts like INT_MIN)
+			taken := -1000000000
+
+			// Include current item if it fits
+			if wt[ind] <= cap {
+				taken = val[ind] + dp[ind-1][cap-wt[ind]]
+			}
+
+			// Take the maximum
+			if notTaken > taken {
+				dp[ind][cap] = notTaken
+			} else {
+				dp[ind][cap] = taken
+			}
+		}
+	}
+
+	// The final result is in the last cell
+	return dp[n-1][W]
+}
+
+func main() {
+	wt := []int{1, 2, 4, 5}
+	val := []int{5, 4, 8, 6}
+	W := 5
+	n := len(wt)
+
+	// Call the function
+	result := knapsack01(wt, val, n, W)
+
+	// Output the result
+	fmt.Println("The Maximum value of items is", result)
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<p><strong>Time Complexity: </strong>O(N*W), where N is the size of the array. As two nested loops are used for the
+    calculations.</p>
+<p><br></p>
+<p><strong>Space Complexity:</strong>O(N*W), As a 2D array of size N*W is used.</p></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><p>If we observe the relation, dp[ind][cap] = max(dp[ind-1][cap] ,dp[ind-1][cap-wt[ind]]). We find that to calculate a
+    value of a cell of the dp array, we need only the previous row values (say prev). So, we don’t need to store an
+    entire array. Hence we can space optimize it. We will be space optimizing this solution using only one row.</p>
+
+<h5><strong>Intuition:</strong></h5>
+<p>If we closely observe, we fill in the following manner in two-row space optimization:</p>
+<ol>
+    <li>We will initialize the first row and then using its values we will the next row.</li>
+    <li><img
+            src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/0 and 1 Knapsack/-lTO-uk9c">
+    </li>
+    <li>If we clearly see the values required: dp[ind-1][cap] and dp[ind-1][cap - wt[ind]], we can say that if we are at
+        a column cap, we will only require the values shown in the green region and none in the red region shown in the
+        below image ( because cap - wt[ind] will always be less than the cap).</li>
+    <li><img
+            src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/0 and 1 Knapsack/-_2lpjYPm">
+    </li>
+    <li>As we don’t want values from the right, we can start filling this new row from the right rather than the left.
+    </li>
+    <li><img
+            src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/0 and 1 Knapsack/-kHXE2wmq">
+    </li>
+    <li>Now here is the catch, if we are filling from the right and at any time we need the previous row’s value of the
+        leftward columns only, why do we need to have two rows in the first place? We can use a single row and overwrite
+        the new computed values on itself in order to store it.</li>
+    <li><img
+            src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/0 and 1 Knapsack/-Isl-suvB">
+    </li>
+</ol>
+
+
+<br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:  
+    // Function to solve the 0/1 Knapsack problem
+    int knapsack01(vector<int>& wt, vector<int>& val, int n, int W) {
+        /* Initialize a vector 'prev' to represent 
+        the previous row of the DP table*/
+        vector<int> prev(W + 1, 0);
+
+        /* Base condition: Fill in 'prev' 
+        for the weight of the first item*/
+        for (int i = wt[0]; i <= W; i++) {
+            prev[i] = val[0];
+        }
+
+        // Fill in the table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = W; cap >= 0; cap--) {
+                
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = prev[cap];
+                int taken = INT_MIN;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap) {
+                    taken = val[ind] + prev[cap - wt[ind]];
+                }
+
+                // Update 'prev' for the current capacity
+                prev[cap] = max(notTaken, taken);
+            }
+        }
+
+        /* The final result is in the 
+        last cell of the 'prev' vector*/
+        return prev[W];
+    }
+};
+
+int main() {
+    vector<int> wt = {1, 2, 4, 5};
+    vector<int> val = {5, 4, 8, 6};
+    int W = 5;
+    int n = wt.size();
+
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    // Call the function to find the minimum coins
+    int result = sol.knapsack01(wt, val, n, W);
+    
+    // Output the result
+    cout << "The Maximum value of items is " << result << endl;
+    
+    return 0; 
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W) {
+        /* Initialize a vector 'prev' to represent 
+        the previous row of the DP table*/
+        int[] prev = new int[W + 1];
+
+        /* Base condition: Fill in 'prev' 
+        for the weight of the first item*/
+        for (int i = wt[0]; i <= W; i++) {
+            prev[i] = val[0];
+        }
+
+        // Fill in the table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int cap = W; cap >= 0; cap--) {
+                /* Calculate the maximum value by either 
+                excluding the current item or including it*/
+                int notTaken = prev[cap];
+                int taken = Integer.MIN_VALUE;
+
+                /* Check if the current item can be included 
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap) {
+                    taken = val[ind] + prev[cap - wt[ind]];
+                }
+
+                // Update 'prev' for the current capacity
+                prev[cap] = Math.max(notTaken, taken);
+            }
+        }
+
+        /* The final result is in the
+        last cell of the 'prev' vector*/
+        return prev[W];
+    }
+
+    public static void main(String[] args) {
+        int[] wt = {1, 2, 4, 5};
+        int[] val = {5, 4, 8, 6};
+        int W = 5;
+        int n = wt.length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the maximum value
+        int result = sol.knapsack01(wt, val, n, W);
+
+        // Output the result
+        System.out.println("The Maximum value of items is " + result);
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to solve the 0/1 Knapsack problem
+    def knapsack01(self, wt, val, n, W):
+        """ Initialize a vector 'prev' to represent
+        the previous row of the DP table"""
+        prev = [0] * (W + 1)
+
+        """ Base condition: Fill in 'prev' 
+        for the weight of the first item"""
+        for i in range(wt[0], W + 1):
+            prev[i] = val[0]
+
+        # Fill in the table using a bottom-up approach
+        for ind in range(1, n):
+            for cap in range(W, -1, -1):
+                """ Calculate the maximum value by either 
+                excluding the current item or including it"""
+                notTaken = prev[cap]
+                taken = float('-inf')
+
+                """ Check if the current item can be included
+                without exceeding the knapsack's capacity"""
+                if wt[ind] <= cap:
+                    taken = val[ind] + prev[cap - wt[ind]]
+
+                # Update 'prev' for the current capacity
+                prev[cap] = max(notTaken, taken)
+
+        """ The final result is in the 
+        last cell of the 'prev' vector"""
+        return prev[W]
+
+wt = [1, 2, 4, 5]
+val = [5, 4, 8, 6]
+W = 5
+n = len(wt)
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the function to find the maximum value
+result = sol.knapsack01(wt, val, n, W)
+
+# Output the result
+print("The Maximum value of items is", result)</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to solve the 0/1 Knapsack problem
+    knapsack01(wt, val, n, W) {
+        /* Initialize a vector 'prev' to represent
+        the previous row of the DP table*/
+        let prev = Array(W + 1).fill(0);
+
+        /* Base condition: Fill in 'prev' 
+        for the weight of the first item*/
+        for (let i = wt[0]; i <= W; i++) {
+            prev[i] = val[0];
+        }
+
+        // Fill in the table using a bottom-up approach
+        for (let ind = 1; ind < n; ind++) {
+            for (let cap = W; cap >= 0; cap--) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                let notTaken = prev[cap];
+                let taken = Number.NEGATIVE_INFINITY;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap) {
+                    taken = val[ind] + prev[cap - wt[ind]];
+                }
+
+                // Update 'prev' for the current capacity
+                prev[cap] = Math.max(notTaken, taken);
+            }
+        }
+
+        /* The final result is in the 
+        last cell of the 'prev' vector*/
+        return prev[W];
+    }
+}
+
+const wt = [1, 2, 4, 5];
+const val = [5, 4, 8, 6];
+const W = 5;
+const n = wt.length;
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call the function to find the maximum value
+const result = sol.knapsack01(wt, val, n, W);
+
+// Output the result
+console.log("The Maximum value of items is " + result);</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        /* Initialize a vector 'prev' to represent
+        the previous row of the DP table*/
+        int[] prev = new int[W + 1];
+
+        /* Base condition: Fill in 'prev' 
+        for the weight of the first item*/
+        for (int i = wt[0]; i <= W; i++)
+        {
+            prev[i] = val[0];
+        }
+
+        // Fill in the table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++)
+        {
+            for (int cap = W; cap >= 0; cap--)
+            {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = prev[cap];
+                int taken = int.MinValue;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack's capacity*/
+                if (wt[ind] <= cap)
+                {
+                    taken = val[ind] + prev[cap - wt[ind]];
+                }
+
+                // Update 'prev' for the current capacity
+                prev[cap] = Math.Max(notTaken, taken);
+            }
+        }
+
+        /* The final result is in the 
+        last cell of the 'prev' vector*/
+        return prev[W];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] wt = {1, 2, 4, 5};
+        int[] val = {5, 4, 8, 6};
+        int W = 5;
+        int n = wt.Length;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the function to find the maximum value
+        int result = sol.knapsack01(wt, val, n, W);
+
+        // Output the result
+        Console.WriteLine("The Maximum value of items is " + result);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Function to solve the 0/1 Knapsack problem
+func knapsack01(wt, val []int, n, W int) int {
+	// Initialize a slice 'prev' to represent the previous row of the DP table
+	prev := make([]int, W+1)
+
+	// Base condition: Fill in 'prev' for the weight of the first item
+	for i := wt[0]; i <= W; i++ {
+		prev[i] = val[0]
+	}
+
+	// Fill in the table using a bottom-up approach
+	for ind := 1; ind < n; ind++ {
+		for cap := W; cap >= 0; cap-- {
+			// Exclude the current item
+			notTaken := prev[cap]
+
+			// A very small value (acts like INT_MIN)
+			taken := -1000000000
+
+			// Include the current item if it fits
+			if wt[ind] <= cap {
+				taken = val[ind] + prev[cap-wt[ind]]
+			}
+
+			// Take the maximum
+			if notTaken > taken {
+				prev[cap] = notTaken
+			} else {
+				prev[cap] = taken
+			}
+		}
+	}
+
+	// The final result is in the last cell of 'prev'
+	return prev[W]
+}
+
+func main() {
+	wt := []int{1, 2, 4, 5}
+	val := []int{5, 4, 8, 6}
+	W := 5
+	n := len(wt)
+
+	// Call the function
+	result := knapsack01(wt, val, n, W)
+
+	// Output the result
+	fmt.Println("The Maximum value of items is", result)
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<p><strong>Time Complexity: </strong>O(N*W), where N is the size of the array. As two nested loops are used for the
+    calculations. <br><br>
+    <strong>Space Complexity:</strong>O(W), We are using an external array of size ‘W+1’ to store only one row.</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    // Function to solve 0/1 Knapsack problem using memoization
+    int func(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int ind, int W) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind &lt; 0 || W == 0) {
+            return 0;
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        int notTaken = func(wt, val, ind - 1, W);
+        
+        int taken = 0;
+        /* Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity*/
+        if (wt[ind] &lt;= W) {
+            taken = val[ind] + func(wt, val, ind - 1, W - wt[ind]);
+        }
+
+        // Return the result 
+        return max(notTaken, taken);
+    }
+public:  
+    // Function to solve the 0/1 Knapsack problem
+    int knapsack01(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int n, int W) {
+        return func(wt, val, n - 1, W);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to solve 0/1 Knapsack problem using memoization
+    private int Func(int[] wt, int[] val, int ind, int W)
+    {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind &lt; 0 || W == 0)
+        {
+            return 0;
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        int notTaken = Func(wt, val, ind - 1, W);
+        
+        int taken = 0;
+        /* Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity*/
+        if (wt[ind] &lt;= W)
+        {
+            taken = val[ind] + Func(wt, val, ind - 1, W - wt[ind]);
+        }
+
+        // Return the result 
+        return Math.Max(notTaken, taken);
+    }
+
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        return Func(wt, val, n - 1, W);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to solve 0/1 Knapsack problem using recursion
+func funcRec(wt, val []int, ind, W int) int {
+	/* Base case: If there are no items left
+	or the knapsack has no capacity, return 0 */
+	if ind &lt; 0 || W == 0 {
+		return 0
+	}
+
+	/* Calculate the maximum value by either
+	excluding the current item or including it */
+	notTaken := funcRec(wt, val, ind-1, W)
+
+	taken := 0
+	/* Check if the current item can be included
+	without exceeding the knapsack&#x27;s capacity */
+	if wt[ind] &lt;= W {
+		taken = val[ind] + funcRec(wt, val, ind-1, W-wt[ind])
+	}
+
+	// Return the result
+	if taken &gt; notTaken {
+		return taken
+	}
+	return notTaken
+}
+
+// Function to solve the 0/1 Knapsack problem
+func knapsack01(wt, val []int, n, W int) int {
+	return funcRec(wt, val, n-1, W)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+// Function to solve 0/1 Knapsack problem using memoization
+private int func(int[] wt, int[] val, int ind, int W) {
+    /* Base case: If there are no items left
+    or the knapsack has no capacity, return 0 */
+    if (ind &lt; 0 || W == 0) {
+        return 0;
+    }
+
+    /* Calculate the maximum value by either
+    excluding the current item or including it */
+    int notTaken = func(wt, val, ind - 1, W);
+    
+    int taken = 0;
+    /* Check if the current item can be included
+    without exceeding the knapsack&#x27;s capacity */
+    if (wt[ind] &lt;= W) {
+        taken = val[ind] + func(wt, val, ind - 1, W - wt[ind]);
+    }
+
+    // Return the result 
+    return Math.max(notTaken, taken);
+}
+
+// Function to solve the 0/1 Knapsack problem
+public int knapsack01(int[] wt, int[] val, int n, int W) {
+    return func(wt, val, n - 1, W);
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve 0/1 Knapsack problem using memoization
+    func(wt, val, ind, W) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0 */
+        if (ind &lt; 0 || W === 0) {
+            return 0;
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it */
+        let notTaken = this.func(wt, val, ind - 1, W);
+        
+        let taken = 0;
+        /* Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity */
+        if (wt[ind] &lt;= W) {
+            taken = val[ind] + this.func(wt, val, ind - 1, W - wt[ind]);
+        }
+
+        // Store the result in the DP table and return
+        return Math.max(notTaken, taken);
+    }
+
+    // Function to solve the 0/1 Knapsack problem
+    knapsack01(wt, val, n, W) {
+        return this.func(wt, val, n - 1, W);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve 0/1 Knapsack problem using memoization
+    def func(self, wt, val, ind, W):
+        &quot;&quot;&quot; Base case: If there are no items left
+        or the knapsack has no capacity, return 0 &quot;&quot;&quot;
+        if ind &lt; 0 or W == 0:
+            return 0
+
+        &quot;&quot;&quot; Calculate the maximum value by either
+        excluding the current item or including it &quot;&quot;&quot;
+        notTaken = self.func(wt, val, ind - 1, W)
+
+        taken = 0
+        &quot;&quot;&quot; Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity&quot;&quot;&quot;
+        if wt[ind] &lt;= W:
+            taken = val[ind] + self.func(wt, val, ind - 1, W - wt[ind])
+
+        # Return the result 
+        return max(notTaken, taken)
+
+    # Function to solve the 0/1 Knapsack problem
+    def knapsack01(self, wt, val, n, W):
+        return self.func(wt, val, n - 1, W)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    // Function to solve the 0/1 Knapsack problem with arrays
+    int func(vector&lt;int&gt; &amp;wt, vector&lt;int&gt; &amp;val, int ind, int W, vector&lt;vector&lt;int&gt;&gt;&amp; dp) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0 */
+        if (ind &lt; 0 || W == 0) {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it */
+        if (dp[ind][W] != -1) {
+            return dp[ind][W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it */
+        int notTaken = func(wt, val, ind - 1, W, dp);
+        int taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity */
+        if (wt[ind] &lt;= W) {
+            taken = val[ind] + func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        return dp[ind][W] = max(notTaken, taken);
+    }
+
+public:
+    /* Function to return max value that
+    can be put in knapsack of capacity W.*/
+    int knapsack01(vector&lt;int&gt; wt, vector&lt;int&gt; val, int n, int W) { 
+        // Initialize DP table with -1
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(W + 1, -1));
+        return func(wt, val, n - 1, W, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to solve the 0/1 Knapsack problem with arrays
+    private int func(int[] wt, int[] val, int ind, int W, int[,] dp)
+    {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind &lt; 0 || W == 0)
+        {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind, W] != -1)
+        {
+            return dp[ind, W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        int notTaken = this.func(wt, val, ind - 1, W, dp);
+        int taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity*/
+        if (wt[ind] &lt;= W)
+        {
+            taken = val[ind] + this.func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        dp[ind, W] = Math.Max(notTaken, taken);
+        return dp[ind, W];
+    }
+
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        // Initialize DP table with -1
+        int[,] dp = new int[n, W + 1];
+        for (int i = 0; i &lt; n; i++)
+        {
+            for (int j = 0; j &lt;= W; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+        return this.func(wt, val, n - 1, W, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to solve the 0/1 Knapsack problem with arrays
+func funcKnapsack(wt, val []int, ind, W int, dp [][]int) int {
+	// Base case: If there are no items left or the knapsack has no capacity
+	if ind &lt; 0 || W == 0 {
+		return 0
+	}
+
+	// If the result for this state is already calculated
+	if dp[ind][W] != -1 {
+		return dp[ind][W]
+	}
+
+	// Calculate the maximum value by excluding or including the current item
+	notTaken := funcKnapsack(wt, val, ind-1, W, dp)
+	taken := 0
+
+	// Check if the current item can be included without exceeding capacity
+	if wt[ind] &lt;= W {
+		taken = val[ind] + funcKnapsack(wt, val, ind-1, W-wt[ind], dp)
+	}
+
+	// Store the result in DP table and return
+	if notTaken &gt; taken {
+		dp[ind][W] = notTaken
+	} else {
+		dp[ind][W] = taken
+	}
+	return dp[ind][W]
+}
+
+// Function to return max value that can be put in knapsack of capacity W
+func knapsack01(wt, val []int, n, W int) int {
+	// Initialize DP table with -1
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, W+1)
+		for j := 0; j &lt;= W; j++ {
+			dp[i][j] = -1
+		}
+	}
+	return funcKnapsack(wt, val, n-1, W, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    // Function to solve the 0/1 Knapsack problem with arrays
+    private int func(int[] wt, int[] val, int ind, int W, int[][] dp) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0 */
+        if (ind &lt; 0 || W == 0) {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it */
+        if (dp[ind][W] != -1) {
+            return dp[ind][W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it */
+        int notTaken = func(wt, val, ind - 1, W, dp);
+        int taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity */
+        if (wt[ind] &lt;= W) {
+            taken = val[ind] + func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        dp[ind][W] = Math.max(notTaken, taken);
+        return dp[ind][W];
+    }
+
+    public int knapsack01(int[] wt, int[] val, int n, int W) { 
+        // Initialize DP table with -1
+        int[][] dp = new int[n][W + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+        return func(wt, val, n - 1, W, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the 0/1 Knapsack problem with arrays
+    func(wt, val, ind, W, dp) {
+        /* Base case: If there are no items left
+        or the knapsack has no capacity, return 0*/
+        if (ind &lt; 0 || W === 0) {
+            return 0;
+        }
+
+        /* If the result for this state is
+        already calculated, return it*/
+        if (dp[ind][W] !== -1) {
+            return dp[ind][W];
+        }
+
+        /* Calculate the maximum value by either
+        excluding the current item or including it*/
+        const notTaken = this.func(wt, val, ind - 1, W, dp);
+        let taken = 0;
+
+        /* Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity*/
+        if (wt[ind] &lt;= W) {
+            taken = val[ind] + this.func(wt, val, ind - 1, W - wt[ind], dp);
+        }
+
+        // Store the result in the DP table and return
+        dp[ind][W] = Math.max(notTaken, taken);
+        return dp[ind][W];
+    }
+
+    knapsack01(wt, val, n, W) {
+        // Initialize DP table with -1
+        const dp = Array.from({ length: n }, () =&gt; Array(W + 1).fill(-1));
+        return this.func(wt, val, n - 1, W, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the 0/1 Knapsack problem with arrays
+    def func(self, wt, val, ind, W, dp):
+        &quot;&quot;&quot; Base case: If there are no items left 
+        or the knapsack has no capacity, return 0&quot;&quot;&quot;
+        if ind &lt; 0 or W == 0:
+            return 0
+
+        &quot;&quot;&quot; If the result for this state is
+        already calculated, return it&quot;&quot;&quot;
+        if dp[ind][W] != -1:
+            return dp[ind][W]
+
+        &quot;&quot;&quot; Calculate the maximum value by either
+        excluding the current item or including it&quot;&quot;&quot;
+        not_taken = self.func(wt, val, ind - 1, W, dp)
+        taken = 0
+
+        &quot;&quot;&quot; Check if the current item can be included
+        without exceeding the knapsack&#x27;s capacity&quot;&quot;&quot;
+        if wt[ind] &lt;= W:
+            taken = val[ind] + self.func(wt, val, ind - 1, W - wt[ind], dp)
+
+        # Store the result in the DP table and return
+        dp[ind][W] = max(not_taken, taken)
+        return dp[ind][W]
+
+    def knapsack01(self, wt, val, n, W):
+        # Initialize DP table with -1
+        dp = [[-1 for _ in range(W + 1)] for _ in range(n)]
+        return self.func(wt, val, n - 1, W, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:  
+    // Function to solve the 0/1 Knapsack problem
+    int knapsack01(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int n, int W) {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(W + 1, 0));
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (int i = wt[0]; i &lt;= W; i++) {
+            dp[0][i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int cap = 0; cap &lt;= W; cap++) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = dp[ind - 1][cap];
+                int taken = INT_MIN;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity*/
+                if (wt[ind] &lt;= cap) {
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind][cap] = max(notTaken, taken);
+            }
+        }
+
+        // The final result is in last cell
+        return dp[n - 1][W];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        int[,] dp = new int[n, W + 1];
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (int i = wt[0]; i &lt;= W; i++)
+        {
+            dp[0, i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            for (int cap = 0; cap &lt;= W; cap++)
+            {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = dp[ind - 1, cap];
+                int taken = int.MinValue;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity*/
+                if (wt[ind] &lt;= cap)
+                {
+                    taken = val[ind] + dp[ind - 1, cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind, cap] = Math.Max(notTaken, taken);
+            }
+        }
+
+        // The final result is in the last cell
+        return dp[n - 1, W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to solve the 0/1 Knapsack problem
+func knapsack01(wt, val []int, n, W int) int {
+	// Declare a 2D DP table with dimensions n x W+1 and initialize it with zeros
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, W+1)
+	}
+
+	// Base condition: Fill in the first row for the weight of the first item
+	for i := wt[0]; i &lt;= W; i++ {
+		dp[0][i] = val[0]
+	}
+
+	// Fill in DP table using a bottom-up approach
+	for ind := 1; ind &lt; n; ind++ {
+		for cap := 0; cap &lt;= W; cap++ {
+			// Exclude current item
+			notTaken := dp[ind-1][cap]
+			// A very small value (acts like INT_MIN)
+			taken := -1000000000
+
+			// Include current item if it fits
+			if wt[ind] &lt;= cap {
+				taken = val[ind] + dp[ind-1][cap-wt[ind]]
+			}
+
+			// Take the maximum
+			if notTaken &gt; taken {
+				dp[ind][cap] = notTaken
+			} else {
+				dp[ind][cap] = taken
+			}
+		}
+	}
+
+	// The final result is in the last cell
+	return dp[n-1][W]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W) {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        int[][] dp = new int[n][W + 1];
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (int i = wt[0]; i &lt;= W; i++) {
+            dp[0][i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int cap = 0; cap &lt;= W; cap++) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = dp[ind - 1][cap];
+                int taken = Integer.MIN_VALUE;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity*/
+                if (wt[ind] &lt;= cap) {
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+
+        // The final result is in the last cell
+        return dp[n - 1][W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the 0/1 Knapsack problem
+    knapsack01(wt, val, n, W) {
+        /* Declare a 2D DP table with dimensions
+        n x W+1 and initialize it with zeros*/
+        let dp = Array.from({ length: n }, () =&gt; Array(W + 1).fill(0));
+
+        /* Base condition: Fill in the first 
+        row for the weight of the first item*/
+        for (let i = wt[0]; i &lt;= W; i++) {
+            dp[0][i] = val[0];
+        }
+
+        // Fill in DP table using a bottom-up approach
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let cap = 0; cap &lt;= W; cap++) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                let notTaken = dp[ind - 1][cap];
+                let taken = Number.NEGATIVE_INFINITY;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity*/
+                if (wt[ind] &lt;= cap) {
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]];
+                }
+
+                // Update the DP table
+                dp[ind][cap] = Math.max(notTaken, taken);
+            }
+        }
+
+        // The final result is in the last cell
+        return dp[n - 1][W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve 0/1 Knapsack problem
+    def knapsack01(self, wt, val, n, W):
+        &quot;&quot;&quot; Declare a 2D DP table with dimensions 
+        n x W+1 and initialize it with zeros&quot;&quot;&quot;
+        dp = [[0] * (W + 1) for _ in range(n)]
+
+        &quot;&quot;&quot; Base condition: Fill in the first row 
+        for the weight of the first item&quot;&quot;&quot;
+        for i in range(wt[0], W + 1):
+            dp[0][i] = val[0]
+
+        # Fill in DP table using a bottom-up approach
+        for ind in range(1, n):
+            for cap in range(W + 1):
+                &quot;&quot;&quot; Calculate the maximum value by either 
+                excluding the current item or including it&quot;&quot;&quot;
+                notTaken = dp[ind - 1][cap]
+                taken = float(&#x27;-inf&#x27;)
+
+                &quot;&quot;&quot; Check if the current item can be included 
+                without exceeding the knapsack&#x27;s capacity&quot;&quot;&quot;
+                if wt[ind] &lt;= cap:
+                    taken = val[ind] + dp[ind - 1][cap - wt[ind]]
+
+                # Update the DP table
+                dp[ind][cap] = max(notTaken, taken)
+
+        # The final result is in the last cell
+        return dp[n - 1][W]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:  
+    // Function to solve the 0/1 Knapsack problem
+    int knapsack01(vector&lt;int&gt;&amp; wt, vector&lt;int&gt;&amp; val, int n, int W) {
+        /* Initialize a vector &#x27;prev&#x27; to represent 
+        the previous row of the DP table*/
+        vector&lt;int&gt; prev(W + 1, 0);
+
+        /* Base condition: Fill in &#x27;prev&#x27; 
+        for the weight of the first item*/
+        for (int i = wt[0]; i &lt;= W; i++) {
+            prev[i] = val[0];
+        }
+
+        // Fill in the table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int cap = W; cap &gt;= 0; cap--) {
+                
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = prev[cap];
+                int taken = INT_MIN;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity*/
+                if (wt[ind] &lt;= cap) {
+                    taken = val[ind] + prev[cap - wt[ind]];
+                }
+
+                // Update &#x27;prev&#x27; for the current capacity
+                prev[cap] = max(notTaken, taken);
+            }
+        }
+
+        /* The final result is in the 
+        last cell of the &#x27;prev&#x27; vector*/
+        return prev[W];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to solve the 0/1 Knapsack problem
+    public int knapsack01(int[] wt, int[] val, int n, int W)
+    {
+        /* Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table*/
+        int[] prev = new int[W + 1];
+
+        /* Base condition: Fill in &#x27;prev&#x27; 
+        for the weight of the first item*/
+        for (int i = wt[0]; i &lt;= W; i++)
+        {
+            prev[i] = val[0];
+        }
+
+        // Fill in the table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            for (int cap = W; cap &gt;= 0; cap--)
+            {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                int notTaken = prev[cap];
+                int taken = int.MinValue;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity*/
+                if (wt[ind] &lt;= cap)
+                {
+                    taken = val[ind] + prev[cap - wt[ind]];
+                }
+
+                // Update &#x27;prev&#x27; for the current capacity
+                prev[cap] = Math.Max(notTaken, taken);
+            }
+        }
+
+        /* The final result is in the 
+        last cell of the &#x27;prev&#x27; vector*/
+        return prev[W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to solve the 0/1 Knapsack problem
+func knapsack01(wt, val []int, n, W int) int {
+	// Initialize a slice &#x27;prev&#x27; to represent the previous row of the DP table
+	prev := make([]int, W+1)
+
+	// Base condition: Fill in &#x27;prev&#x27; for the weight of the first item
+	for i := wt[0]; i &lt;= W; i++ {
+		prev[i] = val[0]
+	}
+
+	// Fill in the table using a bottom-up approach
+	for ind := 1; ind &lt; n; ind++ {
+		for cap := W; cap &gt;= 0; cap-- {
+			// Exclude the current item
+			notTaken := prev[cap]
+
+			// A very small value (acts like INT_MIN)
+			taken := -1000000000
+
+			// Include the current item if it fits
+			if wt[ind] &lt;= cap {
+				taken = val[ind] + prev[cap-wt[ind]]
+			}
+
+			// Take the maximum
+			if notTaken &gt; taken {
+				prev[cap] = notTaken
+			} else {
+				prev[cap] = taken
+			}
+		}
+	}
+
+	// The final result is in the last cell of &#x27;prev&#x27;
+	return prev[W]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+// Function to solve the 0/1 Knapsack problem
+public int knapsack01(int[] wt, int[] val, int n, int W) {
+    /* Initialize a vector &#x27;prev&#x27; to represent 
+    the previous row of the DP table*/
+    int[] prev = new int[W + 1];
+
+    /* Base condition: Fill in &#x27;prev&#x27; 
+    for the weight of the first item*/
+    for (int i = wt[0]; i &lt;= W; i++) {
+        prev[i] = val[0];
+    }
+
+    // Fill in the table using a bottom-up approach
+    for (int ind = 1; ind &lt; n; ind++) {
+        for (int cap = W; cap &gt;= 0; cap--) {
+            /* Calculate the maximum value by either 
+            excluding the current item or including it*/
+            int notTaken = prev[cap];
+            int taken = Integer.MIN_VALUE;
+
+            /* Check if the current item can be included 
+            without exceeding the knapsack&#x27;s capacity*/
+            if (wt[ind] &lt;= cap) {
+                taken = val[ind] + prev[cap - wt[ind]];
+            }
+
+            // Update &#x27;prev&#x27; for the current capacity
+            prev[cap] = Math.max(notTaken, taken);
+        }
+    }
+
+    /* The final result is in the
+    last cell of the &#x27;prev&#x27; vector*/
+    return prev[W];
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to solve the 0/1 Knapsack problem
+    knapsack01(wt, val, n, W) {
+        /* Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table*/
+        let prev = Array(W + 1).fill(0);
+
+        /* Base condition: Fill in &#x27;prev&#x27; 
+        for the weight of the first item*/
+        for (let i = wt[0]; i &lt;= W; i++) {
+            prev[i] = val[0];
+        }
+
+        // Fill in the table using a bottom-up approach
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let cap = W; cap &gt;= 0; cap--) {
+                /* Calculate the maximum value by either
+                excluding the current item or including it*/
+                let notTaken = prev[cap];
+                let taken = Number.NEGATIVE_INFINITY;
+
+                /* Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity*/
+                if (wt[ind] &lt;= cap) {
+                    taken = val[ind] + prev[cap - wt[ind]];
+                }
+
+                // Update &#x27;prev&#x27; for the current capacity
+                prev[cap] = Math.max(notTaken, taken);
+            }
+        }
+
+        /* The final result is in the 
+        last cell of the &#x27;prev&#x27; vector*/
+        return prev[W];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to solve the 0/1 Knapsack problem
+    def knapsack01(self, wt, val, n, W):
+        &quot;&quot;&quot; Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table&quot;&quot;&quot;
+        prev = [0] * (W + 1)
+
+        &quot;&quot;&quot; Base condition: Fill in &#x27;prev&#x27; 
+        for the weight of the first item&quot;&quot;&quot;
+        for i in range(wt[0], W + 1):
+            prev[i] = val[0]
+
+        # Fill in the table using a bottom-up approach
+        for ind in range(1, n):
+            for cap in range(W, -1, -1):
+                &quot;&quot;&quot; Calculate the maximum value by either 
+                excluding the current item or including it&quot;&quot;&quot;
+                notTaken = prev[cap]
+                taken = float(&#x27;-inf&#x27;)
+
+                &quot;&quot;&quot; Check if the current item can be included
+                without exceeding the knapsack&#x27;s capacity&quot;&quot;&quot;
+                if wt[ind] &lt;= cap:
+                    taken = val[ind] + prev[cap - wt[ind]]
+
+                # Update &#x27;prev&#x27; for the current capacity
+                prev[cap] = max(notTaken, taken)
+
+        &quot;&quot;&quot; The final result is in the 
+        last cell of the &#x27;prev&#x27; vector&quot;&quot;&quot;
+        return prev[W]</code></pre></div>
+</body>
+</html>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search insert position</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Search insert position</h1>
+<div class="meta">
+  <span class="badge difficulty-Easy">Easy</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Binary Search</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a sorted array of nums consisting of distinct integers and a target value, return the <strong>index</strong> if the <strong>target</strong> is found. If not, return the index where it would be if it were inserted in order.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  1 <= nums.length <= 10<sup>5</sup></li><li>  -10<sup>5</sup> <= nums[i] <= 10<sup>5</sup></li><li>  nums contains distinct values sorted in ascending order.</li><li>  -10<sup>5</sup><= target <= 10<sup>5</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: nums = [1, 3, 5, 6], target = 5</p><p>Output: 2</p><p>Explanation: The target value 5 is found at index 2 in the sorted array. Hence, the function returns 2.</p><h3>Example 2</h3><p>Input: nums = [1, 3, 5, 6], target = 2</p><p>Output: 1</p><p>Explanation: The target value 2 is not found in the array. However, it should be inserted at index 1 to maintain the sorted order of the array.</p><h3>Example 3</h3><p>Input: nums = [1, 3, 5, 6], target = 7</p></div>
+
+<div class="section"><h2>Editorial: Brute</h2><html><head></head><body><h3><strong>Intuition: </strong></h3>
+<p>Let's start with the simplest way to solve this problem. Imagine you're reading a book, and you want to find a specific page. You start from the beginning and turn each page one by one until you find the page you're looking for. If you don't find it, you know exactly where it should be inserted based on the pages you've turned so far.</p>
+
+<h3><strong>Approach: </strong></h3>
+<ol>
+    <li> Begin with the first number in the list. If the number matches the target, return the current index.</li>
+<li>If the number is greater than the target, return the current index as the position where the target should be inserted.</li>
+<li>If you reach the end of the list without finding the target, return the length of the list, as the target should be inserted at the end.</li>
+</ol>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    /* Public method to find the index of the 
+        target or where it would be inserted*/
+    int searchInsert(vector<int> &nums, int target)
+    {
+        // Iterate through the vector
+        for (int i = 0; i < nums.size(); ++i) {
+            /* If current element is greater than 
+           or equal to the target */
+            if (nums[i] >= target) {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements,
+              return the size of the vector */
+        return nums.size();
+    }
+};
+
+int main()
+{
+    vector<int> nums = {1, 3, 5, 6};
+    int target = 5;
+
+    // Create an instance of the Solution class
+    Solution sol;
+
+    // Find the insertion index
+    int ind = sol.searchInsert(nums, target);
+
+    cout << "The index is: " << ind << "\n";
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Public method to find the index of the 
+          target or where it would be inserted */
+    public int searchInsert(int[] nums, int target) {
+        // Iterate through the array
+        for (int i = 0; i < nums.length; i++) {
+            /* If current element is greater than 
+                 or equal to the target */
+            if (nums[i] >= target) {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements, 
+             return the length of the array */
+        return nums.length;
+    }
+
+    public static void main(String[] args) {
+
+        int[] nums = {1, 3, 5, 6};
+        int target = 5;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Find the insertion index
+        int index = sol.searchInsert(nums, target);
+        System.out.println("The index is: " + index);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def searchInsert(self, nums, target):
+        # Iterate through the list
+        for i in range(len(nums)):
+            # If current element is greater than
+           # or equal to the target
+            if nums[i] >= target:
+                # Return the current index
+                return i
+        # If target is greater than all elements, 
+        # return the length of the list
+        return len(nums)
+
+nums = [1, 3, 5, 6]
+target = 5
+
+# Create an instance of the Solution class
+sol = Solution()
+
+# Find the insertion index
+index = sol.searchInsert(nums, target)
+print(f"The index is: {index}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /*  Public method to find the index of the 
+         target or where it would be inserted */
+    searchInsert(nums, target) {
+        // Iterate through the array
+        for (let i = 0; i < nums.length; i++) {
+            /* If current element is greater than
+                 or equal to the target */
+            if (nums[i] >= target) {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements, 
+             return the length of the array */
+        return nums.length;
+    }
+}
+
+// Example usage:
+const nums = [1, 3, 5, 6];
+const target = 5;
+
+// Create an instance of the Solution class
+const sol = new Solution();
+
+// Find the insertion index
+const index = sol.searchInsert(nums, target);
+console.log(`The index is: ${index}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Linq;
+
+public class Solution
+{
+    /*  Public method to find the index of the 
+         target or where it would be inserted */
+    public int SearchInsert(int[] nums, int target)
+    {
+        // Iterate through the array
+        for (int i = 0; i < nums.Length; i++)
+        {
+            /* If current element is greater than
+                 or equal to the target */
+            if (nums[i] >= target)
+            {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements, 
+             return the length of the array */
+        return nums.Length;
+    }
+
+public static void Main(string[] args)
+    {
+        int[] nums = {1, 3, 5, 6};
+        int target = 5;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Find the insertion index
+        int ind = sol.SearchInsert(nums, target);
+
+        Console.WriteLine("The index is: " + ind);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// searchInsert returns the index of the target in nums
+func searchInsert(nums []int, target int) int {
+    // Iterate through the slice
+    for i := 0; i < len(nums); i++ {
+        // If current element is greater than or equal to the target
+        if nums[i] >= target {
+            // Return the current index
+            return i
+        }
+    }
+    // If target is greater than all elements, return the length
+    return len(nums)
+}
+
+func main() {
+    nums := []int{1, 3, 5, 6}
+    target := 5
+
+    ind := searchInsert(nums, target)
+
+    fmt.Printf("The index is: %d\n", ind)
+}
+</code></pre></div></div></div>
+
+<p><strong>Time Complexity:</strong> O(N), where N is the size of the given array. We are using the Linear Search algorithm, which iterates linearly resulting in N time complexity.</p>
+
+<p><strong>Space Complexity:</strong> O(1), as we are not using any extra space to solve this problem.</p></body></html></div>
+<div class="section"><h2>Editorial: Optimal</h2><html><head></head><body><h3><strong>Intuition: </strong></h3>
+<p>Considering our example used in brute force approach, imagine you have a faster way to find the target, using a table of contents in a book where you can quickly skip to different sections instead of turning each page one by one. This is essentially what binary search accomplishes. It allows us to efficiently narrow down the search range by repeatedly dividing it in half.</p>
+
+<p>In this specific problem, if the target itself is found, return its index. Otherwise, return the smallest index where the element is greater than the target. Upon observation, it becomes clear that the lower bound of the target serves this purpose. Therefore, for this problem, simply find the lower bound of the target. If no such element is found, return the size of the array.</p>
+
+<h3><strong>Approach: </strong></h3>
+<ol>
+    <li> Use two pointers to traverse the array, low and high, and an ans variable with the size of the array to store the answer. The low pointer starts at the first index, and the high pointer starts at the last index. </li>
+
+<li> Calculate the middle index, and compare arr[mid] with the  given  element. If <code>arr[mid]</code> is greater than or equal to the given element then we the update the ans variable with mid and search in the left half for a smaller index that also satisfies the condition. </li>
+<li> If arr[mid] is less than the given element, then we search in the right half by eliminating the left half. We do so by making the low pointer as mid+1.</li>
+<li> Continue the process until the low pointer crosses the high pointer. At this point, the ans variable will hold the answer. </li>
+</ol>
+<h3><strong>Dry Run: </strong></h3>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/Logic Building/Search insert position/1.png-o3Jm-xZ2" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/Logic Building/Search insert position/2.png-KsULlUW1" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Binary Search/Logic Building/Search insert position/3.png-s7KTMzCe" alt="Image 3"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Binary Search/Logic Building/Search insert position/1.png-o3Jm-xZ2" alt="Image 1"><img src="https://static.takeuforward.org/premium/Binary Search/Logic Building/Search insert position/2.png-KsULlUW1" alt="Image 2"><img src="https://static.takeuforward.org/premium/Binary Search/Logic Building/Search insert position/3.png-s7KTMzCe" alt="Image 3"></div></div><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution
+{
+public:
+    int searchInsert(vector<int> &nums, int target)
+    {
+        int n = nums.size(); 
+        int low = 0, high = n - 1;
+        int ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low <= high) {
+            int mid = (low + high) / 2;
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] >= target) {
+                ans = mid;
+                high = mid - 1;
+            }
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+};
+
+int main()
+{
+    vector<int> nums = {1, 3, 5, 6};
+    int target = 5;
+
+    // Create an instance of the Solution class
+    Solution sol;
+
+    // Find the insertion index
+    int ind = sol.searchInsert(nums, target);
+
+    cout << "The index is: " << ind << "\n";
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    public int searchInsert(int[] nums, int target) {
+        int n = nums.length;
+        int low = 0, high = n - 1;
+        int ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low <= high) {
+            int mid = (low + high) / 2;
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] >= target) {
+                ans = mid;
+                high = mid - 1;
+            } 
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        int[] nums = {1, 3, 5, 6};
+        int target = 5;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Find the insertion index
+        int ind = sol.searchInsert(nums, target);
+
+        System.out.println("The index is: " + ind);
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def searchInsert(self, nums, target):
+        n = len(nums)
+        low, high = 0, n - 1
+        ans = n
+
+        # Applying Binary Search Algorithm
+        while low <= high:
+            mid = (low + high) // 2
+
+            # If mid element is greater than 
+            # or equal to target, update ans 
+            # and search the left half
+            if nums[mid] >= target:
+                ans = mid
+                high = mid - 1
+            else:
+                # Otherwise, search the right half
+                low = mid + 1
+
+        return ans
+
+if __name__ == "__main__":
+    nums = [1, 3, 5, 6]
+    target = 5
+
+    # Create an instance of the Solution class
+    sol = Solution()
+
+    # Find the insertion index
+    ind = sol.searchInsert(nums, target)
+
+    print("The index is:", ind)</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    searchInsert(nums, target) {
+        let n = nums.length;
+        let low = 0, high = n - 1;
+        let ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low <= high) {
+            let mid = Math.floor((low + high) / 2);
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] >= target) {
+                ans = mid;
+                high = mid - 1;
+            } 
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+}
+
+const nums = [1, 3, 5, 6];
+const target = 5;
+
+// Create an instance of the Solution class
+const sol = new Solution();
+
+// Find the insertion index
+const ind = sol.searchInsert(nums, target);
+
+console.log("The index is:", ind);</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution {
+    public int SearchInsert(int[] nums, int target) {
+        int n = nums.Length;
+        int low = 0, high = n - 1;
+        int ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] >= target) {
+                ans = mid;
+                high = mid - 1;
+            } 
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+
+public static void Main(string[] args) {
+        int[] nums = {1, 3, 5, 6};
+        int target = 5;
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Find the insertion index
+        int ind = sol.SearchInsert(nums, target);
+
+        Console.WriteLine("The index is: " + ind);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// searchInsert finds the index of the target or the position
+func searchInsert(nums []int, target int) int {
+    low, high := 0, len(nums)-1
+    ans := len(nums)
+
+    // Applying Binary Search Algorithm
+    for low <= high {
+        mid := (low + high) / 2
+
+        /* If mid element is greater than 
+           or equal to target, update ans 
+           and search the left half */
+        if nums[mid] >= target {
+            ans = mid
+            // search left half
+            high = mid - 1
+        } else {
+            // Otherwise, search the right half
+            low = mid + 1
+        }
+    }
+    return ans
+}
+
+func main() {
+    nums := []int{1, 3, 5, 6}
+    target := 5
+
+    ind := searchInsert(nums, target)
+    fmt.Printf("The index is: %d\n", ind)
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+
+<p><strong>Time Complexity:</strong> O(logN), where N is the size of the given array. We are using the Binary Search algorithm, which divides the search space in half each time, resulting in a logarithmic time complexity.</p>
+
+<p><strong>Space Complexity:</strong> O(1), as we are not using any extra space to solve this problem.</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution
+{
+public:
+    /* Public method to find the index of the 
+        target or where it would be inserted*/
+    int searchInsert(vector&lt;int&gt; &amp;nums, int target)
+    {
+        // Iterate through the vector
+        for (int i = 0; i &lt; nums.size(); ++i) {
+            /* If current element is greater than 
+           or equal to the target */
+            if (nums[i] &gt;= target) {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements,
+              return the size of the vector */
+        return nums.size();
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    /*  Public method to find the index of the 
+         target or where it would be inserted */
+    public int SearchInsert(int[] nums, int target) {
+        // Iterate through the array
+        for (int i = 0; i &lt; nums.Length; i++)
+        {
+            /* If current element is greater than
+                 or equal to the target */
+            if (nums[i] &gt;= target)
+            {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements, 
+             return the length of the array */
+        return nums.Length;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>func searchInsert(nums []int, target int) int {
+    // Iterate through the slice
+    for i := 0; i &lt; len(nums); i++ {
+        // If current element is greater than or equal to the target
+        if nums[i] &gt;= target {
+            // Return the current index
+            return i
+        }
+    }
+    // If target is greater than all elements, return the length
+    return len(nums)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Public method to find the index of the 
+          target or where it would be inserted */
+    public int searchInsert(int[] nums, int target) {
+        // Iterate through the array
+        for (int i = 0; i &lt; nums.length; i++) {
+            /* If current element is greater than 
+                 or equal to the target */
+            if (nums[i] &gt;= target) {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements, 
+             return the length of the array */
+        return nums.length;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /*  Public method to find the index of the 
+         target or where it would be inserted */
+    searchInsert(nums, target) {
+        // Iterate through the array
+        for (let i = 0; i &lt; nums.length; i++) {
+            /* If current element is greater than
+                 or equal to the target */
+            if (nums[i] &gt;= target) {
+                // Return the current index
+                return i;
+            }
+        }
+        /* If target is greater than all elements, 
+             return the length of the array */
+        return nums.length;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def searchInsert(self, nums, target):
+        # Iterate through the list
+        for i in range(len(nums)):
+            # If current element is greater than
+            # or equal to the target
+            if nums[i] &gt;= target:
+                # Return the current index
+                return i
+        # If target is greater than all elements, 
+        # return the length of the list
+        return len(nums)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution
+{
+public:
+    int searchInsert(vector&lt;int&gt; &amp;nums, int target)
+    {
+        int n = nums.size(); 
+        int low = 0, high = n - 1;
+        int ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low &lt;= high) {
+            int mid = (low + high) / 2;
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] &gt;= target) {
+                ans = mid;
+                high = mid - 1;
+            }
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    public int SearchInsert(int[] nums, int target) {
+        int n = nums.Length;
+        int low = 0, high = n - 1;
+        int ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low &lt;= high) {
+            int mid = low + (high - low) / 2;
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] &gt;= target) {
+                ans = mid;
+                high = mid - 1;
+            } 
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>func searchInsert(nums []int, target int) int {
+    low, high := 0, len(nums)-1
+    ans := len(nums)
+
+    // Applying Binary Search Algorithm
+    for low &lt;= high {
+        mid := (low + high) / 2
+
+        /* If mid element is greater than 
+           or equal to target, update ans 
+           and search the left half */
+        if nums[mid] &gt;= target {
+            ans = mid
+            // search left half
+            high = mid - 1
+        } else {
+            // Otherwise, search the right half
+            low = mid + 1
+        }
+    }
+    return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    public int searchInsert(int[] nums, int target) {
+        int n = nums.length;
+        int low = 0, high = n - 1;
+        int ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low &lt;= high) {
+            int mid = (low + high) / 2;
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] &gt;= target) {
+                ans = mid;
+                high = mid - 1;
+            } 
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    searchInsert(nums, target) {
+        let n = nums.length;
+        let low = 0, high = n - 1;
+        let ans = n;
+
+        // Applying Binary Search Algorithm
+        while (low &lt;= high) {
+            let mid = Math.floor((low + high) / 2);
+
+            /* If mid element is greater than 
+               or equal to target, update ans 
+               and search the left half */
+            if (nums[mid] &gt;= target) {
+                ans = mid;
+                high = mid - 1;
+            } 
+            // Otherwise, search the right half
+            else {
+                low = mid + 1;
+            }
+        }
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def searchInsert(self, nums, target):
+        n = len(nums)
+        low, high = 0, n - 1
+        ans = n
+
+        # Applying Binary Search Algorithm
+        while low &lt;= high:
+            mid = (low + high) // 2
+
+            # If mid element is greater than 
+            # or equal to target, update ans 
+            # and search the left half
+            if nums[mid] &gt;= target:
+                ans = mid
+                high = mid - 1
+            else:
+                # Otherwise, search the right half
+                low = mid + 1
+
+        return ans</code></pre></div>
+</body>
+</html>

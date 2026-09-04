@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accounts merge</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Accounts merge</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Hash Table</span><span>String</span><span>Depth-First Search</span><span>Breadth-First Search</span><span>Union Find</span><span>Sorting</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a list of accounts where each element account [i] is a list of strings, where the first element account [i][0] is a name, and the rest of the elements are emails representing emails of the account.</p><p><br></p><p>Now, <strong>merge</strong> these accounts. Two accounts definitely belong to the same person if there is some common email to both accounts. Note that even if two accounts have the same name, they may belong to different people as people could have the same name. A person can have any number of accounts initially, but all of their accounts definitely have the same name.</p><p><br></p><p>After merging the accounts, return the accounts in the following format: the first element of each account is the name, and the rest of the elements are emails in sorted order.</p>
+</div>
+<div class="section"><h2>Constraints</h2><p>·  1 <= N <= 1000</p><p>·  2 <= accounts[i].size <= 15</p><p>·  1 <= accounts[i][j].size <= 30</p><p>·  accounts[i][0] consists of English letters.</p></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> N = 4,</p><p>accounts =</p><p>[["John","johnsmith@mail.com","john_newyork@mail.com"],</p><p>["John","johnsmith@mail.com","john00@mail.com"],</p><p>["Mary","mary@mail.com"],</p><p>["John","johnnybravo@mail.com"]]</p><p><br></p><p><strong>Output:</strong> [["John","john00@mail.com","john_newyork@mail.com", "johnsmith@mail.com"],</p><p>["Mary","mary@mail.com"],</p><p>["John","johnnybravo@mail.com"]]</p><p><br></p><p><strong>Explanation:</strong> The first and the second John are the same person as they have a common email. But the third Mary and fourth John are not the same as they do not have any common email. The result can be in any order but the emails must be in sorted order. The following is also a valid result:</p><p>[['Mary', 'mary@mail.com'],</p><p>['John', 'johnnybravo@mail.com'],</p><p>['John', 'john00@mail.com' , 'john_newyork@mail.com', 'johnsmith@mail.com' ]]</p><h3>Example 2</h3><p><strong>Input:</strong> N = 6,</p><p>accounts =</p><p>[["John","j1@com","j2@com","j3@com"],</p><p>["John","j4@com"],</p><p>["Raj",”r1@com”, “r2@com”],</p><p>["John","j1@com","j5@com"],</p><p>["Raj",”r2@com”, “r3@com”],</p><p>["Mary","m1@com"]]</p><p><br></p><p><strong>Output:</strong> [["John","j1@com","j2@com","j3@com","j5@com"],</p><p>["John","j4@com"],</p><p>["Raj",”r1@com”, “r2@com”, “r3@com”],</p><p>["Mary","m1@com"]]</p><p><br></p><p><strong>Explanation:</strong> The first and the fourth John are the same person here as they have a common email. And the third and the fifth Raj are also the same person. So, the same accounts are merged.</p><h3>Example 3</h3><p><strong>Input:</strong> N = 3,</p><p><br></p><p>accounts = [</p><p>  ["Alice", "alice@mail.com", "alice_work@mail.com"],</p><p>  ["Bob", "bob@gmail.com"],</p><p>  ["Alice", "alice_personal@mail.com", "alice@mail.com"]</p><p>]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem is actually a critical part of many modern communication apps and customer relationship management (CRM) systems. These systems often need to process thousands of accounts or user profiles from various sources and merge duplicates to ensure consistency and accuracy in managing user or customer data. This process, called deduplication, is an everyday problem, especially where data is sourced from multiple inputs, like social media, customer feedback, emails etc. An efficient algorithm to solve this in real-time can significantly improve the UX for customer support systems and data analytics tasks.</p></div>
+<div class="section"><h2>Editorial: Solution</h2>
+<p>
+    <strong>Pre Requisite:</strong> <a href="/plus/dsa/problems/disjoint-set-?category=graph&subcategory=minimum-spanning-tree" target="_blank">Disjoint Set</a>
+</p>
+
+<h3>Intuition:</h3> 
+<p>
+    To identify if two accounts have a common email, iterating over two accounts of the same name and checking each email can be costly. <br>
+    A more efficient way involves visualizing the set of emails of each account as a graph, forming various connected components. Set of emails belonging to a person form a single node. Each mail can be placed under a set representing that the email belongs to that person. If an email is found to be already associated with some other person, a common email is found, which means all the emails in both the sets belong to a single person and thus, merging of accounts(sets) must be done.
+    <h6>How to handle merging of accounts?</h6>
+    The data structure that is the best fit when it comes to handling merge/union operation is <strong>Disjoint Set</strong>. Hence, whenever the two sets(accounts) are found to have a common email, the merge operation can be performed in constant time. 
+    <h6>Understanding:</h6> 
+    To store the mails belonging to a single person, a hashmap can be used which will provide constant look-up time which will be efficient to check if the mails already belonging to a person or not. 
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Initialize a DSU structure to keep track of connected components (emails belonging to the same person).</li>
+   <li>Traverse through each account and its emails. For each email, if it's seen for the first time, map it to the current account index. If the email has been seen before, union the current account index with the previously mapped account index.</li>
+   <li>Create a list to collect emails for each connected component.</li>
+   <li>Traverse the email-to-node mapping to collect all emails under their ultimate parent node.</li>
+   <li>For each component, sort the emails and prepend the owner's name. Collect all the accounts and sort them by name.</li>
+</ol>
+
+
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/l1.drawio.png-vKWFw31L" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/Untitled Diagram.drawio (3).png-KYWOfJ_K" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/Untitled Diagram.drawio (4).png-RJNBXLMW" alt="Image 3"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/l1.drawio.png-vKWFw31L" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/Untitled Diagram.drawio (3).png-KYWOfJ_K" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/Untitled Diagram.drawio (4).png-RJNBXLMW" alt="Image 3"></div></div>
+<!--
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/m1.drawio (1).png-lnagl0tu" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/m2.drawio (1).png-kKOCCa0x" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/m3.drawio (1).png-Ow9QezvV" alt="Image 3"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"  stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/m1.drawio (1).png-lnagl0tu" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/m2.drawio (1).png-kKOCCa0x" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems II/Accounts merge/m3.drawio (1).png-Ow9QezvV" alt="Image 3"></div></div>
+-->
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector<int> rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+public:
+
+    // Function to marge the accounts
+    vector<vector<string>> accountsMerge(vector<vector<string>> accounts){
+
+        int n = accounts.size(); // Number of accounts
+        
+        // Disjoint Set data structure
+        DisjointSet ds(n);
+        
+        // Hashmap to store the pair: {mails, node}
+        unordered_map<string, int> mapMailNode;
+        
+        // Iterate on all the accounts
+        for (int i=0; i < n; i++) {
+            
+            // Iterate on all the mails of the person
+            for (int j = 1; j < accounts[i].size(); j++) {
+                
+                // Get the mail
+                string mail = accounts[i][j];
+                
+                // If this mail was not already existing
+                if (mapMailNode.find(mail) == 
+                    mapMailNode.end()) {
+                    
+                    // Add it to the hashmap
+                    mapMailNode[mail] = i;
+                }
+                
+                /* Otherwise join it with 
+                the previous component */
+                else {
+                    
+                    // Unite the components
+                    ds.unionBySize(i, mapMailNode[mail]);
+                }
+            }
+        }
+        
+        // To store the merged mails
+        vector<string> mergedMail[n];
+        
+        // Iterate on the Hashmap
+        for (auto it : mapMailNode) {
+            
+            string mail = it.first; // Mail
+            int node = ds.findUPar(it.second); // Node
+            
+            // Add the merged mail to the list
+            mergedMail[node].push_back(mail);
+        }
+        
+        // To return the result
+        vector<vector<string>> ans;
+        
+        // Iterate on all list of merged mails
+        for (int i = 0; i < n; i++) {
+            
+            /* If a person has no mails, 
+            skip the iteration */
+            if (mergedMail[i].size() == 0) 
+                continue;
+                
+            // Otherwise, add all the merged mails of person 
+            sort(mergedMail[i].begin(), mergedMail[i].end());
+            vector<string> temp;
+            temp.push_back(accounts[i][0]);
+            for (auto it : mergedMail[i]) {
+                temp.push_back(it);
+            }
+            ans.push_back(temp);
+        }
+        sort(ans.begin(), ans.end());
+        return ans;
+    }
+};
+
+
+int main() {
+    int n = 4;
+    vector<vector<string>> accounts = {
+        {"John","johnsmith@mail.com","john_newyork@mail.com"},
+        {"John","johnsmith@mail.com","john00@mail.com"},
+        {"Mary","mary@mail.com"},
+        {"John","johnnybravo@mail.com"}
+    };
+
+    // Creating instance of Solution class
+    Solution sol;
+    
+    // Function call to merge the accounts
+    vector<vector<string>> ans;
+    ans = sol.accountsMerge(accounts);
+    
+    // Output
+    cout << "The mareged accounts are:\n";
+    for(int i=0; i < ans.size(); i++) {
+        for(int j = 0; j < ans[i].size(); j++) {
+            cout << ans[i][j] << " ";
+        }
+        cout << endl;
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] < rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+
+// Solution class
+class Solution {
+    
+    // Function to merge the accounts
+    static List<List<String>> accountsMerge(List<List<String>> accounts) {
+
+        int n = accounts.size(); // Number of accounts
+        
+        // Disjoint Set data structure
+        DisjointSet ds = new DisjointSet(n);
+
+        // Hashmap to store the pair: {mails, node}
+        Map<String, Integer> mapMailNode = new HashMap<>();
+        
+        // Iterate on all the accounts
+        for (int i = 0; i < n; i++) {
+            
+            // Iterate on all the mails of the person
+            for (int j = 1; j < accounts.get(i).size(); j++) {
+                
+                // Get the mail
+                String mail = accounts.get(i).get(j);
+                
+                // If this mail was not already existing
+                if (!mapMailNode.containsKey(mail)) {
+                    
+                    // Add it to the hashmap
+                    mapMailNode.put(mail, i);
+                }
+                
+                /* Otherwise join it with 
+                the previous component */
+                else {
+                    
+                    // Unite the components
+                    ds.unionBySize(i, mapMailNode.get(mail));
+                }
+            }
+        }
+        
+        // To store the merged mails
+        List<List<String>> mergedMail = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            mergedMail.add(new ArrayList<>());
+        }
+
+        // Iterate on the Hashmap
+        for (Map.Entry<String, Integer> entry : mapMailNode.entrySet()) {
+            
+            String mail = entry.getKey(); // Mail
+            int node = ds.findUPar(entry.getValue()); // Node
+            
+            // Add the merged mail to the list
+            mergedMail.get(node).add(mail);
+        }
+        
+        // To return the result
+        List<List<String>> ans = new ArrayList<>();
+        
+        // Iterate on all list of merged mails
+        for (int i = 0; i < n; i++) {
+            
+            /* If a person has no mails, 
+            skip the iteration */
+            if (mergedMail.get(i).isEmpty()) 
+                continue;
+                
+            // Otherwise, add all the merged mails of person 
+            Collections.sort(mergedMail.get(i));
+            List<String> temp = new ArrayList<>();
+            temp.add(accounts.get(i).get(0));
+            temp.addAll(mergedMail.get(i));
+            ans.add(temp);
+        }
+        ans.sort(Comparator.comparing(list -> list.get(0)));
+        return ans;
+    }
+    
+    public static void main(String[] args) {
+        int n = 4;
+        List<List<String>> accounts = Arrays.asList(
+            Arrays.asList("John","johnsmith@mail.com","john_newyork@mail.com"),
+            Arrays.asList("John","johnsmith@mail.com","john00@mail.com"),
+            Arrays.asList("Mary","mary@mail.com"),
+            Arrays.asList("John","johnnybravo@mail.com")
+        );
+
+        // Function call to merge the accounts
+        List<List<String>> ans = accountsMerge(accounts);
+        
+        // Output
+        System.out.println("The merged accounts are:");
+        for (List<String> account : ans) {
+            System.out.println(String.join(" ", account));
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class DisjointSet:
+    # To store the ranks, parents and 
+    # sizes of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = list(range(n + 1))
+        self.size = [1] * (n + 1)
+    
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+    
+    # Function to implement union by rank
+    def unionByRank(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v: return
+        if self.rank[ulp_u] < self.rank[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+        elif self.rank[ulp_v] < self.rank[ulp_u]:
+            self.parent[ulp_v] = ulp_u
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.rank[ulp_u] += 1
+    
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v: return
+        if self.size[ulp_u] < self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+
+# Solution class
+class Solution:
+    
+    # Function to merge the accounts
+    def accountsMerge(self, accounts):
+        n = len(accounts) # Number of accounts
+        
+        # Disjoint Set data structure
+        ds = DisjointSet(n)
+        
+        # Hashmap to store the pair: {mails, node}
+        mapMailNode = {}
+        
+        # Iterate on all the accounts
+        for i in range(n):
+            
+            # Iterate on all the mails of the person
+            for j in range(1, len(accounts[i])):
+                
+                # Get the mail
+                mail = accounts[i][j]
+                
+                # If this mail was not already existing
+                if mail not in mapMailNode:
+                    
+                    # Add it to the hashmap
+                    mapMailNode[mail] = i
+                
+                # Otherwise join it with the previous component
+                else:
+                    # Unite the components
+                    ds.unionBySize(i, mapMailNode[mail])
+        
+        # To store the merged mails
+        mergedMail = [[] for _ in range(n)]
+        
+        # Iterate on the Hashmap
+        for mail, node in mapMailNode.items():
+            root = ds.findUPar(node)
+            mergedMail[root].append(mail)
+        
+        # To return the result
+        ans = []
+        
+        # Iterate on all list of merged mails
+        for i in range(n):
+            
+            # If a person has no mails, skip the iteration
+            if not mergedMail[i]:
+                continue
+            
+            # Otherwise, add all the merged mails of person
+            mergedMail[i].sort()
+            temp = [accounts[i][0]] + mergedMail[i]
+            ans.append(temp)
+        
+        ans.sort()
+        return ans
+
+if __name__ == "__main__":
+    n = 4
+    accounts = [
+        ["John","johnsmith@mail.com","john_newyork@mail.com"],
+        ["John","johnsmith@mail.com","john00@mail.com"],
+        ["Mary","mary@mail.com"],
+        ["John","johnnybravo@mail.com"]
+    ]
+
+    # Creating instance of Solution class
+    sol = Solution()
+    
+    # Function call to merge the accounts
+    ans = sol.accountsMerge(accounts)
+    
+    # Output
+    print("The merged accounts are:")
+    for account in ans:
+        print(" ".join(account))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    constructor(n) {
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) => i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node])
+            return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by rank
+    unionByRank(u, v) {
+        let ulp_u = this.findUPar(u);
+        let ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.rank[ulp_u] < this.rank[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+            this.parent[ulp_v] = ulp_u;
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.rank[ulp_u]++;
+        }
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        let ulp_u = this.findUPar(u);
+        let ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] < this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    
+    // Function to merge the accounts
+    accountsMerge(accounts) {
+        let n = accounts.length; // Number of accounts
+        
+        // Disjoint Set data structure
+        let ds = new DisjointSet(n);
+        
+        // Hashmap to store the pair: {mails, node}
+        let mapMailNode = new Map();
+        
+        // Iterate on all the accounts
+        for (let i = 0; i < n; i++) {
+            
+            // Iterate on all the mails of the person
+            for (let j = 1; j < accounts[i].length; j++) {
+                
+                // Get the mail
+                let mail = accounts[i][j];
+                
+                // If this mail was not already existing
+                if (!mapMailNode.has(mail)) {
+                    
+                    // Add it to the hashmap
+                    mapMailNode.set(mail, i);
+                }
+                
+                /* Otherwise join it with 
+                the previous component */
+                else {
+                    
+                    // Unite the components
+                    ds.unionBySize(i, mapMailNode.get(mail));
+                }
+            }
+        }
+        
+        // To store the merged mails
+        let mergedMail = Array.from({ length: n }, () => []);
+        
+        // Iterate on the Hashmap
+        for (let [mail, node] of mapMailNode.entries()) {
+            let root = ds.findUPar(node);
+            mergedMail[root].push(mail);
+        }
+        
+        // To return the result
+        let ans = [];
+        
+        // Iterate on all list of merged mails
+        for (let i = 0; i < n; i++) {
+            
+            /* If a person has no mails, 
+            skip the iteration */
+            if (mergedMail[i].length === 0) 
+                continue;
+                
+            // Otherwise, add all the merged mails of person 
+            mergedMail[i].sort();
+            let temp = [accounts[i][0], ...mergedMail[i]];
+            ans.push(temp);
+        }
+        ans.sort((a, b) => a[0].localeCompare(b[0]));
+        return ans;
+    }
+}
+
+let accounts = [
+    ["John","johnsmith@mail.com","john_newyork@mail.com"],
+    ["John","johnsmith@mail.com","john00@mail.com"],
+    ["Mary","mary@mail.com"],
+    ["John","johnnybravo@mail.com"]
+];
+
+// Creating instance of Solution class
+let sol = new Solution();
+
+// Function call to merge the accounts
+let ans = sol.accountsMerge(accounts);
+
+// Output
+console.log("The merged accounts are:");
+for (let account of ans) {
+    console.log(account.join(" "));
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class DisjointSet
+{
+    private int[] parent;
+    private int[] size;
+
+    // Constructor
+    public DisjointSet(int n)
+    {
+        parent = new int[n];
+        size = new int[n];
+        for (int i = 0; i < n; i++)
+        {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    public int FindUPar(int node)
+    {
+        if (parent[node] == node)
+            return node;
+        return parent[node] = FindUPar(parent[node]);
+    }
+
+    // Function to implement union by size
+    public void UnionBySize(int u, int v)
+    {
+        int ulp_u = FindUPar(u);
+        int ulp_v = FindUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] < size[ulp_v])
+        {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else
+        {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+public class Solution
+{
+    // Function to merge the accounts
+    public List<List<string>> AccountsMerge(List<List<string>> accounts)
+    {
+        int n = accounts.Count;
+        var ds = new DisjointSet(n);
+        var mapMailNode = new Dictionary<string, int>();
+
+        // Iterate on all the accounts
+        for (int i = 0; i < n; i++)
+        {
+            // Iterate on all the mails of the person
+            for (int j = 1; j < accounts[i].Count; j++)
+            {
+                string mail = accounts[i][j];
+                if (!mapMailNode.ContainsKey(mail))
+                {
+                    // Add it to the hashmap
+                    mapMailNode[mail] = i;
+                }
+                else
+                {
+                    // Unite the components
+                    ds.UnionBySize(i, mapMailNode[mail]);
+                }
+            }
+        }
+
+        // To store the merged mails
+        var mergedMail = new List<string>[n];
+        for (int i = 0; i < n; i++)
+            mergedMail[i] = new List<string>();
+
+        // Iterate on the hashmap
+        foreach (var kvp in mapMailNode)
+        {
+            string mail = kvp.Key;
+            int node = ds.FindUPar(kvp.Value);
+            mergedMail[node].Add(mail);
+        }
+
+        // To return the result
+        var ans = new List<List<string>>();
+
+        // Iterate on all list of merged mails
+        for (int i = 0; i < n; i++)
+        {
+            if (mergedMail[i].Count == 0)
+                continue;
+
+            // Otherwise, add all the merged mails of person
+            mergedMail[i].Sort(StringComparer.Ordinal);
+            var temp = new List<string> { accounts[i][0] };
+            temp.AddRange(mergedMail[i]);
+            ans.Add(temp);
+        }
+
+        // Sort the resulting accounts lexicographically
+        ans.Sort((a, b) =>
+        {
+            int len = Math.Min(a.Count, b.Count);
+            for (int i = 0; i < len; i++)
+            {
+                int cmp = string.Compare(a[i], b[i], StringComparison.Ordinal);
+                if (cmp != 0) return cmp;
+            }
+            return a.Count.CompareTo(b.Count);
+        });
+
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        var accounts = new List<List<string>>
+        {
+            new List<string> { "John", "johnsmith@mail.com", "john_newyork@mail.com" },
+            new List<string> { "John", "johnsmith@mail.com", "john00@mail.com" },
+            new List<string> { "Mary", "mary@mail.com" },
+            new List<string> { "John", "johnnybravo@mail.com" }
+        };
+
+        var sol = new Solution();
+        var merged = sol.AccountsMerge(accounts);
+
+        Console.WriteLine("The merged accounts are:");
+        foreach (var acct in merged)
+        {
+            Console.WriteLine(string.Join(" ", acct));
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// DisjointSet structure
+type DisjointSet struct {
+	rank   []int
+	parent []int
+	size   []int
+}
+
+// Constructor
+func NewDisjointSet(n int) *DisjointSet {
+	ds := &DisjointSet{
+		rank:   make([]int, n+1),
+		parent: make([]int, n+1),
+		size:   make([]int, n+1),
+	}
+	for i := 0; i <= n; i++ {
+		ds.parent[i] = i
+		ds.size[i] = 1
+	}
+	return ds
+}
+
+// Function to find ultimate parent
+func (ds *DisjointSet) findUPar(node int) int {
+	if node == ds.parent[node] {
+		return node
+	}
+	ds.parent[node] = ds.findUPar(ds.parent[node])
+	return ds.parent[node]
+}
+
+// Function to implement union by size
+func (ds *DisjointSet) unionBySize(u, v int) {
+	ulpU := ds.findUPar(u)
+	ulpV := ds.findUPar(v)
+	if ulpU == ulpV {
+		return
+	}
+	if ds.size[ulpU] < ds.size[ulpV] {
+		ds.parent[ulpU] = ulpV
+		ds.size[ulpV] += ds.size[ulpU]
+	} else {
+		ds.parent[ulpV] = ulpU
+		ds.size[ulpU] += ds.size[ulpV]
+	}
+}
+
+// Function to merge the accounts
+func accountsMerge(details [][]string) [][]string {
+	n := len(details) // Number of accounts
+
+	// Disjoint Set data structure
+	ds := NewDisjointSet(n)
+
+	// Hashmap to store the pair: {mail, node}
+	mapMailNode := make(map[string]int)
+
+	// Iterate on all the accounts
+	for i := 0; i < n; i++ {
+
+		// Iterate on all the mails of the person
+		for j := 1; j < len(details[i]); j++ {
+
+			// Get the mail
+			mail := details[i][j]
+
+			// If this mail was not already existing
+			if _, ok := mapMailNode[mail]; !ok {
+				// Add it to the hashmap
+				mapMailNode[mail] = i
+			} else {
+				// Unite the components
+				ds.unionBySize(i, mapMailNode[mail])
+			}
+		}
+	}
+
+	// To store the merged mails
+	mergedMail := make([][]string, n)
+
+	// Iterate on the Hashmap
+	for mail, node := range mapMailNode {
+		parentNode := ds.findUPar(node)
+		mergedMail[parentNode] = append(mergedMail[parentNode], mail)
+	}
+
+	// To return the result
+	var ans [][]string
+
+	// Iterate on all list of merged mails
+	for i := 0; i < n; i++ {
+		if len(mergedMail[i]) == 0 {
+			continue
+		}
+		// Sort the merged mails
+		sort.Strings(mergedMail[i])
+
+		// Add the person's name and mails
+		temp := []string{details[i][0]}
+		temp = append(temp, mergedMail[i]...)
+		ans = append(ans, temp)
+	}
+
+	// Sort the final answer
+	sort.Slice(ans, func(i, j int) bool {
+		return ans[i][0] < ans[j][0]
+	})
+
+	return ans
+}
+
+func main() {
+	accounts := [][]string{
+		{"John", "johnsmith@mail.com", "john_newyork@mail.com"},
+		{"John", "johnsmith@mail.com", "john00@mail.com"},
+		{"Mary", "mary@mail.com"},
+		{"John", "johnnybravo@mail.com"},
+	}
+
+	// Function call to merge the accounts
+	ans := accountsMerge(accounts)
+
+	// Output
+	fmt.Println("The merged accounts are:")
+	for _, acc := range ans {
+		fmt.Println(acc)
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N+E) + O(E*4ɑ) + O(N*(ElogE + E))</strong> (where E = no. of emails) <br>
+    <ul>
+        <li>Visiting all the emails takes O(N+E) time.</li>
+        <li>In the worst case, all the accounts can be merged taking O(E*4ɑ) time.</li>
+        <li>All the emails to the result list and Sorting the emails take O(N*(ElogE + E)) times.</li>
+    </ul>
+</p>
+
+<p><strong>Space Complexity: O(N+E)</strong> <ul>
+    <li>The hashmap will store all the emails taking O(E) space.</li>
+    <li>The disjoint set data structure uses parent and size/rank arrays taking O(N) space.</li>
+    <li>The resulting list will take up O(E) space.</li>
+</ul>
+</p>
+</div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class DisjointSet {
+public:
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    vector&lt;int&gt; rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n + 1);
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+    
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    // Function to implement union by rank
+    void unionByRank(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (rank[ulp_u] &lt; rank[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] &lt; rank[ulp_u]) {
+            parent[ulp_v] = ulp_u;
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            rank[ulp_u]++;
+        }
+    }
+    
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+// Solution class
+class Solution{
+public:
+
+    // Function to marge the accounts
+    vector&lt;vector&lt;string&gt;&gt; accountsMerge(vector&lt;vector&lt;string&gt;&gt; accounts){
+
+        int n = accounts.size(); // Number of accounts
+        
+        // Disjoint Set data structure
+        DisjointSet ds(n);
+        
+        // Hashmap to store the pair: {mails, node}
+        unordered_map&lt;string, int&gt; mapMailNode;
+        
+        // Iterate on all the accounts
+        for (int i=0; i &lt; n; i++) {
+            
+            // Iterate on all the mails of the person
+            for (int j = 1; j &lt; accounts[i].size(); j++) {
+                
+                // Get the mail
+                string mail = accounts[i][j];
+                
+                // If this mail was not already existing
+                if (mapMailNode.find(mail) == 
+                    mapMailNode.end()) {
+                    
+                    // Add it to the hashmap
+                    mapMailNode[mail] = i;
+                }
+                
+                /* Otherwise join it with 
+                the previous component */
+                else {
+                    
+                    // Unite the components
+                    ds.unionBySize(i, mapMailNode[mail]);
+                }
+            }
+        }
+        
+        // To store the merged mails
+        vector&lt;string&gt; mergedMail[n];
+        
+        // Iterate on the Hashmap
+        for (auto it : mapMailNode) {
+            
+            string mail = it.first; // Mail
+            int node = ds.findUPar(it.second); // Node
+            
+            // Add the merged mail to the list
+            mergedMail[node].push_back(mail);
+        }
+        
+        // To return the result
+        vector&lt;vector&lt;string&gt;&gt; ans;
+        
+        // Iterate on all list of merged mails
+        for (int i = 0; i &lt; n; i++) {
+            
+            /* If a person has no mails, 
+            skip the iteration */
+            if (mergedMail[i].size() == 0) 
+                continue;
+                
+            // Otherwise, add all the merged mails of person 
+            sort(mergedMail[i].begin(), mergedMail[i].end());
+            vector&lt;string&gt; temp;
+            temp.push_back(accounts[i][0]);
+            for (auto it : mergedMail[i]) {
+                temp.push_back(it);
+            }
+            ans.push_back(temp);
+        }
+        sort(ans.begin(), ans.end());
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class DisjointSet
+{
+    private int[] parent;
+    private int[] size;
+
+    // Constructor
+    public DisjointSet(int n)
+    {
+        parent = new int[n];
+        size = new int[n];
+        for (int i = 0; i &lt; n; i++)
+        {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    public int FindUPar(int node)
+    {
+        if (parent[node] == node)
+            return node;
+        return parent[node] = FindUPar(parent[node]);
+    }
+
+    // Function to implement union by size
+    public void UnionBySize(int u, int v)
+    {
+        int ulp_u = FindUPar(u);
+        int ulp_v = FindUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v])
+        {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else
+        {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+public class Solution
+{
+    // Function to merge the accounts
+    public List&lt;List&lt;string&gt;&gt; AccountsMerge(List&lt;List&lt;string&gt;&gt; accounts)
+    {
+        int n = accounts.Count;
+        var ds = new DisjointSet(n);
+        var mapMailNode = new Dictionary&lt;string, int&gt;();
+
+        // Iterate on all the accounts
+        for (int i = 0; i &lt; n; i++)
+        {
+            // Iterate on all the mails of the person
+            for (int j = 1; j &lt; accounts[i].Count; j++)
+            {
+                string mail = accounts[i][j];
+                if (!mapMailNode.ContainsKey(mail))
+                {
+                    // Add it to the hashmap
+                    mapMailNode[mail] = i;
+                }
+                else
+                {
+                    // Unite the components
+                    ds.UnionBySize(i, mapMailNode[mail]);
+                }
+            }
+        }
+
+        // To store the merged mails
+        var mergedMail = new List&lt;string&gt;[n];
+        for (int i = 0; i &lt; n; i++)
+            mergedMail[i] = new List&lt;string&gt;();
+
+        // Iterate on the hashmap
+        foreach (var kvp in mapMailNode)
+        {
+            string mail = kvp.Key;
+            int node = ds.FindUPar(kvp.Value);
+            mergedMail[node].Add(mail);
+        }
+
+        // To return the result
+        var ans = new List&lt;List&lt;string&gt;&gt;();
+
+        // Iterate on all list of merged mails
+        for (int i = 0; i &lt; n; i++)
+        {
+            if (mergedMail[i].Count == 0)
+                continue;
+
+            // Otherwise, add all the merged mails of person
+            mergedMail[i].Sort(StringComparer.Ordinal);
+            var temp = new List&lt;string&gt; { accounts[i][0] };
+            temp.AddRange(mergedMail[i]);
+            ans.Add(temp);
+        }
+
+        // Sort the resulting accounts lexicographically
+        ans.Sort((a, b) =&gt;
+        {
+            int len = Math.Min(a.Count, b.Count);
+            for (int i = 0; i &lt; len; i++)
+            {
+                int cmp = string.Compare(a[i], b[i], StringComparison.Ordinal);
+                if (cmp != 0) return cmp;
+            }
+            return a.Count.CompareTo(b.Count);
+        });
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// DisjointSet structure
+type DisjointSet struct {
+	rank   []int
+	parent []int
+	size   []int
+}
+
+// Constructor
+func NewDisjointSet(n int) *DisjointSet {
+	ds := &amp;DisjointSet{
+		rank:   make([]int, n+1),
+		parent: make([]int, n+1),
+		size:   make([]int, n+1),
+	}
+	for i := 0; i &lt;= n; i++ {
+		ds.parent[i] = i
+		ds.size[i] = 1
+	}
+	return ds
+}
+
+// Function to find ultimate parent
+func (ds *DisjointSet) findUPar(node int) int {
+	if node == ds.parent[node] {
+		return node
+	}
+	ds.parent[node] = ds.findUPar(ds.parent[node])
+	return ds.parent[node]
+}
+
+// Function to implement union by size
+func (ds *DisjointSet) unionBySize(u, v int) {
+	ulpU := ds.findUPar(u)
+	ulpV := ds.findUPar(v)
+	if ulpU == ulpV {
+		return
+	}
+	if ds.size[ulpU] &lt; ds.size[ulpV] {
+		ds.parent[ulpU] = ulpV
+		ds.size[ulpV] += ds.size[ulpU]
+	} else {
+		ds.parent[ulpV] = ulpU
+		ds.size[ulpU] += ds.size[ulpV]
+	}
+}
+
+// Function to merge the accounts
+func accountsMerge(details [][]string) [][]string {
+	n := len(details) // Number of accounts
+
+	// Disjoint Set data structure
+	ds := NewDisjointSet(n)
+
+	// Hashmap to store the pair: {mail, node}
+	mapMailNode := make(map[string]int)
+
+	// Iterate on all the accounts
+	for i := 0; i &lt; n; i++ {
+
+		// Iterate on all the mails of the person
+		for j := 1; j &lt; len(details[i]); j++ {
+
+			// Get the mail
+			mail := details[i][j]
+
+			// If this mail was not already existing
+			if _, ok := mapMailNode[mail]; !ok {
+				// Add it to the hashmap
+				mapMailNode[mail] = i
+			} else {
+				// Unite the components
+				ds.unionBySize(i, mapMailNode[mail])
+			}
+		}
+	}
+
+	// To store the merged mails
+	mergedMail := make([][]string, n)
+
+	// Iterate on the Hashmap
+	for mail, node := range mapMailNode {
+		parentNode := ds.findUPar(node)
+		mergedMail[parentNode] = append(mergedMail[parentNode], mail)
+	}
+
+	// To return the result
+	var ans [][]string
+
+	// Iterate on all list of merged mails
+	for i := 0; i &lt; n; i++ {
+		if len(mergedMail[i]) == 0 {
+			continue
+		}
+		// Sort the merged mails
+		sort.Strings(mergedMail[i])
+
+		// Add the person&#x27;s name and mails
+		temp := []string{details[i][0]}
+		temp = append(temp, mergedMail[i]...)
+		ans = append(ans, temp)
+	}
+
+	// Sort the final answer
+	sort.Slice(ans, func(i, j int) bool {
+		return ans[i][0] &lt; ans[j][0]
+	})
+
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    int[] rank, parent, size;
+
+    // Constructor
+    DisjointSet(int n) {
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+            size[i] = 1;
+        }
+    }
+
+    // Function to find ultimate parent
+    int findUPar(int node) {
+        if (node == parent[node])
+            return node;
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    // Function to implement union by size
+    void unionBySize(int u, int v) {
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        if (ulp_u == ulp_v) return;
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            parent[ulp_u] = ulp_v;
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            parent[ulp_v] = ulp_u;
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    
+    // Function to merge the accounts
+    static List&lt;List&lt;String&gt;&gt; accountsMerge(List&lt;List&lt;String&gt;&gt; accounts) {
+
+        int n = accounts.size(); // Number of accounts
+        
+        // Disjoint Set data structure
+        DisjointSet ds = new DisjointSet(n);
+
+        // Hashmap to store the pair: {mails, node}
+        Map&lt;String, Integer&gt; mapMailNode = new HashMap&lt;&gt;();
+        
+        // Iterate on all the accounts
+        for (int i = 0; i &lt; n; i++) {
+            
+            // Iterate on all the mails of the person
+            for (int j = 1; j &lt; accounts.get(i).size(); j++) {
+                
+                // Get the mail
+                String mail = accounts.get(i).get(j);
+                
+                // If this mail was not already existing
+                if (!mapMailNode.containsKey(mail)) {
+                    
+                    // Add it to the hashmap
+                    mapMailNode.put(mail, i);
+                }
+                
+                /* Otherwise join it with 
+                the previous component */
+                else {
+                    
+                    // Unite the components
+                    ds.unionBySize(i, mapMailNode.get(mail));
+                }
+            }
+        }
+        
+        // To store the merged mails
+        List&lt;List&lt;String&gt;&gt; mergedMail = new ArrayList&lt;&gt;(n);
+        for (int i = 0; i &lt; n; i++) {
+            mergedMail.add(new ArrayList&lt;&gt;());
+        }
+
+        // Iterate on the Hashmap
+        for (Map.Entry&lt;String, Integer&gt; entry : mapMailNode.entrySet()) {
+            
+            String mail = entry.getKey(); // Mail
+            int node = ds.findUPar(entry.getValue()); // Node
+            
+            // Add the merged mail to the list
+            mergedMail.get(node).add(mail);
+        }
+        
+        // To return the result
+        List&lt;List&lt;String&gt;&gt; ans = new ArrayList&lt;&gt;();
+        
+        // Iterate on all list of merged mails
+        for (int i = 0; i &lt; n; i++) {
+            
+            /* If a person has no mails, 
+            skip the iteration */
+            if (mergedMail.get(i).isEmpty()) 
+                continue;
+                
+            // Otherwise, add all the merged mails of person 
+            Collections.sort(mergedMail.get(i));
+            List&lt;String&gt; temp = new ArrayList&lt;&gt;();
+            temp.add(accounts.get(i).get(0));
+            temp.addAll(mergedMail.get(i));
+            ans.add(temp);
+        }
+        ans.sort(Comparator.comparing(list -&gt; list.get(0)));
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class DisjointSet {
+    /* To store the ranks, parents and 
+    sizes of different set of vertices */
+    constructor(n) {
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1).fill(0).map((_, i) =&gt; i);
+        this.size = new Array(n + 1).fill(1);
+    }
+
+    // Function to find ultimate parent
+    findUPar(node) {
+        if (node === this.parent[node])
+            return node;
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    // Function to implement union by size
+    unionBySize(u, v) {
+        let ulp_u = this.findUPar(u);
+        let ulp_v = this.findUPar(v);
+        if (ulp_u === ulp_v) return;
+        if (this.size[ulp_u] &lt; this.size[ulp_v]) {
+            this.parent[ulp_u] = ulp_v;
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            this.parent[ulp_v] = ulp_u;
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+// Solution class
+class Solution {
+    
+    // Function to merge the accounts
+    accountsMerge(accounts) {
+        let n = accounts.length; // Number of accounts
+        
+        // Disjoint Set data structure
+        let ds = new DisjointSet(n);
+        
+        // Hashmap to store the pair: {mails, node}
+        let mapMailNode = new Map();
+        
+        // Iterate on all the accounts
+        for (let i = 0; i &lt; n; i++) {
+            
+            // Iterate on all the mails of the person
+            for (let j = 1; j &lt; accounts[i].length; j++) {
+                
+                // Get the mail
+                let mail = accounts[i][j];
+                
+                // If this mail was not already existing
+                if (!mapMailNode.has(mail)) {
+                    
+                    // Add it to the hashmap
+                    mapMailNode.set(mail, i);
+                }
+                
+                /* Otherwise join it with 
+                the previous component */
+                else {
+                    
+                    // Unite the components
+                    ds.unionBySize(i, mapMailNode.get(mail));
+                }
+            }
+        }
+        
+        // To store the merged mails
+        let mergedMail = Array.from({ length: n }, () =&gt; []);
+        
+        // Iterate on the Hashmap
+        for (let [mail, node] of mapMailNode.entries()) {
+            let root = ds.findUPar(node);
+            mergedMail[root].push(mail);
+        }
+        
+        // To return the result
+        let ans = [];
+        
+        // Iterate on all list of merged mails
+        for (let i = 0; i &lt; n; i++) {
+            
+            /* If a person has no mails, 
+            skip the iteration */
+            if (mergedMail[i].length === 0) 
+                continue;
+                
+            // Otherwise, add all the merged mails of person 
+            mergedMail[i].sort();
+            let temp = [accounts[i][0], ...mergedMail[i]];
+            ans.push(temp);
+        }
+        ans.sort((a, b) =&gt; a[0].localeCompare(b[0]));
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class DisjointSet:
+    # To store the ranks, parents and 
+    # sizes of different set of vertices
+    def __init__(self, n):
+        self.rank = [0] * (n + 1)
+        self.parent = list(range(n + 1))
+        self.size = [1] * (n + 1)
+    
+    # Function to find ultimate parent
+    def findUPar(self, node):
+        if node == self.parent[node]:
+            return node
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+    
+    # Function to implement union by rank
+    def unionByRank(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v: return
+        if self.rank[ulp_u] &lt; self.rank[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+        elif self.rank[ulp_v] &lt; self.rank[ulp_u]:
+            self.parent[ulp_v] = ulp_u
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.rank[ulp_u] += 1
+    
+    # Function to implement union by size
+    def unionBySize(self, u, v):
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+        if ulp_u == ulp_v: return
+        if self.size[ulp_u] &lt; self.size[ulp_v]:
+            self.parent[ulp_u] = ulp_v
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            self.parent[ulp_v] = ulp_u
+            self.size[ulp_u] += self.size[ulp_v]
+
+# Solution class
+class Solution:
+    
+    # Function to merge the accounts
+    def accountsMerge(self, accounts):
+        n = len(accounts) # Number of accounts
+        
+        # Disjoint Set data structure
+        ds = DisjointSet(n)
+        
+        # Hashmap to store the pair: {mails, node}
+        mapMailNode = {}
+        
+        # Iterate on all the accounts
+        for i in range(n):
+            
+            # Iterate on all the mails of the person
+            for j in range(1, len(accounts[i])):
+                
+                # Get the mail
+                mail = accounts[i][j]
+                
+                # If this mail was not already existing
+                if mail not in mapMailNode:
+                    
+                    # Add it to the hashmap
+                    mapMailNode[mail] = i
+                
+                # Otherwise join it with the previous component
+                else:
+                    # Unite the components
+                    ds.unionBySize(i, mapMailNode[mail])
+        
+        # To store the merged mails
+        mergedMail = [[] for _ in range(n)]
+        
+        # Iterate on the Hashmap
+        for mail, node in mapMailNode.items():
+            root = ds.findUPar(node)
+            mergedMail[root].append(mail)
+        
+        # To return the result
+        ans = []
+        
+        # Iterate on all list of merged mails
+        for i in range(n):
+            
+            # If a person has no mails, skip the iteration
+            if not mergedMail[i]:
+                continue
+            
+            # Otherwise, add all the merged mails of person
+            mergedMail[i].sort()
+            temp = [accounts[i][0]] + mergedMail[i]
+            ans.append(temp)
+        
+        ans.sort()
+        return ans</code></pre></div>
+</body>
+</html>

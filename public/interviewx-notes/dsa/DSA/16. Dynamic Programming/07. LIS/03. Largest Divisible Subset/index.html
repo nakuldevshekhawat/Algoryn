@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Largest Divisible Subset</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Largest Divisible Subset</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span><span>Math</span><span>Sorting</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array <strong>nums </strong>of positive integers, the task is to find the largest subset such that every pair<strong> (a, b)</strong> of elements in the subset satisfies <strong>a % b == 0</strong> or <strong>b % a == 0</strong>. </p><p><br></p><p>Return the subset in any order. If there are multiple solutions, return any one of them.</p><p><br></p><p><strong>Note</strong>: As there can be multiple correct answers, the compiler returns 1 if the answer is valid, else 0.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= nums.length <= 10<sup>3</sup></li><li>1 <= nums[i] <= 10<sup>6</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: nums = [3, 5, 10, 20]</p><p><strong>Output</strong>: [5, 10, 20]</p><p><strong>Explanation</strong>: </p><p>The subset [5, 10, 20] satisfies the divisibility condition: 10 % 5 == 0 and 20 % 10 == 0.</p><h3>Example 2</h3><p><strong>Input</strong>: nums = [16, 8, 2, 4, 32]</p><p><strong>Output</strong>: [2, 4, 8, 16, 32]</p><p><strong>Explanation</strong>: </p><p>The entire array forms a divisible subset since 32 % 16 == 0, 16 % 8 == 0, and so on.</p><h3>Example 3</h3><p><strong>Input</strong>: nums = [7, 14, 28, 3]</p></div>
+
+<div class="section"><h2>Editorial: Solution</h2><p>
+    <strong>Pre-Requisite:</strong> <a href="/plus/dsa/problems/longest-increasing-subsequence?category=dynamic-programming&subcategory=lis-dp">Longest Increasing Subsequence</a> and <a href="/plus/dsa/problems/print-longest-increasing-subsequence?category=dynamic-programming&subcategory=lis-dp">Print LIS</a>.
+</p>
+
+
+<h3>Intuition</h3>
+<p>
+    The crucial insight is that <b>if we sort the array first, the divisibility condition becomes much simpler to handle</b>. <br><br>
+
+    Consider three numbers: a < b < c. If a divides b and b divides c, then a must also divide c (transitivity of divisibility). This means:
+    <ul>
+        <li>In a valid divisible subset, if we sort the elements, each element must divide all elements that come after it</li>
+        <li>We can transform this into a "chain" problem where we only need to check if the current element divides the next element</li>
+    </ul> <br>
+
+    After sorting, our problem transforms from:
+    <ul>
+        <li><b>From:</b> Finding subset where every pair is divisible.</li>
+        <li><b>To:</b> Find longest chain where each element divides the next.</li>
+    </ul> <br>
+
+    This is exactly the LIS pattern! Instead of checking <b><code>arr[i] < arr[j]</code></b>, we check <b><code>arr[j] % arr[i] == 0</code></b>.
+</p>
+
+<h3>Approach</h3>
+<p>
+    <ul>
+        <li><b>Sort the Array: </b>Sort input in ascending order to transform the problem into finding the longest divisible chain.</li>
+        <li><b>Initialize Arrays:</b>
+            <ul>
+                <li>dp[i] = length of longest divisible subset ending at index i (initially 1)</li>
+                <li>parent[i] = previous element in optimal subset (initially i)</li>
+            </ul>
+        </li>
+        <li><b>Fill DP Table: </b>For each element, check all previous elements. If divisible and gives longer subset, update dp[i] and parent[i].</li>
+        <li><b>Track Maximum: </b>Keep track of maximum length and its ending index (lastIndex) while filling DP table.</li>
+        <li><b>Reconstruct Subset: </b>Backtrack from lastIndex using parent array until reaching an element that is its own parent.</li>
+        <li><b>Return Result: </b>The backtracked elements form the longest divisible subset in correct order.</li>
+    </ul>
+</p>
+
+<h3>Solution</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    // Function to find the largest divisble subset
+    vector<int> largestDivisibleSubset(vector<int> nums) {
+        int n = nums.size(); // Size of the array 
+
+        sort(nums.begin(), nums.end());
+
+        vector<int> ans; // To store the LDS
+        vector<int> dp(n, 1); // DP array 
+        vector<int> parent(n); // Array to keep record of the parent
+
+        // To store the index of last element in the LDS
+        int lastIndex = 0; 
+
+        // To store the length of LDS
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for(int i = 0; i < n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for(int prevInd = 0; prevInd < i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] == 0 && dp[i] < dp[prevInd] + 1) {
+
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+
+            // If a longer LDS is found, update the values
+            if(dp[i] > maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        int i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.push_back(nums[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.push_back(nums[i]); // Adding the last element 
+
+        // Return the computed result
+        return ans;
+    }  
+};
+
+
+int main() {
+    vector<int> nums = {3, 5, 10, 20};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    vector<int> ans = sol.largestDivisibleSubset(nums);
+    
+    cout << "The largest divisible subset is: ";
+    for(int x : ans) cout << x << " ";
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the largest divisble subset
+    public List<Integer> largestDivisibleSubset(int[] nums) {
+        int n = nums.length; // Size of the array 
+        
+        Arrays.sort(nums);
+        
+        List<Integer> ans = new ArrayList<>(); // To store the LDS
+        
+        int[] dp = new int[n]; // DP array 
+        Arrays.fill(dp, 1);
+        
+        int[] parent = new int[n]; // Array to keep record of the parent
+        
+        // To store the index of last element in the LDS
+        int lastIndex = 0; 
+        
+        // To store the length of LDS
+        int maxLen = 0;
+        
+        // Computing the DP array 
+        for(int i = 0; i < n; i++) {
+            parent[i] = i; // Assign the parent to itself
+            
+            // For each previous index
+            for(int prevInd = 0; prevInd < i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] == 0 && dp[i] < dp[prevInd] + 1) {
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+            // If a longer LDS is found, update the values
+            if(dp[i] > maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+        // Backtracking
+        int i = lastIndex;
+        
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.add(nums[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.add(nums[i]); // Adding the last element 
+        
+        // Return the computed result
+        return ans;
+    }  
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] nums = {3, 5, 10, 20};
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        List<Integer> ans = sol.largestDivisibleSubset(nums);
+        
+        System.out.print("The largest divisible subset is: ");
+        for(int x : ans) System.out.print(x + " ");
+    }
+}</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the largest divisble subset
+    def largestDivisibleSubset(self, nums):
+        n = len(nums)  # Size of the array 
+        
+        nums.sort()
+        
+        ans = []  # To store the LDS
+        
+        dp = [1] * n  # DP array 
+        parent = [0] * n  # Array to keep record of the parent
+        
+        # To store the index of last element in the LDS
+        lastIndex = 0
+        
+        # To store the length of LDS
+        maxLen = 0
+        
+        # Computing the DP array 
+        for i in range(n):
+            parent[i] = i  # Assign the parent to itself
+            
+            # For each previous index
+            for prevInd in range(i):
+                
+                # If the element at index i can be included in the LDS ending at index j
+                if nums[i] % nums[prevInd] == 0 and dp[i] < dp[prevInd] + 1:
+                    dp[i] = dp[prevInd] + 1  # Update the DP value
+                    parent[i] = prevInd  # Store the parent
+            
+            # If a longer LDS is found, update the values
+            if dp[i] > maxLen:
+                lastIndex = i
+                maxLen = dp[i]
+        
+        # Backtracking
+        i = lastIndex
+        
+        # Until we reach an index which is its own parent
+        while parent[i] != i:
+            ans.append(nums[i])  # Add the element at current index
+            i = parent[i]
+        
+        ans.append(nums[i])  # Adding the last element 
+        
+        # Return the computed result
+        return ans
+
+if __name__ == "__main__":
+    nums = [3, 5, 10, 20]
+    
+    # Creating an object of Solution class
+    sol = Solution()
+    ans = sol.largestDivisibleSubset(nums)
+    
+    print("The largest divisible subset is: ", end="")
+    for x in ans:
+        print(x, end=" ")</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the largest divisble subset
+    largestDivisibleSubset(nums) {
+        let n = nums.length; // Size of the array 
+        
+        nums.sort((a, b) => a - b);
+        
+        let ans = []; // To store the LDS
+        
+        let dp = new Array(n).fill(1); // DP array 
+        let parent = new Array(n); // Array to keep record of the parent
+        
+        // To store the index of last element in the LDS
+        let lastIndex = 0; 
+        
+        // To store the length of LDS
+        let maxLen = 0;
+        
+        // Computing the DP array 
+        for(let i = 0; i < n; i++) {
+            parent[i] = i; // Assign the parent to itself
+            
+            // For each previous index
+            for(let prevInd = 0; prevInd < i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] === 0 && dp[i] < dp[prevInd] + 1) {
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+            // If a longer LDS is found, update the values
+            if(dp[i] > maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+        // Backtracking
+        let i = lastIndex;
+        
+        // Until we reach an index which is its own parent
+        while(parent[i] !== i) {
+            ans.push(nums[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        
+        ans.push(nums[i]); // Adding the last element 
+        
+        // Return the computed result
+        return ans;
+    }  
+}
+
+function main() {
+    let nums = [3, 5, 10, 20];
+    
+    // Creating an object of Solution class
+    let sol = new Solution();
+    let ans = sol.largestDivisibleSubset(nums);
+    
+    process.stdout.write("The largest divisible subset is: ");
+    for(let x of ans) process.stdout.write(x + " ");
+}
+
+main();</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+class Solution {
+    // Function to find the largest divisble subset
+    public List<int> LargestDivisibleSubset(int[] nums) {
+        int n = nums.Length; // Size of the array 
+        
+        Array.Sort(nums);
+        
+        List<int> ans = new List<int>(); // To store the LDS
+        int[] dp = new int[n]; // DP array 
+        
+        for(int k = 0; k < n; k++) dp[k] = 1;
+        
+        int[] parent = new int[n]; // Array to keep record of the parent
+        
+        // To store the index of last element in the LDS
+        int lastIndex = 0; 
+        
+        // To store the length of LDS
+        int maxLen = 0;
+        
+        // Computing the DP array 
+        for(int i = 0; i < n; i++) {
+            parent[i] = i; // Assign the parent to itself
+            
+            // For each previous index
+            for(int prevInd = 0; prevInd < i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] == 0 && dp[i] < dp[prevInd] + 1) {
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+            // If a longer LDS is found, update the values
+            if(dp[i] > maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+        // Backtracking
+        int ind = lastIndex;
+        
+        // Until we reach an index which is its own parent
+        while(parent[ind] != ind) {
+            ans.Add(nums[ind]); // Add the element at current index
+            ind = parent[ind]; 
+        }
+        
+        ans.Add(nums[ind]); // Adding the last element 
+        
+        // Return the computed result
+        return ans;
+    }  
+}
+
+class Program {
+    static void Main(string[] args) {
+        int[] nums = {3, 5, 10, 20};
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        List<int> ans = sol.LargestDivisibleSubset(nums);
+        
+        Console.Write("The largest divisible subset is: ");
+        foreach(int x in ans) Console.Write(x + " ");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+// Function to find the largest divisible subset
+func largestDivisibleSubset(nums []int) []int {
+	n := len(nums) // Size of the array
+
+	sort.Ints(nums) // Sort the numbers
+
+	ans := []int{}              // To store the LDS
+	dp := make([]int, n)        // DP array
+	parent := make([]int, n)    // Array to keep record of the parent
+	lastIndex := 0              // Index of last element in LDS
+	maxLen := 0                 // Length of LDS
+
+	// Initialize DP array to 1
+	for i := 0; i < n; i++ {
+		dp[i] = 1
+	}
+
+	// Computing the DP array
+	for i := 0; i < n; i++ {
+		parent[i] = i // Assign the parent to itself
+
+		// For each previous index
+		for prevInd := 0; prevInd < i; prevInd++ {
+
+			// If the element at index i can be included in the LDS ending at index prevInd
+			if nums[i]%nums[prevInd] == 0 && dp[i] < dp[prevInd]+1 {
+				dp[i] = dp[prevInd] + 1 // Update the DP value
+				parent[i] = prevInd     // Store the parent
+			}
+		}
+
+		// If a longer LDS is found, update the values
+		if dp[i] > maxLen {
+			lastIndex = i
+			maxLen = dp[i]
+		}
+	}
+
+	// Backtracking
+	i := lastIndex
+	for parent[i] != i {
+		ans = append(ans, nums[i]) // Add the element at current index
+		i = parent[i]
+	}
+	ans = append(ans, nums[i]) // Adding the last element
+
+	// Return the computed result
+	return ans
+}
+
+func main() {
+	nums := []int{3, 5, 10, 20}
+
+	// Function call
+	ans := largestDivisibleSubset(nums)
+
+	// Output
+	fmt.Print("The largest divisible subset is: ")
+	for _, x := range ans {
+		fmt.Print(x, " ")
+	}
+	fmt.Println()
+}
+</code></pre></div></div></div>
+
+<h3>Complexity Analysis</h3>
+<p>
+    <strong>Time Complexity: O(N<sup>2</sup>)</strong>, where N is the number of elements in the given array. <br>
+    Sorting the array takes O(N logN). The nested for loops takes O(N<sup>2</sup>) and backtracking will take O(N) time in the worst case. Thus, the overall time complexity comes out to be: <b>O(N<sup>2</sup>)</b>.
+    <br><br>
+
+    <strong>Space Complexity: O(N)</strong> <br>
+    The DP array and parent array each takes O(N) space. In the worst case, the resultant array will store all the elements in the subset taking O(N) space. Thus, the overall space complexity is <b>O(3N)</b> or <b>O(N)</b>.
+</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    // Function to find the largest divisble subset
+    vector&lt;int&gt; largestDivisibleSubset(vector&lt;int&gt; nums) {
+        int n = nums.size(); // Size of the array 
+
+        sort(nums.begin(), nums.end());
+
+        vector&lt;int&gt; ans; // To store the LDS
+        vector&lt;int&gt; dp(n, 1); // DP array 
+        vector&lt;int&gt; parent(n); // Array to keep record of the parent
+
+        // To store the index of last element in the LDS
+        int lastIndex = 0; 
+
+        // To store the length of LDS
+        int maxLen = 0;
+
+        // Computing the DP array 
+        for(int i = 0; i &lt; n; i++) {
+            parent[i] = i; // Assign the parent to itself
+
+            // For each previous index
+            for(int prevInd = 0; prevInd &lt; i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] == 0 &amp;&amp; dp[i] &lt; dp[prevInd] + 1) {
+
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+
+            // If a longer LDS is found, update the values
+            if(dp[i] &gt; maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+
+        // Backtracking
+        int i = lastIndex;
+
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.push_back(nums[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.push_back(nums[i]); // Adding the last element 
+
+        // Return the computed result
+        return ans;
+    }  
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution {
+    // Function to find the largest divisble subset
+    public List&lt;int&gt; LargestDivisibleSubset(int[] nums) {
+        int n = nums.Length; // Size of the array 
+        
+        Array.Sort(nums);
+        
+        List&lt;int&gt; ans = new List&lt;int&gt;(); // To store the LDS
+        int[] dp = new int[n]; // DP array 
+        
+        for(int k = 0; k &lt; n; k++) dp[k] = 1;
+        
+        int[] parent = new int[n]; // Array to keep record of the parent
+        
+        // To store the index of last element in the LDS
+        int lastIndex = 0; 
+        
+        // To store the length of LDS
+        int maxLen = 0;
+        
+        // Computing the DP array 
+        for(int i = 0; i &lt; n; i++) {
+            parent[i] = i; // Assign the parent to itself
+            
+            // For each previous index
+            for(int prevInd = 0; prevInd &lt; i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] == 0 &amp;&amp; dp[i] &lt; dp[prevInd] + 1) {
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+            // If a longer LDS is found, update the values
+            if(dp[i] &gt; maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+        // Backtracking
+        int ind = lastIndex;
+        
+        // Until we reach an index which is its own parent
+        while(parent[ind] != ind) {
+            ans.Add(nums[ind]); // Add the element at current index
+            ind = parent[ind]; 
+        }
+        
+        ans.Add(nums[ind]); // Adding the last element 
+        
+        // Return the computed result
+        return ans;
+    }  
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the largest divisible subset
+func largestDivisibleSubset(nums []int) []int {
+	n := len(nums) // Size of the array
+
+	sort.Ints(nums) // Sort the numbers
+
+	ans := []int{}              // To store the LDS
+	dp := make([]int, n)        // DP array
+	parent := make([]int, n)    // Array to keep record of the parent
+	lastIndex := 0              // Index of last element in LDS
+	maxLen := 0                 // Length of LDS
+
+	// Initialize DP array to 1
+	for i := 0; i &lt; n; i++ {
+		dp[i] = 1
+	}
+
+	// Computing the DP array
+	for i := 0; i &lt; n; i++ {
+		parent[i] = i // Assign the parent to itself
+
+		// For each previous index
+		for prevInd := 0; prevInd &lt; i; prevInd++ {
+
+			// If the element at index i can be included in the LDS ending at index prevInd
+			if nums[i]%nums[prevInd] == 0 &amp;&amp; dp[i] &lt; dp[prevInd]+1 {
+				dp[i] = dp[prevInd] + 1 // Update the DP value
+				parent[i] = prevInd     // Store the parent
+			}
+		}
+
+		// If a longer LDS is found, update the values
+		if dp[i] &gt; maxLen {
+			lastIndex = i
+			maxLen = dp[i]
+		}
+	}
+
+	// Backtracking
+	i := lastIndex
+	for parent[i] != i {
+		ans = append(ans, nums[i]) // Add the element at current index
+		i = parent[i]
+	}
+	ans = append(ans, nums[i]) // Adding the last element
+
+	// Return the computed result
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to find the largest divisble subset
+    public List&lt;Integer&gt; largestDivisibleSubset(int[] nums) {
+        int n = nums.length; // Size of the array 
+        
+        Arrays.sort(nums);
+        
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;(); // To store the LDS
+        
+        int[] dp = new int[n]; // DP array 
+        Arrays.fill(dp, 1);
+        
+        int[] parent = new int[n]; // Array to keep record of the parent
+        
+        // To store the index of last element in the LDS
+        int lastIndex = 0; 
+        
+        // To store the length of LDS
+        int maxLen = 0;
+        
+        // Computing the DP array 
+        for(int i = 0; i &lt; n; i++) {
+            parent[i] = i; // Assign the parent to itself
+            
+            // For each previous index
+            for(int prevInd = 0; prevInd &lt; i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] == 0 &amp;&amp; dp[i] &lt; dp[prevInd] + 1) {
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+            // If a longer LDS is found, update the values
+            if(dp[i] &gt; maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+        // Backtracking
+        int i = lastIndex;
+        
+        // Until we reach an index which is its own parent
+        while(parent[i] != i) {
+            ans.add(nums[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        ans.add(nums[i]); // Adding the last element 
+        
+        // Return the computed result
+        return ans;
+    }  
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the largest divisble subset
+    largestDivisibleSubset(nums) {
+        let n = nums.length; // Size of the array 
+        
+        nums.sort((a, b) =&gt; a - b);
+        
+        let ans = []; // To store the LDS
+        
+        let dp = new Array(n).fill(1); // DP array 
+        let parent = new Array(n); // Array to keep record of the parent
+        
+        // To store the index of last element in the LDS
+        let lastIndex = 0; 
+        
+        // To store the length of LDS
+        let maxLen = 0;
+        
+        // Computing the DP array 
+        for(let i = 0; i &lt; n; i++) {
+            parent[i] = i; // Assign the parent to itself
+            
+            // For each previous index
+            for(let prevInd = 0; prevInd &lt; i; prevInd++) {
+                
+                // If the element at index i can be included in the LDS ending at index j
+                if(nums[i] % nums[prevInd] === 0 &amp;&amp; dp[i] &lt; dp[prevInd] + 1) {
+                    dp[i] = dp[prevInd] + 1; // Update the DP value
+                    parent[i] = prevInd; // Store the parent
+                }
+            }
+            // If a longer LDS is found, update the values
+            if(dp[i] &gt; maxLen) {
+                lastIndex = i;
+                maxLen = dp[i];
+            }
+        }
+        // Backtracking
+        let i = lastIndex;
+        
+        // Until we reach an index which is its own parent
+        while(parent[i] !== i) {
+            ans.push(nums[i]); // Add the element at current index
+            i = parent[i]; 
+        }
+        
+        ans.push(nums[i]); // Adding the last element 
+        
+        // Return the computed result
+        return ans;
+    }  
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the largest divisble subset
+    def largestDivisibleSubset(self, nums):
+        n = len(nums)  # Size of the array 
+        
+        nums.sort()
+        
+        ans = []  # To store the LDS
+        
+        dp = [1] * n  # DP array 
+        parent = [0] * n  # Array to keep record of the parent
+        
+        # To store the index of last element in the LDS
+        lastIndex = 0
+        
+        # To store the length of LDS
+        maxLen = 0
+        
+        # Computing the DP array 
+        for i in range(n):
+            parent[i] = i  # Assign the parent to itself
+            
+            # For each previous index
+            for prevInd in range(i):
+                
+                # If the element at index i can be included in the LDS ending at index j
+                if nums[i] % nums[prevInd] == 0 and dp[i] &lt; dp[prevInd] + 1:
+                    dp[i] = dp[prevInd] + 1  # Update the DP value
+                    parent[i] = prevInd  # Store the parent
+            
+            # If a longer LDS is found, update the values
+            if dp[i] &gt; maxLen:
+                lastIndex = i
+                maxLen = dp[i]
+        
+        # Backtracking
+        i = lastIndex
+        
+        # Until we reach an index which is its own parent
+        while parent[i] != i:
+            ans.append(nums[i])  # Add the element at current index
+            i = parent[i]
+        
+        ans.append(nums[i])  # Adding the last element 
+        
+        # Return the computed result
+        return ans</code></pre></div>
+</body>
+</html>

@@ -1,0 +1,2294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Triangle</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Triangle</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a 2d integer array named triangle with n rows. Its first row has 1 element and each succeeding row has one more element in it than the row above it. </p><p><br></p><p>Return the<strong> minimum falling path</strong> sum from the first row to the last.</p><p><br></p><p>Movement is allowed only to the<strong> bottom </strong>or <strong>bottom-right</strong> cell from the current cell.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>n == number of rows in triangle</li><li>1 <= n <= 200</li><li>-10<sup>4</sup> <= triangle[i][j] <= 10<sup>4</sup></li><li>triangle[0].length == 1</li><li>triangle[i].length = triangle[i-1].length + 1</li><li>The answer will not exceed 10<sup>9</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: triangle = [[1], [1, 2], [1, 2, 4]]</p><p><strong>Output</strong>: 3</p><p><strong>Explanation</strong>: </p><p>One possible route can be:</p><p>Start at 1st row -> bottom -> bottom.</p><h3>Example 2</h3><p><strong>Input</strong>: triangle = [[1], [4, 7], [4,10, 50], [-50, 5, 6, -100]]</p><p><strong>Output</strong>: -42</p><p><strong>Explanation</strong>: </p><p>One possible route can be:</p><p>Start at 1st row -> bottom-right -> bottom-right -> bottom-right</p><h3>Example 3</h3><p><strong>Input</strong>: triangle = [[3], [-1, 3], [-3, 2, 4], [8, 8, 1, -4]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem, also known as the 'Minimum Path Sum in a Triangle', has fundamental relevance in graph theory and network routing. It is used in practical cases such as network routing, where the goal is to find the path of least resistance (or in this case, the least sum). This algorithm is essential for tasks such as Google Maps or other GPS navigation systems to calculate and suggest the shortest or fastest route to a destination.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Why Greedy Approach will not work: </strong></h5>
+<p>As the question asks for minimum path sum, the first approach that comes to our mind is to take a greedy approach and always form a path by locally choosing the cheaper option.
+At every cell, we have two choices, to move to the bottom cell or move to the bottom-right cell. Our ultimate aim is to provide a path that provides us the least path sum. Therefore at every cell, we will make the choice to move which costs us less.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Triangle/tria1-gOQplqRy"><br>
+<p>We can clearly see the issue with the greedy solution. When we make local choices, we might select a path that ends up costing us much more later on.</p>
+<p>Therefore, the only alternative left to us is to generate all possible paths and determine which path has the minimum path sum. To generate all paths, we will use recursion.</p>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<li><b>Express the problem in terms of indexes: </b>We are given a triangular matrix with the number of rows equal to N. We can define the function with two parameters i and j, where i and j represent the row and column of the matrix.</li>
+
+<p>Now, our ultimate aim is to reach the last row. We can define f(i,j) such that it gives us the minimum path sum from the cell [i][j] to the last row.</p>
+
+<li><b>Try out all possible choices at a given index: </b>At every index there are two choices, one to go to the bottom cell(↓) other to the bottom-right cell(↘). To go to the bottom, increase i by 1, and to move towards the bottom-righ, increase both i and j by 1.</li>
+
+<p>Now when we get our answer for the recursive call (f(i+1,j) or f(i+1,j+1)), the current cell value also needs to be added to it as we have to include it too for the current path sum</p><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(i,j){
+    //Base case
+    down =  mat[i][j] + f(i+1, j)
+    diagonal = mat[i][j] + f(i+1, j+1)
+}</code></pre></div></div></div><br>
+
+<li><b>Take the minimum of all choices: </b>As question asks to find the minimum path sum of all the possible unique paths, return the minimum of the choices(down and diagonal)</li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(i,j){
+    //Base case
+    down =  mat[i][j] + f(i+1, j)
+    diagonal = mat[i][j] + f(i+1, j+1)
+    return min(down, diagonal)
+}</code></pre></div></div></div><br>
+
+<li><b>Base cases: </b>
+<p>When i == N-1, that means we have reached the last row, so the minimum path from that cell to the last row will be the value of that cell itself, hence we return mat[i][j].</p>
+<p>At every cell, we have two options to move to the bottom cell(↓) or to the bottom-right cell(↘). If we closely observe the triangular grid, at max we can reach the last row from where we return so we will not move out of the index of the grid. Therefore only one base condition is required.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Triangle/tria-gjwUKyg7"><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(i,j){
+    if(i == N-1)   return mat[i][j]
+    //code
+}</code></pre></div></div></div><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Function to find the minimum path sum recursively
+    int func(int i, int j, vector<vector<int> > &triangle, int n) {
+        // If we're at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return min(down, diagonal);
+   }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector<vector<int>>& triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+    
+        //Return the minimum path sum
+        return func(0, 0, triangle, n);
+    }
+};
+int main() {
+    vector<vector<int> > triangle{{1},
+                                   {2, 3},
+                                   {3, 6, 7},
+                                   {8, 9, 6, 10}};
+    
+    //Create an instance of the Solution class
+    Solution sol;
+    
+    // Call the minimumPathSum function and print result
+    cout << sol.minTriangleSum(triangle);
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the minimum path sum recursively
+    private int func(int i, int j, int[][] triangle, int n) {
+        // If we're at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return Math.min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+
+        // Return the minimum path sum
+        return func(0, 0, triangle, n);
+    }
+
+    public static void main(String[] args) {
+        int[][] triangle = {
+            {1},
+            {2, 3},
+            {3, 6, 7},
+            {8, 9, 6, 10}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the minTriangleSum function and print result
+        System.out.println("Minimum path sum in triangle: " + sol.minTriangleSum(triangle));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the minimum path sum recursively
+    def func(self, i, j, triangle, n):
+        # If we're at bottom row, return value of current cell
+        if i == n - 1:
+            return triangle[i][j]
+
+        # Calculate the sum of two possible paths
+        down = triangle[i][j] + self.func(i + 1, j, triangle, n)
+        diagonal = triangle[i][j] + self.func(i + 1, j + 1, triangle, n)
+
+        # Return the minimum of the two paths
+        return min(down, diagonal)
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+
+        # Return the minimum path sum
+        return self.func(0, 0, triangle, n)
+
+if __name__ == "__main__":
+    triangle = [
+        [1],
+        [2, 3],
+        [3, 6, 7],
+        [8, 9, 6, 10]
+    ]
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call the minTriangleSum function and print result
+    print("Minimum path sum in triangle:", sol.minTriangleSum(triangle))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the minimum path sum recursively
+    func(i, j, triangle, n) {
+        // If we're at bottom row, return value of current cell
+        if (i === n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        let down = triangle[i][j] + this.func(i + 1, j, triangle, n);
+        let diagonal = triangle[i][j] + this.func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return Math.min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+
+        // Return the minimum path sum
+        return this.func(0, 0, triangle, n);
+    }
+}
+
+const triangle = [
+    [1],
+    [2, 3],
+    [3, 6, 7],
+    [8, 9, 6, 10]
+];
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call the minTriangleSum function and print result
+console.log("Minimum path sum in triangle:", sol.minTriangleSum(triangle));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+class Solution
+{
+    // Function to find the minimum path sum recursively
+    private int Func(int i, int j, List<List<int>> triangle, int n)
+    {
+        // If we're at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + Func(i + 1, j, triangle, n);
+        int diagonal = triangle[i][j] + Func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return Math.Min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    public int MinTriangleSum(List<List<int>> triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+
+        // Return the minimum path sum
+        return Func(0, 0, triangle, n);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        var triangle = new List<List<int>>
+        {
+            new List<int> { 1 },
+            new List<int> { 2, 3 },
+            new List<int> { 3, 6, 7 },
+            new List<int> { 8, 9, 6, 10 }
+        };
+
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+
+        // Call the minimumPathSum function and print result
+        Console.WriteLine(sol.MinTriangleSum(triangle));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Function to find the minimum path sum recursively
+func funcRec(i, j int, triangle [][]int, n int) int {
+    // If we're at bottom row, return value of current cell
+    if i == n-1 {
+        return triangle[i][j]
+    }
+
+    // Calculate the sum of two possible paths
+    down := triangle[i][j] + funcRec(i+1, j, triangle, n)
+    diagonal := triangle[i][j] + funcRec(i+1, j+1, triangle, n)
+
+    // Return the minimum of the two paths
+    if down < diagonal {
+        return down
+    }
+    return diagonal
+}
+
+// Function to find out the minimum path sum
+func minTriangleSum(triangle [][]int) int {
+    // Get the number of rows in the triangle
+    n := len(triangle)
+
+    // Return the minimum path sum
+    return funcRec(0, 0, triangle, n)
+}
+
+func main() {
+    triangle := [][]int{
+        {1},
+        {2, 3},
+        {3, 6, 7},
+        {8, 9, 6, 10},
+    }
+
+    // Call the minimumPathSum function and print result
+    fmt.Println(minTriangleSum(triangle))
+}
+
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(2<sup>N</sup>), where N is the number of  rows . As, each cell has 2 choices and at max the number of subproblems can be N.<br><br>
+<strong>Space Complexity:</strong>O(N), The depth of the recursion is proportional to the height of the triangle N. Therefore, the space used by the call stack is O(N).
+
+</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Triangle/-TSplBi2h"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<li><b>Declare a dp[] array of size [n][n]: </b>As there are two changing parameters(i and j) in the recursive solution, and the maximum value they can attain is (n-1) and (n-1), where n is number of rows. So we will require a dp matrix of n*n. </li>
+<p>The dp array stores the calculations of subproblems, dp[i][j] represents the minimum path sum to reach last row from (i,j). Initially, fill the array with -1, to indicate that no subproblem has been solved yet.</p>
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Function to find the minimum path sum using memoization
+    int func(int i, int j, vector<vector<int> > &triangle, int n, vector<vector<int> > &dp) {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if(dp[i][j] != -1) return dp[i][j];
+        
+        // If we're at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n, dp);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the sum in dp and return it
+        return dp[i][j] = min(down, diagonal);
+   }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector<vector<int>>& triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        vector<vector<int> > dp(n, vector<int>(n, -1));
+    
+        //Return the minimum path sum
+        return func(0, 0, triangle, n, dp);
+    }
+};
+int main() {
+    vector<vector<int> > triangle{{1},
+                                   {2, 3},
+                                   {3, 6, 7},
+                                   {8, 9, 6, 10}};
+    
+    //Create an instance of the Solution class
+    Solution sol;
+    
+    // Call the minimumPathSum function and print result
+    cout << sol.minTriangleSum(triangle);
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to find the minimum path sum using memoization
+    private int func(int i, int j, int[][] triangle, int n, int[][] dp) {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if (dp[i][j] != -1)
+            return dp[i][j];
+
+        // If we're at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n, dp);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the minimum sum in dp and return it
+        return dp[i][j] = Math.min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+
+        // Initialize a memoization table to store computed results
+        int[][] dp = new int[n][n];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        // Return the minimum path sum
+        return func(0, 0, triangle, n, dp);
+    }
+
+    public static void main(String[] args) {
+        int[][] triangle = {{1},
+                            {2, 3},
+                            {3, 6, 7},
+                            {8, 9, 6, 10}};
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the minTriangleSum function and print result
+        System.out.println("Minimum path sum in triangle: " + sol.minTriangleSum(triangle));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the minimum path sum using memoization
+    def func(self, i, j, triangle, n, dp):
+        """ If the result for this cell is
+        already calculated, return it"""
+        if dp[i][j] != -1:
+            return dp[i][j]
+
+        # If we're at bottom row, return value of current cell
+        if i == n - 1:
+            return triangle[i][j]
+
+        # Calculate the sum of two possible paths
+        down = triangle[i][j] + self.func(i + 1, j, triangle, n, dp)
+        diagonal = triangle[i][j] + self.func(i + 1, j + 1, triangle, n, dp)
+
+        # Store the minimum sum in dp and return it
+        dp[i][j] = min(down, diagonal)
+        return dp[i][j]
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+
+        """ Initialize a memoization table
+        to store computed results"""
+        dp = [[-1] * n for _ in range(n)]
+
+        # Return the minimum path sum
+        return self.func(0, 0, triangle, n, dp)
+
+triangle = [
+    [1],
+    [2, 3],
+    [3, 6, 7],
+    [8, 9, 6, 10]
+]
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the minTriangleSum function and print result
+print("Minimum path sum in triangle:", sol.minTriangleSum(triangle))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the minimum path sum using memoization
+    func(i, j, triangle, n, dp) {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if (dp[i][j] !== -1) {
+            return dp[i][j];
+        }
+
+        // If we're at bottom row, return value of current cell
+        if (i === n - 1) {
+            return triangle[i][j];
+        }
+
+        // Calculate the sum of two possible paths
+        let down = triangle[i][j] + this.func(i + 1, j, triangle, n, dp);
+        let diagonal = triangle[i][j] + this.func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the minimum sum in dp and return it
+        dp[i][j] = Math.min(down, diagonal);
+        return dp[i][j];
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+
+        /* Initialize a memoization table
+        to store computed results*/
+        let dp = Array.from({ length: n }, () => Array(n).fill(-1));
+
+        // Return the minimum path sum
+        return this.func(0, 0, triangle, n, dp);
+    }
+}
+
+let triangle = [
+    [1],
+    [2, 3],
+    [3, 6, 7],
+    [8, 9, 6, 10]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Call the minTriangleSum function and print result
+console.log("Minimum path sum in triangle:", sol.minTriangleSum(triangle));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<List<int>> triangle = new List<List<int>>
+        {
+            new List<int> {1},
+            new List<int> {2, 3},
+            new List<int> {3, 6, 7},
+            new List<int> {8, 9, 6, 10}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the minTriangleSum function and print result
+        Console.WriteLine("Minimum path sum in triangle: " + sol.MinTriangleSum(triangle));
+    }
+}
+
+class Solution
+{
+    // Function to find the minimum path sum using memoization
+    private int Func(int i, int j, List<List<int>> triangle, int n, int[][] dp)
+    {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if (dp[i][j] != -1)
+        {
+            return dp[i][j];
+        }
+
+        // If we're at bottom row, return value of current cell
+        if (i == n - 1)
+        {
+            return triangle[i][j];
+        }
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + Func(i + 1, j, triangle, n, dp);
+        int diagonal = triangle[i][j] + Func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the minimum sum in dp and return it
+        dp[i][j] = Math.Min(down, diagonal);
+        return dp[i][j];
+    }
+
+    // Function to find out the minimum path sum
+    public int MinTriangleSum(List<List<int>> triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+
+        /* Initialize a memoization table
+        to store computed results*/
+        int[][] dp = new int[n][];
+        for (int k = 0; k < n; k++)
+        {
+            dp[k] = new int[n];
+            Array.Fill(dp[k], -1);
+        }
+
+        // Return the minimum path sum
+        return Func(0, 0, triangle, n, dp);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to find the minimum path sum using memoization
+func funcMin(i, j int, triangle [][]int, n int, dp [][]int) int {
+	// If the result for this cell is already calculated, return it
+	if dp[i][j] != -1 {
+		return dp[i][j]
+	}
+
+	// If we're at bottom row, return value of current cell
+	if i == n-1 {
+		return triangle[i][j]
+	}
+
+	// Calculate the sum of two possible paths
+	down := triangle[i][j] + funcMin(i+1, j, triangle, n, dp)
+	diagonal := triangle[i][j] + funcMin(i+1, j+1, triangle, n, dp)
+
+	// Store the sum in dp and return it
+	if down < diagonal {
+		dp[i][j] = down
+	} else {
+		dp[i][j] = diagonal
+	}
+	return dp[i][j]
+}
+
+// Function to find out the minimum path sum
+func minTriangleSum(triangle [][]int) int {
+	n := len(triangle)
+
+	// Initialize a memoization table to store computed results
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, n)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Return the minimum path sum
+	return funcMin(0, 0, triangle, n, dp)
+}
+
+func main() {
+	triangle := [][]int{
+		{1},
+		{2, 3},
+		{3, 6, 7},
+		{8, 9, 6, 10},
+	}
+
+	// Call the minimumPathSum function and print result
+	fmt.Println(minTriangleSum(triangle))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N<sup>2<sup>), where N is the number of rows. As the total number of different subproblems can go upto N.<br><br>
+<strong>Space Complexity:</strong>O(N) + O(N*N), We are using a recursion stack space of N and  an extra DP array of size N*N. </body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>
+In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<li><b>Declare a dp[] array of size [n][n]: </b>As there are two changing parameters(i and j) in the recursive solution, and the maximum value they can attain is (n-1) and (n-1), where n is number of rows. So we will require a dp matrix of n*n. The dp array stores the calculations of subproblems, dp[i][j] represents the minimum path sum to reach (0,0) from (i,j).</li>
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, we  knew that, when i = n-1, it means we have reached the last row and the minimum path to reach the last row from here is the cell value itself. So fill the last row of the dp matrix to the last row of the triangle matrix, dp[n - 1][j] = triangle[n - 1][j]. </li>
+
+<li><b>Iterative Computation Using Loops: </b>We can use two nested loops to have this traversal. If we see the memoized code, the values required for dp[i][j] are dp[i+1][j] and dp[i+1][j+1]. So the values from the ‘i+1’ row is required only. The last row (i=N-1) is already filled for the base case, so, now move from row ‘N-2’ row and move upwards to find the values correctly.
+</li>
+<li><b>Choosing the minimum: </b>As the question asks for minimum path sum, so update dp[i][j] as the minimum of (down and diagonal).</li>
+<li><b>Returning the first element: </b>The first element dp[0][0] of the dp array is returned because it holds the optimal solution to the entire problem after the top-down computation has been completed.</li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Function to find the minimum path sum using tabulation
+    int func(vector<vector<int> > &triangle, int n, vector<vector<int> > &dp) {
+        /* Initialize the bottom row of dp 
+        with the values from the triangle*/
+        for (int j = 0; j < n; j++) {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                // Calculate the minimum path sum for current cell
+                int down = triangle[i][j] + dp[i + 1][j];
+                int diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector<vector<int>>& triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        vector<vector<int> > dp(n, vector<int>(n, -1));
+    
+        //Return the minimum path sum
+        return func(triangle, n, dp);
+    }
+};
+int main() {
+    vector<vector<int> > triangle{{1},
+                                   {2, 3},
+                                   {3, 6, 7},
+                                   {8, 9, 6, 10}};
+    
+    //Create an instance of the Solution class
+    Solution sol;
+    
+    // Call the minimumPathSum function and print result
+    cout << sol.minTriangleSum(triangle);
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="java" class="language-java">class Solution {
+    // Function to find the minimum path sum using tabulation
+    private int func(int[][] triangle, int n, int[][] dp) {
+        /* Initialize the bottom row of dp 
+        with the values from the triangle*/
+        for (int j = 0; j < n; j++) {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                // Calculate the minimum path sum for current cell
+                int down = triangle[i][j] + dp[i + 1][j];
+                int diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = Math.min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        int[][] dp = new int[n][n];
+    
+        // Return the minimum path sum
+        return func(triangle, n, dp);
+    }
+
+    public static void main(String[] args) {
+        int[][] triangle = {
+            {1},
+            {2, 3},
+            {3, 6, 7},
+            {8, 9, 6, 10}
+        };
+        
+        // Create an instance of the Solution class
+        Solution sol = new Solution();
+        
+        // Call the minTriangleSum function and print result
+        System.out.println(sol.minTriangleSum(triangle));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the minimum path sum using tabulation
+    def func(self, triangle, n, dp):
+        """ Initialize the bottom row of dp
+        with the values from the triangle"""
+        for j in range(n):
+            dp[n - 1][j] = triangle[n - 1][j]
+
+        # Iterate through the triangle rows in reverse order
+        for i in range(n - 2, -1, -1):
+            for j in range(i + 1):
+                # Calculate the minimum path sum for current cell
+                down = triangle[i][j] + dp[i + 1][j]
+                diagonal = triangle[i][j] + dp[i + 1][j + 1]
+
+                # Store the minimum of the two possible paths in dp
+                dp[i][j] = min(down, diagonal)
+
+        # Top-left cell of dp now contains the minimum path sum
+        return dp[0][0]
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+
+        # Initialize a memoization table to store computed results
+        dp = [[0] * n for _ in range(n)]
+
+        # Return the minimum path sum
+        return self.func(triangle, n, dp)
+
+triangle = [
+    [1],
+    [2, 3],
+    [3, 6, 7],
+    [8, 9, 6, 10]
+]
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the minTriangleSum function and print result
+print(sol.minTriangleSum(triangle))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find the minimum path sum using tabulation
+    func(triangle, n, dp) {
+        /* Initialize the bottom row of dp
+        with the values from the triangle*/
+        for (let j = 0; j < n; j++) {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (let i = n - 2; i >= 0; i--) {
+            for (let j = i; j >= 0; j--) {
+                // Calculate the minimum path sum for current cell
+                let down = triangle[i][j] + dp[i + 1][j];
+                let diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = Math.min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        let dp = new Array(n).fill().map(() => new Array(n).fill(0));
+    
+        // Return the minimum path sum
+        return this.func(triangle, n, dp);
+    }
+}
+
+let triangle = [
+    [1],
+    [2, 3],
+    [3, 6, 7],
+    [8, 9, 6, 10]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Call the minTriangleSum function and print result
+console.log(sol.minTriangleSum(triangle));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example triangle from the problem description
+        List<List<int>> triangle = new List<List<int>>
+        {
+            new List<int> {1},
+            new List<int> {2, 3},
+            new List<int> {3, 6, 7},
+            new List<int> {8, 9, 6, 10}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the MinTriangleSum function and print result
+        Console.WriteLine(sol.MinTriangleSum(triangle));
+    }
+}
+
+public class Solution
+{
+    // Function to find the minimum path sum using tabulation
+    private int CalculateMinPathSum(List<List<int>> triangle, int n, int[][] dp)
+    {
+        /* Initialize the bottom row of dp
+        with the values from the triangle*/
+        for (int j = 0; j < n; j++)
+        {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (int i = n - 2; i >= 0; i--)
+        {
+            for (int j = i; j >= 0; j--)
+            {
+                // Calculate the minimum path sum for current cell
+                int down = triangle[i][j] + dp[i + 1][j];
+                int diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = Math.Min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+
+    // Function to find out the minimum path sum
+    public int MinTriangleSum(List<List<int>> triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        int[][] dp = new int[n][];
+        for (int i = 0; i < n; i++)
+        {
+            dp[i] = new int[n]; // Initialize each inner array to size n
+        }
+    
+        // Return the minimum path sum
+        return CalculateMinPathSum(triangle, n, dp);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// funcTab is a helper function that fills the dp table bottom‑up
+func funcTab(triangle [][]int, n int, dp [][]int) int {
+    // Initialize the bottom row of dp with triangle values
+    for j := 0; j < n; j++ {
+        dp[n-1][j] = triangle[n-1][j]
+    }
+
+    // Iterate through the triangle rows in reverse order
+    for i := n - 2; i >= 0; i-- {
+        for j := i; j >= 0; j-- {
+            // Calculate the minimum path sum for current cell
+            down := triangle[i][j] + dp[i+1][j]
+            diagonal := triangle[i][j] + dp[i+1][j+1]
+
+            // Store the minimum of the two possible paths in dp
+            if down < diagonal {
+                dp[i][j] = down
+            } else {
+                dp[i][j] = diagonal
+            }
+        }
+    }
+
+    // Top-left cell of dp now contains the minimum path sum
+    return dp[0][0]
+}
+
+// minTriangleSum returns the minimum path sum from top to bottom
+func minTriangleSum(triangle [][]int) int {
+    // Get the number of rows in the triangle
+    n := len(triangle)
+
+    // Initialize a table dp to store computed results
+    dp := make([][]int, n)
+    for i := range dp {
+        dp[i] = make([]int, n)
+    }
+
+    // Compute and return the minimum path sum
+    return funcTab(triangle, n, dp)
+}
+
+func main() {
+    triangle := [][]int{
+        {1},
+        {2, 3},
+        {3, 6, 7},
+        {8, 9, 6, 10},
+    }
+
+    // Call the minTriangleSum function and print result
+    fmt.Println(minTriangleSum(triangle)) // Expected output: 11
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*N), where N is the number of  rows. As the whole triangle is traversed once using two nested loops.<br><br>
+<strong>Space Complexity:</strong>O(N*N), As an external DP Array of size ‘N*N’ is used to store the intermediate calculations.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we closely look at the relationship obltained in the tabulation approach, dp[i][j] = dp[i+1][j] + dp[i+1][j+1]),  We see that the next row  is only needed, in order to calculate dp[i][j]. Therefore space optimization can be applied on tabulation approach.</p>
+
+<li>Initially we can take a dummy row ( say front). It  is initialized to the triangle matrix's last row( as done in tabulation).</li>
+<li>Now  the current row(say cur) only needs the front row’s value in order to calculate dp[i][j].</li><br>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on grids/Triangle/-n9Hio_JX"><br>
+
+<li>At the next step, the 'cur' array becomes the 'front' of the next step and using its values we can still calculate the next row’s values.</li>
+<li>At last, front [0] will give us the required answer for bottom-up approach.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Function to find minimum path sum using space optimization
+    int func(vector<vector<int> > &triangle, int n) {
+        /* Create two arrays to store the
+        current and previous row values*/
+        
+        // Represents the previous row
+        vector<int> front(n, 0); 
+        
+        // Represents the current row
+        vector<int> cur(n, 0);   
+    
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (int j = 0; j < n; j++) {
+            front[j] = triangle[n - 1][j];
+        }
+    
+        // Iterate through triangle rows in reverse order
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                // Calculate minimum path sum for current cell
+                int down = triangle[i][j] + front[j];
+                int diagonal = triangle[i][j] + front[j + 1];
+            
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = min(down, diagonal);
+            }
+            /* Update the front array with
+            the values from the current row*/
+            front = cur;
+        }
+    
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector<vector<int>>& triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+    
+        //Return the minimum path sum
+        return func(triangle, n);
+    }
+};
+int main() {
+    vector<vector<int> > triangle{{1},
+                                   {2, 3},
+                                   {3, 6, 7},
+                                   {8, 9, 6, 10}};
+    
+    //Create an instance of the Solution class
+    Solution sol;
+    
+    // Call the minimumPathSum function and print result
+    cout << sol.minTriangleSum(triangle);
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="java" class="language-java">class Solution {
+    // Function to find minimum path sum using space optimization
+    private int func(int[][] triangle, int n) {
+        /* Create two arrays to store the
+        current and previous row values*/
+        
+        // Represents the previous row
+        int[] front = new int[n];
+        
+        // Represents the current row
+        int[] cur = new int[n];
+    
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (int j = 0; j < n; j++) {
+            front[j] = triangle[n - 1][j];
+        }
+    
+        // Iterate through triangle rows in reverse order
+        for (int i = n - 2; i >= 0; i--) {
+            for (int j = i; j >= 0; j--) {
+                // Calculate minimum path sum for current cell
+                int down = triangle[i][j] + front[j];
+                int diagonal = triangle[i][j] + front[j + 1];
+            
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = Math.min(down, diagonal);
+            }
+            /* Update the front array with
+            the values from the current row*/
+            front = cur.clone();
+        }
+    
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+    
+        // Return the minimum path sum
+        return func(triangle, n);
+    }
+
+    public static void main(String[] args) {
+        int[][] triangle = {
+            {1},
+            {2, 3},
+            {3, 6, 7},
+            {8, 9, 6, 10}
+        };
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Call the minTriangleSum function and print result
+        System.out.println(sol.minTriangleSum(triangle));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find minimum path sum using space optimization
+    def func(self, triangle, n):
+        # Represents the previous row
+        front = [0] * n
+        
+        # Represents the current row
+        cur = [0] * n
+    
+        """ Initialize the front array with values
+        from the last row of the triangle"""
+        for j in range(n):
+            front[j] = triangle[n - 1][j]
+    
+        # Iterate through triangle rows in reverse order
+        for i in range(n - 2, -1, -1):
+            for j in range(i + 1):
+                # Calculate minimum path sum for current cell
+                down = triangle[i][j] + front[j]
+                diagonal = triangle[i][j] + front[j + 1]
+            
+                """ Store the minimum of the two 
+                possible paths in the current row"""
+                cur[j] = min(down, diagonal)
+            
+            # Update front array with the values from current row
+            front = cur[:]
+    
+        """ The front array now contains the minimum path
+        sum from the top to the bottom of the triangle"""
+        return front[0]
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+    
+        # Return the minimum path sum
+        return self.func(triangle, n)
+
+triangle = [
+    [1],
+    [2, 3],
+    [3, 6, 7],
+    [8, 9, 6, 10]
+]
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Call the minTriangleSum function and print result
+print(sol.minTriangleSum(triangle))
+
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to find minimum path sum using space optimization
+    func(triangle, n) {
+        // Represents the previous row
+        let front = new Array(n).fill(0);
+        
+        // Represents the current row
+        let cur = new Array(n).fill(0);
+        
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (let j = 0; j < n; j++) {
+            front[j] = triangle[n - 1][j];
+        }
+        
+        // Iterate through triangle rows in reverse order
+        for (let i = n - 2; i >= 0; i--) {
+            for (let j = 0; j <= i; j++) {
+                // Calculate minimum path sum for current cell
+                let down = triangle[i][j] + front[j];
+                let diagonal = triangle[i][j] + front[j + 1];
+                
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = Math.min(down, diagonal);
+            }
+            // Update front array with the values from current row
+            front.splice(0, i + 1, ...cur.slice(0, i + 1));
+        }
+        
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+        
+        // Return the minimum path sum
+        return this.func(triangle, n);
+    }
+}
+
+let triangle = [
+    [1],
+    [2, 3],
+    [3, 6, 7],
+    [8, 9, 6, 10]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Call the minTriangleSum function and print result
+console.log(sol.minTriangleSum(triangle));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // Function to find minimum path sum using space optimization
+    private int Func(List<List<int>> triangle, int n)
+    {
+        // Represents the previous row
+        int[] front = new int[n];
+        
+        // Represents the current row
+        int[] cur = new int[n];
+        
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (int j = 0; j < n; j++)
+        {
+            front[j] = triangle[n - 1][j];
+        }
+        
+        // Iterate through triangle rows in reverse order
+        for (int i = n - 2; i >= 0; i--)
+        {
+            for (int j = 0; j <= i; j++)
+            {
+                // Calculate minimum path sum for current cell
+                int down = triangle[i][j] + front[j];
+                int diagonal = triangle[i][j] + front[j + 1];
+                
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = Math.Min(down, diagonal);
+            }
+            // Update front array with the values from current row
+            Array.Copy(cur, 0, front, 0, i + 1);
+        }
+        
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+
+    // Function to find out the minimum path sum
+    public int MinTriangleSum(List<List<int>> triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+        
+        // Return the minimum path sum
+        return Func(triangle, n);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<List<int>> triangle = new List<List<int>>
+        {
+            new List<int> {1},
+            new List<int> {2, 3},
+            new List<int> {3, 6, 7},
+            new List<int> {8, 9, 6, 10}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call the minTriangleSum function and print result
+        Console.WriteLine(sol.MinTriangleSum(triangle));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to find the minimum path sum using space optimization
+func minTriangleSum(triangle [][]int) int {
+	// Get the number of rows in the triangle
+	n := len(triangle)
+
+	/* Create two slices to store the
+	current and previous row values */
+
+	// Represents the previous row
+	front := make([]int, n)
+
+	// Represents the current row
+	cur := make([]int, n)
+
+	/* Initialize the front slice with values
+	from the last row of the triangle */
+	for j := 0; j < n; j++ {
+		front[j] = triangle[n-1][j]
+	}
+
+	// Iterate through triangle rows in reverse order
+	for i := n - 2; i >= 0; i-- {
+		for j := i; j >= 0; j-- {
+			// Calculate minimum path sum for current cell
+			down := triangle[i][j] + front[j]
+			diagonal := triangle[i][j] + front[j+1]
+
+			/* Store the minimum of the two 
+			possible paths in the current row */
+			if down < diagonal {
+				cur[j] = down
+			} else {
+				cur[j] = diagonal
+			}
+		}
+		/* Update the front slice with
+		the values from the current row */
+		copy(front, cur)
+	}
+
+	/* The front slice now contains the minimum path 
+	sum from the top to the bottom of the triangle */
+	return front[0]
+}
+
+func main() {
+	triangle := [][]int{
+		{1},
+		{2, 3},
+		{3, 6, 7},
+		{8, 9, 6, 10},
+	}
+
+	// Call the minimumPathSum function and print result
+	fmt.Println(minTriangleSum(triangle))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*N), where N is the number of  rows. As the whole triangle is traversed once using two nested loops.<br><br>
+<strong>Space Complexity:</strong>O(N)+O(N), As two external array of size ‘N’ is used to store the intermediate calculations of rows.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Function to find the minimum path sum recursively
+    int func(int i, int j, vector&lt;vector&lt;int&gt; &gt; &amp;triangle, int n) {
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return min(down, diagonal);
+   }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector&lt;vector&lt;int&gt;&gt;&amp; triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+    
+        //Return the minimum path sum
+        return func(0, 0, triangle, n);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to find the minimum path sum recursively
+    private int Func(int i, int j, List&lt;List&lt;int&gt;&gt; triangle, int n)
+    {
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + Func(i + 1, j, triangle, n);
+        int diagonal = triangle[i][j] + Func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return Math.Min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    public int MinTriangleSum(List&lt;List&lt;int&gt;&gt; triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+
+        // Return the minimum path sum
+        return Func(0, 0, triangle, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the minimum path sum recursively
+func funcRec(i, j int, triangle [][]int, n int) int {
+    // If we&#x27;re at bottom row, return value of current cell
+    if i == n-1 {
+        return triangle[i][j]
+    }
+
+    // Calculate the sum of two possible paths
+    down := triangle[i][j] + funcRec(i+1, j, triangle, n)
+    diagonal := triangle[i][j] + funcRec(i+1, j+1, triangle, n)
+
+    // Return the minimum of the two paths
+    if down &lt; diagonal {
+        return down
+    }
+    return diagonal
+}
+
+// Function to find out the minimum path sum
+func minTriangleSum(triangle [][]int) int {
+    // Get the number of rows in the triangle
+    n := len(triangle)
+
+    // Return the minimum path sum
+    return funcRec(0, 0, triangle, n)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to find the minimum path sum recursively
+    private int func(int i, int j, int[][] triangle, int n) {
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return Math.min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+
+        // Return the minimum path sum
+        return func(0, 0, triangle, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the minimum path sum recursively
+    func(i, j, triangle, n) {
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i === n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        let down = triangle[i][j] + this.func(i + 1, j, triangle, n);
+        let diagonal = triangle[i][j] + this.func(i + 1, j + 1, triangle, n);
+
+        // Return the minimum of the two paths
+        return Math.min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+
+        // Return the minimum path sum
+        return this.func(0, 0, triangle, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the minimum path sum recursively
+    def func(self, i, j, triangle, n):
+        # If we&#x27;re at bottom row, return value of current cell
+        if i == n - 1:
+            return triangle[i][j]
+
+        # Calculate the sum of two possible paths
+        down = triangle[i][j] + self.func(i + 1, j, triangle, n)
+        diagonal = triangle[i][j] + self.func(i + 1, j + 1, triangle, n)
+
+        # Return the minimum of the two paths
+        return min(down, diagonal)
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+
+        # Return the minimum path sum
+        return self.func(0, 0, triangle, n)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Function to find the minimum path sum using memoization
+    int func(int i, int j, vector&lt;vector&lt;int&gt; &gt; &amp;triangle, int n, vector&lt;vector&lt;int&gt; &gt; &amp;dp) {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if(dp[i][j] != -1) return dp[i][j];
+        
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n, dp);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the sum in dp and return it
+        return dp[i][j] = min(down, diagonal);
+   }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector&lt;vector&lt;int&gt;&gt;&amp; triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        vector&lt;vector&lt;int&gt; &gt; dp(n, vector&lt;int&gt;(n, -1));
+    
+        //Return the minimum path sum
+        return func(0, 0, triangle, n, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to find the minimum path sum using memoization
+    private int Func(int i, int j, List&lt;List&lt;int&gt;&gt; triangle, int n, int[][] dp)
+    {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if (dp[i][j] != -1)
+        {
+            return dp[i][j];
+        }
+
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i == n - 1)
+        {
+            return triangle[i][j];
+        }
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + Func(i + 1, j, triangle, n, dp);
+        int diagonal = triangle[i][j] + Func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the minimum sum in dp and return it
+        dp[i][j] = Math.Min(down, diagonal);
+        return dp[i][j];
+    }
+
+    public int MinTriangleSum(List&lt;List&lt;int&gt;&gt; triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+
+        /* Initialize a memoization table
+        to store computed results*/
+        int[][] dp = new int[n][];
+        for (int k = 0; k &lt; n; k++)
+        {
+            dp[k] = new int[n];
+            Array.Fill(dp[k], -1);
+        }
+
+        // Return the minimum path sum
+        return Func(0, 0, triangle, n, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the minimum path sum using memoization
+func funcMin(i, j int, triangle [][]int, n int, dp [][]int) int {
+	// If the result for this cell is already calculated, return it
+	if dp[i][j] != -1 {
+		return dp[i][j]
+	}
+
+	// If we&#x27;re at bottom row, return value of current cell
+	if i == n-1 {
+		return triangle[i][j]
+	}
+
+	// Calculate the sum of two possible paths
+	down := triangle[i][j] + funcMin(i+1, j, triangle, n, dp)
+	diagonal := triangle[i][j] + funcMin(i+1, j+1, triangle, n, dp)
+
+	// Store the sum in dp and return it
+	if down &lt; diagonal {
+		dp[i][j] = down
+	} else {
+		dp[i][j] = diagonal
+	}
+	return dp[i][j]
+}
+
+// Function to find out the minimum path sum
+func minTriangleSum(triangle [][]int) int {
+	n := len(triangle)
+
+	// Initialize a memoization table to store computed results
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, n)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Return the minimum path sum
+	return funcMin(0, 0, triangle, n, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    // Function to find the minimum path sum using memoization
+    private int func(int i, int j, int[][] triangle, int n, int[][] dp) {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if (dp[i][j] != -1)
+            return dp[i][j];
+
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i == n - 1)
+            return triangle[i][j];
+
+        // Calculate the sum of two possible paths
+        int down = triangle[i][j] + func(i + 1, j, triangle, n, dp);
+        int diagonal = triangle[i][j] + func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the minimum sum in dp and return it
+        return dp[i][j] = Math.min(down, diagonal);
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+
+        // Initialize a memoization table to store computed results
+        int[][] dp = new int[n][n];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        // Return the minimum path sum
+        return func(0, 0, triangle, n, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the minimum path sum using memoization
+    func(i, j, triangle, n, dp) {
+        /* If the result for this cell is
+        already calculated, return it*/
+        if (dp[i][j] !== -1) {
+            return dp[i][j];
+        }
+
+        // If we&#x27;re at bottom row, return value of current cell
+        if (i === n - 1) {
+            return triangle[i][j];
+        }
+
+        // Calculate the sum of two possible paths
+        let down = triangle[i][j] + this.func(i + 1, j, triangle, n, dp);
+        let diagonal = triangle[i][j] + this.func(i + 1, j + 1, triangle, n, dp);
+
+        // Store the minimum sum in dp and return it
+        dp[i][j] = Math.min(down, diagonal);
+        return dp[i][j];
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+
+        /* Initialize a memoization table
+        to store computed results*/
+        let dp = Array.from({ length: n }, () =&gt; Array(n).fill(-1));
+
+        // Return the minimum path sum
+        return this.func(0, 0, triangle, n, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the minimum path sum using memoization
+    def func(self, i, j, triangle, n, dp):
+        &quot;&quot;&quot; If the result for this cell is
+        already calculated, return it&quot;&quot;&quot;
+        if dp[i][j] != -1:
+            return dp[i][j]
+
+        # If we&#x27;re at bottom row, return value of current cell
+        if i == n - 1:
+            return triangle[i][j]
+
+        # Calculate the sum of two possible paths
+        down = triangle[i][j] + self.func(i + 1, j, triangle, n, dp)
+        diagonal = triangle[i][j] + self.func(i + 1, j + 1, triangle, n, dp)
+
+        # Store the minimum sum in dp and return it
+        dp[i][j] = min(down, diagonal)
+        return dp[i][j]
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+
+        &quot;&quot;&quot; Initialize a memoization table
+        to store computed results&quot;&quot;&quot;
+        dp = [[-1] * n for _ in range(n)]
+
+        # Return the minimum path sum
+        return self.func(0, 0, triangle, n, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Function to find the minimum path sum using tabulation
+    int func(vector&lt;vector&lt;int&gt; &gt; &amp;triangle, int n, vector&lt;vector&lt;int&gt; &gt; &amp;dp) {
+        /* Initialize the bottom row of dp 
+        with the values from the triangle*/
+        for (int j = 0; j &lt; n; j++) {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j = i; j &gt;= 0; j--) {
+                // Calculate the minimum path sum for current cell
+                int down = triangle[i][j] + dp[i + 1][j];
+                int diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector&lt;vector&lt;int&gt;&gt;&amp; triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        vector&lt;vector&lt;int&gt; &gt; dp(n, vector&lt;int&gt;(n, -1));
+    
+        //Return the minimum path sum
+        return func(triangle, n, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int MinTriangleSum(List&lt;List&lt;int&gt;&gt; triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        int[][] dp = new int[n][];
+        for (int i = 0; i &lt; n; i++)
+        {
+            dp[i] = new int[n]; // Initialize each inner array to size n
+        }
+
+        /* Initialize the bottom row of dp
+        with the values from the triangle*/
+        for (int j = 0; j &lt; n; j++)
+        {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (int i = n - 2; i &gt;= 0; i--)
+        {
+            for (int j = i; j &gt;= 0; j--)
+            {
+                // Calculate the minimum path sum for current cell
+                int down = triangle[i][j] + dp[i + 1][j];
+                int diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = System.Math.Min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// funcTab is a helper function that fills the dp table bottom‑up
+func funcTab(triangle [][]int, n int, dp [][]int) int {
+    // Initialize the bottom row of dp with triangle values
+    for j := 0; j &lt; n; j++ {
+        dp[n-1][j] = triangle[n-1][j]
+    }
+
+    // Iterate through the triangle rows in reverse order
+    for i := n - 2; i &gt;= 0; i-- {
+        for j := i; j &gt;= 0; j-- {
+            // Calculate the minimum path sum for current cell
+            down := triangle[i][j] + dp[i+1][j]
+            diagonal := triangle[i][j] + dp[i+1][j+1]
+
+            // Store the minimum of the two possible paths in dp
+            if down &lt; diagonal {
+                dp[i][j] = down
+            } else {
+                dp[i][j] = diagonal
+            }
+        }
+    }
+
+    // Top-left cell of dp now contains the minimum path sum
+    return dp[0][0]
+}
+
+// minTriangleSum returns the minimum path sum from top to bottom
+func minTriangleSum(triangle [][]int) int {
+    // Get the number of rows in the triangle
+    n := len(triangle)
+
+    // Initialize a table dp to store computed results
+    dp := make([][]int, n)
+    for i := range dp {
+        dp[i] = make([]int, n)
+    }
+
+    // Compute and return the minimum path sum
+    return funcTab(triangle, n, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{    
+// Function to find the minimum path sum using tabulation
+    private int func(int[][] triangle, int n, int[][] dp) {
+        /* Initialize the bottom row of dp 
+        with the values from the triangle*/
+        for (int j = 0; j &lt; n; j++) {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j = i; j &gt;= 0; j--) {
+                // Calculate the minimum path sum for current cell
+                int down = triangle[i][j] + dp[i + 1][j];
+                int diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = Math.min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        int[][] dp = new int[n][n];
+    
+        // Return the minimum path sum
+        return func(triangle, n, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find the minimum path sum using tabulation
+    func(triangle, n, dp) {
+        /* Initialize the bottom row of dp
+        with the values from the triangle*/
+        for (let j = 0; j &lt; n; j++) {
+            dp[n - 1][j] = triangle[n - 1][j];
+        }
+
+        // Iterate through the triangle rows in reverse order
+        for (let i = n - 2; i &gt;= 0; i--) {
+            for (let j = i; j &gt;= 0; j--) {
+                // Calculate the minimum path sum for current cell
+                let down = triangle[i][j] + dp[i + 1][j];
+                let diagonal = triangle[i][j] + dp[i + 1][j + 1];
+
+                // Store the minimum of the two possible paths in dp
+                dp[i][j] = Math.min(down, diagonal);
+            }
+        }
+        // Top-left cell of dp now contains the minimum path sum
+        return dp[0][0];
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+        
+        /* Initialize a memoization table
+        to store computed results*/
+        let dp = new Array(n).fill().map(() =&gt; new Array(n).fill(0));
+    
+        // Return the minimum path sum
+        return this.func(triangle, n, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the minimum path sum using tabulation
+    def func(self, triangle, n, dp):
+        &quot;&quot;&quot; Initialize the bottom row of dp
+        with the values from the triangle&quot;&quot;&quot;
+        for j in range(n):
+            dp[n - 1][j] = triangle[n - 1][j]
+
+        # Iterate through the triangle rows in reverse order
+        for i in range(n - 2, -1, -1):
+            for j in range(i + 1):
+                # Calculate the minimum path sum for current cell
+                down = triangle[i][j] + dp[i + 1][j]
+                diagonal = triangle[i][j] + dp[i + 1][j + 1]
+
+                # Store the minimum of the two possible paths in dp
+                dp[i][j] = min(down, diagonal)
+
+        # Top-left cell of dp now contains the minimum path sum
+        return dp[0][0]
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+
+        # Initialize a memoization table to store computed results
+        dp = [[0] * n for _ in range(n)]
+
+        # Return the minimum path sum
+        return self.func(triangle, n, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Function to find minimum path sum using space optimization
+    int func(vector&lt;vector&lt;int&gt; &gt; &amp;triangle, int n) {
+        /* Create two arrays to store the
+        current and previous row values*/
+        
+        // Represents the previous row
+        vector&lt;int&gt; front(n, 0); 
+        
+        // Represents the current row
+        vector&lt;int&gt; cur(n, 0);   
+    
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (int j = 0; j &lt; n; j++) {
+            front[j] = triangle[n - 1][j];
+        }
+    
+        // Iterate through triangle rows in reverse order
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j = i; j &gt;= 0; j--) {
+                // Calculate minimum path sum for current cell
+                int down = triangle[i][j] + front[j];
+                int diagonal = triangle[i][j] + front[j + 1];
+            
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = min(down, diagonal);
+            }
+            /* Update the front array with
+            the values from the current row*/
+            front = cur;
+        }
+    
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+public:
+    //Function to find out the minimum path sum
+    int minTriangleSum(vector&lt;vector&lt;int&gt;&gt;&amp; triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.size();
+    
+        //Return the minimum path sum
+        return func(triangle, n);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to find minimum path sum using space optimization
+    private int Func(List&lt;List&lt;int&gt;&gt; triangle, int n)
+    {
+        // Represents the previous row
+        int[] front = new int[n];
+        
+        // Represents the current row
+        int[] cur = new int[n];
+        
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (int j = 0; j &lt; n; j++)
+        {
+            front[j] = triangle[n - 1][j];
+        }
+        
+        // Iterate through triangle rows in reverse order
+        for (int i = n - 2; i &gt;= 0; i--)
+        {
+            for (int j = 0; j &lt;= i; j++)
+            {
+                // Calculate minimum path sum for current cell
+                int down = triangle[i][j] + front[j];
+                int diagonal = triangle[i][j] + front[j + 1];
+                
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = Math.Min(down, diagonal);
+            }
+            // Update front array with the values from current row
+            System.Array.Copy(cur, 0, front, 0, i + 1);
+        }
+        
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+
+    public int MinTriangleSum(List&lt;List&lt;int&gt;&gt; triangle)
+    {
+        // Get the number of rows in the triangle
+        int n = triangle.Count;
+        
+        // Return the minimum path sum
+        return Func(triangle, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to find the minimum path sum using space optimization
+func minTriangleSum(triangle [][]int) int {
+	// Get the number of rows in the triangle
+	n := len(triangle)
+
+	/* Create two slices to store the
+	current and previous row values */
+
+	// Represents the previous row
+	front := make([]int, n)
+
+	// Represents the current row
+	cur := make([]int, n)
+
+	/* Initialize the front slice with values
+	from the last row of the triangle */
+	for j := 0; j &lt; n; j++ {
+		front[j] = triangle[n-1][j]
+	}
+
+	// Iterate through triangle rows in reverse order
+	for i := n - 2; i &gt;= 0; i-- {
+		for j := i; j &gt;= 0; j-- {
+			// Calculate minimum path sum for current cell
+			down := triangle[i][j] + front[j]
+			diagonal := triangle[i][j] + front[j+1]
+
+			/* Store the minimum of the two 
+			possible paths in the current row */
+			if down &lt; diagonal {
+				cur[j] = down
+			} else {
+				cur[j] = diagonal
+			}
+		}
+		/* Update the front slice with
+		the values from the current row */
+		copy(front, cur)
+	}
+
+	/* The front slice now contains the minimum path 
+	sum from the top to the bottom of the triangle */
+	return front[0]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{   
+// Function to find minimum path sum using space optimization
+    private int func(int[][] triangle, int n) {
+        /* Create two arrays to store the
+        current and previous row values*/
+        
+        // Represents the previous row
+        int[] front = new int[n];
+        
+        // Represents the current row
+        int[] cur = new int[n];
+    
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (int j = 0; j &lt; n; j++) {
+            front[j] = triangle[n - 1][j];
+        }
+    
+        // Iterate through triangle rows in reverse order
+        for (int i = n - 2; i &gt;= 0; i--) {
+            for (int j = i; j &gt;= 0; j--) {
+                // Calculate minimum path sum for current cell
+                int down = triangle[i][j] + front[j];
+                int diagonal = triangle[i][j] + front[j + 1];
+            
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = Math.min(down, diagonal);
+            }
+            /* Update the front array with
+            the values from the current row*/
+            front = cur.clone();
+        }
+    
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+
+    // Function to find out the minimum path sum
+    public int minTriangleSum(int[][] triangle) {
+        // Get the number of rows in the triangle
+        int n = triangle.length;
+    
+        // Return the minimum path sum
+        return func(triangle, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find minimum path sum using space optimization
+    func(triangle, n) {
+        // Represents the previous row
+        let front = new Array(n).fill(0);
+        
+        // Represents the current row
+        let cur = new Array(n).fill(0);
+        
+        /* Initialize the front array with values
+        from the last row of the triangle*/
+        for (let j = 0; j &lt; n; j++) {
+            front[j] = triangle[n - 1][j];
+        }
+        
+        // Iterate through triangle rows in reverse order
+        for (let i = n - 2; i &gt;= 0; i--) {
+            for (let j = 0; j &lt;= i; j++) {
+                // Calculate minimum path sum for current cell
+                let down = triangle[i][j] + front[j];
+                let diagonal = triangle[i][j] + front[j + 1];
+                
+                /* Store the minimum of the two 
+                possible paths in the current row*/
+                cur[j] = Math.min(down, diagonal);
+            }
+            // Update front array with the values from current row
+            front.splice(0, i + 1, ...cur.slice(0, i + 1));
+        }
+        
+        /* The front array now contains the minimum path 
+        sum from the top to the bottom of the triangle*/
+        return front[0];
+    }
+
+    // Function to find out the minimum path sum
+    minTriangleSum(triangle) {
+        // Get the number of rows in the triangle
+        let n = triangle.length;
+        
+        // Return the minimum path sum
+        return this.func(triangle, n);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find minimum path sum using space optimization
+    def func(self, triangle, n):
+        # Represents the previous row
+        front = [0] * n
+        
+        # Represents the current row
+        cur = [0] * n
+    
+        &quot;&quot;&quot; Initialize the front array with values
+        from the last row of the triangle&quot;&quot;&quot;
+        for j in range(n):
+            front[j] = triangle[n - 1][j]
+    
+        # Iterate through triangle rows in reverse order
+        for i in range(n - 2, -1, -1):
+            for j in range(i + 1):
+                # Calculate minimum path sum for current cell
+                down = triangle[i][j] + front[j]
+                diagonal = triangle[i][j] + front[j + 1]
+            
+                &quot;&quot;&quot; Store the minimum of the two 
+                possible paths in the current row&quot;&quot;&quot;
+                cur[j] = min(down, diagonal)
+            
+            # Update front array with the values from current row
+            front = cur[:]
+    
+        &quot;&quot;&quot; The front array now contains the minimum path
+        sum from the top to the bottom of the triangle&quot;&quot;&quot;
+        return front[0]
+
+    # Function to find out the minimum path sum
+    def minTriangleSum(self, triangle):
+        # Get the number of rows in the triangle
+        n = len(triangle)
+    
+        # Return the minimum path sum
+        return self.func(triangle, n)</code></pre></div>
+</body>
+</html>

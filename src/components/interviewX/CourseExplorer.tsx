@@ -4,23 +4,23 @@ import type { CourseNode } from '../../utils/courseParser';
 
 interface CourseExplorerProps {
   tree: CourseNode[];
-  selectedVideoId: string | null;
-  onSelectVideo: (video: any) => void;
-  completedIds: Set<number>;
+  selectedLessonId: string | null;
+  onSelectLesson: (lesson: any) => void;
+  completedIds: Set<string>;
   subjectTitle: string;
 }
 
-export function CourseExplorer({ tree, selectedVideoId, onSelectVideo, completedIds, subjectTitle }: CourseExplorerProps) {
+export function CourseExplorer({ tree, selectedLessonId, onSelectLesson, completedIds, subjectTitle }: CourseExplorerProps) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
-  // Function to find the path to a video node
-  const findPathToVideo = (nodes: CourseNode[], targetId: string, currentPath: string[] = []): string[] | null => {
+  // Function to find the path to a lesson node
+  const findPathToLesson = (nodes: CourseNode[], targetId: string, currentPath: string[] = []): string[] | null => {
     for (const node of nodes) {
-      if (node.type === 'video' && `v-${node.video.id}` === targetId) {
+      if (node.type === 'lesson' && node.id === targetId) {
         return currentPath;
       }
       if (node.type === 'folder' && node.children) {
-        const path = findPathToVideo(node.children, targetId, [...currentPath, node.id]);
+        const path = findPathToLesson(node.children, targetId, [...currentPath, node.id]);
         if (path) return path;
       }
     }
@@ -28,17 +28,17 @@ export function CourseExplorer({ tree, selectedVideoId, onSelectVideo, completed
   };
 
   useEffect(() => {
-    if (selectedVideoId) {
-      const pathToVideo = findPathToVideo(tree, selectedVideoId);
-      if (pathToVideo) {
+    if (selectedLessonId) {
+      const pathToLesson = findPathToLesson(tree, selectedLessonId);
+      if (pathToLesson) {
         setExpandedFolders(prev => {
           const next = new Set(prev);
-          pathToVideo.forEach(folderId => next.add(folderId));
+          pathToLesson.forEach(folderId => next.add(folderId));
           return next;
         });
       }
     }
-  }, [selectedVideoId, tree]);
+  }, [selectedLessonId, tree]);
 
   const handleToggleFolder = (folderId: string) => {
     setExpandedFolders(prev => {
@@ -64,8 +64,8 @@ export function CourseExplorer({ tree, selectedVideoId, onSelectVideo, completed
           <CourseTreeNode
             key={node.id}
             node={node}
-            selectedVideoId={selectedVideoId}
-            onSelectVideo={onSelectVideo}
+            selectedLessonId={selectedLessonId}
+            onSelectLesson={onSelectLesson}
             expandedFolders={expandedFolders}
             onToggleFolder={handleToggleFolder}
             completedIds={completedIds}

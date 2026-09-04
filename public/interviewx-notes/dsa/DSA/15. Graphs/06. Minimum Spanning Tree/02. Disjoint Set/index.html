@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disjoint Set </title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Disjoint Set </h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Union Find</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Design a disjoint set (also called union-find) data structure that supports the following operations:</p><p><br></p><p>DisjointSet(int n) initializes the disjoint set with n elements.</p><p>void unionByRank(int u, int v) merges the sets containing u and v using the rank heuristic.</p><p>void unionBySize(int u, int v) merges the sets containing u and v using the size heuristic.</p><p>bool find(int u, int v) checks if the elements u and v are in the same set and returns true if they are, otherwise false.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 10<sup>4</sup></li><li>0 <= u, v < n</li><li>At most 5 * 10<sup>4</sup> calls will be made to unionByRank, unionBySize, and find</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input:</p><p>["DisjointSet", "unionByRank", "unionBySize", "find", "find"]</p><p>[[5], [0, 1], [2, 3], [0, 1], [0, 3]]</p><p><br></p><p>Output:</p><p>[null, null, null, true, false]</p><p><br></p><p>Explanation:</p><p>DisjointSet ds = new DisjointSet(5); // Initialize a disjoint set with 5 elements</p><p>ds.unionByRank(0, 1); // Merge sets containing 0 and 1 using rank</p><p>ds.unionBySize(2, 3); // Merge sets containing 2 and 3 using size</p><p>ds.find(0, 1); // Returns true as 0 and 1 are in the same set</p><p>ds.find(0, 3); // Returns false as 0 and 3 are not in the same set</p><h3>Example 2</h3><p>Input:</p><p>["DisjointSet", "unionBySize", "unionBySize", "find", "find"]</p><p>[[3], [0, 1], [1, 2], [0, 2], [0, 1]]</p><p><br></p><p>Output:</p><p>[null, null, null, true, true]</p><p><br></p><p>Explanation:</p><p>DisjointSet ds = new DisjointSet(3); // Initialize a disjoint set with 3 elements</p><p>ds.unionBySize(0, 1); // Merge sets containing 0 and 1 using size</p><p>ds.unionBySize(1, 2); // Merge sets containing 1 and 2 using rank</p><p>ds.find(0, 2); // Returns true as 0 and 2 are in the same set</p><p>ds.find(0, 1); // Returns true as 0 and 1 are in the same set</p><h3>Example 3</h3><p>Input:</p><p>["DisjointSet", "unionByRank", "unionBySize", "unionByRank", "find", "find"]</p><p>[[5], [0, 1], [3, 4], [1, 2], [0, 2], [1, 3]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The union-find data structure, or the disjoint set, is specifically designed for efficient handling of the equivalence relation problem. It plays a fundamental part in some very popular real-world applications. For example, it is a key component in Kruskal's algorithm, which is a widely used algorithm to find the minimum spanning tree in a graph. The minimum spanning tree has plenty of utilities, from designing the efficient networking in telecom industry to powering the recommendation engines in apps like Netflix, where it's used to cluster users based on their viewing patterns. The rank and size heuristics are used to optimize the efficiency of the union-find operations, making these applications even more performant in solving real-world problems.</p></div>
+<div class="section"><h2>Editorial: Disjoint Set Union by Rank</h2><h3>Introduction:</h3> 
+<p>
+    The Disjoint Set data structure is a crucial topic in the graph series. To understand its necessity, consider the following problem:
+    <h6>Problem Statement:</h6>
+    Given two components of an undirected graph, determine if node 1 and node 5 belong to the same component.
+ <img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-HDgMaS5x">
+    <h6>Approach:</h6>
+    To solve this problem, Depth-First Search (DFS) or Breadth-First Search (BFS) traversal techniques can be employed. By traversing the graph components, it is evident that node 1 and node 5 are in different components. This brute force approach has a time complexity of O(N+E) where N is the number of nodes and E is the number of edges. However, using a Disjoint Set data structure, this problem can be solved in constant time.
+    <br><br>
+    <strong>The Disjoint Set data structure is particularly useful for dynamic graphs.</strong>
+
+    <h6>Dynamic Graph:</h6>
+    A dynamic graph refers to a graph that continuously changes its configuration. <br>
+    <strong>For example</strong>, consider the edge information for a graph as: <br>
+    <code>{{1,2},{2,3},{4,5},{6,7},{5,6},{3,7}}</code> <br><br>
+    Adding edges one by one changes the structure of the graph at each step. After adding the first four edges, nodes 4 and 1 belong to different components. After adding all six edges, nodes 4 and 1 belong to the same component. <br>
+
+  <img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-KQhWvu5R">
+
+    Now, to answer any query that requires checking whether two nodes belong to the same component in the graph, if the traversal techniques are used, then it will be extremely time consuming as the graph is changing every time. Here, <strong>Disjoint Set</strong> plays a crucial role. Disjoint Set can quickly determine if two arbitrary nodes u and v are in the same component at any step. 
+</p>
+
+<h3>Functionalities of Disjoint Set Data Structure:</h3>
+<p>
+    The Disjoint Set data structure provides two primary functionalities:
+    <ul>
+        <li>Finding the parent(ultimate parent) of a particular node.</li>
+        <li>Union operation (which adds an edge between two nodes):
+            <ul>
+                <li>Union by Rank</li>
+                <li>Union by Size</li>
+            </ul>
+        </li>
+    </ul>
+</p>
+
+<h6>Terminologies:</h6>
+<p>
+    <ul>
+        <li><strong>Ultimate Parent:</strong> The parent of a node refers to the node right above that particular node. The ultimate parent refers to the topmost node or the root node of that component.
+<img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-HKMmzPmY">
+        </li>
+        <li><strong>Rank:</strong> The rank of a node refers to the distance (the number of nodes including the leaf node) between the furthest leaf node and the current node. Rank includes all nodes beneath the current node.
+<img src="https://static.takeuforward.org/content/upload_1756065803273_Group 1 (5)">
+        </li>
+    </ul>
+</p>
+
+<h3>Implementation:</h3>
+<p>
+    To implement Union by rank, two arrays of size N (number of nodes) are needed:
+    <ul>
+        <li><strong>Rank array:</strong> Storing the rank of each node.</li>
+        <li><strong>Parent array:</strong> Storing the ultimate parents of each node.</li>
+    </ul>
+
+    
+    
+    <h6>Algorithm:</h6>
+    <ul>
+        <li>
+            <strong>Initial Configuration:</strong>
+            <ul>
+                <li><i>Rank array:</i> Initialized with zeros.</li>
+                <li><i>Parent array:</i> Initialized with the value of nodes, i.e., parent[i] = i.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Union Function Steps:</strong>
+            <ul>
+                <li>The Union function requires two nodes (let's say u and v) as arguments. Find the ultimate parent of u and v using the a helper findPar() function. Let pu and pv be the ultimate parents of u and v respectively.</li>
+                <li>Determine the rank of pu and pv.</li>
+                <li>Connect the ultimate parent with a smaller rank to the other ultimate parent with a larger rank. If the ranks are equal, connect any parent to the other and increase the rank of the parent node to which the other is connected.</li>
+            </ul>
+        </li>
+    </ul>
+
+
+    <h6>Example:</h6>
+    Given the edges of a graph as {{1,2},{2,3},{4,5},{6,7},{5,6}}: <br>
+<img src="https://static.takeuforward.org/content/upload_1761501735957_Disjoint Set"> <br><br>
+<! --    After applying the Union by rank function to every edge, the graph and arrays will look like this:
+<! --<img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-9za1zowz">
+</p>
+
+<h3>Observations:</h3>
+<p>
+    <h4>Observation 1:</h4>
+    Only the ultimate parent is considered, not the immediate parent. For instance, after Union by rank operations, if nodes 5 and 7 are queried, the answer is yes. Their immediate parents differ, but their ultimate parent is the same, i.e., node 4. Thus, the ultimate parent is crucial. <br><br>
+    For this the findPar() function helps find the ultimate parent of a particular node. <br>
+    <strong>findPar() Function:</strong> This function takes a single node as an argument and finds the ultimate parent for that node. <br><br>
+
+    <h4>Observation 2:</h4>
+    Finding the ultimate parent of each query separately using recursion takes O(logN) time complexity. However, the operation is desired in constant time. This is where the path compression technique is useful. <br><br>
+    <strong>Path Compression:</strong> Connecting each node in a path to its ultimate parent reduces time complexity nearly to constant time. The path from the node to its ultimate parent is compressed to only a single edge. 
+ <img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-ctntyrsN"> <br><br>
+
+    <strong>How the Time Complexity reduces?</strong>
+    Before path compression, finding the ultimate parent for node 4 involves traversing back to node 1, which is the height of size logN. After path compression, the ultimate parent is accessed in a single step, reducing traversal and thus the time complexity. 
+<img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-aJMf_1Lg"> <br>
+    <i>Note: We cannot change the ranks while applying path compression.</i> <br><br>
+    Overall, <strong>findPar()</strong> method helps to reduce the time complexity of the union by the rank method as it can find the ultimate parent within constant time. The algorithm for compressing a path is discussed below.
+
+    <h6>Algorithm:</h6>
+    The process of path compression can be done using the backtracking method.
+    <ul>
+        <li><strong>Base Case:</strong> If the node and its parent are the same, return the node.</li>
+        <li>Call the findPar() function for a node until it hits the base case. While backtracking, update the parent of the current node with the returned value.</li>
+    </ul>
+    
+</p>
+
+
+<! --<img src = "https://static.takeuforward.org/premium/Graphs/Minimum%20Spanning%20Tree/Disjoint%20Set/Image_1-iizPA2RF">
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class DisjointSet {
+private:
+    // To store the rank of each node
+    vector<int> rank;
+    
+    /* To store the size of components 
+    that each node belongs to */
+    vector<int> size;
+    
+    // To store the ultimate parent of each node
+    vector<int> parent;
+    
+public:
+    
+    // Constructor
+    DisjointSet(int n) {
+        
+        // Resize the arrays
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n+1, 1);
+        // Initialise each node with its own value
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+        }
+    }
+    
+    /* Helper function to find ultimate
+    parent along with path compression */
+    int findUPar(int node) {
+        // Base case
+        if (node == parent[node])
+            return node;
+            
+        // Backtracking step for path compression
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    /* Function to detemine if two nodes 
+    are in the same component or not */
+    bool find(int u, int v) {
+        // Return true if both have same ultimate parent 
+        return (findUPar(u) == findUPar(v));
+    }
+    
+    /* Function to perform union of 
+    two nodes based on ranks */
+    void unionByRank(int u, int v) {
+        
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+        
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (rank[ulp_u] < rank[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] < rank[ulp_u]) {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+        }
+        
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            
+            // Update the rank
+            rank[ulp_u]++;
+        }
+    }
+    
+    /* Function to perform union of 
+    two nodes based on ranks */
+    void unionBySize(int u, int v) {
+        
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+        
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (size[ulp_u] < size[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+            
+            // Update the size 
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            
+            // Update the size
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};
+
+
+int main() {
+    // Disjoint Data structure
+    DisjointSet ds(7);
+    ds.unionByRank(1, 2); // Adding edge between 1 and 2
+    ds.unionByRank(2, 3); // Adding edge between 2 and 3
+    ds.unionByRank(4, 5); // Adding edge between 4 and 5
+    ds.unionByRank(6, 7); // Adding edge between 6 and 7
+    ds.unionByRank(5, 6); // Adding edge between 5 and 6
+    
+    /* Checking if node 3 and node 7 
+    are in the same component */
+    if (ds.find(3, 7)) 
+        cout << "They belong to the same components.\n";
+    else 
+        cout << "They do not belong to the same components.\n";
+        
+    ds.unionByRank(3, 7); // Adding edge between 3 and 7
+
+    /* Checking again if node 3 and node 7 
+    are in the same component */
+    if (ds.find(3, 7)) 
+        cout << "They belong to the same components.\n";
+    else 
+        cout << "They do not belong to the same components.\n";
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class DisjointSet {
+    // To store the rank of each node
+    private int[] rank;
+
+    /* To store the size of components 
+    that each node belongs to */
+    private int[] size;
+
+    // To store the ultimate parent of each node
+    private int[] parent;
+
+    // Constructor
+    public DisjointSet(int n) {
+        // Resize the arrays
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        Arrays.fill(size, 1);
+
+        // Initialise each node with its own value
+        for (int i = 0; i <= n; i++) {
+            parent[i] = i;
+        }
+    }
+
+    /* Helper function to find ultimate
+    parent along with path compression */
+    public int findUPar(int node) {
+        // Base case
+        if (node == parent[node])
+            return node;
+
+        // Backtracking step for path compression
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    /* Function to determine if two nodes 
+    are in the same component or not */
+    public boolean find(int u, int v) {
+        // Return true if both have same ultimate parent 
+        return (findUPar(u) == findUPar(v));
+    }
+
+    /* Function to perform union of 
+    two nodes based on ranks */
+    public void unionByRank(int u, int v) {
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (rank[ulp_u] < rank[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+        } else if (rank[ulp_v] < rank[ulp_u]) {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+        } 
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            // Update the rank
+            rank[ulp_u]++;
+        }
+    }
+
+    /* Function to perform union of 
+    two nodes based on sizes */
+    public void unionBySize(int u, int v) {
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (size[ulp_u] < size[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+            // Update the size 
+            size[ulp_v] += size[ulp_u];
+        } else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            // Update the size
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        // Disjoint Data structure
+        DisjointSet ds = new DisjointSet(7);
+        ds.unionByRank(1, 2); // Adding edge between 1 and 2
+        ds.unionByRank(2, 3); // Adding edge between 2 and 3
+        ds.unionByRank(4, 5); // Adding edge between 4 and 5
+        ds.unionByRank(6, 7); // Adding edge between 6 and 7
+        ds.unionByRank(5, 6); // Adding edge between 5 and 6
+
+        /* Checking if node 3 and node 7 
+        are in the same component */
+        if (ds.find(3, 7))
+            System.out.println("They belong to the same components.");
+        else
+            System.out.println("They do not belong to the same components.");
+
+        ds.unionByRank(3, 7); // Adding edge between 3 and 7
+
+        /* Checking again if node 3 and node 7 
+        are in the same component */
+        if (ds.find(3, 7))
+            System.out.println("They belong to the same components.");
+        else
+            System.out.println("They do not belong to the same components.");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class DisjointSet:
+    # Constructor
+    def __init__(self, n):
+        # Resize the arrays
+        self.rank = [0] * (n + 1)
+        self.parent = [i for i in range(n + 1)]
+        self.size = [1] * (n + 1)
+
+    # Helper function to find ultimate
+    # parent along with path compression 
+    def findUPar(self, node):
+        # Base case
+        if node == self.parent[node]:
+            return node
+        
+        # Backtracking step for path compression
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+
+    # Function to determine if two nodes 
+    # are in the same component or not
+    def find(self, u, v):
+        # Return true if both have same ultimate parent 
+        return self.findUPar(u) == self.findUPar(v)
+
+    # Function to perform union of 
+    # two nodes based on ranks 
+    def unionByRank(self, u, v):
+        # Get the ultimate parents of both nodes
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+
+        # Return if nodes already belong to the same component
+        if ulp_u == ulp_v:
+            return
+
+        # Otherwise, join the node to the other 
+        # node having higher ranks among the two
+        if self.rank[ulp_u] < self.rank[ulp_v]:
+            # Update the parent
+            self.parent[ulp_u] = ulp_v
+        elif self.rank[ulp_v] < self.rank[ulp_u]:
+            # Update the parent
+            self.parent[ulp_v] = ulp_u
+        else:
+            # Update the parent
+            self.parent[ulp_v] = ulp_u
+            # Update the rank
+            self.rank[ulp_u] += 1
+
+    # Function to perform union of 
+    # two nodes based on sizes
+    def unionBySize(self, u, v):
+        # Get the ultimate parents of both nodes
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+
+        # Return if nodes already belong to the same component
+        if ulp_u == ulp_v:
+            return
+
+        # Otherwise, join the node belonging to the smaller 
+        # component to the node belonging to bigger component
+        if self.size[ulp_u] < self.size[ulp_v]:
+            # Update the parent
+            self.parent[ulp_u] = ulp_v
+            # Update the size 
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            # Update the parent
+            self.parent[ulp_v] = ulp_u
+            # Update the size
+            self.size[ulp_u] += self.size[ulp_v]
+
+if __name__ == "__main__":
+    # Disjoint Data structure
+    ds = DisjointSet(7)
+    ds.unionByRank(1, 2) # Adding edge between 1 and 2
+    ds.unionByRank(2, 3) # Adding edge between 2 and 3
+    ds.unionByRank(4, 5) # Adding edge between 4 and 5
+    ds.unionByRank(6, 7) # Adding edge between 6 and 7
+    ds.unionByRank(5, 6) # Adding edge between 5 and 6
+
+    # Checking if node 3 and node 7 
+    # are in the same component
+    if ds.find(3, 7):
+        print("They belong to the same components.")
+    else:
+        print("They do not belong to the same components.")
+
+    ds.unionByRank(3, 7) # Adding edge between 3 and 7
+
+    # Checking again if node 3 and node 7 
+    # are in the same component
+    if ds.find(3, 7):
+        print("They belong to the same components.")
+    else:
+        print("They do not belong to the same components.")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class DisjointSet {
+    // Constructor
+    constructor(n) {
+        // Resize the arrays
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1);
+        this.size = new Array(n + 1).fill(1);
+
+        // Initialise each node with its own value
+        for (let i = 0; i <= n; i++) {
+            this.parent[i] = i;
+        }
+    }
+
+    /* Helper function to find ultimate
+    parent along with path compression */
+    findUPar(node) {
+        // Base case
+        if (node === this.parent[node])
+            return node;
+
+        // Backtracking step for path compression
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    /* Function to determine if two nodes 
+    are in the same component or not */
+    find(u, v) {
+        // Return true if both have same ultimate parent 
+        return (this.findUPar(u) === this.findUPar(v));
+    }
+
+    /* Function to perform union of 
+    two nodes based on ranks */
+    unionByRank(u, v) {
+        // Get the ultimate parents of both nodes
+        let ulp_u = this.findUPar(u);
+        let ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u === ulp_v) return;
+
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (this.rank[ulp_u] < this.rank[ulp_v]) {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+        } 
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the rank
+            this.rank[ulp_u]++;
+        }
+    }
+
+    /* Function to perform union of 
+    two nodes based on sizes */
+    unionBySize(u, v) {
+        // Get the ultimate parents of both nodes
+        let ulp_u = this.findUPar(u);
+        let ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u === ulp_v) return;
+
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (this.size[ulp_u] < this.size[ulp_v]) {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+            // Update the size 
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the size
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}
+
+const main = () => {
+    // Disjoint Data structure
+    const ds = new DisjointSet(7);
+    ds.unionByRank(1, 2); // Adding edge between 1 and 2
+    ds.unionByRank(2, 3); // Adding edge between 2 and 3
+    ds.unionByRank(4, 5); // Adding edge between 4 and 5
+    ds.unionByRank(6, 7); // Adding edge between 6 and 7
+    ds.unionByRank(5, 6); // Adding edge between 5 and 6
+
+    /* Checking if node 3 and node 7 
+    are in the same component */
+    if (ds.find(3, 7))
+        console.log("They belong to the same components.");
+    else
+        console.log("They do not belong to the same components.");
+
+    ds.unionByRank(3, 7); // Adding edge between 3 and 7
+
+    /* Checking again if node 3 and node 7 
+    are in the same component */
+    if (ds.find(3, 7))
+        console.log("They belong to the same components.");
+    else
+        console.log("They do not belong to the same components.");
+};
+
+main();
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(1)</strong> <br>
+    The actual time complexity of UnionByRank() and findPar() methods is O(4α), which is very small and close to 1. This 4α term has a long mathematical derivation not required for an interview.
+</p>
+
+<p><strong>Space Complexity: O(2N)</strong> (where N is the number of nodes) <br>
+    The Disjoint Set Data structure uses a parent and a rank array each of size N. 
+   
+</p>
+
+
+</div>
+<div class="section"><h2>Editorial: Disjoint Set Union by Size</h2><h3>Introduction:</h3> 
+<p>
+    The Disjoint Set data structure is a crucial topic in the graph series. To understand its necessity, consider the following problem:
+    <h6>Problem Statement:</h6>
+    Given two components of an undirected graph, determine if node 1 and node 5 belong to the same component.
+<img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-uxyc1VYi">
+    <h6>Approach:</h6>
+    To solve this problem, Depth-First Search (DFS) or Breadth-First Search (BFS) traversal techniques can be employed. By traversing the graph components, it is evident that node 1 and node 5 are in different components. This brute force approach has a time complexity of O(N+E) where N is the number of nodes and E is the number of edges. However, using a Disjoint Set data structure, this problem can be solved in constant time.
+    <br><br>
+    <strong>The Disjoint Set data structure is particularly useful for dynamic graphs.</strong>
+
+    <h6>Dynamic Graph:</h6>
+    A dynamic graph refers to a graph that continuously changes its configuration. <br>
+    <strong>For example</strong>, consider the edge information for a graph as: <br>
+    <code>{{1,2},{2,3},{4,5},{6,7},{5,6},{3,7}}</code> <br><br>
+    Adding edges one by one changes the structure of the graph at each step. After adding the first four edges, nodes 4 and 1 belong to different components. After adding all six edges, nodes 4 and 1 belong to the same component. <br>
+
+<img src="https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/-FXawmnSJ">
+
+    Now, to answer any query that requires checking whether two nodes belong to the same component in the graph, if the traversal techniques are used, then it will be extremely time consuming as the graph is changing every time. Here, <strong>Disjoint Set</strong> plays a crucial role. Disjoint Set can quickly determine if two arbitrary nodes u and v are in the same component at any step. 
+</p>
+
+<h3>Functionalities of Disjoint Set Data Structure:</h3>
+<p>
+    The Disjoint Set data structure provides two primary functionalities:
+    <ul>
+        <li>Finding the parent(ultimate parent) of a particular node.</li>
+        <li>Union operation (which adds an edge between two nodes):
+            <ul>
+                <li>Union by Rank</li>
+                <li>Union by Size</li>
+            </ul>
+        </li>
+    </ul>
+</p>
+
+<h3>Implementation:</h3>
+<p>
+    To implement Union by Size, two arrays of size N (number of nodes) are needed:
+    <ul>
+        <li><strong>Size array:</strong> Storing the size of each node, i.e., the size of the component starting from that node.</li>
+        <li><strong>Parent array:</strong> Storing the ultimate parents of each node.</li>
+    </ul>
+
+    
+    
+    <h6>Algorithm:</h6>
+    <ul>
+        <li>
+            <strong>Initial Configuration:</strong>
+            <ul>
+                <li><i>Size array:</i> Initialized with all values as 1.</li>
+                <li><i>Parent array:</i> Initialized with the value of nodes, i.e., parent[i] = i.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Union Function Steps:</strong>
+            <ul>
+                <li>The Union function requires two nodes (let's say u and v) as arguments. Find the ultimate parent of u and v using the a helper findPar() function. Let pu and pv be the ultimate parents of u and v respectively.</li>
+                <li>Determine the size of pu and pv.</li>
+                <li>Connect the ultimate parent with a smaller size to the other ultimate parent with a larger size. If the sizes are equal, connect any parent to the other parent. While connecting in both cases, the size of the parent node (to whom the node was connected) will be increased by the size of the other parent node which is actually connected.</li>
+            </ul>
+        </li>
+    </ul>
+
+
+    <h6>Example:</h6>
+    Given the edges of a graph as {{1,2}, {2,3}, {4,5}, {6,7}, {5,6}, {3,7}}: <br><br>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/content/1768426148_rIoKG5Vt.png" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/content/1768426148_IMNw_jPa.png" alt="Image 2"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6" /></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6" /></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3" /></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" /></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/content/1768426148_rIoKG5Vt.png" alt="Image 1"><img src="https://static.takeuforward.org/content/1768426148_IMNw_jPa.png" alt="Image 2"></div></div> <br><br>
+ 
+    <strong>Note:</strong> It seems much more intuitive than union by rank as the rank gets distorted after path compression.
+</p>
+
+<h6>Observations:</h6>
+<p>
+   In the <i>Union by Rank</i> function, the actual ranks were getting distored during the process of path compression. However, for the case of <i>Union by Size</i> function, there is no distortion of sizes during the process of path compression.
+    
+</p>
+
+<! --<img src = "https://static.takeuforward.org/premium/Graphs/Minimum Spanning Tree/Disjoint Set/Image_1-xCg0Zduy">
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+   <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+   <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+   </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class DisjointSet {
+private:
+   // To store the rank of each node
+   vector<int> rank;
+   
+   /* To store the size of components 
+   that each node belongs to */
+   vector<int> size;
+   
+   // To store the ultimate parent of each node
+   vector<int> parent;
+   
+public:
+
+   
+   // Constructor
+   DisjointSet(int n) {
+       
+       // Resize the arrays
+       rank.resize(n + 1, 0);
+       parent.resize(n + 1);
+       size.resize(n + 1, 1);
+       // Initialise each node with its own value
+       for (int i = 0; i <= n; i++) {
+           parent[i] = i;
+       }
+   }
+   
+   /* Helper function to find ultimate
+   parent along with path compression */
+   int findUPar(int node) {
+       // Base case
+       if (node == parent[node])
+           return node;
+           
+       // Backtracking step for path compression
+       return parent[node] = findUPar(parent[node]);
+   }
+   
+   /* Function to detemine if two nodes 
+   are in the same component or not */
+   bool find(int u, int v) {
+       // Return true if both have same ultimate parent 
+       return (findUPar(u) == findUPar(v));
+   }
+   
+   /* Function to perform union of 
+   two nodes based on ranks */
+   void unionByRank(int u, int v) {
+       
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+       
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+       
+       /* Otherwise, join the node to the other 
+       node having higher ranks among the two */
+       if (rank[ulp_u] < rank[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+       }
+       else if (rank[ulp_v] < rank[ulp_u]) {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+       }
+       
+       /* If both have same rank, join any node to the 
+       other and increment the rank of the parent node */
+       else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           
+           // Update the rank
+           rank[ulp_u]++;
+       }
+   }
+   
+   /* Function to perform union of 
+   two nodes based on ranks */
+   void unionBySize(int u, int v) {
+       
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+       
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+       
+       /* Otherwise, join the node belonging to the smaller 
+       component to the node belonging to bigger component */
+       if (size[ulp_u] < size[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+           
+           // Update the size 
+           size[ulp_v] += size[ulp_u];
+       }
+       else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           
+           // Update the size
+           size[ulp_u] += size[ulp_v];
+           
+       }
+   }
+};
+
+
+int main() {
+   // Disjoint Data structure
+   DisjointSet ds(7);
+   ds.unionBySize(1, 2); // Adding edge between 1 and 2
+   ds.unionBySize(2, 3); // Adding edge between 2 and 3
+   ds.unionBySize(4, 5); // Adding edge between 4 and 5
+   ds.unionBySize(6, 7); // Adding edge between 6 and 7
+   ds.unionBySize(5, 6); // Adding edge between 5 and 6
+   
+   /* Checking if node 3 and node 7 
+   are in the same component */
+   if (ds.find(3, 7)) 
+       cout << "They belong to the same components.\n";
+   else 
+       cout << "They do not belong to the same components.\n";
+       
+   ds.unionBySize(3, 7); // Adding edge between 3 and 7
+   
+   /* Checking again if node 3 and node 7 
+   are in the same component */
+   if (ds.find(3, 7)) 
+       cout << "They belong to the same components.\n";
+   else 
+       cout << "They do not belong to the same components.\n";
+   
+   return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class DisjointSet {
+   // To store the rank of each node
+   private int[] rank;
+
+   /* To store the size of components 
+   that each node belongs to */
+   private int[] size;
+
+   // To store the ultimate parent of each node
+   private int[] parent;
+
+   // Constructor
+   public DisjointSet(int n) {
+       // Resize the arrays
+       rank = new int[n + 1];
+       parent = new int[n + 1];
+       size = new int[n + 1];
+       Arrays.fill(size, 1);
+
+       // Initialise each node with its own value
+       for (int i = 0; i <= n; i++) {
+           parent[i] = i;
+       }
+   }
+
+   /* Helper function to find ultimate
+   parent along with path compression */
+   public int findUPar(int node) {
+       // Base case
+       if (node == parent[node])
+           return node;
+
+       // Backtracking step for path compression
+       return parent[node] = findUPar(parent[node]);
+   }
+
+   /* Function to determine if two nodes 
+   are in the same component or not */
+   public boolean find(int u, int v) {
+       // Return true if both have same ultimate parent 
+       return (findUPar(u) == findUPar(v));
+   }
+
+   /* Function to perform union of 
+   two nodes based on ranks */
+   public void unionByRank(int u, int v) {
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+
+       /* Otherwise, join the node to the other 
+       node having higher ranks among the two */
+       if (rank[ulp_u] < rank[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+       } else if (rank[ulp_v] < rank[ulp_u]) {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+       } 
+       /* If both have same rank, join any node to the 
+       other and increment the rank of the parent node */
+       else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           // Update the rank
+           rank[ulp_u]++;
+       }
+   }
+
+   /* Function to perform union of 
+   two nodes based on sizes */
+   public void unionBySize(int u, int v) {
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+
+       /* Otherwise, join the node belonging to the smaller 
+       component to the node belonging to bigger component */
+       if (size[ulp_u] < size[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+           // Update the size 
+           size[ulp_v] += size[ulp_u];
+       } else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           // Update the size
+           size[ulp_u] += size[ulp_v];
+       }
+   }
+}
+
+public class Main {
+   public static void main(String[] args) {
+       // Disjoint Data structure
+       DisjointSet ds = new DisjointSet(7);
+       ds.unionBySize(1, 2); // Adding edge between 1 and 2
+       ds.unionBySize(2, 3); // Adding edge between 2 and 3
+       ds.unionBySize(4, 5); // Adding edge between 4 and 5
+       ds.unionBySize(6, 7); // Adding edge between 6 and 7
+       ds.unionBySize(5, 6); // Adding edge between 5 and 6
+
+       /* Checking if node 3 and node 7 
+       are in the same component */
+       if (ds.find(3, 7))
+           System.out.println("They belong to the same components.");
+       else
+           System.out.println("They do not belong to the same components.");
+
+       ds.unionBySize(3, 7); // Adding edge between 3 and 7
+
+       /* Checking again if node 3 and node 7 
+       are in the same component */
+       if (ds.find(3, 7))
+           System.out.println("They belong to the same components.");
+       else
+           System.out.println("They do not belong to the same components.");
+   }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class DisjointSet:
+   # Constructor
+   def __init__(self, n):
+       # Resize the arrays
+       self.rank = [0] * (n + 1)
+       self.parent = [i for i in range(n + 1)]
+       self.size = [1] * (n + 1)
+
+   # Helper function to find ultimate
+   # parent along with path compression 
+   def findUPar(self, node):
+       # Base case
+       if node == self.parent[node]:
+           return node
+       
+       # Backtracking step for path compression
+       self.parent[node] = self.findUPar(self.parent[node])
+       return self.parent[node]
+
+   # Function to determine if two nodes 
+   # are in the same component or not
+   def find(self, u, v):
+       # Return true if both have same ultimate parent 
+       return self.findUPar(u) == self.findUPar(v)
+
+   # Function to perform union of 
+   # two nodes based on ranks 
+   def unionByRank(self, u, v):
+       # Get the ultimate parents of both nodes
+       ulp_u = self.findUPar(u)
+       ulp_v = self.findUPar(v)
+
+       # Return if nodes already belong to the same component
+       if ulp_u == ulp_v:
+           return
+
+       # Otherwise, join the node to the other 
+       # node having higher ranks among the two
+       if self.rank[ulp_u] < self.rank[ulp_v]:
+           # Update the parent
+           self.parent[ulp_u] = ulp_v
+       elif self.rank[ulp_v] < self.rank[ulp_u]:
+           # Update the parent
+           self.parent[ulp_v] = ulp_u
+       else:
+           # Update the parent
+           self.parent[ulp_v] = ulp_u
+           # Update the rank
+           self.rank[ulp_u] += 1
+
+   # Function to perform union of 
+   # two nodes based on sizes
+   def unionBySize(self, u, v):
+       # Get the ultimate parents of both nodes
+       ulp_u = self.findUPar(u)
+       ulp_v = self.findUPar(v)
+
+       # Return if nodes already belong to the same component
+       if ulp_u == ulp_v:
+           return
+
+       # Otherwise, join the node belonging to the smaller 
+       # component to the node belonging to bigger component
+       if self.size[ulp_u] < self.size[ulp_v]:
+           # Update the parent
+           self.parent[ulp_u] = ulp_v
+           # Update the size 
+           self.size[ulp_v] += self.size[ulp_u]
+       else:
+           # Update the parent
+           self.parent[ulp_v] = ulp_u
+           # Update the size
+           self.size[ulp_u] += self.size[ulp_v]
+
+if __name__ == "__main__":
+   # Disjoint Data structure
+   ds = DisjointSet(7)
+   ds.unionBySize(1, 2) # Adding edge between 1 and 2
+   ds.unionBySize(2, 3) # Adding edge between 2 and 3
+   ds.unionBySize(4, 5) # Adding edge between 4 and 5
+   ds.unionBySize(6, 7) # Adding edge between 6 and 7
+   ds.unionBySize(5, 6) # Adding edge between 5 and 6
+
+   # Checking if node 3 and node 7 
+   # are in the same component
+   if ds.find(3, 7):
+       print("They belong to the same components.")
+   else:
+       print("They do not belong to the same components.")
+
+   ds.unionBySize(3, 7) # Adding edge between 3 and 7
+
+   # Checking again if node 3 and node 7 
+   # are in the same component
+   if ds.find(3, 7):
+       print("They belong to the same components.")
+   else:
+       print("They do not belong to the same components.")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class DisjointSet {
+   // Constructor
+   constructor(n) {
+       // Resize the arrays
+       this.rank = new Array(n + 1).fill(0);
+       this.parent = new Array(n + 1);
+       this.size = new Array(n + 1).fill(1);
+
+       // Initialise each node with its own value
+       for (let i = 0; i <= n; i++) {
+           this.parent[i] = i;
+       }
+   }
+
+   /* Helper function to find ultimate
+   parent along with path compression */
+   findUPar(node) {
+       // Base case
+       if (node === this.parent[node])
+           return node;
+
+       // Backtracking step for path compression
+       this.parent[node] = this.findUPar(this.parent[node]);
+       return this.parent[node];
+   }
+
+   /* Function to determine if two nodes 
+   are in the same component or not */
+   find(u, v) {
+       // Return true if both have same ultimate parent 
+       return (this.findUPar(u) === this.findUPar(v));
+   }
+
+   /* Function to perform union of 
+   two nodes based on ranks */
+   unionByRank(u, v) {
+       // Get the ultimate parents of both nodes
+       let ulp_u = this.findUPar(u);
+       let ulp_v = this.findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u === ulp_v) return;
+
+       /* Otherwise, join the node to the other 
+       node having higher ranks among the two */
+       if (this.rank[ulp_u] < this.rank[ulp_v]) {
+           // Update the parent
+           this.parent[ulp_u] = ulp_v;
+       } else if (this.rank[ulp_v] < this.rank[ulp_u]) {
+           // Update the parent
+           this.parent[ulp_v] = ulp_u;
+       } 
+       /* If both have same rank, join any node to the 
+       other and increment the rank of the parent node */
+       else {
+           // Update the parent
+           this.parent[ulp_v] = ulp_u;
+           // Update the rank
+           this.rank[ulp_u]++;
+       }
+   }
+
+   /* Function to perform union of 
+   two nodes based on sizes */
+   unionBySize(u, v) {
+       // Get the ultimate parents of both nodes
+       let ulp_u = this.findUPar(u);
+       let ulp_v = this.findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u === ulp_v) return;
+
+       /* Otherwise, join the node belonging to the smaller 
+       component to the node belonging to bigger component */
+       if (this.size[ulp_u] < this.size[ulp_v]) {
+           // Update the parent
+           this.parent[ulp_u] = ulp_v;
+           // Update the size 
+           this.size[ulp_v] += this.size[ulp_u];
+       } else {
+           // Update the parent
+           this.parent[ulp_v] = ulp_u;
+           // Update the size
+           this.size[ulp_u] += this.size[ulp_v];
+       }
+   }
+}
+
+const main = () => {
+   // Disjoint Data structure
+   const ds = new DisjointSet(7);
+   ds.unionBySize(1, 2); // Adding edge between 1 and 2
+   ds.unionBySize(2, 3); // Adding edge between 2 and 3
+   ds.unionBySize(4, 5); // Adding edge between 4 and 5
+   ds.unionBySize(6, 7); // Adding edge between 6 and 7
+   ds.unionBySize(5, 6); // Adding edge between 5 and 6
+
+   /* Checking if node 3 and node 7 
+   are in the same component */
+   if (ds.find(3, 7))
+       console.log("They belong to the same components.");
+   else
+       console.log("They do not belong to the same components.");
+
+   ds.unionBySize(3, 7); // Adding edge between 3 and 7
+
+   /* Checking again if node 3 and node 7 
+   are in the same component */
+   if (ds.find(3, 7))
+       console.log("They belong to the same components.");
+   else
+       console.log("They do not belong to the same components.");
+};
+
+main();
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(1)</strong> <br>
+    The actual time complexity of UnionBySize() and findPar() methods is O(4α), which is very small and close to 1. This 4α term has a long mathematical derivation not required for an interview.
+</p>
+
+<p><strong>Space Complexity: O(2N)</strong> (where N is the number of nodes) <br>
+    The Disjoint Set Data structure uses a parent and a size array each of size N. 
+</p>
+</div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class DisjointSet {
+private:
+    // To store the rank of each node
+    vector&lt;int&gt; rank;
+    
+    /* To store the size of components 
+    that each node belongs to */
+    vector&lt;int&gt; size;
+    
+    // To store the ultimate parent of each node
+    vector&lt;int&gt; parent;
+    
+public:
+    
+    // Constructor
+    DisjointSet(int n) {
+        
+        // Resize the arrays
+        rank.resize(n + 1, 0);
+        parent.resize(n + 1);
+        size.resize(n+1, 1);
+        // Initialise each node with its own value
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+        }
+    }
+    
+    /* Helper function to find ultimate
+    parent along with path compression */
+    int findUPar(int node) {
+        // Base case
+        if (node == parent[node])
+            return node;
+            
+        // Backtracking step for path compression
+        return parent[node] = findUPar(parent[node]);
+    }
+    
+    /* Function to detemine if two nodes 
+    are in the same component or not */
+    bool find(int u, int v) {
+        // Return true if both have same ultimate parent 
+        return (findUPar(u) == findUPar(v));
+    }
+    
+    /* Function to perform union of 
+    two nodes based on ranks */
+    void unionByRank(int u, int v) {
+        
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+        
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (rank[ulp_u] &lt; rank[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+        }
+        else if (rank[ulp_v] &lt; rank[ulp_u]) {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+        }
+        
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            
+            // Update the rank
+            rank[ulp_u]++;
+        }
+    }
+    
+    /* Function to perform union of 
+    two nodes based on ranks */
+    void unionBySize(int u, int v) {
+        
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+        
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+        
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+            
+            // Update the size 
+            size[ulp_v] += size[ulp_u];
+        }
+        else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            
+            // Update the size
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class DisjointSet
+{
+    private int[] rank;
+    private int[] parent;
+    private int[] size;
+
+    public DisjointSet(int n)
+    {
+        // Resize the arrays
+        this.rank = new int[n + 1]; // Default initialized to 0
+        this.parent = new int[n + 1];
+        this.size = new int[n + 1];
+        System.Array.Fill(this.size, 1); // Fill with 1
+
+        // Initialise each node with its own value
+        for (int i = 0; i &lt;= n; i++)
+        {
+            this.parent[i] = i;
+        }
+    }
+
+    /* Helper function to find ultimate
+    parent along with path compression */
+    private int findUPar(int node)
+    {
+        // Base case
+        if (node == this.parent[node])
+            return node;
+
+        // Backtracking step for path compression
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    /* Function to determine if two nodes 
+    are in the same component or not */
+    public bool find(int u, int v)
+    {
+        // Return true if both have same ultimate parent 
+        return (this.findUPar(u) == this.findUPar(v));
+    }
+
+    /* Function to perform union of 
+    two nodes based on ranks */
+    public void unionByRank(int u, int v)
+    {
+        // Get the ultimate parents of both nodes
+        int ulp_u = this.findUPar(u);
+        int ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (this.rank[ulp_u] &lt; this.rank[ulp_v])
+        {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+        }
+        else if (this.rank[ulp_v] &lt; this.rank[ulp_u])
+        {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+        }
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else
+        {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the rank
+            this.rank[ulp_u]++;
+        }
+    }
+
+    /* Function to perform union of 
+    two nodes based on sizes */
+    public void unionBySize(int u, int v)
+    {
+        // Get the ultimate parents of both nodes
+        int ulp_u = this.findUPar(u);
+        int ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (this.size[ulp_u] &lt; this.size[ulp_v])
+        {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+            // Update the size 
+            this.size[ulp_v] += this.size[ulp_u];
+        }
+        else
+        {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the size
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>type DisjointSet struct {
+    rank   []int   // To store the rank of each node
+    size   []int   // To store the size of components that each node belongs to
+    parent []int   // To store the ultimate parent of each node
+}
+
+// Constructor
+func NewDisjointSet(n int) *DisjointSet {
+    ds := &amp;DisjointSet{
+        rank:   make([]int, n+1),
+        size:   make([]int, n+1),
+        parent: make([]int, n+1),
+    }
+
+    // Initialise each node with its own value
+    for i := 0; i &lt;= n; i++ {
+        ds.parent[i] = i
+        ds.size[i] = 1
+    }
+    return ds
+}
+
+// Helper function to find ultimate parent along with path compression
+func (ds *DisjointSet) findUPar(node int) int {
+    // Base case
+    if node == ds.parent[node] {
+        return node
+    }
+    // Backtracking step for path compression
+    ds.parent[node] = ds.findUPar(ds.parent[node])
+    return ds.parent[node]
+}
+
+// Function to determine if two nodes are in the same component
+func (ds *DisjointSet) find(u, v int) bool {
+    // Return true if both have same ultimate parent
+    return ds.findUPar(u) == ds.findUPar(v)
+}
+
+// Function to perform union of two nodes based on ranks
+func (ds *DisjointSet) unionByRank(u, v int) {
+    // Get the ultimate parents of both nodes
+    ulp_u := ds.findUPar(u)
+    ulp_v := ds.findUPar(v)
+
+    // Return if nodes already belong to the same component
+    if ulp_u == ulp_v {
+        return
+    }
+
+    // Otherwise, join the node to the other node having higher rank
+    if ds.rank[ulp_u] &lt; ds.rank[ulp_v] {
+        // Update the parent
+        ds.parent[ulp_u] = ulp_v
+    } else if ds.rank[ulp_v] &lt; ds.rank[ulp_u] {
+        // Update the parent
+        ds.parent[ulp_v] = ulp_u
+    } else {
+        // If both have same rank, join any node to the other and increment the rank
+        ds.parent[ulp_v] = ulp_u
+        ds.rank[ulp_u]++
+    }
+}
+
+// Function to perform union of two nodes based on size
+func (ds *DisjointSet) unionBySize(u, v int) {
+    // Get the ultimate parents of both nodes
+    ulp_u := ds.findUPar(u)
+    ulp_v := ds.findUPar(v)
+
+    // Return if nodes already belong to the same component
+    if ulp_u == ulp_v {
+        return
+    }
+
+    // Join the node belonging to the smaller component to the bigger component
+    if ds.size[ulp_u] &lt; ds.size[ulp_v] {
+        ds.parent[ulp_u] = ulp_v
+        ds.size[ulp_v] += ds.size[ulp_u]
+    } else {
+        ds.parent[ulp_v] = ulp_u
+        ds.size[ulp_u] += ds.size[ulp_v]
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class DisjointSet {
+    // To store the rank of each node
+    private int[] rank;
+
+    /* To store the size of components 
+    that each node belongs to */
+    private int[] size;
+
+    // To store the ultimate parent of each node
+    private int[] parent;
+
+    // Constructor
+    public DisjointSet(int n) {
+        // Resize the arrays
+        rank = new int[n + 1];
+        parent = new int[n + 1];
+        size = new int[n + 1];
+        Arrays.fill(size, 1);
+
+        // Initialise each node with its own value
+        for (int i = 0; i &lt;= n; i++) {
+            parent[i] = i;
+        }
+    }
+
+    /* Helper function to find ultimate
+    parent along with path compression */
+    public int findUPar(int node) {
+        // Base case
+        if (node == parent[node])
+            return node;
+
+        // Backtracking step for path compression
+        return parent[node] = findUPar(parent[node]);
+    }
+
+    /* Function to determine if two nodes 
+    are in the same component or not */
+    public boolean find(int u, int v) {
+        // Return true if both have same ultimate parent 
+        return (findUPar(u) == findUPar(v));
+    }
+
+    /* Function to perform union of 
+    two nodes based on ranks */
+    public void unionByRank(int u, int v) {
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (rank[ulp_u] &lt; rank[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+        } else if (rank[ulp_v] &lt; rank[ulp_u]) {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+        } 
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            // Update the rank
+            rank[ulp_u]++;
+        }
+    }
+
+    /* Function to perform union of 
+    two nodes based on sizes */
+    public void unionBySize(int u, int v) {
+        // Get the ultimate parents of both nodes
+        int ulp_u = findUPar(u);
+        int ulp_v = findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (size[ulp_u] &lt; size[ulp_v]) {
+            // Update the parent
+            parent[ulp_u] = ulp_v;
+            // Update the size 
+            size[ulp_v] += size[ulp_u];
+        } else {
+            // Update the parent
+            parent[ulp_v] = ulp_u;
+            // Update the size
+            size[ulp_u] += size[ulp_v];
+        }
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class DisjointSet {
+    // Constructor
+    constructor(n) {
+        // Resize the arrays
+        this.rank = new Array(n + 1).fill(0);
+        this.parent = new Array(n + 1);
+        this.size = new Array(n + 1).fill(1);
+
+        // Initialise each node with its own value
+        for (let i = 0; i &lt;= n; i++) {
+            this.parent[i] = i;
+        }
+    }
+
+    /* Helper function to find ultimate
+    parent along with path compression */
+    findUPar(node) {
+        // Base case
+        if (node === this.parent[node])
+            return node;
+
+        // Backtracking step for path compression
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    /* Function to determine if two nodes 
+    are in the same component or not */
+    find(u, v) {
+        // Return true if both have same ultimate parent 
+        return (this.findUPar(u) === this.findUPar(v));
+    }
+
+    /* Function to perform union of 
+    two nodes based on ranks */
+    unionByRank(u, v) {
+        // Get the ultimate parents of both nodes
+        let ulp_u = this.findUPar(u);
+        let ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u === ulp_v) return;
+
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (this.rank[ulp_u] &lt; this.rank[ulp_v]) {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+        } else if (this.rank[ulp_v] &lt; this.rank[ulp_u]) {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+        } 
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the rank
+            this.rank[ulp_u]++;
+        }
+    }
+
+    /* Function to perform union of 
+    two nodes based on sizes */
+    unionBySize(u, v) {
+        // Get the ultimate parents of both nodes
+        let ulp_u = this.findUPar(u);
+        let ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u === ulp_v) return;
+
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (this.size[ulp_u] &lt; this.size[ulp_v]) {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+            // Update the size 
+            this.size[ulp_v] += this.size[ulp_u];
+        } else {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the size
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class DisjointSet:
+    # Constructor
+    def __init__(self, n):
+        # Resize the arrays
+        self.rank = [0] * (n + 1)
+        self.parent = [i for i in range(n + 1)]
+        self.size = [1] * (n + 1)
+
+    # Helper function to find ultimate
+    # parent along with path compression 
+    def findUPar(self, node):
+        # Base case
+        if node == self.parent[node]:
+            return node
+        
+        # Backtracking step for path compression
+        self.parent[node] = self.findUPar(self.parent[node])
+        return self.parent[node]
+
+    # Function to determine if two nodes 
+    # are in the same component or not
+    def find(self, u, v):
+        # Return true if both have same ultimate parent 
+        return self.findUPar(u) == self.findUPar(v)
+
+    # Function to perform union of 
+    # two nodes based on ranks 
+    def unionByRank(self, u, v):
+        # Get the ultimate parents of both nodes
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+
+        # Return if nodes already belong to the same component
+        if ulp_u == ulp_v:
+            return
+
+        # Otherwise, join the node to the other 
+        # node having higher ranks among the two
+        if self.rank[ulp_u] &lt; self.rank[ulp_v]:
+            # Update the parent
+            self.parent[ulp_u] = ulp_v
+        elif self.rank[ulp_v] &lt; self.rank[ulp_u]:
+            # Update the parent
+            self.parent[ulp_v] = ulp_u
+        else:
+            # Update the parent
+            self.parent[ulp_v] = ulp_u
+            # Update the rank
+            self.rank[ulp_u] += 1
+
+    # Function to perform union of 
+    # two nodes based on sizes
+    def unionBySize(self, u, v):
+        # Get the ultimate parents of both nodes
+        ulp_u = self.findUPar(u)
+        ulp_v = self.findUPar(v)
+
+        # Return if nodes already belong to the same component
+        if ulp_u == ulp_v:
+            return
+
+        # Otherwise, join the node belonging to the smaller 
+        # component to the node belonging to bigger component
+        if self.size[ulp_u] &lt; self.size[ulp_v]:
+            # Update the parent
+            self.parent[ulp_u] = ulp_v
+            # Update the size 
+            self.size[ulp_v] += self.size[ulp_u]
+        else:
+            # Update the parent
+            self.parent[ulp_v] = ulp_u
+            # Update the size
+            self.size[ulp_u] += self.size[ulp_v]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class DisjointSet {
+private:
+   // To store the rank of each node
+   vector&lt;int&gt; rank;
+   
+   /* To store the size of components 
+   that each node belongs to */
+   vector&lt;int&gt; size;
+   
+   // To store the ultimate parent of each node
+   vector&lt;int&gt; parent;
+   
+public:
+
+   // Constructor
+   DisjointSet(int n) {
+       // Resize the arrays
+       rank.resize(n + 1, 0);
+       parent.resize(n + 1);
+       size.resize(n + 1, 1);
+       // Initialise each node with its own value
+       for (int i = 0; i &lt;= n; i++) {
+           parent[i] = i;
+       }
+   }
+   
+   /* Helper function to find ultimate
+   parent along with path compression */
+   int findUPar(int node) {
+       // Base case
+       if (node == parent[node])
+           return node;
+           
+       // Backtracking step for path compression
+       return parent[node] = findUPar(parent[node]);
+   }
+   
+   /* Function to detemine if two nodes 
+   are in the same component or not */
+   bool find(int u, int v) {
+       // Return true if both have same ultimate parent 
+       return (findUPar(u) == findUPar(v));
+   }
+   
+   /* Function to perform union of 
+   two nodes based on ranks */
+   void unionByRank(int u, int v) {
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+       
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+       
+       /* Otherwise, join the node to the other 
+       node having higher ranks among the two */
+       if (rank[ulp_u] &lt; rank[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+       }
+       else if (rank[ulp_v] &lt; rank[ulp_u]) {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+       }
+       
+       /* If both have same rank, join any node to the 
+       other and increment the rank of the parent node */
+       else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           
+           // Update the rank
+           rank[ulp_u]++;
+       }
+   }
+   
+   /* Function to perform union of 
+   two nodes based on ranks */
+   void unionBySize(int u, int v) {
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+       
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+       
+       /* Otherwise, join the node belonging to the smaller 
+       component to the node belonging to bigger component */
+       if (size[ulp_u] &lt; size[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+           
+           // Update the size 
+           size[ulp_v] += size[ulp_u];
+       }
+       else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           
+           // Update the size
+           size[ulp_u] += size[ulp_v];
+       }
+   }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class DisjointSet
+{
+    private int[] rank;
+    private int[] parent;
+    private int[] size;
+
+    public DisjointSet(int n)
+    {
+        // Resize the arrays
+        this.rank = new int[n + 1];
+        this.parent = new int[n + 1];
+        this.size = new int[n + 1];
+
+        // Initialise each node with its own value and size 1
+        for (int i = 0; i &lt;= n; i++)
+        {
+            this.parent[i] = i;
+            this.size[i] = 1;
+        }
+    }
+
+    /* Helper function to find ultimate
+    parent along with path compression */
+    private int findUPar(int node)
+    {
+        // Base case
+        if (node == this.parent[node])
+            return node;
+
+        // Backtracking step for path compression
+        this.parent[node] = this.findUPar(this.parent[node]);
+        return this.parent[node];
+    }
+
+    public bool find(int u, int v)
+    {
+        // Return true if both have same ultimate parent 
+        return (this.findUPar(u) == this.findUPar(v));
+    }
+
+    public void unionByRank(int u, int v)
+    {
+        // Get the ultimate parents of both nodes
+        int ulp_u = this.findUPar(u);
+        int ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node to the other 
+        node having higher ranks among the two */
+        if (this.rank[ulp_u] &lt; this.rank[ulp_v])
+        {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+        }
+        else if (this.rank[ulp_v] &lt; this.rank[ulp_u])
+        {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+        }
+        /* If both have same rank, join any node to the 
+        other and increment the rank of the parent node */
+        else
+        {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the rank
+            this.rank[ulp_u]++;
+        }
+    }
+
+    public void unionBySize(int u, int v)
+    {
+        // Get the ultimate parents of both nodes
+        int ulp_u = this.findUPar(u);
+        int ulp_v = this.findUPar(v);
+
+        // Return if nodes already belong to the same component
+        if (ulp_u == ulp_v) return;
+
+        /* Otherwise, join the node belonging to the smaller 
+        component to the node belonging to bigger component */
+        if (this.size[ulp_u] &lt; this.size[ulp_v])
+        {
+            // Update the parent
+            this.parent[ulp_u] = ulp_v;
+            // Update the size 
+            this.size[ulp_v] += this.size[ulp_u];
+        }
+        else
+        {
+            // Update the parent
+            this.parent[ulp_v] = ulp_u;
+            // Update the size
+            this.size[ulp_u] += this.size[ulp_v];
+        }
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>type DisjointSet struct {
+    rank   []int   // To store the rank of each node
+    size   []int   // To store the size of components that each node belongs to
+    parent []int   // To store the ultimate parent of each node
+}
+
+// Constructor
+func NewDisjointSet(n int) *DisjointSet {
+    ds := &amp;DisjointSet{
+        rank:   make([]int, n+1),
+        size:   make([]int, n+1),
+        parent: make([]int, n+1),
+    }
+
+    // Initialise each node with its own value
+    for i := 0; i &lt;= n; i++ {
+        ds.parent[i] = i
+        ds.size[i] = 1
+    }
+    return ds
+}
+
+// Helper function to find ultimate parent along with path compression
+func (ds *DisjointSet) findUPar(node int) int {
+    // Base case
+    if node == ds.parent[node] {
+        return node
+    }
+    // Backtracking step for path compression
+    ds.parent[node] = ds.findUPar(ds.parent[node])
+    return ds.parent[node]
+}
+
+// Function to determine if two nodes are in the same component
+func (ds *DisjointSet) find(u, v int) bool {
+    // Return true if both have same ultimate parent
+    return ds.findUPar(u) == ds.findUPar(v)
+}
+
+// Function to perform union of two nodes based on ranks
+func (ds *DisjointSet) unionByRank(u, v int) {
+    // Get the ultimate parents of both nodes
+    ulp_u := ds.findUPar(u)
+    ulp_v := ds.findUPar(v)
+
+    // Return if nodes already belong to the same component
+    if ulp_u == ulp_v {
+        return
+    }
+
+    // Otherwise, join the node to the other node having higher rank
+    if ds.rank[ulp_u] &lt; ds.rank[ulp_v] {
+        // Update the parent
+        ds.parent[ulp_u] = ulp_v
+    } else if ds.rank[ulp_v] &lt; ds.rank[ulp_u] {
+        // Update the parent
+        ds.parent[ulp_v] = ulp_u
+    } else {
+        // If both have same rank, join any node to the other and increment the rank
+        ds.parent[ulp_v] = ulp_u
+        ds.rank[ulp_u]++
+    }
+}
+
+// Function to perform union of two nodes based on size
+func (ds *DisjointSet) unionBySize(u, v int) {
+    // Get the ultimate parents of both nodes
+    ulp_u := ds.findUPar(u)
+    ulp_v := ds.findUPar(v)
+
+    // Return if nodes already belong to the same component
+    if ulp_u == ulp_v {
+        return
+    }
+
+    // Join the node belonging to the smaller component to the bigger component
+    if ds.size[ulp_u] &lt; ds.size[ulp_v] {
+        ds.parent[ulp_u] = ulp_v
+        ds.size[ulp_v] += ds.size[ulp_u]
+    } else {
+        ds.parent[ulp_v] = ulp_u
+        ds.size[ulp_u] += ds.size[ulp_v]
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class DisjointSet {
+   // To store the rank of each node
+   private int[] rank;
+
+   /* To store the size of components 
+   that each node belongs to */
+   private int[] size;
+
+   // To store the ultimate parent of each node
+   private int[] parent;
+
+   // Constructor
+   public DisjointSet(int n) {
+       // Resize the arrays
+       rank = new int[n + 1];
+       parent = new int[n + 1];
+       size = new int[n + 1];
+       Arrays.fill(size, 1);
+
+       // Initialise each node with its own value
+       for (int i = 0; i &lt;= n; i++) {
+           parent[i] = i;
+       }
+   }
+
+   /* Helper function to find ultimate
+   parent along with path compression */
+   public int findUPar(int node) {
+       // Base case
+       if (node == parent[node])
+           return node;
+
+       // Backtracking step for path compression
+       return parent[node] = findUPar(parent[node]);
+   }
+
+   /* Function to determine if two nodes 
+   are in the same component or not */
+   public boolean find(int u, int v) {
+       // Return true if both have same ultimate parent 
+       return (findUPar(u) == findUPar(v));
+   }
+
+   /* Function to perform union of 
+   two nodes based on ranks */
+   public void unionByRank(int u, int v) {
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+
+       /* Otherwise, join the node to the other 
+       node having higher ranks among the two */
+       if (rank[ulp_u] &lt; rank[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+       } else if (rank[ulp_v] &lt; rank[ulp_u]) {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+       } 
+       /* If both have same rank, join any node to the 
+       other and increment the rank of the parent node */
+       else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           // Update the rank
+           rank[ulp_u]++;
+       }
+   }
+
+   /* Function to perform union of 
+   two nodes based on sizes */
+   public void unionBySize(int u, int v) {
+       // Get the ultimate parents of both nodes
+       int ulp_u = findUPar(u);
+       int ulp_v = findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u == ulp_v) return;
+
+       /* Otherwise, join the node belonging to the smaller 
+       component to the node belonging to bigger component */
+       if (size[ulp_u] &lt; size[ulp_v]) {
+           // Update the parent
+           parent[ulp_u] = ulp_v;
+           // Update the size 
+           size[ulp_v] += size[ulp_u];
+       } else {
+           // Update the parent
+           parent[ulp_v] = ulp_u;
+           // Update the size
+           size[ulp_u] += size[ulp_v];
+       }
+   }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class DisjointSet {
+   // Constructor
+   constructor(n) {
+       // Resize the arrays
+       this.rank = new Array(n + 1).fill(0);
+       this.parent = new Array(n + 1);
+       this.size = new Array(n + 1).fill(1);
+
+       // Initialise each node with its own value
+       for (let i = 0; i &lt;= n; i++) {
+           this.parent[i] = i;
+       }
+   }
+
+   /* Helper function to find ultimate
+   parent along with path compression */
+   findUPar(node) {
+       // Base case
+       if (node === this.parent[node])
+           return node;
+
+       // Backtracking step for path compression
+       this.parent[node] = this.findUPar(this.parent[node]);
+       return this.parent[node];
+   }
+
+   /* Function to determine if two nodes 
+   are in the same component or not */
+   find(u, v) {
+       // Return true if both have same ultimate parent 
+       return (this.findUPar(u) === this.findUPar(v));
+   }
+
+   /* Function to perform union of 
+   two nodes based on ranks */
+   unionByRank(u, v) {
+       // Get the ultimate parents of both nodes
+       let ulp_u = this.findUPar(u);
+       let ulp_v = this.findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u === ulp_v) return;
+
+       /* Otherwise, join the node to the other 
+       node having higher ranks among the two */
+       if (this.rank[ulp_u] &lt; this.rank[ulp_v]) {
+           // Update the parent
+           this.parent[ulp_u] = ulp_v;
+       } else if (this.rank[ulp_v] &lt; this.rank[ulp_u]) {
+           // Update the parent
+           this.parent[ulp_v] = ulp_u;
+       } 
+       /* If both have same rank, join any node to the 
+       other and increment the rank of the parent node */
+       else {
+           // Update the parent
+           this.parent[ulp_v] = ulp_u;
+           // Update the rank
+           this.rank[ulp_u]++;
+       }
+   }
+
+   /* Function to perform union of 
+   two nodes based on sizes */
+   unionBySize(u, v) {
+       // Get the ultimate parents of both nodes
+       let ulp_u = this.findUPar(u);
+       let ulp_v = this.findUPar(v);
+
+       // Return if nodes already belong to the same component
+       if (ulp_u === ulp_v) return;
+
+       /* Otherwise, join the node belonging to the smaller 
+       component to the node belonging to bigger component */
+       if (this.size[ulp_u] &lt; this.size[ulp_v]) {
+           // Update the parent
+           this.parent[ulp_u] = ulp_v;
+           // Update the size 
+           this.size[ulp_v] += this.size[ulp_u];
+       } else {
+           // Update the parent
+           this.parent[ulp_v] = ulp_u;
+           // Update the size
+           this.size[ulp_u] += this.size[ulp_v];
+       }
+   }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class DisjointSet:
+   # Constructor
+   def __init__(self, n: int):
+       # Resize the arrays
+       self.rank = [0] * (n + 1)
+       self.parent = [i for i in range(n + 1)]
+       self.size = [1] * (n + 1)
+
+   # Helper function to find ultimate
+   # parent along with path compression 
+   def findUPar(self, node):
+       # Base case
+       if node == self.parent[node]:
+           return node
+       
+       # Backtracking step for path compression
+       self.parent[node] = self.findUPar(self.parent[node])
+       return self.parent[node]
+
+   # Function to determine if two nodes 
+   # are in the same component or not
+   def find(self, u: int, v: int) -&gt; bool:
+       # Return true if both have same ultimate parent 
+       return self.findUPar(u) == self.findUPar(v)
+
+   # Function to perform union of 
+   # two nodes based on ranks 
+   def unionByRank(self, u: int, v: int) -&gt; None:
+       # Get the ultimate parents of both nodes
+       ulp_u = self.findUPar(u)
+       ulp_v = self.findUPar(v)
+
+       # Return if nodes already belong to the same component
+       if ulp_u == ulp_v:
+           return
+
+       # Otherwise, join the node to the other 
+       # node having higher ranks among the two
+       if self.rank[ulp_u] &lt; self.rank[ulp_v]:
+           # Update the parent
+           self.parent[ulp_u] = ulp_v
+       elif self.rank[ulp_v] &lt; self.rank[ulp_u]:
+           # Update the parent
+           self.parent[ulp_v] = ulp_u
+       else:
+           # Update the parent
+           self.parent[ulp_v] = ulp_u
+           # Update the rank
+           self.rank[ulp_u] += 1
+
+   # Function to perform union of 
+   # two nodes based on sizes
+   def unionBySize(self, u: int, v: int) -&gt; None:
+       # Get the ultimate parents of both nodes
+       ulp_u = self.findUPar(u)
+       ulp_v = self.findUPar(v)
+
+       # Return if nodes already belong to the same component
+       if ulp_u == ulp_v:
+           return
+
+       # Otherwise, join the node belonging to the smaller 
+       # component to the node belonging to bigger component
+       if self.size[ulp_u] &lt; self.size[ulp_v]:
+           # Update the parent
+           self.parent[ulp_u] = ulp_v
+           # Update the size 
+           self.size[ulp_v] += self.size[ulp_u]
+       else:
+           # Update the parent
+           self.parent[ulp_v] = ulp_u
+           # Update the size
+           self.size[ulp_u] += self.size[ulp_v]</code></pre></div>
+</body>
+</html>

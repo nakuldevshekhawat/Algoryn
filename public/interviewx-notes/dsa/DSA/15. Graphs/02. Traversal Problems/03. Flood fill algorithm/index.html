@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flood fill algorithm</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Flood fill algorithm</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Breadth-First Search</span><span>Depth-First Search</span><span>Matrix</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>An <strong>image</strong> is represented by a 2-D array of integers, each integer representing the pixel value of the image. Given a coordinate (sr, sc) representing the starting pixel (row and column) of the flood fill, and a pixel value newColor, "flood fill" the image.</p><p><br></p><p>To perform a <strong>flood fill</strong>, consider the starting pixel, plus any pixels connected 4-directionally to the starting pixel of the same colour as the starting pixel, plus any pixels connected 4-directionally to those pixels (also with the same colour as the starting pixel), and so on. Replace the colour of all of the aforementioned pixels with the newColor.</p>
+</div>
+<div class="section"><h2>Constraints</h2><p>·  n == image.length</p><p>·  m == image[i].length</p><p>·  1 <= m, n <= 50</p><p>·  0 <= image[i][j], color < 2<sup>16</sup></p><p>·  0 <= sr < n</p><p>·  0 <= sc < m</p></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-1vytgU1a"></p><p><strong>Input:</strong> image = [ [1, 1, 1], [1, 1, 0], [1, 0, 1] ], sr = 1, sc = 1, newColor = 2</p><p><strong>Output:</strong> [ [2, 2, 2], [2, 2, 0], [2, 0, 1] ]</p><p><strong>Explanation:</strong> From the center of the image with position (sr, sc) = (1, 1) (i.e., the red pixel), all pixels connected by a path of the same color as the starting pixel (i.e., the blue pixels) are colored with the new color.</p><p>Note the bottom corner is not colored 2, because it is not 4-directionally connected to the starting pixel.</p><h3>Example 2</h3><p><strong>Input:</strong> image = [ [0, 1, 0], [1, 1, 0], [0, 0, 1] ], sr = 2, sc = 2, newColor = 3</p><p><strong>Output:</strong> [ [0, 1, 0], [1, 1, 0], [0, 0, 3] ]</p><p><strong>Explanation:</strong> Starting from the pixel at position (2, 2) (i.e., the blue pixel), we flood fill all adjacent pixels that have the same color as the starting pixel. In this case, only the pixel at position (2, 2) itself is of the same color. So, only that pixel gets colored with the new color, resulting in the updated image.</p><h3>Example 3</h3><p><strong>Input:</strong> image = [ [1, 1, 1], [1, 1, 0], [1, 0, 1] ], sr = 1, sc = 1, newColor = 0</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The flood fill algorithm, as described in this problem, is widely used in graphics editing tools, such as Photoshop and GIMP, as well as in game development. For example, when you use the "bucket fill" tool in a painting software to change the color of a connected region, you are effectively using the flood fill algorithm. Similarly, in games like Minesweeper, the algorithm is used to reveal connected, non-mined squares.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    <strong>How to solve this problem using a graph?</strong> <br> 
+    Think of all the pixels in the image as nodes or vertices which are connected through each other via 4 edges.
+</p>
+
+<p>
+    Given the starting pixel, any traversal algorithm can be used to find all the neighbors having similar pixel value. During the traversal, each pixel value can be changed to the new color value to get the flood filled image. 
+</p>
+
+<p>
+    <strong>How to traverse the neighbours efficiently?</strong> <br> 
+    The 4 neighbours of the current cell can be shown like this: <br> <br>
+    <img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/-p7U0Gs4P" style="margin:0px auto;"> <br>
+
+    For efficient traversal of all neighboring pixels, the delRow and delCol arrays can be used where:
+    </p><ul>
+        <li><code>delRow = {-1, 0, 1, 0}</code></li>
+        <li><code>delCol = {0, 1, 0, -1}</code></li>
+    </ul>
+    <br>
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Initialise a new image to store the image after flood fill. (The given image can be used for the same but it is considered a good practice if the given input is not altered.)</li>
+    <li>To navigate to the neighboring pixels, direction vectors are defined for moving up, right, down, and left. A helper function checks if a pixel is within the bounds of the image. This ensures that the traversal does not go out of the image boundary.</li>
+    <li>Starting from the given pixel, a recursive DFS traversal is performed during which all the pixels having same initial color are marked with new color in the new image.</li>
+    <li>Once the traversal terminates, the new image stores the flood filled image.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/1.png-crvY4jWe" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/2.png-CxT1PCRn" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/3.png-X8QTTzNr" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/4.png-unvwQ3YQ" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/5.png-Wx-5F72b" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/6.png-WIgPx-Hv" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/7.png-Y8VrwINx" alt="Image 7"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/8.png-Y-btuOE0" alt="Image 8"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/9.png-n6p_8Wh3" alt="Image 9"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/1.png-crvY4jWe" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/2.png-CxT1PCRn" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/3.png-X8QTTzNr" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/4.png-unvwQ3YQ" alt="Image 4"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/5.png-Wx-5F72b" alt="Image 5"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/6.png-WIgPx-Hv" alt="Image 6"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/7.png-Y8VrwINx" alt="Image 7"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/8.png-Y-btuOE0" alt="Image 8"><img src="https://static.takeuforward.org/premium/Graphs/Traversal Problems/Flood fill algorithm/9.png-n6p_8Wh3" alt="Image 9"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // DelRow and delCol for neighbors
+    vector<int> delRow = {-1, 0, 1, 0};
+    vector<int> delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    bool isValid(int &i, int &j, 
+                 int &n, int &m) {
+        
+        // Return false if pixel is invalid
+        if(i < 0 || i >= n) return false;
+        if(j < 0 || j >= m) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    // Function to perform DFS traversal 
+    void dfs(int row, int col, vector<vector<int>>&ans,
+             vector<vector<int>>& image, int newColor,
+             int iniColor) {
+                 
+        // color with new color
+        ans[row][col] = newColor; 
+        
+        // Getting the dimensions of image
+        int n = image.size();
+        int m = image[0].size(); 
+        
+        // Traverse the 4 neighbors
+        for(int i=0; i < 4; i++) {
+            
+            // Coordinates of new pixel
+            int nrow = row + delRow[i]; 
+            int ncol = col + delCol[i]; 
+            
+            /* check for valid, unvisited pixels
+            having same initial color */
+             
+            if(isValid(nrow, ncol, n, m) && 
+               image[nrow][ncol] == iniColor 
+               && ans[nrow][ncol] != newColor) {
+                
+                // Recirsively perform DFS 
+                dfs(nrow, ncol, ans, image, 
+                   newColor, iniColor); 
+            }
+        }
+    }
+    
+public:
+    // Function to perform flood fill algorithm 
+    vector<vector<int>> floodFill(vector<vector<int>> &image,
+                                  int sr, int sc, int newColor) {
+        
+        // Store initial color
+        int iniColor = image[sr][sc]; 
+        
+        // To store the updated image
+        vector<vector<int>> ans = image; 
+        
+        // Start DFS traversal from start cell
+        dfs(sr, sc, ans, image, newColor, iniColor); 
+        
+        // Return the answer image
+        return ans; 
+    }
+};
+
+int main() {
+    vector<vector<int>> image = {
+	    {1,1,1},
+	    {1,1,0},
+	    {1,0,1}
+	};
+    int sr = 1, sc = 1;
+    int newColor = 2;
+    
+    int n = image.size();
+    int m = image[0].size();
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to find the 
+    number of islands in given grid*/
+    vector<vector<int>> ans = sol.floodFill(image, sr, sc, newColor);
+    
+    cout << "Image after performing flood fill algorithm: \n\n";
+    
+    for(int i=0; i < n; i++) {
+        for(int j=0; j < m; j++) {
+            cout << ans[i][j] << " "; 
+        }
+        cout << endl;
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    // DelRow and delCol for neighbors
+    private int[] delRow = {-1, 0, 1, 0};
+    private int[] delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    private boolean isValid(int i, int j, 
+                            int n, int m) {
+                                
+        // Return false if pixel is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= m) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    // Function to perform DFS traversal 
+    private void dfs(int row, int col, int[][] ans, 
+                     int[][] image, int newColor, 
+                     int iniColor) {
+                         
+        // color with new color
+        ans[row][col] = newColor;
+        
+        // Getting the dimensions of image
+        int n = image.length;
+        int m = image[0].length;
+        
+        // Traverse the 4 neighbors
+        for (int i = 0; i < 4; i++) {
+            // Coordinates of new pixel
+            int nrow = row + delRow[i];
+            int ncol = col + delCol[i];
+            
+            // check for valid, unvisited pixels
+            // having same initial color
+            if (isValid(nrow, ncol, n, m) && 
+                image[nrow][ncol] == iniColor &&
+                ans[nrow][ncol] != newColor) {
+                    
+                // Recursively perform DFS
+                dfs(nrow, ncol, ans, image, 
+                    newColor, iniColor);
+            }
+        }
+    }
+    
+    public int[][] floodFill(int[][] image, int sr, 
+                             int sc, int newColor) {
+        // Store initial color
+        int iniColor = image[sr][sc];
+        
+        // To store the updated image
+        int[][] ans = new int[image.length][image[0].length];
+        
+        for (int i = 0; i < image.length; i++) {
+            ans[i] = Arrays.copyOf(image[i], image[i].length);
+        }
+        
+        // Start DFS traversal from start cell
+        dfs(sr, sc, ans, image, newColor, iniColor);
+        
+        // Return the answer image
+        return ans;
+    }
+    
+    public static void main(String[] args) {
+        int[][] image = {
+            {1, 1, 1},
+            {1, 1, 0},
+            {1, 0, 1}
+        };
+        int sr = 1, sc = 1;
+        int newColor = 2;
+        
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Function call to find the number of islands in given grid
+        int[][] ans = sol.floodFill(image, sr, sc, newColor);
+        
+        System.out.println("Image after performing flood fill algorithm:\n");
+        
+        for (int[] row : ans) {
+            for (int col : row) {
+                System.out.print(col + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def __init__(self):
+        # delRow and delCol for neighbors
+        self.delRow = [-1, 0, 1, 0]
+        self.delCol = [0, 1, 0, -1]
+    
+    def isValid(self, i, j, n, m):
+        # Return false if pixel is invalid
+        if i < 0 or i >= n:
+            return False
+        if j < 0 or j >= m:
+            return False
+        # Return true if pixel is valid
+        return True
+    
+    def dfs(self, row, col, ans, image, newColor, iniColor):
+        # color with new color
+        ans[row][col] = newColor
+        
+        # Getting the dimensions of image
+        n = len(image)
+        m = len(image[0])
+        
+        # Traverse the 4 neighbors
+        for i in range(4):
+            # Coordinates of new pixel
+            nrow = row + self.delRow[i]
+            ncol = col + self.delCol[i]
+            
+            # check for valid, unvisited pixels
+            # having same initial color
+            if (
+                self.isValid(nrow, ncol, n, m) and 
+                image[nrow][ncol] == iniColor and
+                ans[nrow][ncol] != newColor
+            ):
+                # Recursively perform DFS
+                self.dfs(nrow, ncol, ans, image, newColor, iniColor)
+    
+    def floodFill(self, image, sr, sc, newColor):
+        # Store initial color
+        iniColor = image[sr][sc]
+        
+        # To store the updated image
+        ans = [row[:] for row in image]
+        
+        # Start DFS traversal from start cell
+        self.dfs(sr, sc, ans, image, newColor, iniColor)
+        
+        # Return the answer image
+        return ans
+
+# Testing the function
+image = [
+    [1, 1, 1],
+    [1, 1, 0],
+    [1, 0, 1]
+]
+sr, sc = 1, 1
+newColor = 2
+
+sol = Solution()
+ans = sol.floodFill(image, sr, sc, newColor)
+
+print("Image after performing flood fill algorithm:\n")
+for row in ans:
+    print(" ".join(map(str, row)))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        // delRow and delCol for neighbors
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, 1, 0, -1];
+    }
+    
+    isValid(i, j, n, m) {
+        // Return false if pixel is invalid
+        if (i < 0 || i >= n) return false;
+        if (j < 0 || j >= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    dfs(row, col, ans, image, newColor, iniColor) {
+        // color with new color
+        ans[row][col] = newColor;
+        
+        // Getting the dimensions of image
+        const n = image.length;
+        const m = image[0].length;
+        
+        // Traverse the 4 neighbors
+        for (let i = 0; i < 4; i++) {
+            // Coordinates of new pixel
+            const nrow = row + this.delRow[i];
+            const ncol = col + this.delCol[i];
+            
+            // check for valid, unvisited pixels
+            // having same initial color
+            if (this.isValid(nrow, ncol, n, m) 
+                && image[nrow][ncol] == iniColor 
+                && ans[nrow][ncol] != newColor ) {
+                    
+                // Recursively perform DFS
+                this.dfs(nrow, ncol, ans, image, newColor, iniColor);
+            }
+        }
+    }
+    
+    floodFill(image, sr, sc, newColor) {
+        // Store initial color
+        const iniColor = image[sr][sc];
+        
+        // To store the updated image
+        const ans = image.map(row => row.slice());
+        
+        // Start DFS traversal from start cell
+        this.dfs(sr, sc, ans, image, newColor, iniColor);
+        
+        // Return the answer image
+        return ans;
+    }
+}
+
+// Testing the function
+const image = [
+    [1, 1, 1],
+    [1, 1, 0],
+    [1, 0, 1]
+];
+const sr = 1, sc = 1;
+const newColor = 2;
+
+const sol = new Solution();
+const ans = sol.floodFill(image, sr, sc, newColor);
+
+console.log("Image after performing flood fill algorithm:\n");
+ans.forEach(row => {
+    console.log(row.join(" "));
+});
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    // delRow and delCol for neighbors
+    private readonly int[] delRow = { -1, 0, 1, 0 };
+    private readonly int[] delCol = { 0, 1, 0, -1 };
+
+    private bool IsValid(int r, int c, int n, int m)
+    {
+        // Return false if pixel is invalid
+        if (r < 0 || r >= n) return false;
+        if (c < 0 || c >= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    private void Dfs(int row, int col, List<List<int>> ans, List<List<int>> image, int newColor, int iniColor)
+    {
+        // color with new color
+        ans[row][col] = newColor;
+
+        // Getting the dimensions of image
+        int n = image.Count;
+        int m = image[0].Count;
+
+        // Traverse the 4 neighbors
+        for (int i = 0; i < 4; i++)
+        {
+            // Coordinates of new pixel
+            int nrow = row + delRow[i];
+            int ncol = col + delCol[i];
+
+            // check for valid, unvisited pixels
+            // having same initial color
+            if (IsValid(nrow, ncol, n, m)
+                && image[nrow][ncol] == iniColor
+                && ans[nrow][ncol] != newColor)
+            {
+                // Recursively perform DFS
+                Dfs(nrow, ncol, ans, image, newColor, iniColor);
+            }
+        }
+    }
+
+    public List<List<int>> FloodFill(List<List<int>> image, int sr, int sc, int newColor)
+    {
+        // Store initial color
+        int iniColor = image[sr][sc];
+
+        // To store the updated image
+        // Deep copy the image
+        List<List<int>> ans = image.Select(row => new List<int>(row)).ToList();
+
+        // Start DFS traversal from start cell
+        Dfs(sr, sc, ans, image, newColor, iniColor);
+
+        // Return the answer image
+        return ans;
+    }
+
+    public static void Main(string[] args)
+    {
+        // Testing the function
+        List<List<int>> image = new List<List<int>>
+        {
+            new List<int> { 1, 1, 1 },
+            new List<int> { 1, 1, 0 },
+            new List<int> { 1, 0, 1 }
+        };
+        int sr = 1, sc = 1;
+        int newColor = 2;
+
+        Solution sol = new Solution();
+        List<List<int>> ans = sol.FloodFill(image, sr, sc, newColor);
+
+        Console.WriteLine("Image after performing flood fill algorithm:\n");
+        foreach (var row in ans)
+        {
+            Console.WriteLine(string.Join(" ", row));
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// DelRow and DelCol for neighbors
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, 1, 0, -1}
+
+// Helper Function to check if a pixel is within boundaries
+func isValid(i, j, n, m int) bool {
+	// Return false if pixel is invalid
+	if i < 0 || i >= n {
+		return false
+	}
+	if j < 0 || j >= m {
+		return false
+	}
+	// Return true if pixel is valid
+	return true
+}
+
+// Function to perform DFS traversal
+func dfs(row, col int, ans [][]int, image [][]int, newColor, iniColor int) {
+	// Color with new color
+	ans[row][col] = newColor
+
+	// Getting the dimensions of image
+	n := len(image)
+	m := len(image[0])
+
+	// Traverse the 4 neighbors
+	for i := 0; i < 4; i++ {
+		// Coordinates of new pixel
+		nrow := row + delRow[i]
+		ncol := col + delCol[i]
+
+		/* Check for valid, unvisited pixels
+		   having same initial color */
+		if isValid(nrow, ncol, n, m) &&
+			image[nrow][ncol] == iniColor &&
+			ans[nrow][ncol] != newColor {
+
+			// Recursively perform DFS
+			dfs(nrow, ncol, ans, image, newColor, iniColor)
+		}
+	}
+}
+
+// Function to perform flood fill algorithm
+func floodFill(image [][]int, sr int, sc int, newColor int) [][]int {
+	// Store initial color
+	iniColor := image[sr][sc]
+
+	// To store the updated image
+	ans := make([][]int, len(image))
+	for i := range image {
+		ans[i] = make([]int, len(image[i]))
+		copy(ans[i], image[i])
+	}
+
+	// Start DFS traversal from start cell
+	dfs(sr, sc, ans, image, newColor, iniColor)
+
+	// Return the answer image
+	return ans
+}
+
+func main() {
+	image := [][]int{
+		{1, 1, 1},
+		{1, 1, 0},
+		{1, 0, 1},
+	}
+	sr, sc := 1, 1
+	newColor := 2
+
+	n := len(image)
+	m := len(image[0])
+
+	/* Function call to find the
+	number of islands in given grid */
+	ans := floodFill(image, sr, sc, newColor)
+
+	fmt.Println("Image after performing flood fill algorithm:\n")
+	for i := 0; i < n; i++ {
+		for j := 0; j < m; j++ {
+			fmt.Print(ans[i][j], " ")
+		}
+		fmt.Println()
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N*M)</strong> (where N and M are the dimensions of image)
+</p><ul>
+    <li>In the worst case, all the pixel will have same color, DFS call will be made for (N*M) nodes.</li>
+    <li>For every pixel, its four neighbors are traversed, taking O(4*N*M) time.</li>
+</ul>
+<p></p>
+
+<p><strong>Space Complexity: O(N*M)</strong> 
+</p><ul>
+    <li>Extra space for new image takes O(N*M) space.</li>
+    <li>Recusive stack space for DFS calls will take at most O(N*M) space.</li>
+</ul>
+<p></p></body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // DelRow and delCol for neighbors
+    vector&lt;int&gt; delRow = {-1, 0, 1, 0};
+    vector&lt;int&gt; delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    bool isValid(int &amp;i, int &amp;j, 
+                 int &amp;n, int &amp;m) {
+        
+        // Return false if pixel is invalid
+        if(i &lt; 0 || i &gt;= n) return false;
+        if(j &lt; 0 || j &gt;= m) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    // Function to perform DFS traversal 
+    void dfs(int row, int col, vector&lt;vector&lt;int&gt;&gt;&amp;ans,
+             vector&lt;vector&lt;int&gt;&gt;&amp; image, int newColor,
+             int iniColor) {
+                 
+        // color with new color
+        ans[row][col] = newColor; 
+        
+        // Getting the dimensions of image
+        int n = image.size();
+        int m = image[0].size(); 
+        
+        // Traverse the 4 neighbors
+        for(int i=0; i &lt; 4; i++) {
+            
+            // Coordinates of new pixel
+            int nrow = row + delRow[i]; 
+            int ncol = col + delCol[i]; 
+            
+            /* check for valid, unvisited pixels
+            having same initial color */
+             
+            if(isValid(nrow, ncol, n, m) &amp;&amp; 
+               image[nrow][ncol] == iniColor 
+               &amp;&amp; ans[nrow][ncol] != newColor) {
+                
+                // Recursively perform DFS 
+                dfs(nrow, ncol, ans, image, 
+                   newColor, iniColor); 
+            }
+        }
+    }
+    
+public:
+    // Function to perform flood fill algorithm 
+    vector&lt;vector&lt;int&gt;&gt; floodFill(vector&lt;vector&lt;int&gt;&gt; &amp;image,
+                                  int sr, int sc, int newColor) {
+        
+        // Store initial color
+        int iniColor = image[sr][sc]; 
+        
+        // To store the updated image
+        vector&lt;vector&lt;int&gt;&gt; ans = image; 
+        
+        // Start DFS traversal from start cell
+        dfs(sr, sc, ans, image, newColor, iniColor); 
+        
+        // Return the answer image
+        return ans; 
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // delRow and delCol for neighbors
+    private readonly int[] delRow = { -1, 0, 1, 0 };
+    private readonly int[] delCol = { 0, 1, 0, -1 };
+
+    private bool IsValid(int r, int c, int n, int m)
+    {
+        // Return false if pixel is invalid
+        if (r &lt; 0 || r &gt;= n) return false;
+        if (c &lt; 0 || c &gt;= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+
+    private void Dfs(int row, int col, List&lt;List&lt;int&gt;&gt; ans, List&lt;List&lt;int&gt;&gt; image, int newColor, int iniColor)
+    {
+        // color with new color
+        ans[row][col] = newColor;
+
+        // Getting the dimensions of image
+        int n = image.Count;
+        int m = image[0].Count;
+
+        // Traverse the 4 neighbors
+        for (int i = 0; i &lt; 4; i++)
+        {
+            // Coordinates of new pixel
+            int nrow = row + delRow[i];
+            int ncol = col + delCol[i];
+
+            // check for valid, unvisited pixels
+            // having same initial color
+            if (IsValid(nrow, ncol, n, m)
+                &amp;&amp; image[nrow][ncol] == iniColor
+                &amp;&amp; ans[nrow][ncol] != newColor)
+            {
+                // Recursively perform DFS
+                Dfs(nrow, ncol, ans, image, newColor, iniColor);
+            }
+        }
+    }
+
+    public List&lt;List&lt;int&gt;&gt; FloodFill(List&lt;List&lt;int&gt;&gt; image, int sr, int sc, int newColor)
+    {
+        // Store initial color
+        int iniColor = image[sr][sc];
+
+        // To store the updated image
+        // Deep copy the image
+        List&lt;List&lt;int&gt;&gt; ans = image.Select(row =&gt; new List&lt;int&gt;(row)).ToList();
+
+        // Start DFS traversal from start cell
+        Dfs(sr, sc, ans, image, newColor, iniColor);
+
+        // Return the answer image
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// DelRow and DelCol for neighbors
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, 1, 0, -1}
+
+// Helper Function to check if a pixel is within boundaries
+func isValid(i, j, n, m int) bool {
+	// Return false if pixel is invalid
+	if i &lt; 0 || i &gt;= n {
+		return false
+	}
+	if j &lt; 0 || j &gt;= m {
+		return false
+	}
+	// Return true if pixel is valid
+	return true
+}
+
+// Function to perform DFS traversal
+func dfs(row, col int, ans [][]int, image [][]int, newColor, iniColor int) {
+	// Color with new color
+	ans[row][col] = newColor
+
+	// Getting the dimensions of image
+	n := len(image)
+	m := len(image[0])
+
+	// Traverse the 4 neighbors
+	for i := 0; i &lt; 4; i++ {
+		// Coordinates of new pixel
+		nrow := row + delRow[i]
+		ncol := col + delCol[i]
+
+		/* Check for valid, unvisited pixels
+		   having same initial color */
+		if isValid(nrow, ncol, n, m) &amp;&amp;
+			image[nrow][ncol] == iniColor &amp;&amp;
+			ans[nrow][ncol] != newColor {
+
+			// Recursively perform DFS
+			dfs(nrow, ncol, ans, image, newColor, iniColor)
+		}
+	}
+}
+
+// Function to perform flood fill algorithm
+func floodFill(image [][]int, sr int, sc int, newColor int) [][]int {
+	// Store initial color
+	iniColor := image[sr][sc]
+
+	// To store the updated image
+	ans := make([][]int, len(image))
+	for i := range image {
+		ans[i] = make([]int, len(image[i]))
+		copy(ans[i], image[i])
+	}
+
+	// Start DFS traversal from start cell
+	dfs(sr, sc, ans, image, newColor, iniColor)
+
+	// Return the answer image
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    
+    // DelRow and delCol for neighbors
+    private int[] delRow = {-1, 0, 1, 0};
+    private int[] delCol = {0, 1, 0, -1};
+    
+    /* Helper Function to check if a 
+    pixel is within boundaries */
+    private boolean isValid(int i, int j, 
+                            int n, int m) {
+                                
+        // Return false if pixel is invalid
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= m) return false;
+        
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    // Function to perform DFS traversal 
+    private void dfs(int row, int col, int[][] ans, 
+                     int[][] image, int newColor, 
+                     int iniColor) {
+                         
+        // color with new color
+        ans[row][col] = newColor;
+        
+        // Getting the dimensions of image
+        int n = image.length;
+        int m = image[0].length;
+        
+        // Traverse the 4 neighbors
+        for (int i = 0; i &lt; 4; i++) {
+            // Coordinates of new pixel
+            int nrow = row + delRow[i];
+            int ncol = col + delCol[i];
+            
+            // check for valid, unvisited pixels
+            // having same initial color
+            if (isValid(nrow, ncol, n, m) &amp;&amp; 
+                image[nrow][ncol] == iniColor &amp;&amp;
+                ans[nrow][ncol] != newColor) {
+                    
+                // Recursively perform DFS
+                dfs(nrow, ncol, ans, image, 
+                    newColor, iniColor);
+            }
+        }
+    }
+    
+    public int[][] floodFill(int[][] image, int sr, 
+                             int sc, int newColor) {
+        // Store initial color
+        int iniColor = image[sr][sc];
+        
+        // To store the updated image
+        int[][] ans = new int[image.length][image[0].length];
+        
+        for (int i = 0; i &lt; image.length; i++) {
+            ans[i] = Arrays.copyOf(image[i], image[i].length);
+        }
+        
+        // Start DFS traversal from start cell
+        dfs(sr, sc, ans, image, newColor, iniColor);
+        
+        // Return the answer image
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        // delRow and delCol for neighbors
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, 1, 0, -1];
+    }
+    
+    isValid(i, j, n, m) {
+        // Return false if pixel is invalid
+        if (i &lt; 0 || i &gt;= n) return false;
+        if (j &lt; 0 || j &gt;= m) return false;
+        // Return true if pixel is valid
+        return true;
+    }
+    
+    dfs(row, col, ans, image, newColor, iniColor) {
+        // color with new color
+        ans[row][col] = newColor;
+        
+        // Getting the dimensions of image
+        const n = image.length;
+        const m = image[0].length;
+        
+        // Traverse the 4 neighbors
+        for (let i = 0; i &lt; 4; i++) {
+            // Coordinates of new pixel
+            const nrow = row + this.delRow[i];
+            const ncol = col + this.delCol[i];
+            
+            // check for valid, unvisited pixels
+            // having same initial color
+            if (this.isValid(nrow, ncol, n, m) 
+                &amp;&amp; image[nrow][ncol] == iniColor 
+                &amp;&amp; ans[nrow][ncol] != newColor ) {
+                    
+                // Recursively perform DFS
+                this.dfs(nrow, ncol, ans, image, newColor, iniColor);
+            }
+        }
+    }
+    
+    floodFill(image, sr, sc, newColor) {
+        // Store initial color
+        const iniColor = image[sr][sc];
+        
+        // To store the updated image
+        const ans = image.map(row =&gt; row.slice());
+        
+        // Start DFS traversal from start cell
+        this.dfs(sr, sc, ans, image, newColor, iniColor);
+        
+        // Return the answer image
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def __init__(self):
+        # delRow and delCol for neighbors
+        self.delRow = [-1, 0, 1, 0]
+        self.delCol = [0, 1, 0, -1]
+    
+    def isValid(self, i, j, n, m):
+        # Return false if pixel is invalid
+        if i &lt; 0 or i &gt;= n:
+            return False
+        if j &lt; 0 or j &gt;= m:
+            return False
+        # Return true if pixel is valid
+        return True
+    
+    def dfs(self, row, col, ans, image, newColor, iniColor):
+        # color with new color
+        ans[row][col] = newColor
+        
+        # Getting the dimensions of image
+        n = len(image)
+        m = len(image[0])
+        
+        # Traverse the 4 neighbors
+        for i in range(4):
+            # Coordinates of new pixel
+            nrow = row + self.delRow[i]
+            ncol = col + self.delCol[i]
+            
+            # check for valid, unvisited pixels
+            # having same initial color
+            if (
+                self.isValid(nrow, ncol, n, m) and 
+                image[nrow][ncol] == iniColor and
+                ans[nrow][ncol] != newColor
+            ):
+                # Recursively perform DFS
+                self.dfs(nrow, ncol, ans, image, newColor, iniColor)
+    
+    def floodFill(self, image, sr, sc, newColor):
+        # Store initial color
+        iniColor = image[sr][sc]
+        
+        # To store the updated image
+        ans = [row[:] for row in image]
+        
+        # Start DFS traversal from start cell
+        self.dfs(sr, sc, ans, image, newColor, iniColor)
+        
+        # Return the answer image
+        return ans</code></pre></div>
+</body>
+</html>

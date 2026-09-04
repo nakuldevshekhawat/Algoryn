@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Longest Bitonic Subsequence</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Longest Bitonic Subsequence</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array arr of n integers, the task is to find the length of the longest bitonic sequence. A sequence is considered bitonic if it first increases, then decreases. The sequence does not have to be contiguous.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= arr.length <= 10<sup>3</sup></li><li><span style="color: rgb(245, 245, 245);"> -10</span><sup style="color: rgb(245, 245, 245);">6</sup><= arr[i] <= 10<sup>6</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: arr = [5, 1, 4, 2, 3, 6, 8, 7]</p><p>Output: 6</p><p>Explanation: The longest bitonic sequence is [1, 2, 3, 6, 8, 7] with length 6.</p><h3>Example 2</h3><p>Input: arr = [10, 20, 30, 40, 50, 40, 30, 20]</p><p>Output: 8</p><p>Explanation: The entire array is bitonic, increasing up to 50 and then decreasing.</p><h3>Example 3</h3><p>Input: arr = [12, 11, 10, 15, 18, 17, 16, 14]</p></div>
+
+<div class="section"><h2>Editorial: Solution</h2><p>
+    <strong>Pre-requisites:</strong> <a href="/plus/dsa/problems/longest-increasing-subsequence?category=dynamic-programming&subcategory=lis-dp" target="_blank">Longest Increasing Subsequence</a>. 
+</p>
+
+<h2>Intuition:</h2>
+<p>
+    <h4>Understanding</h4>
+    A bitonic sequence is one that first strictly increases and then strictly decreases. Finding the longest bitonic sequence involves combining two well-known concepts: 
+    <ul>
+        <li><strong>Longest Increasing Subsequence (LIS): </strong>the longest subsequence where elements are strictly increasing.</li>
+        <li><strong>Longest Decreasing Subsequence (LDS): </strong>the longest subsequence where elements are strictly decreasing.</li>
+    </ul> <br>
+    The goal is to identify a peak element where the sequence switches from increasing to decreasing. <br>
+
+    <h5>1. Computing LIS from the Left</h5>
+    For each element in the array, compute the length of the LIS ending at that element. This captures how long an increasing sequence can be formed up to that point. It builds the foundation of the "increasing" part of the bitonic sequence. <br>
+
+    <h5>2. Computing LDS from the Right</h5>
+    Similarly, for each element, compute the length of the LDS starting at that element by traversing from the end towards the beginning. This captures how long a decreasing sequence can be formed starting from that element, forming the "decreasing" part of the bitonic sequence. <br>
+
+    <h5>3. Combining LIS and LDS to Get the Bitonic Length</h5>
+    The length of the longest bitonic subsequence with the current element as the peak is the sum of the LIS ending at it and LDS starting at it, minus 1 (because the peak element is counted twice). By iterating over all elements and computing this combined length, the global maximum represents the length of the longest bitonic sequence. 
+
+</p>
+
+<h2>Approach:</h2>
+<p>
+    <ul>
+        <li>Find the length of the Longest Increasing Subsequence (LIS) ending at each element by checking all previous elements.</li>
+        <li>Find the length of the Longest Decreasing Subsequence (LDS) starting at each element by checking all subsequent elements.</li>
+        <li>Combine LIS and LDS lengths at each element to get the length of the bitonic subsequence passing through that element.</li>
+        <li>Track and return the maximum combined length found, subtracting 1 to avoid double-counting the peak element.</li>
+    </ul>
+</p>
+
+
+<h2>Solution:</h2>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    // Function to return the length of the longest bitonic sequence
+    int LongestBitonicSequence(vector<int>& arr) {
+        int n = arr.size(); // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        vector<int> LIS_dp(n, 1);  
+
+        // To store the length of longest bitonic sequence
+        int maxLen = 0;
+
+        // Computing the LIS DP array 
+        for(int i = 0; i < n; i++) {
+
+            // For each previous index
+            for(int prev = 0; prev < i; prev++) {
+                
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if(arr[prev] < arr[i] && LIS_dp[i] < LIS_dp[prev] + 1) {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+    
+        // LDS_dp[i] stores the length of LDS starting from index i
+        vector<int> LDS_dp(n, 1);  
+        
+        // Computing the LDS DP array 
+        for(int i = n-1; i >= 0; i--) {
+
+            // For each previous index
+            for(int prev = n-1; prev > i; prev--) {
+                
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if(arr[prev] < arr[i] && LDS_dp[i] < LDS_dp[prev] + 1) {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+};
+
+
+int main() {
+    vector<int> arr = {5, 1, 4, 2, 3, 6, 8, 7};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    
+    // Function call to get the length of longest bitonic sequence
+    int lengthOfLongestBitonicSequence = sol.LongestBitonicSequence(arr);
+    
+    //  Output
+    cout << "The length of the Longest Bitonic Sequence is: " << lengthOfLongestBitonicSequence << endl;
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    public int LongestBitonicSequence(int[] arr) {
+        int n = arr.length; // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        int[] LIS_dp = new int[n];
+        Arrays.fill(LIS_dp, 1);
+        
+        // To store the length of longest bitonic sequence
+        int maxLen = 0;
+        
+        // Computing the LIS DP array 
+        for (int i = 0; i < n; i++) {
+            // For each previous index
+            for (int prev = 0; prev < i; prev++) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] < arr[i] && LIS_dp[i] < LIS_dp[prev] + 1) {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+        
+        // LDS_dp[i] stores the length of LDS starting from index i
+        int[] LDS_dp = new int[n];
+        Arrays.fill(LDS_dp, 1);
+        
+        // Computing the LDS DP array 
+        for (int i = n - 1; i >= 0; i--) {
+            // For each previous index
+            for (int prev = n - 1; prev > i; prev--) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] < arr[i] && LDS_dp[i] < LDS_dp[prev] + 1) {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = Math.max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] arr = {5, 1, 4, 2, 3, 6, 8, 7};
+        
+        Solution sol = new Solution();
+        int lengthOfLongestBitonicSequence = sol.LongestBitonicSequence(arr);
+        
+        System.out.println("The length of the Longest Bitonic Sequence is: " + lengthOfLongestBitonicSequence);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    def LongestBitonicSequence(self, arr):
+        n = len(arr)  # Size of the array 
+        
+        # LIS_dp[i] stores the length of LIS ending at index i
+        LIS_dp = [1] * n  
+
+        # To store the length of longest bitonic sequence
+        maxLen = 0
+
+        # Computing the LIS DP array 
+        for i in range(n):
+            # For each previous index
+            for prev in range(i):
+                """
+                If the element at index i can be
+                included in the LIS ending at prev index
+                """
+                if arr[prev] < arr[i] and LIS_dp[i] < LIS_dp[prev] + 1:
+                    LIS_dp[i] = LIS_dp[prev] + 1  # Update the DP value
+        
+        # LDS_dp[i] stores the length of LDS starting from index i
+        LDS_dp = [1] * n  
+        
+        # Computing the LDS DP array 
+        for i in range(n-1, -1, -1):
+            # For each previous index
+            for prev in range(n-1, i, -1):
+                """
+                If the element at index i can be
+                included in the LIS ending at prev index
+                """
+                if arr[prev] < arr[i] and LDS_dp[i] < LDS_dp[prev] + 1:
+                    LDS_dp[i] = LDS_dp[prev] + 1  # Update the DP value
+            
+            # Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = max(maxLen, LIS_dp[i] + LDS_dp[i] - 1)
+        
+        return maxLen
+
+
+if __name__ == "__main__":
+    arr = [5, 1, 4, 2, 3, 6, 8, 7]
+    sol = Solution()
+    lengthOfLongestBitonicSequence = sol.LongestBitonicSequence(arr)
+    print("The length of the Longest Bitonic Sequence is:", lengthOfLongestBitonicSequence)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    LongestBitonicSequence(arr) {
+        let n = arr.length; // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        let LIS_dp = new Array(n).fill(1);
+
+        // To store the length of longest bitonic sequence
+        let maxLen = 0;
+
+        // Computing the LIS DP array 
+        for (let i = 0; i < n; i++) {
+            // For each previous index
+            for (let prev = 0; prev < i; prev++) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] < arr[i] && LIS_dp[i] < LIS_dp[prev] + 1) {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+
+        // LDS_dp[i] stores the length of LDS starting from index i
+        let LDS_dp = new Array(n).fill(1);
+
+        // Computing the LDS DP array 
+        for (let i = n - 1; i >= 0; i--) {
+            // For each previous index
+            for (let prev = n - 1; prev > i; prev--) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] < arr[i] && LDS_dp[i] < LDS_dp[prev] + 1) {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = Math.max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+}
+
+// Example usage
+const arr = [5, 1, 4, 2, 3, 6, 8, 7];
+const sol = new Solution();
+const lengthOfLongestBitonicSequence = sol.LongestBitonicSequence(arr);
+console.log("The length of the Longest Bitonic Sequence is:", lengthOfLongestBitonicSequence);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // Function to return the length of the longest bitonic sequence
+    public int LongestBitonicSequence(List<int> arr)
+    {
+        int n = arr.Count; // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        int[] LIS_dp = new int[n];
+        for (int i = 0; i < n; i++)
+            LIS_dp[i] = 1;
+
+        // To store the length of longest bitonic sequence
+        int maxLen = 0;
+
+        // Computing the LIS DP array 
+        for (int i = 0; i < n; i++)
+        {
+            // For each previous index
+            for (int prev = 0; prev < i; prev++)
+            {
+                /* If the element at index i can be
+                   included in the LIS ending at prev index */
+                if (arr[prev] < arr[i] && LIS_dp[i] < LIS_dp[prev] + 1)
+                {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+    
+        // LDS_dp[i] stores the length of LDS starting from index i
+        int[] LDS_dp = new int[n];
+        for (int i = 0; i < n; i++)
+            LDS_dp[i] = 1;
+        
+        // Computing the LDS DP array 
+        for (int i = n - 1; i >= 0; i--)
+        {
+            // For each subsequent index
+            for (int prev = n - 1; prev > i; prev--)
+            {
+                /* If the element at index i can be
+                   included in the LDS starting at prev index */
+                if (arr[prev] < arr[i] && LDS_dp[i] < LDS_dp[prev] + 1)
+                {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = Math.Max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        var arr = new List<int> { 5, 1, 4, 2, 3, 6, 8, 7 };
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        
+        // Function call to get the length of longest bitonic sequence
+        int lengthOfLongestBitonicSequence = sol.LongestBitonicSequence(arr);
+        
+        // Output
+        Console.WriteLine("The length of the Longest Bitonic Sequence is: " 
+            + lengthOfLongestBitonicSequence);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function for max
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Function to return the length of the longest bitonic sequence
+func LongestBitonicSequence(arr []int) int {
+	n := len(arr) // Size of the array
+
+	// LIS_dp[i] stores the length of LIS ending at index i
+	LIS_dp := make([]int, n)
+	for i := 0; i < n; i++ {
+		LIS_dp[i] = 1
+	}
+
+	// To store the length of longest bitonic sequence
+	maxLen := 0
+
+	// Computing the LIS DP array
+	for i := 0; i < n; i++ {
+
+		// For each previous index
+		for prev := 0; prev < i; prev++ {
+
+			/* If the element at index i can be
+			   included in the LIS ending at prev index */
+			if arr[prev] < arr[i] && LIS_dp[i] < LIS_dp[prev]+1 {
+				LIS_dp[i] = LIS_dp[prev] + 1 // Update the DP value
+			}
+		}
+	}
+
+	// LDS_dp[i] stores the length of LDS starting from index i
+	LDS_dp := make([]int, n)
+	for i := 0; i < n; i++ {
+		LDS_dp[i] = 1
+	}
+
+	// Computing the LDS DP array
+	for i := n - 1; i >= 0; i-- {
+
+		// For each previous index
+		for prev := n - 1; prev > i; prev-- {
+
+			/* If the element at index i can be
+			   included in the LDS starting at prev index */
+			if arr[prev] < arr[i] && LDS_dp[i] < LDS_dp[prev]+1 {
+				LDS_dp[i] = LDS_dp[prev] + 1 // Update the DP value
+			}
+		}
+
+		// Update the maximum possible length of Longest Bitonic Sequence
+		maxLen = max(maxLen, LIS_dp[i]+LDS_dp[i]-1)
+	}
+
+	return maxLen
+}
+
+func main() {
+	arr := []int{5, 1, 4, 2, 3, 6, 8, 7}
+
+	// Function call to get the length of longest bitonic sequence
+	lengthOfLongestBitonicSequence := LongestBitonicSequence(arr)
+
+	// Output
+	fmt.Println("The length of the Longest Bitonic Sequence is:", lengthOfLongestBitonicSequence)
+}
+</code></pre></div></div></div>
+
+
+
+<h2>Complexity Analysis:</h2>
+<p>
+    <strong>Time Complexity: O(N<sup>2</sup>)</strong>, where N is the size of given array. <br>
+    This is because of two nested loops - one for LIS calculation and the other for LDS calculation. And, each nested loop pair runs in O(N<sup>2</sup>) time.<br><br>
+
+    <strong>Space Complexity: O(N)</strong>, to store the LIS and LDS lengths, each of size N.
+</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    // Function to return the length of the longest bitonic sequence
+    int LongestBitonicSequence(vector&lt;int&gt;&amp; arr) {
+        int n = arr.size(); // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        vector&lt;int&gt; LIS_dp(n, 1);  
+
+        // To store the length of longest bitonic sequence
+        int maxLen = 0;
+
+        // Computing the LIS DP array 
+        for(int i = 0; i &lt; n; i++) {
+
+            // For each previous index
+            for(int prev = 0; prev &lt; i; prev++) {
+                
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if(arr[prev] &lt; arr[i] &amp;&amp; LIS_dp[i] &lt; LIS_dp[prev] + 1) {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+    
+        // LDS_dp[i] stores the length of LDS starting from index i
+        vector&lt;int&gt; LDS_dp(n, 1);  
+        
+        // Computing the LDS DP array 
+        for(int i = n-1; i &gt;= 0; i--) {
+
+            // For each previous index
+            for(int prev = n-1; prev &gt; i; prev--) {
+                
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if(arr[prev] &lt; arr[i] &amp;&amp; LDS_dp[i] &lt; LDS_dp[prev] + 1) {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Function to return the length of the longest bitonic sequence
+    public int LongestBitonicSequence(List&lt;int&gt; arr)
+    {
+        int n = arr.Count; // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        int[] LIS_dp = new int[n];
+        for (int i = 0; i &lt; n; i++)
+            LIS_dp[i] = 1;
+
+        // To store the length of longest bitonic sequence
+        int maxLen = 0;
+
+        // Computing the LIS DP array 
+        for (int i = 0; i &lt; n; i++)
+        {
+            // For each previous index
+            for (int prev = 0; prev &lt; i; prev++)
+            {
+                /* If the element at index i can be
+                   included in the LIS ending at prev index */
+                if (arr[prev] &lt; arr[i] &amp;&amp; LIS_dp[i] &lt; LIS_dp[prev] + 1)
+                {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+    
+        // LDS_dp[i] stores the length of LDS starting from index i
+        int[] LDS_dp = new int[n];
+        for (int i = 0; i &lt; n; i++)
+            LDS_dp[i] = 1;
+        
+        // Computing the LDS DP array 
+        for (int i = n - 1; i &gt;= 0; i--)
+        {
+            // For each subsequent index
+            for (int prev = n - 1; prev &gt; i; prev--)
+            {
+                /* If the element at index i can be
+                   included in the LDS starting at prev index */
+                if (arr[prev] &lt; arr[i] &amp;&amp; LDS_dp[i] &lt; LDS_dp[prev] + 1)
+                {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = Math.Max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function for max
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+// Function to return the length of the longest bitonic sequence
+func LongestBitonicSequence(arr []int) int {
+	n := len(arr) // Size of the array
+
+	// LIS_dp[i] stores the length of LIS ending at index i
+	LIS_dp := make([]int, n)
+	for i := 0; i &lt; n; i++ {
+		LIS_dp[i] = 1
+	}
+
+	// To store the length of longest bitonic sequence
+	maxLen := 0
+
+	// Computing the LIS DP array
+	for i := 0; i &lt; n; i++ {
+
+		// For each previous index
+		for prev := 0; prev &lt; i; prev++ {
+
+			/* If the element at index i can be
+			   included in the LIS ending at prev index */
+			if arr[prev] &lt; arr[i] &amp;&amp; LIS_dp[i] &lt; LIS_dp[prev]+1 {
+				LIS_dp[i] = LIS_dp[prev] + 1 // Update the DP value
+			}
+		}
+	}
+
+	// LDS_dp[i] stores the length of LDS starting from index i
+	LDS_dp := make([]int, n)
+	for i := 0; i &lt; n; i++ {
+		LDS_dp[i] = 1
+	}
+
+	// Computing the LDS DP array
+	for i := n - 1; i &gt;= 0; i-- {
+
+		// For each previous index
+		for prev := n - 1; prev &gt; i; prev-- {
+
+			/* If the element at index i can be
+			   included in the LDS starting at prev index */
+			if arr[prev] &lt; arr[i] &amp;&amp; LDS_dp[i] &lt; LDS_dp[prev]+1 {
+				LDS_dp[i] = LDS_dp[prev] + 1 // Update the DP value
+			}
+		}
+
+		// Update the maximum possible length of Longest Bitonic Sequence
+		maxLen = max(maxLen, LIS_dp[i]+LDS_dp[i]-1)
+	}
+
+	return maxLen
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    public int LongestBitonicSequence(int[] arr) {
+        int n = arr.length; // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        int[] LIS_dp = new int[n];
+        Arrays.fill(LIS_dp, 1);
+        
+        // To store the length of longest bitonic sequence
+        int maxLen = 0;
+        
+        // Computing the LIS DP array 
+        for (int i = 0; i &lt; n; i++) {
+            // For each previous index
+            for (int prev = 0; prev &lt; i; prev++) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] &lt; arr[i] &amp;&amp; LIS_dp[i] &lt; LIS_dp[prev] + 1) {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+        
+        // LDS_dp[i] stores the length of LDS starting from index i
+        int[] LDS_dp = new int[n];
+        Arrays.fill(LDS_dp, 1);
+        
+        // Computing the LDS DP array 
+        for (int i = n - 1; i &gt;= 0; i--) {
+            // For each previous index
+            for (int prev = n - 1; prev &gt; i; prev--) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] &lt; arr[i] &amp;&amp; LDS_dp[i] &lt; LDS_dp[prev] + 1) {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = Math.max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    LongestBitonicSequence(arr) {
+        let n = arr.length; // Size of the array 
+        
+        // LIS_dp[i] stores the length of LIS ending at index i
+        let LIS_dp = new Array(n).fill(1);
+
+        // To store the length of longest bitonic sequence
+        let maxLen = 0;
+
+        // Computing the LIS DP array 
+        for (let i = 0; i &lt; n; i++) {
+            // For each previous index
+            for (let prev = 0; prev &lt; i; prev++) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] &lt; arr[i] &amp;&amp; LIS_dp[i] &lt; LIS_dp[prev] + 1) {
+                    LIS_dp[i] = LIS_dp[prev] + 1; // Update the DP value
+                }
+            }
+        }
+
+        // LDS_dp[i] stores the length of LDS starting from index i
+        let LDS_dp = new Array(n).fill(1);
+
+        // Computing the LDS DP array 
+        for (let i = n - 1; i &gt;= 0; i--) {
+            // For each previous index
+            for (let prev = n - 1; prev &gt; i; prev--) {
+                /* If the element at index i can be
+                 included in the LIS ending at prev index */
+                if (arr[prev] &lt; arr[i] &amp;&amp; LDS_dp[i] &lt; LDS_dp[prev] + 1) {
+                    LDS_dp[i] = LDS_dp[prev] + 1; // Update the DP value
+                }
+            }
+            
+            // Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = Math.max(maxLen, LIS_dp[i] + LDS_dp[i] - 1);
+        }
+        
+        return maxLen;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    def LongestBitonicSequence(self, arr):
+        n = len(arr)  # Size of the array 
+        
+        # LIS_dp[i] stores the length of LIS ending at index i
+        LIS_dp = [1] * n  
+
+        # To store the length of longest bitonic sequence
+        maxLen = 0
+
+        # Computing the LIS DP array 
+        for i in range(n):
+            # For each previous index
+            for prev in range(i):
+                &quot;&quot;&quot;
+                If the element at index i can be
+                included in the LIS ending at prev index
+                &quot;&quot;&quot;
+                if arr[prev] &lt; arr[i] and LIS_dp[i] &lt; LIS_dp[prev] + 1:
+                    LIS_dp[i] = LIS_dp[prev] + 1  # Update the DP value
+        
+        # LDS_dp[i] stores the length of LDS starting from index i
+        LDS_dp = [1] * n  
+        
+        # Computing the LDS DP array 
+        for i in range(n-1, -1, -1):
+            # For each previous index
+            for prev in range(n-1, i, -1):
+                &quot;&quot;&quot;
+                If the element at index i can be
+                included in the LIS ending at prev index
+                &quot;&quot;&quot;
+                if arr[prev] &lt; arr[i] and LDS_dp[i] &lt; LDS_dp[prev] + 1:
+                    LDS_dp[i] = LDS_dp[prev] + 1  # Update the DP value
+            
+            # Update the maximum possible length of Longest Bitonic Sequence
+            maxLen = max(maxLen, LIS_dp[i] + LDS_dp[i] - 1)
+        
+        return maxLen</code></pre></div>
+</body>
+</html>

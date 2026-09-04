@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floyd warshall algorithm</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Floyd warshall algorithm</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span><span>Graph</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a graph of V vertices numbered from 0 to V-1. Find the <strong>shortest distances</strong> between every pair of vertices in a given edge-weighted directed graph. The graph is represented as an adjacency matrix of size n x n. Matrix[i][j] denotes the weight of the edge from i to j. If matrix[i][j]=-1, it means there is no edge from i to j.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 100</li><li>-1 <= matrix[ i ][ j ] <= 1000</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> matrix = [[0, 2, -1, -1],[1, 0, 3, -1],[-1, -1, 0, 1],[3, 5, 4, 0]]</p><p><strong>Output:</strong> [[0, 2, 5, 6], [1, 0, 3, 4], [4, 6, 0, 1], [3, 5, 4, 0]] </p><p><strong>Explanation:</strong> matrix[0][0] is storing the distance from vertex 0 to vertex 0, the distance from vertex 0 to vertex 1 is 2 and so on.</p><h3>Example 2</h3><p><strong>Input:</strong> matrix = [[0,25],[-1,0]]</p><p><strong>Output:</strong> [[0, 25],[-1, 0]]</p><p><strong>Explanation:</strong> The matrix already contains the shortest distance.</p><h3>Example 3</h3><p>Input: matrix = [[0,1,43],[1,0,6],[-1,-1,0]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem is a direct application of the Floyd-Warshall algorithm, a core concept utilized in the field of routing and navigation. Software applications like Google Maps, GPS systems, and various shipping and logistics platforms often use variations of this algorithm to calculate and suggest the shortest path from one location to another. This not only saves time but is also essential for enhancing the route efficiency of autonomous vehicles, drones and robotic systems.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    In the problem, it is required to find the shortest distance between every pair of vertices which can be seen as finding the shortest distance of every node from all nodes (multiple sources). There are already algorithms namely <strong>Dijkstra's Algorithm</strong> and <strong>Bellman Ford Algorithm</strong> but they are <i>single-source</i> shortest path algorithms. But here since multiple sources are considered, the <strong>FLoyd Warshall algorithm</strong> will come into picture.<br><br>
+
+    The Floyd Warshall algorithm is a <i>multi-source</i> shortest path algorithm and it helps to detect <strong>negative cycles</strong> (a cycle where sum of all weights is negative) as well. The shortest path between node u and v means the path(from u to v) for which the sum of the edge weights is minimum. <br><br>
+
+    The Floyd Warshall algorithm is nothing but the brute force approach of checking every possible path from <strong>node u</strong> to <strong>node v</strong> (via some <strong>node k</strong>) to figure out the shortest path from <strong>node u</strong> to <strong>node v</strong>. <br>
+
+    </p><h6>Understanding:</h6>
+    Consider the following graph:
+    <img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Floyd warshall algorithm/floyd-illus-n8Z_uVKG">
+    where we aim to find the shortest distance from source node to destination node. The algorithm suggests to check every path (via other nodes) from source to destination node to find the required shortest distance. <br>
+    There are 5 paths to reach from source to destination node (where dist[i][j] represents the shortest distance from node i to node j):
+    <ul>
+        <li><strong>Via node 1:</strong> Total distance = dist[s][1] + dist[1][d] , i.e., 7+2 = 9.</li>
+        <li><strong>Via node 2:</strong> Total distance = dist[s][2] + dist[2][d] , i.e., 1+3 = 4.</li>
+        <li><strong>Via node 3:</strong> Total distance = dist[s][3] + dist[3][d] , i.e., 10+4 = 14.</li>
+        <li><strong>Via node 4:</strong> Total distance = dist[s][4] + dist[4][d] , i.e., 5+3 = 8.</li>
+        <li><strong>Direct edge:</strong> Distance = 6.</li>
+    </ul> <br>
+    Hence the shortest distance to reach from source to destination node is <strong>minimum</strong> of all the paths, i.e., <br>
+    <code>dist[s][d] = min(all the paths from source to destination) </code><br>
+    <code>dist[s][d] = min(9, 4, 14, 8, 6) </code><br>
+    <code>dist[s][d] = 4. (Via node 2)</code>.
+    <br><br>
+
+    The Flord Warshall Algorithm is applicable to <strong>both</strong> directed as well as undirected graphs as the undirected edge can be represented as two directed edges between the nodes having same weight as that of the undirected edege. <br>
+
+    <h6>Note:</h6>
+    <ul><li>Until now, to store a graph we have used the adjacency list. But in this algorithm, we are going to use the adjacency matrix method to represent the graph (for simplicity).</li>
+    <li>Cost of reaching a node from itself must always be 0, i.e., dist[i][i] = 0 always.</li></ul> <br>
+
+    <h6>How to detect negative cycles:</h6>
+    Consider the following example:
+    <img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Floyd warshall algorithm/-9bXSK85v">
+    Here, the distance to reach node 0 is coming out to be -3, where it should have been 0. Hence, if it is found that the distance to reach any node from itself is negative, the graph contains negative cycle.
+
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Initialize a distance matrix to store the minimum distance between each pair of nodes with the adjacency matrix of the graph.</li>
+    <li>Start updating the distance matrix considering each node as an intermediate node for all possible pairs of nodes.</li>
+    <li>Consider (i, j) as a pair of nodes representing source and destination nodes respectively and an intermediate node k, there can be three possible scenarios:
+        <ul>
+            <li><strong>If k is not an intermediate node in path from i to j:</strong> Skip the iteration.</li>
+            <li><strong>If there is no direct edge from i to j:</strong> Update the dist[i][j] to dist[i][k] + dist[k][j]. </li>
+            <li><strong>If there is a direct edge from i to j:</strong> Update the dist[i][j] to the minimum of dist[i][j] and (dist[i][k] + dist[k][j]).</li>
+        </ul>
+    </li>
+    <li>Once all the pairs of nodes are checked for every intermediate nodes, the distance matrix will store the shortest distance betweeen any two nodes. Distance for nodes that are unreachable will be marked as -1.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Floyd warshall algorithm/dfasd-qce99zgd" style="width:60%; margin 0px auto;">
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    void shortestDistance(vector<vector<int>> &matrix){
+        
+        // Getting the number of nodes
+	    int n = matrix.size();
+	    
+	    // For each intermediate node k
+	    for(int k=0; k<n; k++) {
+	        
+	        // Check for every (i, j) pair of nodes
+	        for(int i=0; i<n; i++) {
+	            for(int j=0; j<n; j++) {
+	                
+	                /* If k is not an intermediate 
+	                node, skip the iteration */
+	                if(matrix[i][k] == -1 || 
+	                   matrix[k][j] == -1) 
+	                        continue;
+	                
+	                /* If no direct edge from 
+	                i to v is present */
+	                if(matrix[i][j] == -1) {
+	                    
+	                    // Update the distance
+	                    matrix[i][j] = 
+	                        matrix[i][k] + matrix[k][j];
+	                }
+	                
+	                /* Else update the distance to 
+	                minimum of both paths */
+	                else {
+	                    matrix[i][j] = 
+	                        min(matrix[i][j] , 
+	                             matrix[i][k] + matrix[k][j]
+	                            );
+	                }
+	            }
+	        }
+	    }
+	}
+};
+
+int main() {
+
+    vector<vector<int>> matrix ={
+        {0, 2, -1, -1},
+        {1, 0, 3, -1},
+        {-1, -1, 0, -1},
+        {3, 5, 4, 0}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    sol.shortestDistance(matrix);
+    
+    // Output
+    int n = matrix.size();
+    cout << "The shortest distance matrix is:\n";
+    for(int i=0; i < n; i++) {
+        for(int j=0; j < n; j++) {
+            cout << matrix[i][j] << " ";
+        }
+        cout << endl;
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Arrays;
+
+class Solution {
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    public void shortestDistance(int[][] matrix) {
+        
+        // Getting the number of nodes
+        int n = matrix.length;
+        
+        // For each intermediate node k
+        for (int k = 0; k < n; k++) {
+            
+            // Check for every (i, j) pair of nodes
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    
+                    /* If k is not an intermediate 
+                    node, skip the iteration */
+                    if (matrix[i][k] == -1 || matrix[k][j] == -1)
+                        continue;
+                    
+                    /* If no direct edge from 
+                    i to v is present */
+                    if (matrix[i][j] == -1) {
+                        
+                        // Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j];
+                    }
+                    
+                    /* Else update the distance to 
+                    minimum of both paths */
+                    else {
+                        matrix[i][j] = Math.min(matrix[i][j], matrix[i][k] + matrix[k][j]);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+
+        int[][] matrix = {
+            {0, 2, -1, -1},
+            {1, 0, 3, -1},
+            {-1, -1, 0, -1},
+            {3, 5, 4, 0}
+        };
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function to find the shortest distance 
+        between every pair of vertices. */
+        sol.shortestDistance(matrix);
+        
+        // Output
+        int n = matrix.length;
+        System.out.println("The shortest distance matrix is:");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                System.out.print(matrix[i][j] + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the shortest distance 
+    # between every pair of vertices.
+    def shortestDistance(self, matrix):
+        
+        # Getting the number of nodes
+        n = len(matrix)
+        
+        # For each intermediate node k
+        for k in range(n):
+            
+            # Check for every (i, j) pair of nodes
+            for i in range(n):
+                for j in range(n):
+                    
+                    # If k is not an intermediate 
+                    # node, skip the iteration
+                    if matrix[i][k] == -1 or matrix[k][j] == -1:
+                        continue
+                    
+                    # If no direct edge from 
+                    # i to v is present
+                    if matrix[i][j] == -1:
+                        
+                        # Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j]
+                    
+                    # Else update the distance to 
+                    # minimum of both paths
+                    else:
+                        matrix[i][j] = min(matrix[i][j], matrix[i][k] + matrix[k][j])
+
+# Example usage
+matrix = [
+    [0, 2, -1, -1],
+    [1, 0, 3, -1],
+    [-1, -1, 0, -1],
+    [3, 5, 4, 0]
+]
+
+# Creating an instance of 
+# Solution class
+sol = Solution()
+
+# Function to find the shortest distance 
+# between every pair of vertices.
+sol.shortestDistance(matrix)
+
+# Output
+print("The shortest distance matrix is:")
+for row in matrix:
+    print(" ".join(map(str, row)))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    shortestDistance(matrix) {
+        
+        // Getting the number of nodes
+        let n = matrix.length;
+        
+        // For each intermediate node k
+        for (let k = 0; k < n; k++) {
+            
+            // Check for every (i, j) pair of nodes
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    
+                    /* If k is not an intermediate 
+                    node, skip the iteration */
+                    if (matrix[i][k] === -1 || matrix[k][j] === -1)
+                        continue;
+                    
+                    /* If no direct edge from 
+                    i to v is present */
+                    if (matrix[i][j] === -1) {
+                        
+                        // Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j];
+                    }
+                    
+                    /* Else update the distance to 
+                    minimum of both paths */
+                    else {
+                        matrix[i][j] = 
+                        Math.min(matrix[i][j], matrix[i][k] + matrix[k][j]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+// Example usage
+let matrix = [
+    [0, 2, -1, -1],
+    [1, 0, 3, -1],
+    [-1, -1, 0, -1],
+    [3, 5, 4, 0]
+];
+
+// Creating an instance of 
+// Solution class
+let sol = new Solution();
+
+// Function to find the shortest distance 
+// between every pair of vertices.
+sol.shortestDistance(matrix);
+
+// Output
+console.log("The shortest distance matrix is:");
+matrix.forEach(row => console.log(row.join(" ")));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Linq;
+
+public class Solution
+{
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    public void shortestDistance(int[][] matrix)
+    {
+        // Getting the number of nodes
+        int n = matrix.Length;
+
+        // For each intermediate node k
+        for (int k = 0; k < n; k++)
+        {
+            // Check for every (i, j) pair of nodes
+            for (int i = 0; i < n; i++)
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    /* If k is not an intermediate 
+                    node, skip the iteration */
+                    if (matrix[i][k] == -1 || matrix[k][j] == -1)
+                        continue;
+
+                    /* If no direct edge from 
+                    i to v is present */
+                    if (matrix[i][j] == -1)
+                    {
+                        // Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j];
+                    }
+                    /* Else update the distance to 
+                    minimum of both paths */
+                    else
+                    {
+                        matrix[i][j] = 
+                        Math.Min(matrix[i][j], matrix[i][k] + matrix[k][j]);
+                    }
+                }
+            }
+        }
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        int[][] matrix = new int[][]
+        {
+            new int[] {0, 2, -1, -1},
+            new int[] {1, 0, 3, -1},
+            new int[] {-1, -1, 0, -1},
+            new int[] {3, 5, 4, 0}
+        };
+
+        // Creating an instance of 
+        // Solution class
+        Solution sol = new Solution();
+
+        // Function to find the shortest distance 
+        // between every pair of vertices.
+        sol.shortestDistance(matrix);
+
+        // Output
+        Console.WriteLine("The shortest distance matrix is:");
+        foreach (int[] row in matrix)
+        {
+            Console.WriteLine(string.Join(" ", row));
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// ShortestDistance finds the shortest distance between every pair of vertices.
+func ShortestDistance(matrix [][]int) {
+	// Getting the number of nodes
+	n := len(matrix)
+
+	// For each intermediate node k
+	for k := 0; k < n; k++ {
+
+		// Check for every (i, j) pair of nodes
+		for i := 0; i < n; i++ {
+			for j := 0; j < n; j++ {
+
+				/* If k is not an intermediate node, skip the iteration */
+				if matrix[i][k] == -1 || matrix[k][j] == -1 {
+					continue
+				}
+
+				/* If no direct edge from i to j is present */
+				if matrix[i][j] == -1 {
+					// Update the distance
+					matrix[i][j] = matrix[i][k] + matrix[k][j]
+				} else {
+					/* Else update the distance to minimum of both paths */
+					if matrix[i][k]+matrix[k][j] < matrix[i][j] {
+						matrix[i][j] = matrix[i][k] + matrix[k][j]
+					}
+				}
+			}
+		}
+	}
+}
+
+func main() {
+	matrix := [][]int{
+		{0, 2, -1, -1},
+		{1, 0, 3, -1},
+		{-1, -1, 0, -1},
+		{3, 5, 4, 0},
+	}
+
+	/* Function to find the shortest distance
+	between every pair of vertices. */
+	ShortestDistance(matrix)
+
+	// Output
+	fmt.Println("The shortest distance matrix is:")
+	for i := 0; i < len(matrix); i++ {
+		for j := 0; j < len(matrix); j++ {
+			fmt.Print(matrix[i][j], " ")
+		}
+		fmt.Println()
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N<sup>3</sup>)</strong> (where N repesents the number of nodes in graph)
+    Because of three nested loops.   
+</p>
+
+<p><strong>Space Complexity: O(N<sup>2</sup>)</strong> 
+   The algorithm uses a space of O(N<sup>2</sup>) to store shortest distance between every pair of nodes possible.
+</p></body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    void shortestDistance(vector&lt;vector&lt;int&gt;&gt; &amp;matrix){
+        
+        // Getting the number of nodes
+	    int n = matrix.size();
+	    
+	    // For each intermediate node k
+	    for(int k=0; k&lt;n; k++) {
+	        
+	        // Check for every (i, j) pair of nodes
+	        for(int i=0; i&lt;n; i++) {
+	            for(int j=0; j&lt;n; j++) {
+	                
+	                /* If k is not an intermediate 
+	                node, skip the iteration */
+	                if(matrix[i][k] == -1 || 
+	                   matrix[k][j] == -1) 
+	                        continue;
+	                
+	                /* If no direct edge from 
+	                i to v is present */
+	                if(matrix[i][j] == -1) {
+	                    
+	                    // Update the distance
+	                    matrix[i][j] = 
+	                        matrix[i][k] + matrix[k][j];
+	                }
+	                
+	                /* Else update the distance to 
+	                minimum of both paths */
+	                else {
+	                    matrix[i][j] = 
+	                        min(matrix[i][j] , 
+	                             matrix[i][k] + matrix[k][j]
+	                            );
+	                }
+	            }
+	        }
+	    }
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public void shortestDistance(int[][] matrix)
+    {
+        // Getting the number of nodes
+        int n = matrix.Length;
+
+        // For each intermediate node k
+        for (int k = 0; k &lt; n; k++)
+        {
+            // Check for every (i, j) pair of nodes
+            for (int i = 0; i &lt; n; i++)
+            {
+                for (int j = 0; j &lt; n; j++)
+                {
+                    /* If k is not an intermediate 
+                    node, skip the iteration */
+                    if (matrix[i][k] == -1 || matrix[k][j] == -1)
+                        continue;
+
+                    /* If no direct edge from 
+                    i to v is present */
+                    if (matrix[i][j] == -1)
+                    {
+                        // Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j];
+                    }
+                    /* Else update the distance to 
+                    minimum of both paths */
+                    else
+                    {
+                        matrix[i][j] = 
+                        System.Math.Min(matrix[i][j], matrix[i][k] + matrix[k][j]);
+                    }
+                }
+            }
+        }
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// ShortestDistance finds the shortest distance between every pair of vertices.
+func ShortestDistance(matrix [][]int) {
+	// Getting the number of nodes
+	n := len(matrix)
+
+	// For each intermediate node k
+	for k := 0; k &lt; n; k++ {
+
+		// Check for every (i, j) pair of nodes
+		for i := 0; i &lt; n; i++ {
+			for j := 0; j &lt; n; j++ {
+
+				/* If k is not an intermediate node, skip the iteration */
+				if matrix[i][k] == -1 || matrix[k][j] == -1 {
+					continue
+				}
+
+				/* If no direct edge from i to j is present */
+				if matrix[i][j] == -1 {
+					// Update the distance
+					matrix[i][j] = matrix[i][k] + matrix[k][j]
+				} else {
+					/* Else update the distance to minimum of both paths */
+					if matrix[i][k]+matrix[k][j] &lt; matrix[i][j] {
+						matrix[i][j] = matrix[i][k] + matrix[k][j]
+					}
+				}
+			}
+		}
+	}
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    public void shortestDistance(int[][] matrix) {
+        
+        // Getting the number of nodes
+        int n = matrix.length;
+        
+        // For each intermediate node k
+        for (int k = 0; k &lt; n; k++) {
+            
+            // Check for every (i, j) pair of nodes
+            for (int i = 0; i &lt; n; i++) {
+                for (int j = 0; j &lt; n; j++) {
+                    
+                    /* If k is not an intermediate 
+                    node, skip the iteration */
+                    if (matrix[i][k] == -1 || matrix[k][j] == -1)
+                        continue;
+                    
+                    /* If no direct edge from 
+                    i to v is present */
+                    if (matrix[i][j] == -1) {
+                        
+                        // Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j];
+                    }
+                    
+                    /* Else update the distance to 
+                    minimum of both paths */
+                    else {
+                        matrix[i][j] = Math.min(matrix[i][j], matrix[i][k] + matrix[k][j]);
+                    }
+                }
+            }
+        }
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the shortest distance 
+    between every pair of vertices. */
+    shortestDistance(matrix) {
+        
+        // Getting the number of nodes
+        let n = matrix.length;
+        
+        // For each intermediate node k
+        for (let k = 0; k &lt; n; k++) {
+            
+            // Check for every (i, j) pair of nodes
+            for (let i = 0; i &lt; n; i++) {
+                for (let j = 0; j &lt; n; j++) {
+                    
+                    /* If k is not an intermediate 
+                    node, skip the iteration */
+                    if (matrix[i][k] === -1 || matrix[k][j] === -1)
+                        continue;
+                    
+                    /* If no direct edge from 
+                    i to v is present */
+                    if (matrix[i][j] === -1) {
+                        
+                        // Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j];
+                    }
+                    
+                    /* Else update the distance to 
+                    minimum of both paths */
+                    else {
+                        matrix[i][j] = 
+                        Math.min(matrix[i][j], matrix[i][k] + matrix[k][j]);
+                    }
+                }
+            }
+        }
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the shortest distance 
+    # between every pair of vertices.
+    def shortestDistance(self, matrix):
+        
+        # Getting the number of nodes
+        n = len(matrix)
+        
+        # For each intermediate node k
+        for k in range(n):
+            
+            # Check for every (i, j) pair of nodes
+            for i in range(n):
+                for j in range(n):
+                    
+                    # If k is not an intermediate 
+                    # node, skip the iteration
+                    if matrix[i][k] == -1 or matrix[k][j] == -1:
+                        continue
+                    
+                    # If no direct edge from 
+                    # i to v is present
+                    if matrix[i][j] == -1:
+                        
+                        # Update the distance
+                        matrix[i][j] = matrix[i][k] + matrix[k][j]
+                    
+                    # Else update the distance to 
+                    # minimum of both paths
+                    else:
+                        matrix[i][j] = min(matrix[i][j], matrix[i][k] + matrix[k][j])</code></pre></div>
+</body>
+</html>

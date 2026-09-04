@@ -378,7 +378,7 @@ const InterviewXDashboard = () => {
             {continueTarget ? (
                <>
                  <h3 className="text-xl font-bold text-theme-text mb-2 tracking-tight leading-snug line-clamp-2">{continueTarget.subject.name}</h3>
-                 <Link to={`/interviewX/${continueTarget.subject.id}?video=${continueTarget.video.id}`} className="text-[14px] font-bold text-theme-text hover:opacity-70 transition-opacity">{extractCleanFilename(continueTarget.video.title) || `Video ${continueTarget.video.id}`} &rarr;</Link>
+                 <Link to={`/interviewX/${continueTarget.subject.id}?lesson=${continueTarget.video.id}`} className="text-[14px] font-bold text-theme-text hover:opacity-70 transition-opacity">{extractCleanFilename(continueTarget.video.title) || `Lesson ${continueTarget.video.id}`} &rarr;</Link>
                </>
             ) : (
                <h3 className="text-2xl font-bold text-theme-text mb-2 tracking-tight leading-snug">All caught up! 🎉</h3>
@@ -392,22 +392,22 @@ const InterviewXDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {recentIX.slice(0, 6).map((activity: any, idx: number) => {
             return (
-              <Link 
-                key={`ix-${activity.subject}-${activity.videoId}-${idx}`}
-                to={`/interviewX/${activity.subject}`}
-                className="flex flex-col justify-between p-6 bg-theme-card rounded-[28px] shadow-softer hover:shadow-soft hover:-translate-y-1 transition-all group border border-theme-border/60"
-              >
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 bg-pastel-pink rounded-[12px] flex items-center justify-center text-theme-text group-hover:bg-accent-pink transition-colors">
-                    <Clock className="w-4 h-4" />
+                <Link 
+                  key={`ix-${activity.subject}-${activity.videoId}-${idx}`}
+                  to={`/interviewX/${activity.subject}?lesson=${activity.videoId}`}
+                  className="flex flex-col justify-between p-6 bg-theme-card rounded-[28px] shadow-softer hover:shadow-soft hover:-translate-y-1 transition-all group border border-theme-border/60"
+                >
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-10 h-10 bg-pastel-pink rounded-[12px] flex items-center justify-center text-theme-text group-hover:bg-accent-pink transition-colors">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-bold text-theme-text bg-theme-bg px-3 py-1.5 rounded-full">Recent</span>
                   </div>
-                  <span className="text-xs font-bold text-theme-text bg-theme-bg px-3 py-1.5 rounded-full">Recent</span>
-                </div>
-                <div>
-                  <h3 className="font-bold text-theme-text text-lg leading-snug mb-1 line-clamp-2">{extractCleanFilename(activity.title) || `Video ${activity.videoId}`}</h3>
-                  <p className="text-[13px] font-semibold text-theme-muted uppercase">{activity.subject}</p>
-                </div>
-              </Link>
+                  <div>
+                    <h3 className="font-bold text-theme-text text-lg leading-snug mb-1 line-clamp-2">{extractCleanFilename(activity.title) || `Lesson ${activity.videoId}`}</h3>
+                    <p className="text-[13px] font-semibold text-theme-muted uppercase">{activity.subject}</p>
+                  </div>
+                </Link>
             );
           })}
         </div>

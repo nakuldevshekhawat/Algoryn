@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Path with minimum effort</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Path with minimum effort</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Binary Search</span><span>Breadth-First Search</span><span>Depth-First Search</span><span>Heap (Priority Queue)</span><span>Matrix</span><span>Union Find</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>A hiker is preparing for an upcoming hike. Given heights, a 2D array of size rows x columns, where heights[row][col] represents the height of the cell (row, col). The hiker is situated in the top-left cell, (0, 0), and hopes to travel to the bottom-right cell, (rows-1, columns-1) (i.e.,0-indexed). He can move up, down, left, or right. He wishes to find a route that requires the <strong>minimum effort</strong>.</p><p><br></p><p>A route's effort is the maximum absolute difference in heights between two consecutive cells of the route.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>rows == heights.length</li><li>columns == heights[i].length</li><li>1 <= rows, columns <= 100</li><li>1 <= heights[i][j] <= 10<sup>6</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> heights = [[1,2,2],[3,8,2],[5,3,5]]</p><p><strong>Output:</strong> 2</p><p><strong>Explanation:</strong> The route of [1,3,5,3,5] has a maximum absolute difference of 2 in consecutive cells. This is better than the route of [1,2,2,2,5], where the maximum absolute difference is 3.</p><h3>Example 2</h3><p><strong>Input:</strong> heights = [[1,2,3],[3,8,4],[5,3,5]]</p><p><strong>Output:</strong> 1</p><p><strong>Explanation:</strong> The route of [1,2,3,4,5] has a maximum absolute difference of 1 in consecutive cells, which is better than route [1,3,5,3,5].</p><h3>Example 3</h3><p><strong>Input:</strong> heights = [[1,2,1,1,1],[1,2,1,2,1],[1,2,1,2,1],[1,2,1,2,1],[1,1,1,2,1]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The concept underlying this problem is similar to the logic used in routing and navigation software, such as Google Maps or Waze. In these applications, the idea is to find the shortest or least effort route between two points. But instead of considering differences in heights, they use factors such as distance, traffic, and road conditions to decide what the 'effort' of a potential route would be. In fact, this programming problem essentially models what is known as 'cost-based pathfinding,' which is a common problem in computer science for designing intelligent routing systems in various domains, not just geospatial navigation!</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    The problem resembles a pathfinding problem in a weighted graph, where we need to find a path with minimal maximum effort. We already know, traditional shortest path algorithms like <strong>Dijkstra's Algorithm</strong> are used to find the path with the minimum total cost. This gives an idea of using Dijkstra's algorithm to get to the solution. But there will be definitely some modifications needed.
+
+    </p><h6>Adapting Dijkstra's algorithm:</h6>
+    By slightly modifying the algorithm, it can be adapted to minimize the maximum effort:
+    <ul>
+        <li>Instead of accumulating total distances, the maximum effort encountered so far can be tracked.</li>
+        <li>And the priority queue (min-heap) can be used to store the pair <code>{difference, {row of cell, column of cell}}</code> which will help to always expand the least difference (effort) path first.</li>
+    </ul>
+
+    <h6>Comparing Edge Relaxation Steps in Dijkstra's Algorithms:</h6>
+    <ul>
+        <li><strong>Normal Dijkstra:</strong> Updates the distance if the new distance is smaller. <br>
+            <code>new_distance = current_distance + edge_weight</code> <br>
+            <code>new_distance = current_distance + edge_weight</code></li>
+
+        <li><strong>Modified Dijkstra:</strong> Updates the effort if the new effort (max of current effort and edge effort) is smaller. <br>
+            <code>new_effort = max(current_effort, edge_effort)</code> 
+        </li>
+    </ul>
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Define arrays to represent possible movement directions: up, down, left, and right. Create a matrix to track the minimum effort needed to reach each cell, initialized to a very large value.</li>
+    <li>Use a priority queue to explore cells starting from the top-left corner with an initial effort of 0. Extract the cell with the lowest effort from the priority queue. If this cell is the bottom-right corner, return the current effort as the result.</li>
+    <li>For each neighboring cell, calculate the effort required to move there, considering the maximum height difference encountered so far. Update the tracking matrix if this path offers a smaller maximum effort to reach the neighbor.
+    </li>
+    <li>Push the neighboring cell with the updated effort into the priority queue. Continue this process until the queue is empty or the destination is reached.</li>
+    <li>If the priority queue is exhausted without reaching the destination, return a special value indicating failure (though this will never occur).</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* Define P as a shorthand for
+the pair<int, pair<int,int>> type */
+#define P pair <int, pair<int,int>>
+
+class Solution {
+private:
+
+    // Delta row and column array
+    vector<int> delRow = {-1, 0, 1, 0};
+    vector<int> delCol = {0, -1, 0, 1};
+    
+    // Function to check if a cell is valid
+    bool isValid(int &row, int &col, 
+                 int &n, int &m) {
+                     
+        // Return false if the cell is invalid
+        if(row < 0 || row >= n) return false;
+        if(col < 0 || col >= m) return false;
+        
+        // Return true if the cell is valid
+        return true;
+    }
+
+public:
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    int MinimumEffort(vector<vector<int>>& heights) {
+        
+        // Get the dimensions of grid
+        int n = heights.size();
+        int m = heights[0].size();
+
+        // To store maximum difference
+        vector<vector<int>> maxDiff(n, vector<int>(m, 1e9));
+        
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        priority_queue <P, vector<P>, greater<P>> pq;
+        
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+        
+        // Push the starting cell to min-heap
+        pq.push({0, {0, 0}});
+
+        // Until the min-heap is not empty
+        while(!pq.empty()) {
+            
+            /* Get the cell with minimum 
+            difference (effort) */
+            auto p = pq.top();
+            
+            // Get the difference
+            int diff = p.first;
+            
+            int row = p.second.first; // Row
+            int col = p.second.second; // Column
+            pq.pop();
+            
+            /* If the destination cell is reached, 
+            return the difference */
+            if(row == n-1 && col == m-1) 
+                return diff;
+            
+            // Traverse it's neighbors
+            for(int i=0; i<4; i++) {
+                
+                /* Get the coordinates 
+                of neighboring cell */
+                int newRow = row + delRow[i];
+                int newCol = col + delCol[i];
+                
+                // Check if the cell is valid
+                if(isValid(newRow, newCol, n, m)) {
+                    
+                    /* Get the current difference 
+                    in heights of cells */
+                    int currDiff = 
+                    abs(heights[newRow][newCol] - heights[row][col]);
+                    
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if(max(currDiff, diff) < maxDiff[newRow][newCol]) {
+                        
+                        // Store the current difference
+                        maxDiff[newRow][newCol] = max(currDiff, diff);
+                        
+                        // Add the new pair found in the min-heap
+                        pq.push({max(currDiff, diff), {newRow, newCol}});
+                    }
+                }
+            }
+        }
+        
+        // Return -1
+        return -1;
+    }
+};
+
+int main() {
+    
+    vector<vector<int>> heights = {
+        {1,2,2}, 
+        {3,8,2}, 
+        {5,3,5}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine minimum efforts 
+    to go from top-left to bottom-right */
+    int ans = sol.MinimumEffort(heights);
+    
+    // Output
+    cout << "The minimum efforts required to go from cell (0,0) to cell (row-1, col-1) is: " << ans;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    // Delta row and column array
+    int[] delRow = {-1, 0, 1, 0};
+    int[] delCol = {0, -1, 0, 1};
+
+    // Function to check if a cell is valid
+    boolean isValid(int row, int col, int n, int m) {
+        // Return false if the cell is invalid
+        if (row < 0 || row >= n) return false;
+        if (col < 0 || col >= m) return false;
+
+        // Return true if the cell is valid
+        return true;
+    }
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    public int MinimumEffort(List<List<Integer>> heights) {
+
+        // Get the dimensions of grid
+        int n = heights.size();
+        int m = heights.get(0).size();
+
+        // To store maximum difference
+        int[][] maxDiff = new int[n][m];
+        for (int[] row : maxDiff)
+            Arrays.fill(row, Integer.MAX_VALUE);
+
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+
+        // Push the starting cell to min-heap
+        pq.add(new int[]{0, 0, 0});
+
+        // Until the min-heap is not empty
+        while (!pq.isEmpty()) {
+
+            /* Get the cell with minimum 
+            difference (effort) */
+            int[] p = pq.poll();
+
+            // Get the difference
+            int diff = p[0];
+
+            int row = p[1]; // Row
+            int col = p[2]; // Column
+
+            /* If the destination cell is reached, 
+            return the difference */
+            if (row == n - 1 && col == m - 1)
+                return diff;
+
+            // Traverse its neighbors
+            for (int i = 0; i < 4; i++) {
+
+                /* Get the coordinates 
+                of neighboring cell */
+                int newRow = row + delRow[i];
+                int newCol = col + delCol[i];
+
+                // Check if the cell is valid
+                if (isValid(newRow, newCol, n, m)) {
+
+                    /* Get the current difference 
+                    in heights of cells */
+                    int currDiff = Math.abs(heights.get(newRow).get(newCol) - heights.get(row).get(col));
+
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if (Math.max(currDiff, diff) < maxDiff[newRow][newCol]) {
+
+                        // Store the current difference
+                        maxDiff[newRow][newCol] = Math.max(currDiff, diff);
+
+                        // Add the new pair found in the min-heap
+                        pq.add(new int[]{Math.max(currDiff, diff), newRow, newCol});
+                    }
+                }
+            }
+        }
+
+        // Return -1
+        return -1;
+    }
+
+    public static void main(String[] args) {
+
+        List<List<Integer>> heights = Arrays.asList(
+                Arrays.asList(1, 2, 2),
+                Arrays.asList(3, 8, 2),
+                Arrays.asList(5, 3, 5)
+        );
+
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+
+        /* Function call to determine minimum efforts 
+        to go from top-left to bottom-right */
+        int ans = sol.MinimumEffort(heights);
+
+        // Output
+        System.out.println("The minimum efforts required to go from cell (0,0) to cell (row-1, col-1) is: " + ans);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import heapq
+
+class Solution:
+    # Delta row and column array
+    delRow = [-1, 0, 1, 0]
+    delCol = [0, -1, 0, 1]
+
+    # Function to check if a cell is valid
+    def isValid(self, row, col, n, m):
+        # Return false if the cell is invalid
+        if row < 0 or row >= n: return False
+        if col < 0 or col >= m: return False
+        
+        # Return true if the cell is valid
+        return True
+
+    # Function to determine minimum efforts 
+    # to go from top-left to bottom-right
+    def MinimumEffort(self, heights):
+        
+        # Get the dimensions of grid
+        n = len(heights)
+        m = len(heights[0])
+
+        # To store maximum difference
+        maxDiff = [[float('inf')] * m for _ in range(n)]
+        
+        # Min-Heap storing the pair: 
+        # {diff, {row of cell, column of cell}}
+        pq = []
+        
+        # Mark the initial position as 0
+        maxDiff[0][0] = 0
+        
+        # Push the starting cell to min-heap
+        heapq.heappush(pq, (0, 0, 0))
+
+        # Until the min-heap is not empty
+        while pq:
+            
+            # Get the cell with minimum 
+            # difference (effort)
+            diff, row, col = heapq.heappop(pq)
+            
+            # If the destination cell is reached, 
+            # return the difference
+            if row == n-1 and col == m-1: 
+                return diff
+            
+            # Traverse its neighbors
+            for i in range(4):
+                
+                # Get the coordinates 
+                # of neighboring cell
+                newRow = row + self.delRow[i]
+                newCol = col + self.delCol[i]
+                
+                # Check if the cell is valid
+                if self.isValid(newRow, newCol, n, m):
+                    
+                    # Get the current difference 
+                    # in heights of cells
+                    currDiff = abs(heights[newRow][newCol] - 
+                                   heights[row][col])
+                    
+                    # Check if the current difference is 
+                    # less than earlier known difference
+                    if (max(currDiff, diff) < 
+                        maxDiff[newRow][newCol]):
+                        
+                        # Store the current difference
+                        maxDiff[newRow][newCol] = max(currDiff, diff)
+                        
+                        # Add the new pair found in the min-heap
+                        heapq.heappush(pq, (max(currDiff, diff), newRow, newCol))
+        
+        # Return -1
+        return -1
+
+# Example usage
+if __name__ == "__main__":
+    
+    heights = [
+        [1, 2, 2], 
+        [3, 8, 2], 
+        [5, 3, 5]
+    ]
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to determine minimum efforts 
+    # to go from top-left to bottom-right
+    ans = sol.MinimumEffort(heights)
+    
+    # Output
+    print(f"The minimum efforts required to go from cell (0,0) to cell (row-1, col-1) is: {ans}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">// Min-Heap Class implementation
+class MinHeap {
+    constructor() {
+        this.heap = [];
+    }
+
+    // Insert a new value into the heap
+    push(val) {
+        this.heap.push(val);
+        this.bubbleUp();
+    }
+
+    // Remove and return the smallest value from the heap
+    pop() {
+        if (this.size() === 1) return this.heap.pop();
+        const min = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown();
+        return min;
+    }
+
+    // Return the smallest value from the heap
+    peek() {
+        return this.heap[0];
+    }
+
+    // Return the number of elements in the heap
+    size() {
+        return this.heap.length;
+    }
+
+    // Bubble up the newly added value to maintain heap property
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        while (index > 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            if (this.heap[index][0] >= this.heap[parentIndex][0]) break;
+            [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]];
+            index = parentIndex;
+        }
+    }
+
+    // Bubble down the top value to maintain heap property
+    bubbleDown() {
+        let index = 0;
+        const length = this.heap.length;
+        const element = this.heap[0];
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let leftChild, rightChild;
+            let swapIndex = null;
+
+            if (leftChildIndex < length) {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild[0] < element[0]) {
+                    swapIndex = leftChildIndex;
+                }
+            }
+            if (rightChildIndex < length) {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swapIndex === null && rightChild[0] < element[0]) ||
+                    (swapIndex !== null && rightChild[0] < leftChild[0])
+                ) {
+                    swapIndex = rightChildIndex;
+                }
+            }
+            if (swapIndex === null) break;
+            this.heap[index] = this.heap[swapIndex];
+            this.heap[swapIndex] = element;
+            index = swapIndex;
+        }
+    }
+}
+
+class Solution {
+    constructor() {
+        // Delta row and column array
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, -1, 0, 1];
+    }
+
+    // Function to check if a cell is valid
+    isValid(row, col, n, m) {
+        // Return false if the cell is invalid
+        if (row < 0 || row >= n) return false;
+        if (col < 0 || col >= m) return false;
+
+        // Return true if the cell is valid
+        return true;
+    }
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    MinimumEffort(heights) {
+        // Get the dimensions of grid
+        const n = heights.length;
+        const m = heights[0].length;
+
+        // To store maximum difference
+        const maxDiff = Array.from(
+            { length: n }, 
+            () => Array(m).fill(Infinity)
+        );
+
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        const pq = new MinHeap();
+
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+
+        // Push the starting cell to min-heap
+        pq.push([0, 0, 0]);
+
+        // Until the min-heap is not empty
+        while (pq.size() > 0) {
+            /* Get the cell with minimum 
+            difference (effort) */
+            const [diff, row, col] = pq.pop();
+
+            /* If the destination cell is reached, 
+            return the difference */
+            if (row === n - 1 && col === m - 1)
+                return diff;
+
+            // Traverse its neighbors
+            for (let i = 0; i < 4; i++) {
+                /* Get the coordinates 
+                of neighboring cell */
+                const newRow = row + this.delRow[i];
+                const newCol = col + this.delCol[i];
+
+                // Check if the cell is valid
+                if (this.isValid(newRow, newCol, n, m)) {
+                    /* Get the current difference 
+                    in heights of cells */
+                    const currDiff = 
+                    Math.abs(heights[newRow][newCol] - heights[row][col]);
+
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if (Math.max(currDiff, diff) < 
+                        maxDiff[newRow][newCol]) {
+                        // Store the current difference
+                        maxDiff[newRow][newCol] = 
+                            Math.max(currDiff, diff);
+
+                        // Add the new pair found in the min-heap
+                        pq.push(
+                            [Math.max(currDiff, diff), 
+                                newRow, newCol]
+                            );
+                    }
+                }
+            }
+        }
+
+        // Return -1
+        return -1;
+    }
+}
+
+// Example usage
+const heights = [
+    [1, 2, 2],
+    [3, 8, 2],
+    [5, 3, 5]
+];
+
+/* Creating an instance of 
+Solution class */
+const sol = new Solution();
+
+/* Function call to determine minimum efforts 
+to go from top-left to bottom-right */
+const ans = sol.MinimumEffort(heights);
+
+// Output
+console.log(`The minimum efforts required to go from cell (0,0) to cell (row-1, col-1) is: ${ans}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span><span>210</span><span>211</span><span>212</span><span>213</span><span>214</span><span>215</span><span>216</span><span>217</span><span>218</span><span>219</span><span>220</span><span>221</span><span>222</span><span>223</span><span>224</span><span>225</span><span>226</span><span>227</span><span>228</span><span>229</span><span>230</span><span>231</span><span>232</span><span>233</span><span>234</span><span>235</span><span>236</span><span>237</span><span>238</span><span>239</span><span>240</span><span>241</span><span>242</span><span>243</span><span>244</span><span>245</span><span>246</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+// HeapNode struct for clarity
+public struct HeapNode
+{
+    public int Diff;
+    public int Row;
+    public int Col;
+
+    public HeapNode(int diff, int row, int col)
+    {
+        Diff = diff;
+        Row = row;
+        Col = col;
+    }
+}
+
+// Min-Heap Class implementation
+public class MinHeap
+{
+    private List<HeapNode> heap;
+
+    public MinHeap()
+    {
+        this.heap = new List<HeapNode>();
+    }
+
+    // Insert a new value into the heap
+    public void Push(HeapNode val)
+    {
+        this.heap.Add(val);
+        this.BubbleUp();
+    }
+
+    // Remove and return the smallest value from the heap
+    public HeapNode Pop()
+    {
+        if (this.Size() == 1)
+        {
+            HeapNode last = this.heap[this.heap.Count - 1];
+            this.heap.RemoveAt(this.heap.Count - 1);
+            return last;
+        }
+        HeapNode min = this.heap[0];
+        this.heap[0] = this.heap[this.heap.Count - 1];
+        this.heap.RemoveAt(this.heap.Count - 1);
+        this.BubbleDown();
+        return min;
+    }
+
+    // Return the smallest value from the heap
+    public HeapNode Peek()
+    {
+        return this.heap[0];
+    }
+
+    // Return the number of elements in the heap
+    public int Size()
+    {
+        return this.heap.Count;
+    }
+
+    // Bubble up the newly added value to maintain heap property
+    private void BubbleUp()
+    {
+        int index = this.heap.Count - 1;
+        while (index > 0)
+        {
+            int parentIndex = (index - 1) / 2;
+            if (this.heap[index].Diff >= this.heap[parentIndex].Diff) break;
+            
+            // Swap
+            HeapNode temp = this.heap[index];
+            this.heap[index] = this.heap[parentIndex];
+            this.heap[parentIndex] = temp;
+            
+            index = parentIndex;
+        }
+    }
+
+    // Bubble down the top value to maintain heap property
+    private void BubbleDown()
+    {
+        int index = 0;
+        int length = this.heap.Count;
+        HeapNode element = this.heap[0];
+        while (true)
+        {
+            int leftChildIndex = 2 * index + 1;
+            int rightChildIndex = 2 * index + 2;
+            HeapNode leftChild = default(HeapNode);
+            HeapNode rightChild = default(HeapNode);
+            int? swapIndex = null;
+
+            if (leftChildIndex < length)
+            {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild.Diff < element.Diff)
+                {
+                    swapIndex = leftChildIndex;
+                }
+            }
+            if (rightChildIndex < length)
+            {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swapIndex == null && rightChild.Diff < element.Diff) ||
+                    (swapIndex != null && rightChild.Diff < leftChild.Diff)
+                )
+                {
+                    swapIndex = rightChildIndex;
+                }
+            }
+            if (swapIndex == null) break;
+            
+            // Swap
+            this.heap[index] = this.heap[swapIndex.Value];
+            this.heap[swapIndex.Value] = element;
+            index = swapIndex.Value;
+        }
+    }
+}
+
+public class Solution
+{
+    // Delta row and column array
+    private int[] delRow = { -1, 0, 1, 0 };
+    private int[] delCol = { 0, -1, 0, 1 };
+
+    // Function to check if a cell is valid
+    private bool IsValid(int row, int col, int n, int m)
+    {
+        // Return false if the cell is invalid
+        if (row < 0 || row >= n) return false;
+        if (col < 0 || col >= m) return false;
+
+        // Return true if the cell is valid
+        return true;
+    }
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    public int MinimumEffort(int[][] heights)
+    {
+        // Get the dimensions of grid
+        int n = heights.Length;
+        int m = heights[0].Length;
+
+        // To store maximum difference
+        int[][] maxDiff = new int[n][];
+        for (int i = 0; i < n; i++)
+        {
+            maxDiff[i] = new int[m];
+            Array.Fill(maxDiff[i], int.MaxValue);
+        }
+
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        MinHeap pq = new MinHeap();
+
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+
+        // Push the starting cell to min-heap
+        pq.Push(new HeapNode(0, 0, 0));
+
+        // Until the min-heap is not empty
+        while (pq.Size() > 0)
+        {
+            /* Get the cell with minimum 
+            difference (effort) */
+            HeapNode current = pq.Pop();
+            int diff = current.Diff;
+            int row = current.Row;
+            int col = current.Col;
+
+            /* If the destination cell is reached, 
+            return the difference */
+            if (row == n - 1 && col == m - 1)
+                return diff;
+
+            // Traverse its neighbors
+            for (int i = 0; i < 4; i++)
+            {
+                /* Get the coordinates 
+                of neighboring cell */
+                int newRow = row + this.delRow[i];
+                int newCol = col + this.delCol[i];
+
+                // Check if the cell is valid
+                if (this.IsValid(newRow, newCol, n, m))
+                {
+                    /* Get the current difference 
+                    in heights of cells */
+                    int currDiff =
+                    Math.Abs(heights[newRow][newCol] - heights[row][col]);
+
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if (Math.Max(currDiff, diff) < 
+                        maxDiff[newRow][newCol])
+                    {
+                        // Store the current difference
+                        maxDiff[newRow][newCol] =
+                            Math.Max(currDiff, diff);
+
+                        // Add the new pair found in the min-heap
+                        pq.Push(
+                            new HeapNode(Math.Max(currDiff, diff),
+                                newRow, newCol)
+                            );
+                    }
+                }
+            }
+        }
+
+        // Return -1
+        return -1;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        int[][] heights = new int[][]
+        {
+            new int[] {1, 2, 2},
+            new int[] {3, 8, 2},
+            new int[] {5, 3, 5}
+        };
+
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+
+        /* Function call to determine minimum efforts 
+        to go from top-left to bottom-right */
+        int ans = sol.MinimumEffort(heights);
+
+        // Output
+        Console.WriteLine($"The minimum efforts required to go from cell (0,0) to cell (row-1, col-1) is: {ans}");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"container/heap"
+	"math"
+)
+
+// Delta row and column array to explore neighbors in 4 directions (up, left, down, right)
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, -1, 0, 1}
+
+// Standalone helper function to check if a cell is valid (within grid bounds)
+func isValid(row, col, n, m int) bool {
+	// Return false if the cell is invalid (out of bounds)
+	if row < 0 || row >= n {
+		return false
+	}
+	if col < 0 || col >= m {
+		return false
+	}
+	// Return true if the cell is valid
+	return true
+}
+
+// Item represents a cell in the priority queue
+type Item struct {
+	diff int  // The "effort" or the difference in heights
+	row  int  // Row index of the cell
+	col  int  // Column index of the cell
+}
+
+// PriorityQueue implements heap.Interface for Items
+type PriorityQueue []*Item
+
+// Len function to get the length of the queue
+func (pq PriorityQueue) Len() int { return len(pq) }
+
+// Less function to compare two items in the queue (min-heap)
+func (pq PriorityQueue) Less(i, j int) bool {
+	return pq[i].diff < pq[j].diff
+}
+
+// Swap function to swap two items in the queue
+func (pq PriorityQueue) Swap(i, j int) { pq[i], pq[j] = pq[j], pq[i] }
+
+// Push function to push a new item into the queue
+func (pq *PriorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(*Item))
+}
+
+// Pop function to remove the top item from the queue
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[0 : n-1]
+	return item
+}
+
+// MinimumEffort determines minimum efforts to go from top-left to bottom-right
+func MinimumEffort(heights [][]int) int {
+	n := len(heights)
+	m := len(heights[0])
+
+	// To store the maximum difference (effort) needed to reach each cell
+	maxDiff := make([][]int, n)
+	for i := range maxDiff {
+		maxDiff[i] = make([]int, m)
+		// Initialize all distances to a large value (infinity)
+		for j := range maxDiff[i] {
+			maxDiff[i][j] = int(1e9)
+		}
+	}
+
+	// Priority queue to store cells with their effort (min-heap)
+	pq := &PriorityQueue{}
+	heap.Init(pq)
+
+	// Set the distance (effort) of the starting cell to 0
+	maxDiff[0][0] = 0
+	heap.Push(pq, &Item{diff: 0, row: 0, col: 0})
+
+	// Until the priority queue is empty, process each cell
+	for pq.Len() > 0 {
+		// Get the cell with the smallest effort
+		curr := heap.Pop(pq).(*Item)
+		diff := curr.diff // Current effort (max of the differences encountered so far)
+		row := curr.row   // Current row
+		col := curr.col   // Current column
+
+		// If we reach the bottom-right corner, return the effort (this is the answer)
+		if row == n-1 && col == m-1 {
+			return diff
+		}
+
+		// Explore the 4 possible neighbors (up, down, left, right)
+		for i := 0; i < 4; i++ {
+			// Get the coordinates of the neighboring cell
+			newRow := row + delRow[i]
+			newCol := col + delCol[i]
+
+			// Check if the neighboring cell is valid
+			if isValid(newRow, newCol, n, m) {
+				// Calculate the difference in height between the current cell and the neighbor
+				currDiff := int(math.Abs(float64(heights[newRow][newCol] - heights[row][col])))
+				// The new effort will be the maximum of the current effort and the difference in height
+				maximum := int(math.Max(float64(currDiff), float64(diff)))
+
+				// If the new effort is smaller than the known effort, update it
+				if maximum < maxDiff[newRow][newCol] {
+					maxDiff[newRow][newCol] = maximum
+					// Push the new cell with its updated effort into the priority queue
+					heap.Push(pq, &Item{diff: maximum, row: newRow, col: newCol})
+				}
+			}
+		}
+	}
+
+	// Return -1 if there is no valid path (although this case should not occur in this problem)
+	return -1
+}
+
+func main() {
+	// Example grid of heights
+	heights := [][]int{
+		{1, 2, 2},
+		{3, 8, 2},
+		{5, 3, 5},
+	}
+
+	// Function call to determine the minimum efforts to go from top-left to bottom-right
+	ans := MinimumEffort(heights)
+
+	// Output the result
+	fmt.Println("The minimum efforts required to go from cell (0,0) to cell (row-1, col-1) is:", ans)
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N*M*log(N*M))</strong> 
+    </p><ul>
+        <li>The algorithm processes each cell and explores its neighbors using a priority queue taking O(4*N*M) time.</li>
+        <li>The priority queue operations (insertion and extraction) are logarithmic in nature making overall complexity as O(4*N*M*log(N*M)).</li>
+    </ul>     
+<p></p>
+
+<p><strong>Space Complexity: O(N*M)</strong> 
+    </p><ul>
+        <li>Matrix to store maximum differences for each cell takes O(N*M) space.</li>
+        <li>Priority queue will store N*M elements in worst case contributing to O(N*M) space.</li>
+    </ul>
+<p></p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>/* Define P as a shorthand for
+the pair&lt;int, pair&lt;int,int&gt;&gt; type */
+#define P pair &lt;int, pair&lt;int,int&gt;&gt;
+
+class Solution {
+private:
+
+    // Delta row and column array
+    vector&lt;int&gt; delRow = {-1, 0, 1, 0};
+    vector&lt;int&gt; delCol = {0, -1, 0, 1};
+    
+    // Function to check if a cell is valid
+    bool isValid(int &amp;row, int &amp;col, 
+                 int &amp;n, int &amp;m) {
+                     
+        // Return false if the cell is invalid
+        if(row &lt; 0 || row &gt;= n) return false;
+        if(col &lt; 0 || col &gt;= m) return false;
+        
+        // Return true if the cell is valid
+        return true;
+    }
+
+public:
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    int MinimumEffort(vector&lt;vector&lt;int&gt;&gt;&amp; heights) {
+        
+        // Get the dimensions of grid
+        int n = heights.size();
+        int m = heights[0].size();
+
+        // To store maximum difference
+        vector&lt;vector&lt;int&gt;&gt; maxDiff(n, vector&lt;int&gt;(m, 1e9));
+        
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        priority_queue &lt;P, vector&lt;P&gt;, greater&lt;P&gt;&gt; pq;
+        
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+        
+        // Push the starting cell to min-heap
+        pq.push({0, {0, 0}});
+
+        // Until the min-heap is not empty
+        while(!pq.empty()) {
+            
+            /* Get the cell with minimum 
+            difference (effort) */
+            auto p = pq.top();
+            
+            // Get the difference
+            int diff = p.first;
+            
+            int row = p.second.first; // Row
+            int col = p.second.second; // Column
+            pq.pop();
+            
+            /* If the destination cell is reached, 
+            return the difference */
+            if(row == n-1 &amp;&amp; col == m-1) 
+                return diff;
+            
+            // Traverse it&#x27;s neighbors
+            for(int i=0; i&lt;4; i++) {
+                
+                /* Get the coordinates 
+                of neighboring cell */
+                int newRow = row + delRow[i];
+                int newCol = col + delCol[i];
+                
+                // Check if the cell is valid
+                if(isValid(newRow, newCol, n, m)) {
+                    
+                    /* Get the current difference 
+                    in heights of cells */
+                    int currDiff = 
+                    abs(heights[newRow][newCol] - heights[row][col]);
+                    
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if(max(currDiff, diff) &lt; maxDiff[newRow][newCol]) {
+                        
+                        // Store the current difference
+                        maxDiff[newRow][newCol] = max(currDiff, diff);
+                        
+                        // Add the new pair found in the min-heap
+                        pq.push({max(currDiff, diff), {newRow, newCol}});
+                    }
+                }
+            }
+        }
+        
+        // Return -1
+        return -1;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    // HeapNode struct for clarity
+    private struct HeapNode
+    {
+        public int Diff;
+        public int Row;
+        public int Col;
+
+        public HeapNode(int diff, int row, int col)
+        {
+            Diff = diff;
+            Row = row;
+            Col = col;
+        }
+    }
+
+    // Min-Heap Class implementation
+    private class MinHeap
+    {
+        private List&lt;HeapNode&gt; heap;
+
+        public MinHeap()
+        {
+            this.heap = new List&lt;HeapNode&gt;();
+        }
+
+        // Insert a new value into the heap
+        public void Push(HeapNode val)
+        {
+            this.heap.Add(val);
+            this.BubbleUp();
+        }
+
+        // Remove and return the smallest value from the heap
+        public HeapNode Pop()
+        {
+            if (this.Size() == 1)
+            {
+                HeapNode last = this.heap[this.heap.Count - 1];
+                this.heap.RemoveAt(this.heap.Count - 1);
+                return last;
+            }
+            HeapNode min = this.heap[0];
+            this.heap[0] = this.heap[this.heap.Count - 1];
+            this.heap.RemoveAt(this.heap.Count - 1);
+            this.BubbleDown();
+            return min;
+        }
+
+        // Return the smallest value from the heap
+        public HeapNode Peek()
+        {
+            return this.heap[0];
+        }
+
+        // Return the number of elements in the heap
+        public int Size()
+        {
+            return this.heap.Count;
+        }
+
+        // Bubble up the newly added value to maintain heap property
+        private void BubbleUp()
+        {
+            int index = this.heap.Count - 1;
+            while (index &gt; 0)
+            {
+                int parentIndex = (index - 1) / 2;
+                if (this.heap[index].Diff &gt;= this.heap[parentIndex].Diff) break;
+                
+                // Swap
+                HeapNode temp = this.heap[index];
+                this.heap[index] = this.heap[parentIndex];
+                this.heap[parentIndex] = temp;
+                
+                index = parentIndex;
+            }
+        }
+
+        // Bubble down the top value to maintain heap property
+        private void BubbleDown()
+        {
+            int index = 0;
+            int length = this.heap.Count;
+            HeapNode element = this.heap[0];
+            while (true)
+            {
+                int leftChildIndex = 2 * index + 1;
+                int rightChildIndex = 2 * index + 2;
+                HeapNode leftChild = default(HeapNode);
+                HeapNode rightChild = default(HeapNode);
+                int? swapIndex = null;
+
+                if (leftChildIndex &lt; length)
+                {
+                    leftChild = this.heap[leftChildIndex];
+                    if (leftChild.Diff &lt; element.Diff)
+                    {
+                        swapIndex = leftChildIndex;
+                    }
+                }
+                if (rightChildIndex &lt; length)
+                {
+                    rightChild = this.heap[rightChildIndex];
+                    if (
+                        (swapIndex == null &amp;&amp; rightChild.Diff &lt; element.Diff) ||
+                        (swapIndex != null &amp;&amp; rightChild.Diff &lt; leftChild.Diff)
+                    )
+                    {
+                        swapIndex = rightChildIndex;
+                    }
+                }
+                if (swapIndex == null) break;
+                
+                // Swap
+                this.heap[index] = this.heap[swapIndex.Value];
+                this.heap[swapIndex.Value] = element;
+                index = swapIndex.Value;
+            }
+        }
+    }
+
+    // Delta row and column array
+    private int[] delRow = { -1, 0, 1, 0 };
+    private int[] delCol = { 0, -1, 0, 1 };
+
+    // Function to check if a cell is valid
+    private bool IsValid(int row, int col, int n, int m)
+    {
+        // Return false if the cell is invalid
+        if (row &lt; 0 || row &gt;= n) return false;
+        if (col &lt; 0 || col &gt;= m) return false;
+
+        // Return true if the cell is valid
+        return true;
+    }
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    public int MinimumEffort(int[][] heights) {
+        // Get the dimensions of grid
+        int n = heights.Length;
+        int m = heights[0].Length;
+
+        // To store maximum difference
+        int[][] maxDiff = new int[n][];
+        for (int i = 0; i &lt; n; i++)
+        {
+            maxDiff[i] = new int[m];
+            Array.Fill(maxDiff[i], int.MaxValue);
+        }
+
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        MinHeap pq = new MinHeap();
+
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+
+        // Push the starting cell to min-heap
+        pq.Push(new HeapNode(0, 0, 0));
+
+        // Until the min-heap is not empty
+        while (pq.Size() &gt; 0)
+        {
+            /* Get the cell with minimum 
+            difference (effort) */
+            HeapNode current = pq.Pop();
+            int diff = current.Diff;
+            int row = current.Row;
+            int col = current.Col;
+
+            /* If the destination cell is reached, 
+            return the difference */
+            if (row == n - 1 &amp;&amp; col == m - 1)
+                return diff;
+
+            // Traverse its neighbors
+            for (int i = 0; i &lt; 4; i++)
+            {
+                /* Get the coordinates 
+                of neighboring cell */
+                int newRow = row + this.delRow[i];
+                int newCol = col + this.delCol[i];
+
+                // Check if the cell is valid
+                if (this.IsValid(newRow, newCol, n, m))
+                {
+                    /* Get the current difference 
+                    in heights of cells */
+                    int currDiff =
+                    Math.Abs(heights[newRow][newCol] - heights[row][col]);
+
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if (Math.Max(currDiff, diff) &lt; 
+                        maxDiff[newRow][newCol])
+                    {
+                        // Store the current difference
+                        maxDiff[newRow][newCol] =
+                            Math.Max(currDiff, diff);
+
+                        // Add the new pair found in the min-heap
+                        pq.Push(
+                            new HeapNode(Math.Max(currDiff, diff),
+                                newRow, newCol)
+                            );
+                    }
+                }
+            }
+        }
+
+        // Return -1
+        return -1;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Delta row and column array to explore neighbors in 4 directions (up, left, down, right)
+var delRow = []int{-1, 0, 1, 0}
+var delCol = []int{0, -1, 0, 1}
+
+// Standalone helper function to check if a cell is valid (within grid bounds)
+func isValid(row, col, n, m int) bool {
+	// Return false if the cell is invalid (out of bounds)
+	if row &lt; 0 || row &gt;= n {
+		return false
+	}
+	if col &lt; 0 || col &gt;= m {
+		return false
+	}
+	// Return true if the cell is valid
+	return true
+}
+
+// Item represents a cell in the priority queue
+type Item struct {
+	diff int  // The &quot;effort&quot; or the difference in heights
+	row  int  // Row index of the cell
+	col  int  // Column index of the cell
+}
+
+// PriorityQueue implements heap.Interface for Items
+type PriorityQueue []*Item
+
+// Len function to get the length of the queue
+func (pq PriorityQueue) Len() int { return len(pq) }
+
+// Less function to compare two items in the queue (min-heap)
+func (pq PriorityQueue) Less(i, j int) bool {
+	return pq[i].diff &lt; pq[j].diff
+}
+
+// Swap function to swap two items in the queue
+func (pq PriorityQueue) Swap(i, j int) { pq[i], pq[j] = pq[j], pq[i] }
+
+// Push function to push a new item into the queue
+func (pq *PriorityQueue) Push(x interface{}) {
+	*pq = append(*pq, x.(*Item))
+}
+
+// Pop function to remove the top item from the queue
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[0 : n-1]
+	return item
+}
+
+// MinimumEffort determines minimum efforts to go from top-left to bottom-right
+func MinimumEffort(heights [][]int) int {
+	n := len(heights)
+	m := len(heights[0])
+
+	// To store the maximum difference (effort) needed to reach each cell
+	maxDiff := make([][]int, n)
+	for i := range maxDiff {
+		maxDiff[i] = make([]int, m)
+		// Initialize all distances to a large value (infinity)
+		for j := range maxDiff[i] {
+			maxDiff[i][j] = int(1e9)
+		}
+	}
+
+	// Priority queue to store cells with their effort (min-heap)
+	pq := &amp;PriorityQueue{}
+	heap.Init(pq)
+
+	// Set the distance (effort) of the starting cell to 0
+	maxDiff[0][0] = 0
+	heap.Push(pq, &amp;Item{diff: 0, row: 0, col: 0})
+
+	// Until the priority queue is empty, process each cell
+	for pq.Len() &gt; 0 {
+		// Get the cell with the smallest effort
+		curr := heap.Pop(pq).(*Item)
+		diff := curr.diff // Current effort (max of the differences encountered so far)
+		row := curr.row   // Current row
+		col := curr.col   // Current column
+
+		// If we reach the bottom-right corner, return the effort (this is the answer)
+		if row == n-1 &amp;&amp; col == m-1 {
+			return diff
+		}
+
+		// Explore the 4 possible neighbors (up, down, left, right)
+		for i := 0; i &lt; 4; i++ {
+			// Get the coordinates of the neighboring cell
+			newRow := row + delRow[i]
+			newCol := col + delCol[i]
+
+			// Check if the neighboring cell is valid
+			if isValid(newRow, newCol, n, m) {
+				// Calculate the difference in height between the current cell and the neighbor
+				currDiff := int(math.Abs(float64(heights[newRow][newCol] - heights[row][col])))
+				// The new effort will be the maximum of the current effort and the difference in height
+				maximum := int(math.Max(float64(currDiff), float64(diff)))
+
+				// If the new effort is smaller than the known effort, update it
+				if maximum &lt; maxDiff[newRow][newCol] {
+					maxDiff[newRow][newCol] = maximum
+					// Push the new cell with its updated effort into the priority queue
+					heap.Push(pq, &amp;Item{diff: maximum, row: newRow, col: newCol})
+				}
+			}
+		}
+	}
+
+	// Return -1 if there is no valid path (although this case should not occur in this problem)
+	return -1
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+
+    // Delta row and column array
+    int[] delRow = {-1, 0, 1, 0};
+    int[] delCol = {0, -1, 0, 1};
+
+    // Function to check if a cell is valid
+    boolean isValid(int row, int col, int n, int m) {
+        // Return false if the cell is invalid
+        if (row &lt; 0 || row &gt;= n) return false;
+        if (col &lt; 0 || col &gt;= m) return false;
+
+        // Return true if the cell is valid
+        return true;
+    }
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    public int MinimumEffort(List&lt;List&lt;Integer&gt;&gt; heights) {
+
+        // Get the dimensions of grid
+        int n = heights.size();
+        int m = heights.get(0).size();
+
+        // To store maximum difference
+        int[][] maxDiff = new int[n][m];
+        for (int[] row : maxDiff)
+            Arrays.fill(row, Integer.MAX_VALUE);
+
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        PriorityQueue&lt;int[]&gt; pq = new PriorityQueue&lt;&gt;(Comparator.comparingInt(a -&gt; a[0]));
+
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+
+        // Push the starting cell to min-heap
+        pq.add(new int[]{0, 0, 0});
+
+        // Until the min-heap is not empty
+        while (!pq.isEmpty()) {
+
+            /* Get the cell with minimum 
+            difference (effort) */
+            int[] p = pq.poll();
+
+            // Get the difference
+            int diff = p[0];
+
+            int row = p[1]; // Row
+            int col = p[2]; // Column
+
+            /* If the destination cell is reached, 
+            return the difference */
+            if (row == n - 1 &amp;&amp; col == m - 1)
+                return diff;
+
+            // Traverse its neighbors
+            for (int i = 0; i &lt; 4; i++) {
+
+                /* Get the coordinates 
+                of neighboring cell */
+                int newRow = row + delRow[i];
+                int newCol = col + delCol[i];
+
+                // Check if the cell is valid
+                if (isValid(newRow, newCol, n, m)) {
+
+                    /* Get the current difference 
+                    in heights of cells */
+                    int currDiff = Math.abs(heights.get(newRow).get(newCol) - heights.get(row).get(col));
+
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if (Math.max(currDiff, diff) &lt; maxDiff[newRow][newCol]) {
+
+                        // Store the current difference
+                        maxDiff[newRow][newCol] = Math.max(currDiff, diff);
+
+                        // Add the new pair found in the min-heap
+                        pq.add(new int[]{Math.max(currDiff, diff), newRow, newCol});
+                    }
+                }
+            }
+        }
+
+        // Return -1
+        return -1;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class MinHeap {
+    constructor() {
+        this.heap = [];
+    }
+
+    // Insert a new value into the heap
+    push(val) {
+        this.heap.push(val);
+        this.bubbleUp();
+    }
+
+    // Remove and return the smallest value from the heap
+    pop() {
+        if (this.size() === 1) return this.heap.pop();
+        const min = this.heap[0];
+        this.heap[0] = this.heap.pop();
+        this.bubbleDown();
+        return min;
+    }
+
+    // Return the smallest value from the heap
+    peek() {
+        return this.heap[0];
+    }
+
+    // Return the number of elements in the heap
+    size() {
+        return this.heap.length;
+    }
+
+    // Bubble up the newly added value to maintain heap property
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        while (index &gt; 0) {
+            const parentIndex = Math.floor((index - 1) / 2);
+            if (this.heap[index][0] &gt;= this.heap[parentIndex][0]) break;
+            [this.heap[index], this.heap[parentIndex]] = [this.heap[parentIndex], this.heap[index]];
+            index = parentIndex;
+        }
+    }
+
+    // Bubble down the top value to maintain heap property
+    bubbleDown() {
+        let index = 0;
+        const length = this.heap.length;
+        const element = this.heap[0];
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let leftChild, rightChild;
+            let swapIndex = null;
+
+            if (leftChildIndex &lt; length) {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild[0] &lt; element[0]) {
+                    swapIndex = leftChildIndex;
+                }
+            }
+            if (rightChildIndex &lt; length) {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swapIndex === null &amp;&amp; rightChild[0] &lt; element[0]) ||
+                    (swapIndex !== null &amp;&amp; rightChild[0] &lt; leftChild[0])
+                ) {
+                    swapIndex = rightChildIndex;
+                }
+            }
+            if (swapIndex === null) break;
+            this.heap[index] = this.heap[swapIndex];
+            this.heap[swapIndex] = element;
+            index = swapIndex;
+        }
+    }
+}
+
+class Solution {
+    constructor() {
+        // Delta row and column array
+        this.delRow = [-1, 0, 1, 0];
+        this.delCol = [0, -1, 0, 1];
+    }
+
+    // Function to check if a cell is valid
+    isValid(row, col, n, m) {
+        // Return false if the cell is invalid
+        if (row &lt; 0 || row &gt;= n) return false;
+        if (col &lt; 0 || col &gt;= m) return false;
+
+        // Return true if the cell is valid
+        return true;
+    }
+
+    /* Function to determine minimum efforts 
+    to go from top-left to bottom-right */
+    MinimumEffort(heights) {
+        // Get the dimensions of grid
+        const n = heights.length;
+        const m = heights[0].length;
+
+        // To store maximum difference
+        const maxDiff = Array.from(
+            { length: n }, 
+            () =&gt; Array(m).fill(Infinity)
+        );
+
+        /* Min-Heap storing the pair: 
+        {diff, {row of cell, column of cell}} */
+        const pq = new MinHeap();
+
+        // Mark the initial position as 0
+        maxDiff[0][0] = 0;
+
+        // Push the starting cell to min-heap
+        pq.push([0, 0, 0]);
+
+        // Until the min-heap is not empty
+        while (pq.size() &gt; 0) {
+            /* Get the cell with minimum 
+            difference (effort) */
+            const [diff, row, col] = pq.pop();
+
+            /* If the destination cell is reached, 
+            return the difference */
+            if (row === n - 1 &amp;&amp; col === m - 1)
+                return diff;
+
+            // Traverse its neighbors
+            for (let i = 0; i &lt; 4; i++) {
+                /* Get the coordinates 
+                of neighboring cell */
+                const newRow = row + this.delRow[i];
+                const newCol = col + this.delCol[i];
+
+                // Check if the cell is valid
+                if (this.isValid(newRow, newCol, n, m)) {
+                    /* Get the current difference 
+                    in heights of cells */
+                    const currDiff = 
+                    Math.abs(heights[newRow][newCol] - heights[row][col]);
+
+                    /* Check if the current difference is 
+                    less than earlier known difference */
+                    if (Math.max(currDiff, diff) &lt; 
+                        maxDiff[newRow][newCol]) {
+                        // Store the current difference
+                        maxDiff[newRow][newCol] = 
+                            Math.max(currDiff, diff);
+
+                        // Add the new pair found in the min-heap
+                        pq.push(
+                            [Math.max(currDiff, diff), 
+                                newRow, newCol]
+                            );
+                    }
+                }
+            }
+        }
+
+        // Return -1
+        return -1;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Delta row and column array
+    delRow = [-1, 0, 1, 0]
+    delCol = [0, -1, 0, 1]
+
+    # Function to check if a cell is valid
+    def isValid(self, row, col, n, m):
+        # Return false if the cell is invalid
+        if row &lt; 0 or row &gt;= n: return False
+        if col &lt; 0 or col &gt;= m: return False
+        
+        # Return true if the cell is valid
+        return True
+
+    # Function to determine minimum efforts 
+    # to go from top-left to bottom-right
+    def MinimumEffort(self, heights):
+        
+        # Get the dimensions of grid
+        n = len(heights)
+        m = len(heights[0])
+
+        # To store maximum difference
+        maxDiff = [[float(&#x27;inf&#x27;)] * m for _ in range(n)]
+        
+        # Min-Heap storing the pair: 
+        # {diff, {row of cell, column of cell}}
+        pq = []
+        
+        # Mark the initial position as 0
+        maxDiff[0][0] = 0
+        
+        # Push the starting cell to min-heap
+        heapq.heappush(pq, (0, 0, 0))
+
+        # Until the min-heap is not empty
+        while pq:
+            
+            # Get the cell with minimum 
+            # difference (effort)
+            diff, row, col = heapq.heappop(pq)
+            
+            # If the destination cell is reached, 
+            # return the difference
+            if row == n-1 and col == m-1: 
+                return diff
+            
+            # Traverse its neighbors
+            for i in range(4):
+                
+                # Get the coordinates 
+                # of neighboring cell
+                newRow = row + self.delRow[i]
+                newCol = col + self.delCol[i]
+                
+                # Check if the cell is valid
+                if self.isValid(newRow, newCol, n, m):
+                    
+                    # Get the current difference 
+                    # in heights of cells
+                    currDiff = abs(heights[newRow][newCol] - 
+                                   heights[row][col])
+                    
+                    # Check if the current difference is 
+                    # less than earlier known difference
+                    if (max(currDiff, diff) &lt; 
+                        maxDiff[newRow][newCol]):
+                        
+                        # Store the current difference
+                        maxDiff[newRow][newCol] = max(currDiff, diff)
+                        
+                        # Add the new pair found in the min-heap
+                        heapq.heappush(pq, (max(currDiff, diff), newRow, newCol))
+        
+        # Return -1
+        return -1</code></pre></div>
+</body>
+</html>

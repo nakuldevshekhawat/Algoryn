@@ -1,0 +1,3108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word ladder II</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Word ladder II</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Backtracking</span><span>Breadth-First Search</span><span>Hash Table</span><span>String</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two distinct words startWord and targetWord, and a list denoting wordList of unique words of equal lengths. Find all <strong>shortest transformation sequence(s)</strong> from startWord to targetWord. You can return them in any order possible.</p><p><br></p><p>In this problem statement, we need to keep the following conditions in mind:</p><p><br></p><p>A word can only consist of lowercase characters.</p><p>Only one letter can be changed in each transformation.</p><p>Each transformed word must exist in the wordList including the targetWord.</p><p>startWord may or may not be part of the wordList.</p><p>Return an empty list if there is no such transformation sequence.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>N= Number of Words</li><li>M= Length of Word</li><li>1 ≤ N ≤ 100</li><li>1 ≤ M ≤ 10</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> startWord = "der", targetWord = "dfs", wordList = ["des", "der", "dfr", "dgt", "dfs"]</p><p><br></p><p><strong>Output:</strong> [ [ “der”, “dfr”, “dfs” ], [ “der”, “des”, “dfs”] ]</p><p><br></p><p><strong>Explanation:</strong> The length of the smallest transformation sequence here is 3.</p><p>Following are the only two shortest ways to get to the targetWord from the startWord :</p><p>"der" -> ( replace ‘r’ by ‘s’ ) -> "des" -> ( replace ‘e’ by ‘f’ ) -> "dfs".</p><p>"der" -> ( replace ‘e’ by ‘f’ ) -> "dfr" -> ( replace ‘r’ by ‘s’ ) -> "dfs".</p><h3>Example 2</h3><p><strong>Input:</strong> startWord = "gedk", targetWord= "geek", wordList = ["geek", "gefk"]</p><p><br></p><p><strong>Output:</strong> [ [ “gedk”, “geek” ] ]</p><p><br></p><p><strong>Explanation: </strong>The length of the smallest transformation sequence here is 2.</p><p>Following is the only shortest way to get to the targetWord from the startWord :</p><p>"gedk" -> ( replace ‘d’ by ‘e’ ) -> "geek".</p><h3>Example 3</h3><p><strong>Input:</strong> startWord = "abc", targetWord = "xyz", wordList = ["abc", "ayc", "ayz", "xyz"]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This type of problem is central in applications such as machine translation, autocorrect algorithms, or even text-based games. The ability to transform one word into another by changing letters, while still producing valid words, forms the foundation of such systems. The concept is known as Levenshtein distance or Edit distance in computer science, which measures the minimum number of operations (transformations) required to change one word into another. It is a popular algorithm in Natural Language Processing and Computational Linguistics.</p></div>
+<div class="section"><h2>Editorial: Word Ladder (Part 1)</h2><html><head></head><body><p><strong>Pre Requisite: </strong><a href="/plus/dsa/problems/word-ladder-i?category=graph&subcategory=hard-problems" target="_blank">Word Ladder I</a></p>
+
+<h3>Intuition:</h3> 
+<p>
+    In this problem, all the possible transformations from the <strong>startWord</strong> to <strong>endWord</strong> must be found. Hence, in contrary to the previous problem, we do not stop the traversal on the first occurrence of <strong>endWord</strong>,but rather continue it for as many occurrences of the word as possible as we need <u>all</u> the shortest possible sequences in order to reach the end word.
+
+    </p><h6>Modification:</h6>
+    In the previous solution, whenever a word was matched from the given <strong>wordList</strong>, it was immediately erased from the Hashmap to avoid visiting it via a longer path. But since, here all the possible transformations must be returned, erasing it from the Hashmap might lose some of the possible transformations leading through it. <br><br>
+    Thus, instead of erasing the word immediately when it is found, the erase/delete operation can be performed after the traversal for all the words for a particular level is completed allowing exploration of all the paths.
+
+    <h6>Understanding:</h6>
+    In order to form the different sequences for transformations in a particular level, the concept of <strong>Backtracking</strong> can be used.
+    <ul>
+        <li>After adding the new word to a sequence, it is immediately removed (backtracked) to restore the sequence to its original state after the sequence is added to the queue.</li>
+        <li>This backtracking step ensures that the original sequence can be used to try other possible transformations at the current level of the BFS.</li>
+    </ul>
+<p></p>
+ 
+<h3>Approach:</h3>
+<ol>
+   <li>Use a queue for breadth-first search (BFS) to handle sequences of word transformations. Add all words from the word list to a set for quick lookup. Start with the initial word and add it to the queue.</li>
+   <li>Perform BFS level by level. For each word in the current level:
+    <ul>
+        <li>Check if it matches the target word and add the sequence to the results. Generate all possible single-letter transformations.</li>
+        <li>If a transformed word exists in the set, add it to the current sequence and push the sequence into the queue for further exploration.</li>
+        <li>Mark words to be removed after the current level to prevent revisiting.</li>
+    </ul>
+
+   </li>
+   <li>After adding a transformed word to the sequence, immediately remove it to restore the sequence for the next transformation.</li>
+   <li>Remove words marked during the level traversal from the set to prevent revisiting. Exit early if any sequences reaching the target word are found.</li>
+   <li>Return the list of resulting sequences.</li>
+</ol>
+
+
+ <h4> Dry Run: </h4>
+<img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder II/-Cmbn7So-"> 
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    
+    /* Function to determine number of steps
+    to reach from start ward to target word */
+    vector<vector<string>> findSequences(string beginWord, string endWord,
+                                         vector<string> &wordList) {
+        // To store the answer
+        vector<vector<string>> ans;
+        
+        /* Queue data structure to store 
+        the sequence of transformations */
+        queue <vector<string>> q;
+        
+        // Add all the words to a hashset
+        unordered_set<string> st(wordList.begin(), 
+                                 wordList.end());
+        
+        // Add the sequence containing starting word to queue
+        q.push({beginWord});
+        
+        // Erase starting word from set if it exists
+        st.erase(beginWord);
+        
+        /* Set to store the words that must be deleted 
+        after traversal of a level is complete */
+        unordered_set <string> toErase;
+        
+        // Until the queue is empty
+        while(!q.empty()) {
+            
+            // Size of queue
+            int size = q.size();
+            
+            // Traversing all words in current level
+            for(int i=0; i<size; i++) {
+                
+                // Sequence 
+                vector<string> seq = q.front();
+                
+                // Last added word in sequence
+                string word = seq.back();
+                q.pop();
+                
+                // If the Last word same as end word
+                if(word == endWord) {
+                    // Add the sequence to the answer
+                    if(ans.empty()) {
+                        ans.push_back(seq);
+                    }
+                    else if(ans.back().size() == seq.size()) {
+                        ans.push_back(seq);
+                    }
+                }
+                
+                // Iterate on every character
+                for(int pos = 0; pos < word.length(); pos++){
+                    
+                    // Original letter
+                    char original = word[pos];
+                    
+                    /* Replacing current character with
+                    letters from 'a' to 'z' to match 
+                    any possible word from set */
+                    for(char ch = 'a'; ch <= 'z'; ch++) {
+                        word[pos] = ch;
+                        
+                        // Check if it exists in the set
+                        if(st.find(word) != st.end()) {
+                            // Update the sequence
+                            seq.push_back(word);
+                            
+                            // Push in the queue
+                            q.push(seq); 
+                            
+                            // Add the word to erase map
+                            toErase.insert(word);
+                            
+                            // Backtracking step
+                            seq.pop_back();
+                        }
+                    }
+                    
+                    // Update the original letter back
+                    word[pos] = original;
+                }
+            }
+            
+            /* Erase all the words in set after
+            traversal of a level is completed */
+            for(auto it : toErase) st.erase(it);
+            toErase.clear();
+            
+            // If answer is found, break
+            if(!ans.empty()) break;
+        }
+        
+        // Return the result found
+        return ans;
+    }
+};
+
+int main() {
+    
+    string beginWord = "der", endWord = "dfs";
+    vector<string> wordList = 
+        {"des","der","dfr","dgt","dfs"};
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine number of 
+    steps to reach from start ward to target word */
+    vector<vector<string>> ans = 
+        sol.findSequences(beginWord, endWord, wordList);
+    
+    // Output
+    cout << "The different sequences are:\n";
+    for(int i=0; i < ans.size(); i++) {
+        for(int j=0; j < ans[i].size(); j++) {
+            cout << ans[i][j] << " ";
+        }
+        cout << endl;
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Function to determine number of steps
+    to reach from start word to target word */
+    public List<List<String>> findSequences(String beginWord, String endWord,
+                                            List<String> wordList) {
+        // To store the answer
+        List<List<String>> ans = new ArrayList<>();
+        
+        // Queue data structure to store 
+        // the sequence of transformations
+        Queue<List<String>> q = new LinkedList<>();
+        
+        // Add all the words to a hashset
+        Set<String> st = new HashSet<>(wordList);
+        
+        // Add the sequence containing starting word to queue
+        q.add(new ArrayList<>(Arrays.asList(beginWord)));
+        
+        // Erase starting word from set if it exists
+        st.remove(beginWord);
+        
+        // Set to store the words that must be deleted 
+        // after traversal of a level is complete
+        Set<String> toErase = new HashSet<>();
+        
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+            
+            // Size of queue
+            int size = q.size();
+            
+            // Traversing all words in current level
+            for (int i = 0; i < size; i++) {
+                
+                // Sequence 
+                List<String> seq = q.poll();
+                
+                // Last added word in sequence
+                String word = seq.get(seq.size() - 1);
+                
+                // If the last word same as end word
+                if (word.equals(endWord)) {
+                    // Add the sequence to the answer
+                    if (ans.isEmpty()) {
+                        ans.add(new ArrayList<>(seq));
+                    }
+                    else if (ans.get(ans.size() - 1).size() == 
+                             seq.size()) {
+                        ans.add(new ArrayList<>(seq));
+                    }
+                }
+                
+                // Iterate on every character
+                for (int pos = 0; pos < word.length(); pos++) {
+                    
+                    // Original letter
+                    char original = word.charAt(pos);
+                    
+                    // Replacing current character with
+                    // letters from 'a' to 'z' to match 
+                    // any possible word from set
+                    for (char ch = 'a'; ch <= 'z'; ch++) {
+                        char[] wordArray = word.toCharArray();
+                        wordArray[pos] = ch;
+                        String newWord = new String(wordArray);
+                        
+                        // Check if it exists in the set
+                        if (st.contains(newWord)) {
+                            // Update the sequence
+                            seq.add(newWord);
+                            
+                            // Push in the queue
+                            q.add(new ArrayList<>(seq));
+                            
+                            // Add the word to erase map
+                            toErase.add(newWord);
+                            
+                            // Backtracking step
+                            seq.remove(seq.size() - 1);
+                        }
+                    }
+                    
+                    // Update the original letter back
+                    String beforePos = word.substring(0, pos);
+                    String afterPos = word.substring(pos + 1);
+                    word = beforePos + original + afterPos;
+                }
+            }
+            
+            // Erase all the words in set after
+            // traversal of a level is completed
+            for (String it : toErase) st.remove(it);
+            toErase.clear();
+            
+            // If answer is found, break
+            if (!ans.isEmpty()) break;
+        }
+        
+        // Return the result found
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        String beginWord = "der", endWord = "dfs";
+        List<String> wordList = new ArrayList<>(Arrays.asList("des", "der", "dfr", "dgt", "dfs"));
+        
+        // Creating an instance of 
+        // Solution class
+        Solution sol = new Solution();
+        
+        // Function call to determine number of 
+        // steps to reach from start word to target word
+        List<List<String>> ans = sol.findSequences(beginWord, endWord, wordList);
+        
+        // Output
+        System.out.println("The different sequences are:");
+        for (List<String> sequence : ans) {
+            for (String word : sequence) {
+                System.out.print(word + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+class Solution:
+    
+    # Function to determine number of steps
+    # to reach from start word to target word
+    def findSequences(self, beginWord, endWord, wordList):
+        # To store the answer
+        ans = []
+        
+        # Queue data structure to store 
+        # the sequence of transformations
+        q = deque()
+        
+        # Add all the words to a hashset
+        st = set(wordList)
+        
+        # Add the sequence containing starting word to queue
+        q.append([beginWord])
+        
+        # Erase starting word from set if it exists
+        st.discard(beginWord)
+        
+        # Set to store the words that must be deleted 
+        # after traversal of a level is complete
+        toErase = set()
+        
+        # Until the queue is empty
+        while q:
+            
+            # Size of queue
+            size = len(q)
+            
+            # Traversing all words in current level
+            for _ in range(size):
+                
+                # Sequence 
+                seq = q.popleft()
+                
+                # Last added word in sequence
+                word = seq[-1]
+                
+                # If the last word same as end word
+                if word == endWord:
+                    # Add the sequence to the answer
+                    if not ans:
+                        ans.append(seq)
+                    elif len(ans[-1]) == len(seq):
+                        ans.append(seq)
+                
+                # Iterate on every character
+                for pos in range(len(word)):
+                    
+                    # Original letter
+                    original = word[pos]
+                    
+                    # Replacing current character with
+                    # letters from 'a' to 'z' to match 
+                    # any possible word from set
+                    for ch in 'abcdefghijklmnopqrstuvwxyz':
+                        word = word[:pos] + ch + word[pos + 1:]
+                        
+                        # Check if it exists in the set
+                        if word in st:
+                            # Update the sequence
+                            seq.append(word)
+                            
+                            # Push in the queue
+                            q.append(list(seq))
+                            
+                            # Add the word to erase map
+                            toErase.add(word)
+                            
+                            # Backtracking step
+                            seq.pop()
+                    
+                    # Update the original letter back
+                    word = word[:pos] + original + word[pos + 1:]
+            
+            # Erase all the words in set after
+            # traversal of a level is completed
+            for it in toErase:
+                st.discard(it)
+            toErase.clear()
+            
+            # If answer is found, break
+            if ans:
+                break
+        
+        # Return the result found
+        return ans
+
+if __name__ == "__main__":
+    
+    beginWord = "der"
+    endWord = "dfs"
+    wordList = ["des", "der", "dfr", "dgt", "dfs"]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to determine number of 
+    # steps to reach from start word to target word
+    ans = sol.findSequences(beginWord, endWord, wordList)
+    
+    # Output
+    print("The different sequences are:")
+    for sequence in ans:
+        print(" ".join(sequence))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    
+    /* Function to determine number of steps
+    to reach from start word to target word */
+    findSequences(beginWord, endWord, wordList) {
+        // To store the answer
+        const ans = [];
+        
+        // Queue data structure to store 
+        // the sequence of transformations
+        const q = [];
+        
+        // Add all the words to a hashset
+        const st = new Set(wordList);
+        
+        // Add the sequence containing starting word to queue
+        q.push([beginWord]);
+        
+        // Erase starting word from set if it exists
+        st.delete(beginWord);
+        
+        // Set to store the words that must be deleted 
+        // after traversal of a level is complete
+        const toErase = new Set();
+        
+        // Until the queue is empty
+        while (q.length > 0) {
+            
+            // Size of queue
+            const size = q.length;
+            
+            // Traversing all words in current level
+            for (let i = 0; i < size; i++) {
+                
+                // Sequence 
+                const seq = q.shift();
+                
+                // Last added word in sequence
+                let word = seq[seq.length - 1];
+                
+                // If the last word same as end word
+                if (word === endWord) {
+                    // Add the sequence to the answer
+                    if (ans.length === 0) {
+                        ans.push([...seq]);
+                    }
+                    else if (ans[ans.length - 1].length === 
+                             seq.length) {
+                        ans.push([...seq]);
+                    }
+                }
+                
+                // Iterate on every character
+                for (let pos = 0; pos < word.length; pos++) {
+                    
+                    // Original letter
+                    const original = word[pos];
+                    
+                    // Replacing current character with
+                    // letters from 'a' to 'z' to match 
+                    // any possible word from set
+                    for (let ch = 97; ch <= 122; ch++) {
+                        word = word.slice(0, pos) + 
+                               String.fromCharCode(ch) + 
+                               word.slice(pos + 1);
+                        
+                        // Check if it exists in the set
+                        if (st.has(word)) {
+                            // Update the sequence
+                            seq.push(word);
+                            
+                            // Push in the queue
+                            q.push([...seq]);
+                            
+                            // Add the word to erase map
+                            toErase.add(word);
+                            
+                            // Backtracking step
+                            seq.pop();
+                        }
+                    }
+                    
+                    // Update the original letter back
+                    word = word.slice(0, pos) + 
+                           original + 
+                           word.slice(pos + 1);
+                }
+            }
+            
+            // Erase all the words in set after
+            // traversal of a level is completed
+            for (const it of toErase) st.delete(it);
+            toErase.clear();
+            
+            // If answer is found, break
+            if (ans.length > 0) break;
+        }
+        
+        // Return the result found
+        return ans;
+    }
+}
+
+const main = () => {
+    
+    const beginWord = "der";
+    const endWord = "dfs";
+    const wordList = ["des", "der", "dfr", "dgt", "dfs"];
+    
+    // Creating an instance of 
+    // Solution class
+    const sol = new Solution();
+    
+    // Function call to determine number of 
+    // steps to reach from start word to target word
+    const ans = sol.findSequences(beginWord, endWord, wordList);
+    
+    // Output
+    console.log("The different sequences are:");
+    for (const sequence of ans) {
+        console.log(sequence.join(" "));
+    }
+};
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+    public class Solution
+    {
+        /* Function to determine number of steps
+        to reach from start word to target word */
+        public IList<IList<string>> FindSequences(string beginWord, string endWord, IList<string> wordList)
+        {
+            // To store the answer
+            IList<IList<string>> ans = new List<IList<string>>();
+
+            // Queue data structure to store 
+            // the sequence of transformations
+            Queue<List<string>> q = new Queue<List<string>>();
+
+            // Add all the words to a hashset
+            HashSet<string> st = new HashSet<string>(wordList);
+
+            // Add the sequence containing starting word to queue
+            q.Enqueue(new List<string> { beginWord });
+
+            // Erase starting word from set if it exists
+            st.Remove(beginWord);
+
+            // Set to store the words that must be deleted 
+            // after traversal of a level is complete
+            HashSet<string> toErase = new HashSet<string>();
+
+            // Until the queue is empty
+            while (q.Count > 0)
+            {
+                // Size of queue
+                int size = q.Count;
+
+                // Traversing all words in current level
+                for (int i = 0; i < size; i++)
+                {
+                    // Sequence 
+                    List<string> seq = q.Dequeue();
+
+                    // Last added word in sequence
+                    string word = seq[seq.Count - 1];
+
+                    // If the last word same as end word
+                    if (word == endWord)
+                    {
+                        // Add the sequence to the answer
+                        if (ans.Count == 0)
+                        {
+                            ans.Add(new List<string>(seq));
+                        }
+                        else if (ans[ans.Count - 1].Count == seq.Count)
+                        {
+                            ans.Add(new List<string>(seq));
+                        }
+                    }
+
+                    // Iterate on every character
+                    for (int pos = 0; pos < word.Length; pos++)
+                    {
+                        // Original letter
+                        char original = word[pos];
+                        char[] charArray = word.ToCharArray();
+
+                        // Replacing current character with
+                        // letters from 'a' to 'z' to match 
+                        // any possible word from set
+                        for (char ch = 'a'; ch <= 'z'; ch++)
+                        {
+                            charArray[pos] = ch;
+                            string newWord = new string(charArray);
+
+                            // Check if it exists in the set
+                            if (st.Contains(newWord))
+                            {
+                                // Update the sequence
+                                seq.Add(newWord);
+
+                                // Push in the queue
+                                q.Enqueue(new List<string>(seq));
+
+                                // Add the word to erase map
+                                toErase.Add(newWord);
+
+                                // Backtracking step
+                                seq.RemoveAt(seq.Count - 1);
+                            }
+                        }
+
+                        // Update the original letter back
+                        charArray[pos] = original;
+                        word = new string(charArray);
+                    }
+                }
+
+                // Erase all the words in set after
+                // traversal of a level is completed
+                foreach (string it in toErase)
+                {
+                    st.Remove(it);
+                }
+                toErase.Clear();
+
+                // If answer is found, break
+                if (ans.Count > 0) break;
+            }
+
+            // Return the result found
+            return ans;
+        }
+    }
+
+    public static void Main(string[] args)
+    {
+        string beginWord = "der";
+        string endWord = "dfs";
+        List<string> wordList = new List<string> { "des", "der", "dfr", "dgt", "dfs" };
+
+        // Creating an instance of 
+        // Solution class
+        Solution sol = new Solution();
+
+        // Function call to determine number of 
+        // steps to reach from start word to target word
+        IList<IList<string>> ans = sol.FindSequences(beginWord, endWord, wordList);
+
+        // Output
+        Console.WriteLine("The different sequences are:");
+        foreach (var sequence in ans)
+        {
+            Console.WriteLine(string.Join(" ", sequence));
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Function to determine number of steps to reach from start ward to target word
+func findSequences(beginWord string, endWord string, wordList []string) [][]string {
+	// To store the answer
+	var ans [][]string
+
+	// Queue data structure to store the sequence of transformations
+	q := make([][]string, 0)
+
+	// Add all the words to a hashset
+	st := make(map[string]bool)
+	for _, word := range wordList {
+		st[word] = true
+	}
+
+	// Add the sequence containing starting word to queue
+	q = append(q, []string{beginWord})
+
+	// Erase starting word from set if it exists
+	delete(st, beginWord)
+
+	// Set to store the words that must be deleted after traversal of a level is complete
+	toErase := make(map[string]bool)
+
+	// Until the queue is empty
+	for len(q) > 0 {
+		// Size of queue
+		size := len(q)
+
+		// Traversing all words in current level
+		for i := 0; i < size; i++ {
+			// Sequence
+			seq := q[0]
+			q = q[1:]
+
+			// Last added word in sequence
+			word := seq[len(seq)-1]
+
+			// If the Last word same as end word
+			if word == endWord {
+				// Add the sequence to the answer
+				if len(ans) == 0 {
+					ans = append(ans, seq)
+				} else if len(ans[len(ans)-1]) == len(seq) {
+					ans = append(ans, seq)
+				}
+			}
+
+			// Iterate on every character
+			for pos := 0; pos < len(word); pos++ {
+				// Original letter
+				original := word[pos]
+
+				// Replacing current character with letters from 'a' to 'z' to match any possible word from set
+				for ch := 'a'; ch <= 'z'; ch++ {
+					word = word[:pos] + string(ch) + word[pos+1:]
+
+					// Check if it exists in the set
+					if _, found := st[word]; found {
+						// Create a fresh copy of the sequence and add the new word to it
+						newSeq := append([]string(nil), seq...)
+						newSeq = append(newSeq, word)
+
+						// Push the new sequence in the queue
+						q = append(q, newSeq)
+
+						// Add the word to erase map
+						toErase[word] = true
+					}
+				}
+
+				// Update the original letter back
+				word = word[:pos] + string(original) + word[pos+1:]
+			}
+		}
+
+		// Erase all the words in set after traversal of a level is completed
+		for it := range toErase {
+			delete(st, it)
+		}
+		toErase = make(map[string]bool)
+
+		// If answer is found, break
+		if len(ans) > 0 {
+			break
+		}
+	}
+
+	// Return the result found
+	return ans
+}
+
+func main() {
+	beginWord := "der"
+	endWord := "dfs"
+	wordList := []string{"des", "der", "dfr", "dgt", "dfs"}
+
+	// Function call to determine number of steps to reach from start ward to target word
+	ans := findSequences(beginWord, endWord, wordList)
+
+	// Output the result
+	fmt.Println("The different sequences are:")
+	for _, seq := range ans {
+		for _, word := range seq {
+			fmt.Print(word, " ")
+		}
+		fmt.Println()
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N*M*26)</strong><br>
+    </p><ul>
+        <li>In the worst case, the steps required to reach from <strong>startWord</strong> to <strong>targetWord</strong> can go up to N. During each step, all the characters for the word are replaced from 'a' to 'z' taking O(M*26) time.</li>
+        <li>Adding all the words in <strong>wordList</strong> takes O(N) time.</li>
+        <li>
+            Each word is enqueued and dequeued at most once, leading to O(N) queue operations.
+        </li>
+        <li>Checking if a word exists in the set and removing a word from the set takes O(1) on average. If there are N words, there are O(N) set operations.</li>
+    </ul>
+    <strong>Note:</strong>
+    If an ordered set is used in place of an unordered set then there will be a logN factor adding to the time complexity, since delete and update operations take O(logN) time for the ordered set.
+<p></p>
+
+<p><strong>Space Complexity: O(N*M)</strong> <br>
+A HashSet is used to store words in <strong>wordList</strong> taking O(N) space. In the worst case, the queue will store all possible sequences leading to a space requirement of O(N*M). Storing the result in a list will take O(N*M) space.</p></body></html></div>
+<div class="section"><h2>Editorial: Word Ladder (Part 2)</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    A more efficient way to find all the shortest possible transformations from the <strong>Start Word</strong> to <strong>End Word</strong> is by using a combination of BFS traversal for level-order traversal and DFS for <strong>backtracking</strong>.
+
+    </p><h6>Understanding:</h6>
+    <ul>
+        <li><strong>Breadth-First Search (BFS):</strong> BFS is used to find the shortest path from <strong>beginWord</strong> to <strong>endWord</strong>. BFS explores all words level by level, ensuring that the shortest path is found first. The re-processing of nodes can be avoided by using a map to track the shortest distance to each word.</li>
+        <li><strong>Depth-First Search (DFS):</strong> After the BFS completes, DFS can be used to backtrack from endWord to beginWord. DFS helps to reconstruct all the shortest paths found by BFS.</li>
+    </ul>
+
+    This approach avoids redundant transformations and unnecessary path explorations by combining BFS and DFS. BFS ensures that the shortest paths are discovered first, while DFS backtracks efficiently to generate all valid sequences.
+<p></p>
+
+<h3>Edge Cases:</h3>
+<p>
+    If it not possible to reach the target word from the start word, the Backtracking step can be skipped and an empty list can be returned as the answer.
+</p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Create a set containing all words from the provided word list and a queue to facilitate BFS traversal. Additionally, use a map to keep track of the minimum steps needed to reach each word from the start word.</li>
+   <li>Start from the initial word and perform BFS. For each word, explore all possible transformations by changing each character to every letter from 'a' to 'z'.</li>
+   <li>If a transformed word is found in the word list set, it is added to the queue and the map with incremented steps. The word is then removed from the set to prevent revisiting.</li>
+   <li>After BFS completes, check if the target word is present in the map. If not, return an empty list as there is no transformation sequence.</li>
+   <li>If the target word is found, use DFS to backtrack from the target word to the start word. The DFS reconstructs all shortest transformation sequences by following the steps stored in the map.</li>
+   <li>Store the valid sequences found by DFS in a result list and return it.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder II/w1.drawio (1).png-7hdLsClj" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder II/w2.drawio.png-YdrKZIPq" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder II/w3.drawio.png-CINn6ap4" alt="Image 3"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder II/w1.drawio (1).png-7hdLsClj" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder II/w2.drawio.png-YdrKZIPq" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Word ladder II/w3.drawio.png-CINn6ap4" alt="Image 3"></div></div>
+<h3> Solution: </h3>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    /* Function call to add the shortest 
+    transformation using backtracking */
+    void dfs(string word, string &beginWord, vector<string> &seq,
+             unordered_map <string,int> &mpp, vector<vector<string>> &ans) {
+        
+        // If the sequence is complete
+        if(word == beginWord) {
+            
+            // Reverse the sequence
+            reverse(seq.begin(), seq.end());
+            
+            // Store in the result
+            ans.push_back(seq);
+            
+            // Reverse again for other possible sequences
+            reverse(seq.begin(), seq.end());
+            
+            // Return
+            return;
+        }
+        
+        // Steps to reach the word
+        int val = mpp[word];
+        
+        // Try all possible transformations
+        for(int i=0; i < word.length(); i++) {
+            char original = word[i];
+            
+            for(char ch = 'a'; ch <= 'z'; ch++) {
+                word[i] = ch;
+                
+                // If a possible transformations is found
+                if(mpp.find(word) != mpp.end() && 
+                   mpp[word] + 1 == val) {
+                       
+                    // Update the sequence
+                    seq.push_back(word);
+                    
+                    // Make recursive DFS call
+                    dfs(word, beginWord, seq, mpp, ans);
+                    
+                    // Pop back for backtracking
+                    seq.pop_back();
+                }
+            }
+            word[i] = original;
+        }
+    }
+
+public:
+
+    /* Function to determine number of steps
+    to reach from start ward to target word */
+    vector<vector<string>> findSequences(string beginWord, string endWord, 
+                                         vector<string>& wordList) {
+ 
+        // Length of words
+        int len = beginWord.length();
+        
+        // Add all the words to a hashset
+        unordered_set <string> st(wordList.begin(), 
+                                  wordList.end());
+                                  
+        /* Hash map to store the minimum 
+        steps needed to reach a word */
+        unordered_map <string,int> mpp;
+        
+        // Queue for BFS traversal
+        queue <string> q;
+        
+        // Pushing intial word in the queue
+        q.push(beginWord);
+        
+        /* Erasing the initial word from 
+        the set if it exists */
+        st.erase(beginWord);
+        
+        // Step count
+        int steps = 1;
+        
+        // Storing the intial pair in map
+        mpp[beginWord] = steps;
+        
+        // Until the queue is empty
+        while(!q.empty()) {
+            
+            // Get the word and steps
+            string word = q.front();
+            steps = mpp[word];
+            q.pop();
+
+            // Check for every possible transformation
+            for(int i = 0; i < len; i++) {
+                char original = word[i];
+                
+                for(char ch = 'a'; ch <= 'z'; ch++) {
+                    word[i] = ch;
+                    
+                    // If a possible transformation is found
+                    if(st.find(word) != st.end()) {
+                        
+                        // Store it in map
+                        mpp[word] = steps+1;
+                        
+                        // Push in the queue
+                        q.push(word);
+                        
+                        // Erase word from list
+                        st.erase(word);
+                    }
+                }
+                word[i] = original;
+            }
+        }
+
+        /* Return an empty list if reaching the 
+        target word is not possible */
+        if(mpp.find(endWord) == mpp.end()) 
+            return {};
+
+        // To store the answer
+        vector<vector<string>> ans;
+        
+        // To store the possible sequence of transformations
+        vector <string> seq = {endWord};
+        
+        // Backtracking step
+        dfs(endWord, beginWord, seq, mpp, ans);
+        
+        // Return the computed result
+        return ans;
+
+    }
+};
+
+int main() {
+    
+    string beginWord = "der", endWord = "dfs";
+    vector<string> wordList = 
+        {"des","der","dfr","dgt","dfs"};
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine number of 
+    steps to reach from start ward to target word */
+    vector<vector<string>> ans = 
+        sol.findSequences(beginWord, endWord, wordList);
+    
+    // Output
+    cout << "The different sequences are:\n";
+    for(int i=0; i < ans.size(); i++) {
+        for(int j=0; j < ans[i].size(); j++) {
+            cout << ans[i][j] << " ";
+        }
+        cout << endl;
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private void dfs(String word, String beginWord, List<String> seq, 
+                     Map<String, Integer> mpp, List<List<String>> ans) {
+        
+        // If the sequence is complete
+        if (word.equals(beginWord)) {
+            
+            // Reverse the sequence
+            Collections.reverse(seq);
+            
+            // Store in the result
+            ans.add(new ArrayList<>(seq));
+            
+            // Reverse again for other possible sequences
+            Collections.reverse(seq);
+            
+            // Return
+            return;
+        }
+        
+        // Steps to reach the word
+        int val = mpp.get(word);
+        
+        // Try all possible transformations
+        for (int i = 0; i < word.length(); i++) {
+            char original = word.charAt(i);
+            StringBuilder sb = new StringBuilder(word);
+            
+            for (char ch = 'a'; ch <= 'z'; ch++) {
+                sb.setCharAt(i, ch);
+                String newWord = sb.toString();
+                
+                // If a possible transformation is found
+                if (mpp.containsKey(newWord) && 
+                    mpp.get(newWord) + 1 == val) {
+                    
+                    // Update the sequence
+                    seq.add(newWord);
+                    
+                    // Make recursive DFS call
+                    dfs(newWord, beginWord, seq, mpp, ans);
+                    
+                    // Pop back for backtracking
+                    seq.remove(seq.size() - 1);
+                }
+            }
+        }
+    }
+
+    public List<List<String>> findSequences(String beginWord, String endWord, 
+                                            List<String> wordList) {
+        
+        // Length of words
+        int len = beginWord.length();
+        
+        // Add all the words to a hashset
+        Set<String> st = new HashSet<>(wordList);
+                                  
+        /* Hash map to store the minimum 
+        steps needed to reach a word */
+        Map<String, Integer> mpp = new HashMap<>();
+        
+        // Queue for BFS traversal
+        Queue<String> q = new LinkedList<>();
+        
+        // Pushing initial word in the queue
+        q.add(beginWord);
+        
+        // Erasing the initial word from the set if it exists
+        st.remove(beginWord);
+        
+        // Step count
+        int steps = 1;
+        
+        // Storing the initial pair in map
+        mpp.put(beginWord, steps);
+        
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+            
+            // Get the word and steps
+            String word = q.poll();
+            steps = mpp.get(word);
+
+            // Check for every possible transformation
+            for (int i = 0; i < len; i++) {
+                char original = word.charAt(i);
+                StringBuilder sb = new StringBuilder(word);
+                
+                for (char ch = 'a'; ch <= 'z'; ch++) {
+                    sb.setCharAt(i, ch);
+                    String newWord = sb.toString();
+                    
+                    // If a possible transformation is found
+                    if (st.contains(newWord)) {
+                        
+                        // Store it in map
+                        mpp.put(newWord, steps + 1);
+                        
+                        // Push in the queue
+                        q.add(newWord);
+                        
+                        // Erase word from list
+                        st.remove(newWord);
+                    }
+                }
+            }
+        }
+
+        /* Return an empty list if reaching 
+        the target word is not possible */
+        if (!mpp.containsKey(endWord))
+            return new ArrayList<>();
+        
+        // To store the answer
+        List<List<String>> ans = new ArrayList<>();
+        
+        // To store the possible sequence of transformations
+        List<String> seq = new ArrayList<>();
+        seq.add(endWord);
+        
+        // Backtracking step
+        dfs(endWord, beginWord, seq, mpp, ans);
+        
+        // Return the computed result
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        String beginWord = "der", endWord = "dfs";
+        List<String> wordList = Arrays.asList(
+            "des", "der", "dfr", "dgt", "dfs"
+        );
+        
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+        
+        /* Function call to determine number of 
+        steps to reach from start ward to target word */
+        List<List<String>> ans = 
+            sol.findSequences(beginWord, endWord, wordList);
+        
+        // Output
+        System.out.println("The different sequences are:");
+        for (List<String> seq : ans) {
+            for (String word : seq) {
+                System.out.print(word + " ");
+            }
+            System.out.println();
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+class Solution:
+    
+    def dfs(self, word, beginWord, seq, mpp, ans):
+        # If the sequence is complete
+        if word == beginWord:
+            
+            # Reverse the sequence
+            seq.reverse()
+            
+            # Store in the result
+            ans.append(list(seq))
+            
+            # Reverse again for other possible sequences
+            seq.reverse()
+            
+            # Return
+            return
+        
+        # Steps to reach the word
+        val = mpp[word]
+        
+        # Try all possible transformations
+        for i in range(len(word)):
+            original = word[i]
+            
+            for ch in range(ord('a'), ord('z') + 1):
+                transformed_word = word[:i] + chr(ch) + word[i + 1:]
+                
+                # If a possible transformation is found
+                if (transformed_word in mpp and 
+                    mpp[transformed_word] + 1 == val):
+                    
+                    # Update the sequence
+                    seq.append(transformed_word)
+                    
+                    # Make recursive DFS call
+                    self.dfs(transformed_word, beginWord, seq, mpp, ans)
+                    
+                    # Pop back for backtracking
+                    seq.pop()
+            
+            # Restore original word
+            word = word[:i] + original + word[i + 1:]
+
+    def findSequences(self, beginWord, endWord, wordList):
+        
+        # Length of words
+        len_word = len(beginWord)
+        
+        # Add all the words to a hashset
+        st = set(wordList)
+                                  
+        # Hash map to store the minimum steps needed to reach a word
+        mpp = {}
+        
+        # Queue for BFS traversal
+        q = deque([beginWord])
+        
+        # Erasing the initial word from the set if it exists
+        if beginWord in st:
+            st.remove(beginWord)
+        
+        # Step count
+        steps = 1
+        
+        # Storing the initial pair in map
+        mpp[beginWord] = steps
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the word and steps
+            word = q.popleft()
+            steps = mpp[word]
+
+            # Check for every possible transformation
+            for i in range(len_word):
+                original = word[i]
+                
+                for ch in range(ord('a'), ord('z') + 1):
+                    transformed_word = word[:i] + chr(ch) + word[i + 1:]
+                    
+                    # If a possible transformation is found
+                    if transformed_word in st:
+                        
+                        # Store it in map
+                        mpp[transformed_word] = steps + 1
+                        
+                        # Push in the queue
+                        q.append(transformed_word)
+                        
+                        # Erase word from list
+                        st.remove(transformed_word)
+                
+                # Restore original word
+                word = word[:i] + original + word[i + 1:]
+
+        # Return an empty list if reaching 
+        # the target word is not possible
+        if endWord not in mpp:
+            return []
+        
+        # To store the answer
+        ans = []
+        
+        # To store the possible sequence of transformations
+        seq = [endWord]
+        
+        # Backtracking step
+        self.dfs(endWord, beginWord, seq, mpp, ans)
+        
+        # Return the computed result
+        return ans
+
+if __name__ == "__main__":
+    beginWord = "der"
+    endWord = "dfs"
+    wordList = ["des", "der", "dfr", "dgt", "dfs"]
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to determine number of steps 
+    # to reach from start word to target word
+    ans = sol.findSequences(beginWord, endWord, wordList)
+    
+    # Output
+    print("The different sequences are:")
+    for seq in ans:
+        print(" ".join(seq))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function call to add the shortest 
+    transformation using backtracking */
+    dfs(word, beginWord, seq, mpp, ans) {
+        
+        // If the sequence is complete
+        if (word === beginWord) {
+            
+            // Reverse the sequence
+            seq.reverse();
+            
+            // Store in the result
+            ans.push([...seq]);
+            
+            // Reverse again for other possible sequences
+            seq.reverse();
+            
+            // Return
+            return;
+        }
+        
+        // Steps to reach the word
+        const val = mpp.get(word);
+        
+        // Try all possible transformations
+        for (let i = 0; i < word.length; i++) {
+            const original = word[i];
+            
+            for (let chCode = 'a'.charCodeAt(0); 
+                 chCode <= 'z'.charCodeAt(0); 
+                 chCode++) {
+                     
+                const ch = String.fromCharCode(chCode);
+                const transformed_word = word.substring(0, i) + ch + 
+                                         word.substring(i + 1);
+                
+                // If a possible transformation is found
+                if (mpp.has(transformed_word) && 
+                    mpp.get(transformed_word) + 1 === val) {
+                    
+                    // Update the sequence
+                    seq.push(transformed_word);
+                    
+                    // Make recursive DFS call
+                    this.dfs(transformed_word, beginWord, seq, mpp, ans);
+                    
+                    // Pop back for backtracking
+                    seq.pop();
+                }
+            }
+            
+            word = word.substring(0, i) + original + word.substring(i + 1);
+        }
+    }
+
+    /* Function to determine number of steps 
+    to reach from start word to target word */
+    findSequences(beginWord, endWord, wordList) {
+        
+        // Length of words
+        const len = beginWord.length;
+        
+        // Add all the words to a hashset
+        const st = new Set(wordList);
+                                  
+        // Hash map to store the minimum steps needed to reach a word
+        const mpp = new Map();
+        
+        // Queue for BFS traversal
+        const q = [];
+        
+        // Pushing initial word in the queue
+        q.push(beginWord);
+        
+        // Erasing the initial word from the set if it exists
+        st.delete(beginWord);
+        
+        // Step count
+        let steps = 1;
+        
+        // Storing the initial pair in map
+        mpp.set(beginWord, steps);
+        
+        // Until the queue is empty
+        while (q.length) {
+            
+            // Get the word and steps
+            let word = q.shift();
+            steps = mpp.get(word);
+
+            // Check for every possible transformation
+            for (let i = 0; i < len; i++) {
+                const original = word[i];
+                
+                for (let chCode = 'a'.charCodeAt(0); 
+                     chCode <= 'z'.charCodeAt(0); 
+                     chCode++) {
+                         
+                    const ch = String.fromCharCode(chCode);
+                    const transformed_word = word.substring(0, i) + 
+                                             ch + 
+                                             word.substring(i + 1);
+                    
+                    // If a possible transformation is found
+                    if (st.has(transformed_word)) {
+                        
+                        // Store it in map
+                        mpp.set(transformed_word, steps + 1);
+                        
+                        // Push in the queue
+                        q.push(transformed_word);
+                        
+                        // Erase word from list
+                        st.delete(transformed_word);
+                    }
+                }
+                
+                word = word.substring(0, i) + original + 
+                       word.substring(i + 1);
+            }
+        }
+
+        /* Return an empty list if reaching the 
+        target word is not possible */
+        if (!mpp.has(endWord)) 
+            return [];
+        
+        // To store the answer
+        const ans = [];
+        
+        // To store the possible sequence of transformations
+        const seq = [endWord];
+        
+        // Backtracking step
+        this.dfs(endWord, beginWord, seq, mpp, ans);
+        
+        // Return the computed result
+        return ans;
+    }
+}
+
+// Main function to test the Solution class
+(function main() {
+    const beginWord = "der", endWord = "dfs";
+    const wordList = ["des", "der", "dfr", "dgt", "dfs"];
+    
+    // Creating an instance of Solution class
+    const sol = new Solution();
+    
+    /* Function call to determine number of steps 
+    to reach from start word to target word */
+    const ans = sol.findSequences(beginWord, endWord, wordList);
+    
+    // Output
+    console.log("The different sequences are:");
+    ans.forEach(seq => {
+        console.log(seq.join(" "));
+    });
+})();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution {
+    /* Function call to add the shortest 
+    transformation using backtracking */
+    private void Dfs(string word, string beginWord, List<string> seq, Dictionary<string, int> mpp, List<IList<string>> ans) {
+        
+        // If the sequence is complete
+        if (word == beginWord) {
+            
+            // Reverse the sequence
+            seq.Reverse();
+            
+            // Store in the result
+            ans.Add(new List<string>(seq));
+            
+            // Reverse again for other possible sequences
+            seq.Reverse();
+            
+            // Return
+            return;
+        }
+        
+        // Steps to reach the word
+        int val = mpp[word];
+        
+        // Try all possible transformations
+        char[] charArray = word.ToCharArray(); // Create a mutable copy for modifications
+        for (int i = 0; i < word.Length; i++) {
+            char originalChar = charArray[i]; // Store original char
+            
+            for (char ch = 'a'; ch <= 'z'; ch++) {
+                     
+                charArray[i] = ch; // Modify char array
+                string transformedWord = new string(charArray); // Create new string from modified array
+                
+                // If a possible transformation is found
+                if (mpp.ContainsKey(transformedWord) && 
+                    mpp[transformedWord] + 1 == val) {
+                    
+                    // Update the sequence
+                    seq.Add(transformedWord);
+                    
+                    // Make recursive DFS call
+                    Dfs(transformedWord, beginWord, seq, mpp, ans);
+                    
+                    // Pop back for backtracking
+                    seq.RemoveAt(seq.Count - 1);
+                }
+            }
+            
+            charArray[i] = originalChar; // Restore char array for next iteration of outer loop
+        }
+    }
+
+    /* Function to determine number of steps 
+    to reach from start word to target word */
+    public IList<IList<string>> FindSequences(string beginWord, string endWord, IList<string> wordList) {
+        
+        // Length of words
+        int len = beginWord.Length;
+        
+        // Add all the words to a hashset
+        HashSet<string> st = new HashSet<string>(wordList);
+                                  
+        // Hash map to store the minimum steps needed to reach a word
+        Dictionary<string, int> mpp = new Dictionary<string, int>();
+        
+        // Queue for BFS traversal
+        Queue<string> q = new Queue<string>();
+        
+        // Pushing initial word in the queue
+        q.Enqueue(beginWord);
+        
+        // Erasing the initial word from the set if it exists
+        st.Remove(beginWord);
+        
+        // Step count
+        int steps = 1;
+        
+        // Storing the initial pair in map
+        mpp[beginWord] = steps;
+        
+        // Until the queue is empty
+        while (q.Count > 0) {
+            
+            // Get the word and steps
+            string word = q.Dequeue();
+            steps = mpp[word];
+
+            // Check for every possible transformation
+            char[] charArray = word.ToCharArray(); // Create a mutable copy for modifications
+            for (int i = 0; i < len; i++) {
+                char originalChar = charArray[i]; // Store original char
+                
+                for (char ch = 'a'; ch <= 'z'; ch++) {
+                         
+                    charArray[i] = ch; // Modify char array
+                    string transformedWord = new string(charArray); // Create new string from modified array
+                    
+                    // If a possible transformation is found
+                    if (st.Contains(transformedWord)) {
+                        
+                        // Store it in map
+                        mpp[transformedWord] = steps + 1;
+                        
+                        // Push in the queue
+                        q.Enqueue(transformedWord);
+                        
+                        // Erase word from list
+                        st.Remove(transformedWord);
+                    }
+                }
+                
+                charArray[i] = originalChar; // Restore char array for next iteration of outer loop
+            }
+        }
+
+        /* Return an empty list if reaching the 
+        target word is not possible */
+        if (!mpp.ContainsKey(endWord)) 
+            return new List<IList<string>>();
+        
+        // To store the answer
+        List<IList<string>> ans = new List<IList<string>>();
+        
+        // To store the possible sequence of transformations
+        List<string> seq = new List<string> { endWord };
+        
+        // Backtracking step
+        Dfs(endWord, beginWord, seq, mpp, ans);
+        
+        // Return the computed result
+        return ans;
+    }
+}
+
+// Main function to test the Solution class
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        string beginWord = "der", endWord = "dfs";
+        List<string> wordList = new List<string> { "des", "der", "dfr", "dgt", "dfs" };
+        
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+        
+        /* Function call to determine number of steps 
+        to reach from start word to target word */
+        IList<IList<string>> ans = sol.FindSequences(beginWord, endWord, wordList);
+        
+        // Output
+        Console.WriteLine("The different sequences are:");
+        foreach (var seq in ans) {
+            Console.WriteLine(string.Join(" ", seq));
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function: DFS to build transformation sequences
+func dfs(word, beginWord string, seq []string, mpp map[string]int, ans *[][]string) {
+	// If the sequence is complete
+	if word == beginWord {
+		// Reverse the sequence
+		reversed := make([]string, len(seq))
+		for i := 0; i < len(seq); i++ {
+			reversed[i] = seq[len(seq)-1-i]
+		}
+
+		// Store in the result
+		*ans = append(*ans, reversed)
+		return
+	}
+
+	val := mpp[word]
+	wordBytes := []rune(word)
+
+	// Try all possible transformations
+	for i := 0; i < len(wordBytes); i++ {
+		original := wordBytes[i]
+		for ch := 'a'; ch <= 'z'; ch++ {
+			wordBytes[i] = ch
+			newWord := string(wordBytes)
+
+			if mpp[newWord] == val-1 {
+				seq = append(seq, newWord)
+				dfs(newWord, beginWord, seq, mpp, ans)
+				seq = seq[:len(seq)-1]
+			}
+		}
+		wordBytes[i] = original
+	}
+}
+
+// Main function to find all shortest sequences
+func findSequences(beginWord string, endWord string, wordList []string) [][]string {
+	// Length of words
+	length := len(beginWord)
+
+	// Add all the words to a hashset
+	st := make(map[string]bool)
+	for _, word := range wordList {
+		st[word] = true
+	}
+
+	// Hash map to store the minimum steps needed to reach a word
+	mpp := make(map[string]int)
+
+	// Queue for BFS traversal
+	queue := []string{beginWord}
+
+	// Erase the initial word from the set
+	delete(st, beginWord)
+
+	// Step count
+	steps := 1
+	mpp[beginWord] = steps
+
+	// Until the queue is empty
+	for len(queue) > 0 {
+		word := queue[0]
+		queue = queue[1:]
+		steps = mpp[word]
+
+		wordBytes := []rune(word)
+
+		// Check for every possible transformation
+		for i := 0; i < length; i++ {
+			original := wordBytes[i]
+			for ch := 'a'; ch <= 'z'; ch++ {
+				wordBytes[i] = ch
+				newWord := string(wordBytes)
+
+				if st[newWord] {
+					queue = append(queue, newWord)
+					delete(st, newWord)
+					mpp[newWord] = steps + 1
+				}
+			}
+			wordBytes[i] = original
+		}
+	}
+
+	// Return empty if target not reachable
+	if _, ok := mpp[endWord]; !ok {
+		return [][]string{}
+	}
+
+	// Backtracking step
+	var ans [][]string
+	seq := []string{endWord}
+	dfs(endWord, beginWord, seq, mpp, &ans)
+
+	return ans
+}
+
+// Driver code
+func main() {
+	beginWord := "der"
+	endWord := "dfs"
+	wordList := []string{"des", "der", "dfr", "dgt", "dfs"}
+
+	ans := findSequences(beginWord, endWord, wordList)
+
+	fmt.Println("The different sequences are:")
+	for _, seq := range ans {
+		for _, word := range seq {
+			fmt.Printf("%s ", word)
+		}
+		fmt.Println()
+	}
+}
+</code></pre></div></div></div>
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(N*M)</strong> 
+    </p><ul>
+        <li>Creating a set from the word list takes O(N).</li>
+        <li>The queue can contain up to N words in the worst case. For each word, all possible M character positions are changed to 26 different letters taking overall O(N*M*26) time.</li>
+        <li>In the worst case, the DFS might explore all possible sequences from the target word back to the start word.</li>
+    </ul>
+   
+<p></p>
+
+<p><strong>Space Complexity: O(N<sup>2</sup>*M)</strong> <br>
+   The set and map will store all the words each having M length taking O(N*M) space. The queue space will also be O(N*M) in the worst case. In the worst case, the result list will store all possible transformations ( which is N in the worst case) making the space requirement of O(N<sup>2</sup>*M)
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    
+    /* Function to determine number of steps
+    to reach from start ward to target word */
+    vector&lt;vector&lt;string&gt;&gt; findSequences(string beginWord, string endWord,
+                                         vector&lt;string&gt; &amp;wordList) {
+        // To store the answer
+        vector&lt;vector&lt;string&gt;&gt; ans;
+        
+        /* Queue data structure to store 
+        the sequence of transformations */
+        queue &lt;vector&lt;string&gt;&gt; q;
+        
+        // Add all the words to a hashset
+        unordered_set&lt;string&gt; st(wordList.begin(), 
+                                 wordList.end());
+        
+        // Add the sequence containing starting word to queue
+        q.push({beginWord});
+        
+        // Erase starting word from set if it exists
+        st.erase(beginWord);
+        
+        /* Set to store the words that must be deleted 
+        after traversal of a level is complete */
+        unordered_set &lt;string&gt; toErase;
+        
+        // Until the queue is empty
+        while(!q.empty()) {
+            
+            // Size of queue
+            int size = q.size();
+            
+            // Traversing all words in current level
+            for(int i=0; i&lt;size; i++) {
+                
+                // Sequence 
+                vector&lt;string&gt; seq = q.front();
+                
+                // Last added word in sequence
+                string word = seq.back();
+                q.pop();
+                
+                // If the Last word same as end word
+                if(word == endWord) {
+                    // Add the sequence to the answer
+                    if(ans.empty()) {
+                        ans.push_back(seq);
+                    }
+                    else if(ans.back().size() == seq.size()) {
+                        ans.push_back(seq);
+                    }
+                }
+                
+                // Iterate on every character
+                for(int pos = 0; pos &lt; word.length(); pos++){
+                    
+                    // Original letter
+                    char original = word[pos];
+                    
+                    /* Replacing current character with
+                    letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                    any possible word from set */
+                    for(char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                        word[pos] = ch;
+                        
+                        // Check if it exists in the set
+                        if(st.find(word) != st.end()) {
+                            // Update the sequence
+                            seq.push_back(word);
+                            
+                            // Push in the queue
+                            q.push(seq); 
+                            
+                            // Add the word to erase map
+                            toErase.insert(word);
+                            
+                            // Backtracking step
+                            seq.pop_back();
+                        }
+                    }
+                    
+                    // Update the original letter back
+                    word[pos] = original;
+                }
+            }
+            
+            /* Erase all the words in set after
+            traversal of a level is completed */
+            for(auto it : toErase) st.erase(it);
+            toErase.clear();
+            
+            // If answer is found, break
+            if(!ans.empty()) break;
+        }
+        
+        // Return the result found
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution{
+    public IList&lt;IList&lt;string&gt;&gt; FindSequences(string beginWord, string endWord, IList&lt;string&gt; wordList)
+    {
+        // To store the answer
+        IList&lt;IList&lt;string&gt;&gt; ans = new List&lt;IList&lt;string&gt;&gt;();
+
+        // Queue data structure to store 
+        // the sequence of transformations
+        Queue&lt;List&lt;string&gt;&gt; q = new Queue&lt;List&lt;string&gt;&gt;();
+
+        // Add all the words to a hashset
+        HashSet&lt;string&gt; st = new HashSet&lt;string&gt;(wordList);
+
+        // Add the sequence containing starting word to queue
+        q.Enqueue(new List&lt;string&gt; { beginWord });
+
+        // Erase starting word from set if it exists
+        st.Remove(beginWord);
+
+        // Set to store the words that must be deleted 
+        // after traversal of a level is complete
+        HashSet&lt;string&gt; toErase = new HashSet&lt;string&gt;();
+
+        // Until the queue is empty
+        while (q.Count &gt; 0)
+        {
+            // Size of queue
+            int size = q.Count;
+
+            // Traversing all words in current level
+            for (int i = 0; i &lt; size; i++)
+            {
+                // Sequence 
+                List&lt;string&gt; seq = q.Dequeue();
+
+                // Last added word in sequence
+                string word = seq[seq.Count - 1];
+
+                // If the last word same as end word
+                if (word == endWord)
+                {
+                    // Add the sequence to the answer
+                    if (ans.Count == 0)
+                    {
+                        ans.Add(new List&lt;string&gt;(seq));
+                    }
+                    else if (ans[ans.Count - 1].Count == seq.Count)
+                    {
+                        ans.Add(new List&lt;string&gt;(seq));
+                    }
+                }
+
+                // Iterate on every character
+                for (int pos = 0; pos &lt; word.Length; pos++)
+                {
+                    // Original letter
+                    char original = word[pos];
+                    char[] charArray = word.ToCharArray();
+
+                    // Replacing current character with
+                    // letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                    // any possible word from set
+                    for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++)
+                    {
+                        charArray[pos] = ch;
+                        string newWord = new string(charArray);
+
+                        // Check if it exists in the set
+                        if (st.Contains(newWord))
+                        {
+                            // Update the sequence
+                            seq.Add(newWord);
+
+                            // Push in the queue
+                            q.Enqueue(new List&lt;string&gt;(seq));
+
+                            // Add the word to erase map
+                            toErase.Add(newWord);
+
+                            // Backtracking step
+                            seq.RemoveAt(seq.Count - 1);
+                        }
+                    }
+
+                    // Update the original letter back
+                    charArray[pos] = original;
+                    word = new string(charArray);
+                }
+            }
+
+            // Erase all the words in set after
+            // traversal of a level is completed
+            foreach (string it in toErase)
+            {
+                st.Remove(it);
+            }
+            toErase.Clear();
+
+            // If answer is found, break
+            if (ans.Count &gt; 0) break;
+        }
+
+        // Return the result found
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to determine number of steps to reach from start ward to target word
+func findSequences(beginWord string, endWord string, wordList []string) [][]string {
+	// To store the answer
+	var ans [][]string
+
+	// Queue data structure to store the sequence of transformations
+	q := make([][]string, 0)
+
+	// Add all the words to a hashset
+	st := make(map[string]bool)
+	for _, word := range wordList {
+		st[word] = true
+	}
+
+	// Add the sequence containing starting word to queue
+	q = append(q, []string{beginWord})
+
+	// Erase starting word from set if it exists
+	delete(st, beginWord)
+
+	// Set to store the words that must be deleted after traversal of a level is complete
+	toErase := make(map[string]bool)
+
+	// Until the queue is empty
+	for len(q) &gt; 0 {
+		// Size of queue
+		size := len(q)
+
+		// Traversing all words in current level
+		for i := 0; i &lt; size; i++ {
+			// Sequence
+			seq := q[0]
+			q = q[1:]
+
+			// Last added word in sequence
+			word := seq[len(seq)-1]
+
+			// If the Last word same as end word
+			if word == endWord {
+				// Add the sequence to the answer
+				if len(ans) == 0 {
+					ans = append(ans, seq)
+				} else if len(ans[len(ans)-1]) == len(seq) {
+					ans = append(ans, seq)
+				}
+			}
+
+			// Iterate on every character
+			for pos := 0; pos &lt; len(word); pos++ {
+				// Original letter
+				original := word[pos]
+
+				// Replacing current character with letters from &#x27;a&#x27; to &#x27;z&#x27; to match any possible word from set
+				for ch := &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++ {
+					word = word[:pos] + string(ch) + word[pos+1:]
+
+					// Check if it exists in the set
+					if _, found := st[word]; found {
+						// Create a fresh copy of the sequence and add the new word to it
+						newSeq := append([]string(nil), seq...)
+						newSeq = append(newSeq, word)
+
+						// Push the new sequence in the queue
+						q = append(q, newSeq)
+
+						// Add the word to erase map
+						toErase[word] = true
+					}
+				}
+
+				// Update the original letter back
+				word = word[:pos] + string(original) + word[pos+1:]
+			}
+		}
+
+		// Erase all the words in set after traversal of a level is completed
+		for it := range toErase {
+			delete(st, it)
+		}
+		toErase = make(map[string]bool)
+
+		// If answer is found, break
+		if len(ans) &gt; 0 {
+			break
+		}
+	}
+
+	// Return the result found
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    
+    /* Function to determine number of steps
+    to reach from start word to target word */
+    public List&lt;List&lt;String&gt;&gt; findSequences(String beginWord, String endWord,
+                                            List&lt;String&gt; wordList) {
+        // To store the answer
+        List&lt;List&lt;String&gt;&gt; ans = new ArrayList&lt;&gt;();
+        
+        // Queue data structure to store 
+        // the sequence of transformations
+        Queue&lt;List&lt;String&gt;&gt; q = new LinkedList&lt;&gt;();
+        
+        // Add all the words to a hashset
+        Set&lt;String&gt; st = new HashSet&lt;&gt;(wordList);
+        
+        // Add the sequence containing starting word to queue
+        q.add(new ArrayList&lt;&gt;(Arrays.asList(beginWord)));
+        
+        // Erase starting word from set if it exists
+        st.remove(beginWord);
+        
+        // Set to store the words that must be deleted 
+        // after traversal of a level is complete
+        Set&lt;String&gt; toErase = new HashSet&lt;&gt;();
+        
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+            
+            // Size of queue
+            int size = q.size();
+            
+            // Traversing all words in current level
+            for (int i = 0; i &lt; size; i++) {
+                
+                // Sequence 
+                List&lt;String&gt; seq = q.poll();
+                
+                // Last added word in sequence
+                String word = seq.get(seq.size() - 1);
+                
+                // If the last word same as end word
+                if (word.equals(endWord)) {
+                    // Add the sequence to the answer
+                    if (ans.isEmpty()) {
+                        ans.add(new ArrayList&lt;&gt;(seq));
+                    }
+                    else if (ans.get(ans.size() - 1).size() == 
+                             seq.size()) {
+                        ans.add(new ArrayList&lt;&gt;(seq));
+                    }
+                }
+                
+                // Iterate on every character
+                for (int pos = 0; pos &lt; word.length(); pos++) {
+                    
+                    // Original letter
+                    char original = word.charAt(pos);
+                    
+                    // Replacing current character with
+                    // letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                    // any possible word from set
+                    for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                        char[] wordArray = word.toCharArray();
+                        wordArray[pos] = ch;
+                        String newWord = new String(wordArray);
+                        
+                        // Check if it exists in the set
+                        if (st.contains(newWord)) {
+                            // Update the sequence
+                            seq.add(newWord);
+                            
+                            // Push in the queue
+                            q.add(new ArrayList&lt;&gt;(seq));
+                            
+                            // Add the word to erase map
+                            toErase.add(newWord);
+                            
+                            // Backtracking step
+                            seq.remove(seq.size() - 1);
+                        }
+                    }
+                    
+                    // Update the original letter back
+                    String beforePos = word.substring(0, pos);
+                    String afterPos = word.substring(pos + 1);
+                    word = beforePos + original + afterPos;
+                }
+            }
+            
+            // Erase all the words in set after
+            // traversal of a level is completed
+            for (String it : toErase) st.remove(it);
+            toErase.clear();
+            
+            // If answer is found, break
+            if (!ans.isEmpty()) break;
+        }
+        
+        // Return the result found
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to determine number of steps
+    to reach from start word to target word */
+    findSequences(beginWord, endWord, wordList) {
+        // To store the answer
+        const ans = [];
+        
+        // Queue data structure to store 
+        // the sequence of transformations
+        const q = [];
+        
+        // Add all the words to a hashset
+        const st = new Set(wordList);
+        
+        // Add the sequence containing starting word to queue
+        q.push([beginWord]);
+        
+        // Erase starting word from set if it exists
+        st.delete(beginWord);
+        
+        // Set to store the words that must be deleted 
+        // after traversal of a level is complete
+        const toErase = new Set();
+        
+        // Until the queue is empty
+        while (q.length &gt; 0) {
+            
+            // Size of queue
+            const size = q.length;
+            
+            // Traversing all words in current level
+            for (let i = 0; i &lt; size; i++) {
+                
+                // Sequence 
+                const seq = q.shift();
+                
+                // Last added word in sequence
+                let word = seq[seq.length - 1];
+                
+                // If the last word same as end word
+                if (word === endWord) {
+                    // Add the sequence to the answer
+                    if (ans.length === 0) {
+                        ans.push([...seq]);
+                    }
+                    else if (ans[ans.length - 1].length === 
+                             seq.length) {
+                        ans.push([...seq]);
+                    }
+                }
+                
+                // Iterate on every character
+                for (let pos = 0; pos &lt; word.length; pos++) {
+                    
+                    // Original letter
+                    const original = word[pos];
+                    
+                    // Replacing current character with
+                    // letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                    // any possible word from set
+                    for (let ch = 97; ch &lt;= 122; ch++) {
+                        word = word.slice(0, pos) + 
+                               String.fromCharCode(ch) + 
+                               word.slice(pos + 1);
+                        
+                        // Check if it exists in the set
+                        if (st.has(word)) {
+                            // Update the sequence
+                            seq.push(word);
+                            
+                            // Push in the queue
+                            q.push([...seq]);
+                            
+                            // Add the word to erase map
+                            toErase.add(word);
+                            
+                            // Backtracking step
+                            seq.pop();
+                        }
+                    }
+                    
+                    // Update the original letter back
+                    word = word.slice(0, pos) + 
+                           original + 
+                           word.slice(pos + 1);
+                }
+            }
+            
+            // Erase all the words in set after
+            // traversal of a level is completed
+            for (const it of toErase) st.delete(it);
+            toErase.clear();
+            
+            // If answer is found, break
+            if (ans.length &gt; 0) break;
+        }
+        
+        // Return the result found
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>from collections import deque
+class Solution:
+    
+    # Function to determine number of steps
+    # to reach from start word to target word
+    def findSequences(self, beginWord, endWord, wordList):
+        # To store the answer
+        ans = []
+        
+        # Queue data structure to store 
+        # the sequence of transformations
+        q = deque()
+        
+        # Add all the words to a hashset
+        st = set(wordList)
+        
+        # Add the sequence containing starting word to queue
+        q.append([beginWord])
+        
+        # Erase starting word from set if it exists
+        st.discard(beginWord)
+        
+        # Set to store the words that must be deleted 
+        # after traversal of a level is complete
+        toErase = set()
+        
+        # Until the queue is empty
+        while q:
+            
+            # Size of queue
+            size = len(q)
+            
+            # Traversing all words in current level
+            for _ in range(size):
+                
+                # Sequence 
+                seq = q.popleft()
+                
+                # Last added word in sequence
+                word = seq[-1]
+                
+                # If the last word same as end word
+                if word == endWord:
+                    # Add the sequence to the answer
+                    if not ans:
+                        ans.append(seq)
+                    elif len(ans[-1]) == len(seq):
+                        ans.append(seq)
+                
+                # Iterate on every character
+                for pos in range(len(word)):
+                    
+                    # Original letter
+                    original = word[pos]
+                    
+                    # Replacing current character with
+                    # letters from &#x27;a&#x27; to &#x27;z&#x27; to match 
+                    # any possible word from set
+                    for ch in &#x27;abcdefghijklmnopqrstuvwxyz&#x27;:
+                        word = word[:pos] + ch + word[pos + 1:]
+                        
+                        # Check if it exists in the set
+                        if word in st:
+                            # Update the sequence
+                            seq.append(word)
+                            
+                            # Push in the queue
+                            q.append(list(seq))
+                            
+                            # Add the word to erase map
+                            toErase.add(word)
+                            
+                            # Backtracking step
+                            seq.pop()
+                    
+                    # Update the original letter back
+                    word = word[:pos] + original + word[pos + 1:]
+            
+            # Erase all the words in set after
+            # traversal of a level is completed
+            for it in toErase:
+                st.discard(it)
+            toErase.clear()
+            
+            # If answer is found, break
+            if ans:
+                break
+        
+        # Return the result found
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    /* Function call to add the shortest 
+    transformation using backtracking */
+    void dfs(string word, string &amp;beginWord, vector&lt;string&gt; &amp;seq,
+             unordered_map &lt;string,int&gt; &amp;mpp, vector&lt;vector&lt;string&gt;&gt; &amp;ans) {
+        
+        // If the sequence is complete
+        if(word == beginWord) {
+            
+            // Reverse the sequence
+            reverse(seq.begin(), seq.end());
+            
+            // Store in the result
+            ans.push_back(seq);
+            
+            // Reverse again for other possible sequences
+            reverse(seq.begin(), seq.end());
+            
+            // Return
+            return;
+        }
+        
+        // Steps to reach the word
+        int val = mpp[word];
+        
+        // Try all possible transformations
+        for(int i=0; i &lt; word.length(); i++) {
+            char original = word[i];
+            
+            for(char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                word[i] = ch;
+                
+                // If a possible transformations is found
+                if(mpp.find(word) != mpp.end() &amp;&amp; 
+                   mpp[word] + 1 == val) {
+                       
+                    // Update the sequence
+                    seq.push_back(word);
+                    
+                    // Make recursive DFS call
+                    dfs(word, beginWord, seq, mpp, ans);
+                    
+                    // Pop back for backtracking
+                    seq.pop_back();
+                }
+            }
+            word[i] = original;
+        }
+    }
+
+public:
+
+    /* Function to determine number of steps
+    to reach from start ward to target word */
+    vector&lt;vector&lt;string&gt;&gt; findSequences(string beginWord, string endWord, 
+                                         vector&lt;string&gt;&amp; wordList) {
+ 
+        // Length of words
+        int len = beginWord.length();
+        
+        // Add all the words to a hashset
+        unordered_set &lt;string&gt; st(wordList.begin(), 
+                                  wordList.end());
+                                  
+        /* Hash map to store the minimum 
+        steps needed to reach a word */
+        unordered_map &lt;string,int&gt; mpp;
+        
+        // Queue for BFS traversal
+        queue &lt;string&gt; q;
+        
+        // Pushing intial word in the queue
+        q.push(beginWord);
+        
+        /* Erasing the initial word from 
+        the set if it exists */
+        st.erase(beginWord);
+        
+        // Step count
+        int steps = 1;
+        
+        // Storing the intial pair in map
+        mpp[beginWord] = steps;
+        
+        // Until the queue is empty
+        while(!q.empty()) {
+            
+            // Get the word and steps
+            string word = q.front();
+            steps = mpp[word];
+            q.pop();
+
+            // Check for every possible transformation
+            for(int i = 0; i &lt; len; i++) {
+                char original = word[i];
+                
+                for(char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                    word[i] = ch;
+                    
+                    // If a possible transformation is found
+                    if(st.find(word) != st.end()) {
+                        
+                        // Store it in map
+                        mpp[word] = steps+1;
+                        
+                        // Push in the queue
+                        q.push(word);
+                        
+                        // Erase word from list
+                        st.erase(word);
+                    }
+                }
+                word[i] = original;
+            }
+        }
+
+        /* Return an empty list if reaching the 
+        target word is not possible */
+        if(mpp.find(endWord) == mpp.end()) 
+            return {};
+
+        // To store the answer
+        vector&lt;vector&lt;string&gt;&gt; ans;
+        
+        // To store the possible sequence of transformations
+        vector &lt;string&gt; seq = {endWord};
+        
+        // Backtracking step
+        dfs(endWord, beginWord, seq, mpp, ans);
+        
+        // Return the computed result
+        return ans;
+
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution{
+    /* Function call to add the shortest 
+    transformation using backtracking */
+    private void Dfs(string word, string beginWord, List&lt;string&gt; seq, Dictionary&lt;string, int&gt; mpp, List&lt;IList&lt;string&gt;&gt; ans) {
+        
+        // If the sequence is complete
+        if (word == beginWord) {
+            
+            // Reverse the sequence
+            seq.Reverse();
+            
+            // Store in the result
+            ans.Add(new List&lt;string&gt;(seq));
+            
+            // Reverse again for other possible sequences
+            seq.Reverse();
+            
+            // Return
+            return;
+        }
+        
+        // Steps to reach the word
+        int val = mpp[word];
+        
+        // Try all possible transformations
+        char[] charArray = word.ToCharArray(); // Create a mutable copy for modifications
+        for (int i = 0; i &lt; word.Length; i++) {
+            char originalChar = charArray[i]; // Store original char
+            
+            for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                     
+                charArray[i] = ch; // Modify char array
+                string transformedWord = new string(charArray); // Create new string from modified array
+                
+                // If a possible transformation is found
+                if (mpp.ContainsKey(transformedWord) &amp;&amp; 
+                    mpp[transformedWord] + 1 == val) {
+                    
+                    // Update the sequence
+                    seq.Add(transformedWord);
+                    
+                    // Make recursive DFS call
+                    Dfs(transformedWord, beginWord, seq, mpp, ans);
+                    
+                    // Pop back for backtracking
+                    seq.RemoveAt(seq.Count - 1);
+                }
+            }
+            
+            charArray[i] = originalChar; // Restore char array for next iteration of outer loop
+        }
+    }
+
+    public IList&lt;IList&lt;string&gt;&gt; FindSequences(string beginWord, string endWord, IList&lt;string&gt; wordList) {
+      
+        // Length of words
+        int len = beginWord.Length;
+        
+        // Add all the words to a hashset
+        HashSet&lt;string&gt; st = new HashSet&lt;string&gt;(wordList);
+                                  
+        // Hash map to store the minimum steps needed to reach a word
+        Dictionary&lt;string, int&gt; mpp = new Dictionary&lt;string, int&gt;();
+        
+        // Queue for BFS traversal
+        Queue&lt;string&gt; q = new Queue&lt;string&gt;();
+        
+        // Pushing initial word in the queue
+        q.Enqueue(beginWord);
+        
+        // Erasing the initial word from the set if it exists
+        st.Remove(beginWord);
+        
+        // Step count
+        int steps = 1;
+        
+        // Storing the initial pair in map
+        mpp[beginWord] = steps;
+        
+        // Until the queue is empty
+        while (q.Count &gt; 0) {
+            
+            // Get the word and steps
+            string word = q.Dequeue();
+            steps = mpp[word];
+
+            // Check for every possible transformation
+            char[] charArray = word.ToCharArray(); // Create a mutable copy for modifications
+            for (int i = 0; i &lt; len; i++) {
+                char originalChar = charArray[i]; // Store original char
+                
+                for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                         
+                    charArray[i] = ch; // Modify char array
+                    string transformedWord = new string(charArray); // Create new string from modified array
+                    
+                    // If a possible transformation is found
+                    if (st.Contains(transformedWord)) {
+                        
+                        // Store it in map
+                        mpp[transformedWord] = steps + 1;
+                        
+                        // Push in the queue
+                        q.Enqueue(transformedWord);
+                        
+                        // Erase word from list
+                        st.Remove(transformedWord);
+                    }
+                }
+                
+                charArray[i] = originalChar; // Restore char array for next iteration of outer loop
+            }
+        }
+
+        /* Return an empty list if reaching the 
+        target word is not possible */
+        if (!mpp.ContainsKey(endWord)) 
+            return new List&lt;IList&lt;string&gt;&gt;();
+        
+        // To store the answer
+        List&lt;IList&lt;string&gt;&gt; ans = new List&lt;IList&lt;string&gt;&gt;();
+        
+        // To store the possible sequence of transformations
+        List&lt;string&gt; seq = new List&lt;string&gt; { endWord };
+        
+        // Backtracking step
+        Dfs(endWord, beginWord, seq, mpp, ans);
+        
+        // Return the computed result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function: DFS to build transformation sequences
+func dfs(word, beginWord string, seq []string, mpp map[string]int, ans *[][]string) {
+	// If the sequence is complete
+	if word == beginWord {
+		// Reverse the sequence
+		reversed := make([]string, len(seq))
+		for i := 0; i &lt; len(seq); i++ {
+			reversed[i] = seq[len(seq)-1-i]
+		}
+
+		// Store in the result
+		*ans = append(*ans, reversed)
+		return
+	}
+
+	val := mpp[word]
+	wordBytes := []rune(word)
+
+	// Try all possible transformations
+	for i := 0; i &lt; len(wordBytes); i++ {
+		original := wordBytes[i]
+		for ch := &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++ {
+			wordBytes[i] = ch
+			newWord := string(wordBytes)
+
+			if mpp[newWord] == val-1 {
+				seq = append(seq, newWord)
+				dfs(newWord, beginWord, seq, mpp, ans)
+				seq = seq[:len(seq)-1]
+			}
+		}
+		wordBytes[i] = original
+	}
+}
+
+// Main function to find all shortest sequences
+func findSequences(beginWord string, endWord string, wordList []string) [][]string {
+	// Length of words
+	length := len(beginWord)
+
+	// Add all the words to a hashset
+	st := make(map[string]bool)
+	for _, word := range wordList {
+		st[word] = true
+	}
+
+	// Hash map to store the minimum steps needed to reach a word
+	mpp := make(map[string]int)
+
+	// Queue for BFS traversal
+	queue := []string{beginWord}
+
+	// Erase the initial word from the set
+	delete(st, beginWord)
+
+	// Step count
+	steps := 1
+	mpp[beginWord] = steps
+
+	// Until the queue is empty
+	for len(queue) &gt; 0 {
+		word := queue[0]
+		queue = queue[1:]
+		steps = mpp[word]
+
+		wordBytes := []rune(word)
+
+		// Check for every possible transformation
+		for i := 0; i &lt; length; i++ {
+			original := wordBytes[i]
+			for ch := &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++ {
+				wordBytes[i] = ch
+				newWord := string(wordBytes)
+
+				if st[newWord] {
+					queue = append(queue, newWord)
+					delete(st, newWord)
+					mpp[newWord] = steps + 1
+				}
+			}
+			wordBytes[i] = original
+		}
+	}
+
+	// Return empty if target not reachable
+	if _, ok := mpp[endWord]; !ok {
+		return [][]string{}
+	}
+
+	// Backtracking step
+	var ans [][]string
+	seq := []string{endWord}
+	dfs(endWord, beginWord, seq, mpp, &amp;ans)
+
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+private void dfs(String word, String beginWord, List&lt;String&gt; seq, 
+                 Map&lt;String, Integer&gt; mpp, List&lt;List&lt;String&gt;&gt; ans) {
+    
+    // If the sequence is complete
+    if (word.equals(beginWord)) {
+        
+        // Reverse the sequence
+        Collections.reverse(seq);
+        
+        // Store in the result
+        ans.add(new ArrayList&lt;&gt;(seq));
+        
+        // Reverse again for other possible sequences
+        Collections.reverse(seq);
+        
+        // Return
+        return;
+    }
+    
+    // Steps to reach the word
+    int val = mpp.get(word);
+    
+    // Try all possible transformations
+    for (int i = 0; i &lt; word.length(); i++) {
+        char original = word.charAt(i);
+        StringBuilder sb = new StringBuilder(word);
+        
+        for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+            sb.setCharAt(i, ch);
+            String newWord = sb.toString();
+            
+            // If a possible transformation is found
+            if (mpp.containsKey(newWord) &amp;&amp; 
+                mpp.get(newWord) + 1 == val) {
+                
+                // Update the sequence
+                seq.add(newWord);
+                
+                // Make recursive DFS call
+                dfs(newWord, beginWord, seq, mpp, ans);
+                
+                // Pop back for backtracking
+                seq.remove(seq.size() - 1);
+            }
+        }
+    }
+}
+
+public List&lt;List&lt;String&gt;&gt; findSequences(String beginWord, String endWord, 
+                                        List&lt;String&gt; wordList) {
+    
+    // Length of words
+    int len = beginWord.length();
+    
+    // Add all the words to a hashset
+    Set&lt;String&gt; st = new HashSet&lt;&gt;(wordList);
+                                  
+    /* Hash map to store the minimum 
+    steps needed to reach a word */
+    Map&lt;String, Integer&gt; mpp = new HashMap&lt;&gt;();
+    
+    // Queue for BFS traversal
+    Queue&lt;String&gt; q = new LinkedList&lt;&gt;();
+    
+    // Pushing initial word in the queue
+    q.add(beginWord);
+    
+    // Erasing the initial word from the set if it exists
+    st.remove(beginWord);
+    
+    // Step count
+    int steps = 1;
+    
+    // Storing the initial pair in map
+    mpp.put(beginWord, steps);
+    
+    // Until the queue is empty
+    while (!q.isEmpty()) {
+        
+        // Get the word and steps
+        String word = q.poll();
+        steps = mpp.get(word);
+
+        // Check for every possible transformation
+        for (int i = 0; i &lt; len; i++) {
+            char original = word.charAt(i);
+            StringBuilder sb = new StringBuilder(word);
+            
+            for (char ch = &#x27;a&#x27;; ch &lt;= &#x27;z&#x27;; ch++) {
+                sb.setCharAt(i, ch);
+                String newWord = sb.toString();
+                
+                // If a possible transformation is found
+                if (st.contains(newWord)) {
+                    
+                    // Store it in map
+                    mpp.put(newWord, steps + 1);
+                    
+                    // Push in the queue
+                    q.add(newWord);
+                    
+                    // Erase word from list
+                    st.remove(newWord);
+                }
+            }
+        }
+    }
+
+    /* Return an empty list if reaching 
+    the target word is not possible */
+    if (!mpp.containsKey(endWord))
+        return new ArrayList&lt;&gt;();
+    
+    // To store the answer
+    List&lt;List&lt;String&gt;&gt; ans = new ArrayList&lt;&gt;();
+    
+    // To store the possible sequence of transformations
+    List&lt;String&gt; seq = new ArrayList&lt;&gt;();
+    seq.add(endWord);
+    
+    // Backtracking step
+    dfs(endWord, beginWord, seq, mpp, ans);
+    
+    // Return the computed result
+    return ans;
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function call to add the shortest 
+    transformation using backtracking */
+    dfs(word, beginWord, seq, mpp, ans) {
+        
+        // If the sequence is complete
+        if (word === beginWord) {
+            
+            // Reverse the sequence
+            seq.reverse();
+            
+            // Store in the result
+            ans.push([...seq]);
+            
+            // Reverse again for other possible sequences
+            seq.reverse();
+            
+            // Return
+            return;
+        }
+        
+        // Steps to reach the word
+        const val = mpp.get(word);
+        
+        // Try all possible transformations
+        for (let i = 0; i &lt; word.length; i++) {
+            const original = word[i];
+            
+            for (let chCode = &#x27;a&#x27;.charCodeAt(0); 
+                 chCode &lt;= &#x27;z&#x27;.charCodeAt(0); 
+                 chCode++) {
+                     
+                const ch = String.fromCharCode(chCode);
+                const transformed_word = word.substring(0, i) + ch + 
+                                         word.substring(i + 1);
+                
+                // If a possible transformation is found
+                if (mpp.has(transformed_word) &amp;&amp; 
+                    mpp.get(transformed_word) + 1 === val) {
+                    
+                    // Update the sequence
+                    seq.push(transformed_word);
+                    
+                    // Make recursive DFS call
+                    this.dfs(transformed_word, beginWord, seq, mpp, ans);
+                    
+                    // Pop back for backtracking
+                    seq.pop();
+                }
+            }
+            
+            word = word.substring(0, i) + original + word.substring(i + 1);
+        }
+    }
+
+    /* Function to determine number of steps 
+    to reach from start word to target word */
+    findSequences(beginWord, endWord, wordList) {
+        
+        // Length of words
+        const len = beginWord.length;
+        
+        // Add all the words to a hashset
+        const st = new Set(wordList);
+                                  
+        // Hash map to store the minimum steps needed to reach a word
+        const mpp = new Map();
+        
+        // Queue for BFS traversal
+        const q = [];
+        
+        // Pushing initial word in the queue
+        q.push(beginWord);
+        
+        // Erasing the initial word from the set if it exists
+        st.delete(beginWord);
+        
+        // Step count
+        let steps = 1;
+        
+        // Storing the initial pair in map
+        mpp.set(beginWord, steps);
+        
+        // Until the queue is empty
+        while (q.length) {
+            
+            // Get the word and steps
+            let word = q.shift();
+            steps = mpp.get(word);
+
+            // Check for every possible transformation
+            for (let i = 0; i &lt; len; i++) {
+                const original = word[i];
+                
+                for (let chCode = &#x27;a&#x27;.charCodeAt(0); 
+                     chCode &lt;= &#x27;z&#x27;.charCodeAt(0); 
+                     chCode++) {
+                         
+                    const ch = String.fromCharCode(chCode);
+                    const transformed_word = word.substring(0, i) + 
+                                             ch + 
+                                             word.substring(i + 1);
+                    
+                    // If a possible transformation is found
+                    if (st.has(transformed_word)) {
+                        
+                        // Store it in map
+                        mpp.set(transformed_word, steps + 1);
+                        
+                        // Push in the queue
+                        q.push(transformed_word);
+                        
+                        // Erase word from list
+                        st.delete(transformed_word);
+                    }
+                }
+                
+                word = word.substring(0, i) + original + 
+                       word.substring(i + 1);
+            }
+        }
+
+        /* Return an empty list if reaching the 
+        target word is not possible */
+        if (!mpp.has(endWord)) 
+            return [];
+        
+        // To store the answer
+        const ans = [];
+        
+        // To store the possible sequence of transformations
+        const seq = [endWord];
+        
+        // Backtracking step
+        this.dfs(endWord, beginWord, seq, mpp, ans);
+        
+        // Return the computed result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>from collections import deque
+class Solution:
+    
+    def dfs(self, word, beginWord, seq, mpp, ans):
+        # If the sequence is complete
+        if word == beginWord:
+            # Reverse the sequence
+            seq.reverse()
+            # Store in the result
+            ans.append(list(seq))
+            # Reverse again for other possible sequences
+            seq.reverse()
+            # Return
+            return
+        
+        # Steps to reach the word
+        val = mpp[word]
+        
+        # Try all possible transformations
+        for i in range(len(word)):
+            original = word[i]
+            
+            for ch in range(ord(&#x27;a&#x27;), ord(&#x27;z&#x27;) + 1):
+                transformed_word = word[:i] + chr(ch) + word[i + 1:]
+                
+                # If a possible transformation is found
+                if (transformed_word in mpp and 
+                    mpp[transformed_word] + 1 == val):
+                    # Update the sequence
+                    seq.append(transformed_word)
+                    # Make recursive DFS call
+                    self.dfs(transformed_word, beginWord, seq, mpp, ans)
+                    # Pop back for backtracking
+                    seq.pop()
+            
+            # Restore original word
+            word = word[:i] + original + word[i + 1:]
+
+    def findSequences(self, beginWord, endWord, wordList):
+        # Length of words
+        len_word = len(beginWord)
+        
+        # Add all the words to a hashset
+        st = set(wordList)
+                                  
+        # Hash map to store the minimum steps needed to reach a word
+        mpp = {}
+        
+        # Queue for BFS traversal
+        q = deque([beginWord])
+        
+        # Erasing the initial word from the set if it exists
+        if beginWord in st:
+            st.remove(beginWord)
+        
+        # Step count
+        steps = 1
+        
+        # Storing the initial pair in map
+        mpp[beginWord] = steps
+        
+        # Until the queue is empty
+        while q:
+            # Get the word and steps
+            word = q.popleft()
+            steps = mpp[word]
+
+            # Check for every possible transformation
+            for i in range(len_word):
+                original = word[i]
+                
+                for ch in range(ord(&#x27;a&#x27;), ord(&#x27;z&#x27;) + 1):
+                    transformed_word = word[:i] + chr(ch) + word[i + 1:]
+                    
+                    # If a possible transformation is found
+                    if transformed_word in st:
+                        # Store it in map
+                        mpp[transformed_word] = steps + 1
+                        # Push in the queue
+                        q.append(transformed_word)
+                        # Erase word from list
+                        st.remove(transformed_word)
+                
+                # Restore original word
+                word = word[:i] + original + word[i + 1:]
+
+        # Return an empty list if reaching 
+        # the target word is not possible
+        if endWord not in mpp:
+            return []
+        
+        # To store the answer
+        ans = []
+        
+        # To store the possible sequence of transformations
+        seq = [endWord]
+        
+        # Backtracking step
+        self.dfs(endWord, beginWord, seq, mpp, ans)
+        
+        # Return the computed result
+        return ans</code></pre></div>
+</body>
+</html>

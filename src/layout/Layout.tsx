@@ -14,7 +14,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const problemId = searchParams.get("problemId");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { activeMode, setMode } = useMode();
+  const { activeMode, setMode, isFocusMode } = useMode();
   const { theme, toggleTheme } = useTheme();
 
   const closePeekPanel = () => {
@@ -87,7 +87,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       <MobileNav isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
       {/* Left Sidebar */}
-      <Sidebar />
+      {!isFocusMode && <Sidebar />}
       
       {/* Main Content Area */}
       <main className="flex-1 w-full h-[calc(100vh-130px)] lg:h-[calc(100vh-32px)] overflow-y-auto overflow-x-hidden rounded-[32px] pt-6 px-4 sm:px-6 lg:px-6 custom-scrollbar">
@@ -97,7 +97,7 @@ export const Layout = ({ children }: { children: ReactNode }) => {
       </main>
 
       {/* Right Sidebar */}
-      <RightSidebar />
+      {!isFocusMode && <RightSidebar />}
 
       {/* Peek Panel Overlay */}
       {problemId && (

@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KMP Algorithm or LPS array</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>KMP Algorithm or LPS array</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>String</span><span>Rolling Hash</span><span>String Matching</span><span>Hash Function</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two strings, one is a text string, <strong>text</strong>, and the other is a pattern string, <strong>pattern</strong>. Find and print the indices of all the occurrences of the pattern string within the text string. Use 0-based indexing for the indices, and ensure that the indices are in ascending order. If the pattern does not occur in the text, return an empty list.</p><p><br></p><p>Implement this solution using the <strong>Knuth-Morris-Pratt (KMP) algorithm</strong> for efficient pattern matching.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li><span style="color: rgb(245, 245, 245);">1<= text.length, pattern.length <=5*10</span><sup style="color: rgb(245, 245, 245);">4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: text = "abracadabra", pattern = "abra"</p><p><br></p><p>Output: 0 7</p><p><br></p><p>Expalanation : The pattern "abra" appears at the 0st and 7th positions in the text "abracadabra".</p><h3>Example 2</h3><p>Input: text = "abcabcabc", pattern = "abc"</p><p><br></p><p>Output: 0 3 6</p><p><br></p><p>Expalanation : The pattern "abc" appears at the 0st, 3th, and 6th positions in the text "abcabcabc".</p><h3>Example 3</h3><p>Input: text = "daad", pattern = "aa"</p></div>
+<div class="section"><h2>Fun Fact</h2><p>The Knuth-Morris-Pratt (KMP) algorithm, the underlying concept for solving this problem, is exceptionally useful and widely applied in the real world. For instance, search functions in word processors, text editors, and browsers use pattern matching algorithms similar to KMP. It enables them to quickly find and highlight all occurrences of a user's input within the loaded document or webpage — important for productivity and usability. Particularly, KMP is known for its efficiency as it avoids backtracking, thus providing quicker search results.</p></div>
+<div class="section"><h2>Editorial: Brute Force Approach</h2><html><head></head><body><h5>Pre-Requisites - LPS Array:</h5>
+<p>
+    It stores the length of the longest proper prefix of the string that is also a suffix for each prefix of the string.
+    </p><ul>
+        <li>A <b>prefix</b> is a substring that starts at the beginning of the string.</li>
+        <li>A <b>suffix</b> is a substring that ends at the end of the string.</li>
+        <li>A <b>proper prefix</b> is a prefix that is not equal to the entire string.</li>
+    </ul> 
+    <br>
+    For a pattern P,<br>
+    <code>LPS[i]:</code> the length of the longest prefix of P that is also a suffix for the substring P[0..i].
+
+
+    <h6>Example:</h6>
+    Consider the string "ababac", the LPS array can be formed in the following way:
+    <ul>
+        <li>For the substring "a", no proper prefix equals a suffix. LPS[0] = 0.</li>
+        <li>For the substring "ab", no proper prefix equals a suffix. LPS[1] = 0.</li>
+        <li>For the substring "aba", the longest proper prefix that is also a suffix is "a". LPS[2] = 1.</li>
+        <li>For the substring "abab", the longest proper prefix that is also a suffix is "ab". LPS[3] = 2.</li>
+        <li>For the substring "ababa", the longest proper prefix that is also a suffix is "aba". LPS[4] = 3.</li>
+        <li>For the substring "ababac", no proper prefix equals a suffix. LPS[5] = 0.</li>
+    </ul> <br>
+    Thus, the resulting LPS array is: <code>[0, 0, 1, 2, 3, 0]</code>.
+<p></p>
+<hr>
+
+<h3>Intuition:</h3>
+<p>We can use the concept of <b>Longest Prefix Suffix (LPS) array</b> to find the indices of pattern P in the text T. The idea is to form a new string <b>S</b> by combining the pattern and text with a delimiter ('$') in between such that:
+    </p><pre>       <code>S = P + '$' + T</code>.</pre> <br>
+
+    We then compute the LPS array for the combined string <b>S</b>. The length of the pattern is <b>m</b> and the length of the text is <b>n</b>. If the LPS value at index <b>i</b> is equal to <b>m</b>, it signifies that the pattern matches at the corresponding position in the text. We store the indices where the pattern matches and return the result.
+<p></p>
+
+<h3>Approach:</h3>
+<ul>
+    <li>Combine Pattern and Text using a delimiter forming a combined string. Compute the LPS array for the combined string:
+        <ul>
+            <li>Initialize the LPS array with all values set to 0.</li>
+            <li>For each position in the string, check all possible prefix lengths that could also be suffixes.</li>
+            <li>Compare the prefix and suffix substrings character by character.</li>
+            <li>If a matching prefix-suffix is found, update the LPS value with its length.</li>
+            <li>Repeat the process for each position</li>
+        </ul>
+
+    </li>
+    <li>Iterate through the portion of the combined string corresponding to the text. If the LPS value equals the length of the pattern, it signifies a match at the corresponding position in the text.</li>
+    <li>Store the indices where the pattern matches and return the result.</li>
+</ul>
+
+<h3>Solution:</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Compute the Longest prefix suffix array for the combined string
+    vector<int> computeLPS(string s) {
+        int n = s.size(); // size of string
+        
+        // To store the longest prefix suffix
+        vector<int> LPS(n, 0);
+        
+        // Iterate on the string
+        for(int i=1; i < n; i++) {
+            
+            // For all possible lengths
+            for(int len = 1; len < i; len++) {
+                if(s.substr(0, len) == s.substr(i-len+1, len))
+                    LPS[i] = len;
+            }
+        }
+        
+        return LPS; // Return the computed LPS array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector<int> search(string pattern, string text)   {
+        string s = pattern + '$' + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector<int> LPS = computeLPS(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector<int> ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i < s.size(); i++) {
+            if(LPS[i] == m) ans.push_back(i - 2*m);
+        }
+        
+        return ans;
+    }
+};
+
+int main() {
+    string text = "xyzabxyzabxyz";
+    string pattern = "xyz";
+    
+    // Creating an instance of the solution class
+    Solution sol;
+    
+    // Function call to find all indices of pattern in text
+    vector<int> ans = sol.search(text, pattern);
+    
+    for(auto ind : ans) cout << ind << " ";
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] computeLPS(String s) {
+        int n = s.length(); // size of string
+
+        // To store the longest prefix suffix
+        int[] LPS = new int[n];
+
+        // Iterate on the string
+        for (int i = 1; i < n; i++) {
+
+            // For all possible lengths
+            for (int len = 1; len < i; len++) {
+                if (s.substring(0, len).equals(s.substring(i - len + 1, i + 1))) {
+                    LPS[i] = len;
+                }
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    public List<Integer> search(String pattern, String text) {
+        String s = pattern + '$' + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] LPS = computeLPS(s);
+
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+
+        // To store the result
+        List<Integer> ans = new ArrayList<>();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i < s.length(); i++) {
+            if (LPS[i] == m) ans.add(i - 2 * m);
+        }
+
+        return ans;
+    }
+
+    public static void main(String[] args) {
+        String text = "xyzabxyzabxyz";
+        String pattern = "xyz";
+
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+
+        // Function call to find all indices of pattern in text
+        List<Integer> ans = sol.search(pattern, text);
+
+        for (int ind : ans) {
+            System.out.print(ind + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Compute the Longest prefix suffix array for the combined string
+    def computeLPS(self, s):
+        n = len(s)  # size of string
+
+        # To store the longest prefix suffix
+        LPS = [0] * n
+
+        # Iterate on the string
+        for i in range(1, n):
+
+            # For all possible lengths
+            for length in range(1, i):
+                if s[:length] == s[i - length + 1: i + 1]:
+                    LPS[i] = length
+
+        return LPS  # Return the computed LPS array
+
+    # Function to find all indices of pattern in text
+    def search(self, pattern, text):
+        s = pattern + '$' + text  # Combined string
+
+        # Function call to find the LPS array for the combined string
+        LPS = self.computeLPS(s)
+
+        # Length of pattern and text
+        n, m = len(text), len(pattern)
+
+        # To store the result
+        ans = []
+
+        # Iterate on the combined string after the delimiter
+        for i in range(m + 1, len(s)):
+            if LPS[i] == m:
+                ans.append(i - 2 * m)
+
+        return ans
+
+
+if __name__ == "__main__":
+    text = "xyzabxyzabxyz"
+    pattern = "xyz"
+
+    # Creating an instance of the solution class
+    sol = Solution()
+
+    # Function call to find all indices of pattern in text
+    ans = sol.search(pattern, text)
+
+    print(" ".join(map(str, ans)))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    computeLPS(s) {
+        const n = s.length; // size of string
+
+        // To store the longest prefix suffix
+        const LPS = new Array(n).fill(0);
+
+        // Iterate on the string
+        for (let i = 1; i < n; i++) {
+
+            // For all possible lengths
+            for (let len = 1; len < i; len++) {
+                if (s.substring(0, len) === s.substring(i - len + 1, i + 1)) {
+                    LPS[i] = len;
+                }
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    search(pattern, text) {
+        const s = pattern + '$' + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        const LPS = this.computeLPS(s);
+
+        // Length of pattern and text
+        const n = text.length, m = pattern.length;
+
+        // To store the result
+        const ans = [];
+
+        // Iterate on the combined string after the delimiter
+        for (let i = m + 1; i < s.length; i++) {
+            if (LPS[i] === m) {
+                ans.push(i - 2 * m);
+            }
+        }
+
+        return ans;
+    }
+}
+
+// Main code
+const text = "xyzabxyzabxyz";
+const pattern = "xyz";
+
+// Creating an instance of the solution class
+const sol = new Solution();
+
+// Function call to find all indices of pattern in text
+const ans = sol.search(pattern, text);
+
+console.log(ans.join(" "));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] ComputeLPS(string s)
+    {
+        int n = s.Length; // size of string
+
+        // To store the longest prefix suffix
+        int[] lps = new int[n];
+
+        // Iterate on the string
+        for (int i = 1; i < n; i++)
+        {
+            // For all possible lengths
+            for (int len = 1; len < i; len++)
+            {
+                if (s.Substring(0, len).Equals(s.Substring(i - len + 1, len)))
+                {
+                    lps[i] = len;
+                }
+            }
+        }
+
+        return lps; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    public List<int> Search(string pattern, string text)
+    {
+        string s = pattern + '$' + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] lps = this.ComputeLPS(s);
+
+        // Length of pattern and text
+        int n = text.Length;
+        int m = pattern.Length;
+
+        // To store the result
+        List<int> ans = new List<int>();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i < s.Length; i++)
+        {
+            if (lps[i] == m)
+            {
+                ans.Add(i - 2 * m);
+            }
+        }
+
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        string text = "xyzabxyzabxyz";
+        string pattern = "xyz";
+
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+
+        // Function call to find all indices of pattern in text
+        List<int> ans = sol.Search(pattern, text);
+
+        Console.WriteLine(string.Join(" ", ans));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Compute the Longest prefix suffix array for the combined string
+func computeLPS(s string) []int {
+	n := len(s) // size of string
+
+	// To store the longest prefix suffix
+	LPS := make([]int, n)
+
+	// Iterate on the string
+	for i := 1; i < n; i++ {
+		// For all possible lengths
+		for length := 1; length < i; length++ {
+			if s[:length] == s[i-length+1:i+1] {
+				LPS[i] = length
+			}
+		}
+	}
+
+	return LPS // Return the computed LPS array
+}
+
+// Function to find all indices of pattern in text
+func search(pattern string, text string) []int {
+	s := pattern + "$" + text // Combined string
+
+	// Function call to find the LPS array for the combined string
+	LPS := computeLPS(s)
+
+	// Length of pattern
+	m := len(pattern)
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i < len(s); i++ {
+		if LPS[i] == m {
+			ans = append(ans, i-2*m)
+		}
+	}
+
+	return ans
+}
+
+func main() {
+	text := "xyzabxyzabxyz"
+	pattern := "xyz"
+
+	// Function call to find all indices of pattern in text
+	ans := search(pattern, text)
+
+	for _, ind := range ans {
+		fmt.Printf("%d ", ind)
+	}
+}
+</code></pre></div></div></div>
+
+
+<h3>Complexity Analysis:</h3>
+<p>
+    <strong>Time Complexity: O(N<sup>3</sup>)</strong>, where N is the length of the combined string <br>
+    Computing the LPS array takes O(N<sup>3</sup>) time and finding the matches requires iterating on the LPS taking O(N) time.
+    <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, to store the LPS array.
+</p></body></html></div>
+<div class="section"><h2>Editorial: Optimal Approach</h2><html><head></head><body><h3>Intuition:</h3>
+<p>
+    The optimal solution includes forming the LPS array using an optimized approach. To optimize the LPS computation, we must: 
+    </p><ul>
+        <li>Avoid recomputing prefix-suffix matches from scratch for every index.</li>
+        <li>Use previously computed LPS values to efficiently extend the matches.</li>
+    </ul> <br>
+
+    The key idea will be two use two pointers - i and j:
+    <ul>
+        <li><strong>i: </strong>Iterates through the string.</li>
+        <li><strong>j: </strong>Tracks the length of the <strong>longest prefix which is also a suffix.</strong></li>
+    </ul> <br>
+
+    Now, there can be two scenarios when we compare s[i] and s[j], where s is the combined string formed. Let us understand both the scenarios in detail. 
+
+    <h5>Scenario 1: When s[i] == s[j]</h5>
+
+    Consider the following example: <br>
+    <img src="https://static.takeuforward.org/premium/Strings (Advanced Algo)/Advanced Problems (Less asked)/KMP Algorithm or LPS array/Image_1-ProAIaZy" alt=""> <br>
+    Assume that we have already computed the LPS array for the indices 0 to 4. Now, we are at index 5 (i == 5) and we want to find LPS[5]. <br><br>
+
+    <strong>Understanding:</strong>
+    <ul>
+        <li>i and j represents that the prefix of string s (s[0...j-1]) matches with the suffix of the string s[0...i-1]. (Since "a" matches as prefix as well as suffix in "abca", thus j = 1, which is length of "a")</li>
+        <li>Now if we found s[i] and s[j] to be equal, this means the next character in the prefix (s[j]) is also matching with the next character in the suffix (s[i]).</li>
+        <li>
+            Hence, we increase both j and i, indicating that the prefix-suffix match is now longer by one character. Thus, setting LPS[i] = j+1.
+        </li>
+    </ul><br>
+    Thus, If <code>s[i] == s[j]</code>, it means that we have successfully extended an existing prefix-suffix match. 
+    <br>
+
+    <h5>Scenario 2: When s[i] != s[j]</h5>
+    If <code>s[i] ≠ s[j]</code>, we need to backtrack j without resetting it to 0 immediately. Instead, we use LPS[j-1] to find the next possible matching prefix. <br><br>
+    <strong>Why backtrack to LPS[j-1]?</strong>
+    The value <code>LPS[j-1]</code> tells us the longest proper prefix that is also a suffix of the prefix ending at index j-1. If s[i] does not match s[j], then instead of rechecking from j = 0, we can check from <code>LPS[j-1]</code>. <br><br>
+
+    Consider the following example: <br>
+    <img src="https://static.takeuforward.org/premium/Strings (Advanced Algo)/Advanced Problems (Less asked)/KMP Algorithm or LPS array/Image_2-vBmHc8I0" alt=""> <br>
+    Assume that we have already computed the LPS array for the indices 0 to 4. Now, we are at index 5 (i == 5) and we want to find LPS[5]. <br><br>
+
+    <strong>Understanding:</strong>
+    <ul>
+        <li>Here, LPS[2] = 1 means that the longest prefix which is also a suffix till index 2 is "a" (having length 1).</li>
+        <li>So we check if the next best prefix match can be extended from j = 1 instead of restarting j from 0.</li>
+    </ul> <br>
+    Thus, if <code>s[i] != s[j]</code>, it means that we must backtrack j to <code>LPS[j-1]</code> to find the next possible matching prefix. This leverages the previously computed LPS values to avoid redundant comparisons.
+<p></p>
+
+<h3>Approach:</h3>
+<p>
+    </p><ul>
+        <li>Combine Pattern and Text using a delimiter forming a combined string. Compute the LPS array for the combined string. To compute the LPS array:
+            <ul>
+                <li>Initialize the LPS array with the first value as 0 and a pointer (j) to track the length of the longest prefix suffix.</li>
+                <li>Traverse the string and compare the current character with the character at the tracked position.</li>
+                <li>If they match, extend the prefix-suffix length by updating the LPS value and moving both pointers forward.</li>
+                <li>If they do not match and the tracked position is greater than 0, backtrack using the previously computed LPS value.</li>
+                <li>If no match is found after backtracking, set the LPS value to 0 and move to the next character.</li>
+            </ul>
+        </li>
+        <li>Iterate through the portion of the combined string corresponding to the text. If the LPS value equals the length of the pattern, it signifies a match at the corresponding position in the text.</li>
+        <li>Store the indices where the pattern matches and return the result.</li>
+    </ul>
+<p></p>
+
+<h3>Solution:</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Compute the Longest prefix suffix array for the combined string
+    vector<int> computeLPS(string s) {
+        int n = s.size(); // size of string
+        
+        // To store the longest prefix suffix
+        vector<int> LPS(n, 0);
+        
+        int i = 1, j = 0;
+        
+        // Iterate on the string
+        while(i < n) {
+            // If the character matches
+            if(s[i] == s[j]) {
+                LPS[i] = j+1;
+                i++, j++;
+            }
+            
+            // Otherwise
+            else {
+                // Trace back j pointer till it does not match
+                while(j > 0 && s[i] != s[j]) {
+                    j = LPS[j-1];
+                }
+                
+                // If a match is found
+                if(s[i] == s[j]) {
+                    LPS[i] = j+1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+        
+        return LPS; // Return the computed LPS array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector<int> search(string pattern, string text)   {
+        string s = pattern + '$' + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector<int> LPS = computeLPS(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector<int> ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i < s.size(); i++) {
+            if(LPS[i] == m) ans.push_back(i - 2*m);
+        }
+        
+        return ans;
+    }
+};
+
+int main() {
+    string text = "xyzabxyzabxyz";
+    string pattern = "xyz";
+    
+    // Creating an instance of the solution class
+    Solution sol;
+    
+    // Function call to find all indices of pattern in text
+    vector<int> ans = sol.search(pattern, text);
+    
+    for(auto ind : ans) cout << ind << " ";
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] computeLPS(String s) {
+        int n = s.length(); // size of string
+
+        // To store the longest prefix suffix
+        int[] LPS = new int[n];
+
+        int i = 1, j = 0;
+
+        // Iterate on the string
+        while (i < n) {
+            // If the character matches
+            if (s.charAt(i) == s.charAt(j)) {
+                LPS[i] = j + 1;
+                i++;
+                j++;
+            }
+
+            // Otherwise
+            else {
+                // Trace back j pointer till it does not match
+                while (j > 0 && s.charAt(i) != s.charAt(j)) {
+                    j = LPS[j - 1];
+                }
+
+                // If a match is found
+                if (s.charAt(i) == s.charAt(j)) {
+                    LPS[i] = j + 1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    public List<Integer> search(String pattern, String text) {
+        String s = pattern + '$' + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] LPS = computeLPS(s);
+
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+
+        // To store the result
+        List<Integer> ans = new ArrayList<>();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i < s.length(); i++) {
+            if (LPS[i] == m) ans.add(i - 2 * m);
+        }
+
+        return ans;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String text = "xyzabxyzabxyz";
+        String pattern = "xyz";
+
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+
+        // Function call to find all indices of pattern in text
+        List<Integer> ans = sol.search(pattern, text);
+
+        for (int ind : ans) System.out.print(ind + " ");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Compute the Longest prefix suffix array for the combined string
+    def computeLPS(self, s):
+        n = len(s)  # size of string
+
+        # To store the longest prefix suffix
+        LPS = [0] * n
+
+        i, j = 1, 0
+
+        # Iterate on the string
+        while i < n:
+            # If the character matches
+            if s[i] == s[j]:
+                LPS[i] = j + 1
+                i += 1
+                j += 1
+            
+            # Otherwise
+            else:
+                # Trace back j pointer till it does not match
+                while j > 0 and s[i] != s[j]:
+                    j = LPS[j - 1]
+                
+                # If a match is found
+                if s[i] == s[j]:
+                    LPS[i] = j + 1
+                    j += 1
+                
+                i += 1
+        
+        return LPS  # Return the computed LPS array
+
+    # Function to find all indices of pattern in text
+    def search(self, pattern, text):
+        s = pattern + '$' + text  # Combined string
+
+        # Function call to find the LPS array for the combined string
+        LPS = self.computeLPS(s)
+
+        # Length of pattern and text
+        n, m = len(text), len(pattern)
+
+        # To store the result
+        ans = []
+
+        # Iterate on the combined string after the delimiter
+        for i in range(m + 1, len(s)):
+            if LPS[i] == m:
+                ans.append(i - 2 * m)
+
+        return ans
+
+
+if __name__ == "__main__":
+    text = "xyzabxyzabxyz"
+    pattern = "xyz"
+
+    # Creating an instance of the solution class
+    sol = Solution()
+
+    # Function call to find all indices of pattern in text
+    ans = sol.search(pattern, text)
+
+    print(*ans)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    computeLPS(s) {
+        let n = s.length; // size of string
+
+        // To store the longest prefix suffix
+        let LPS = new Array(n).fill(0);
+
+        let i = 1, j = 0;
+
+        // Iterate on the string
+        while (i < n) {
+            // If the character matches
+            if (s[i] === s[j]) {
+                LPS[i] = j + 1;
+                i++;
+                j++;
+            }
+
+            // Otherwise
+            else {
+                // Trace back j pointer till it does not match
+                while (j > 0 && s[i] !== s[j]) {
+                    j = LPS[j - 1];
+                }
+
+                // If a match is found
+                if (s[i] === s[j]) {
+                    LPS[i] = j + 1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    search(pattern, text) {
+        let s = pattern + '$' + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        let LPS = this.computeLPS(s);
+
+        // Length of pattern and text
+        let n = text.length, m = pattern.length;
+
+        // To store the result
+        let ans = [];
+
+        // Iterate on the combined string after the delimiter
+        for (let i = m + 1; i < s.length; i++) {
+            if (LPS[i] === m) ans.push(i - 2 * m);
+        }
+
+        return ans;
+    }
+}
+
+// Main Execution
+let text = "xyzabxyzabxyz";
+let pattern = "xyz";
+
+// Creating an instance of the solution class
+let sol = new Solution();
+
+// Function call to find all indices of pattern in text
+let ans = sol.search(pattern, text);
+
+console.log(...ans);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] ComputeLPS(string s)
+    {
+        int n = s.Length; // size of string
+
+        // To store the longest prefix suffix
+        int[] lps = new int[n]; // C# arrays are zero-initialized by default
+
+        int i = 1, j = 0;
+
+        // Iterate on the string
+        while (i < n)
+        {
+            // If the character matches
+            if (s[i] == s[j])
+            {
+                lps[i] = j + 1;
+                i++;
+                j++;
+            }
+            // Otherwise
+            else
+            {
+                // Trace back j pointer till it does not match
+                while (j > 0 && s[i] != s[j])
+                {
+                    j = lps[j - 1];
+                }
+
+                // If a match is found
+                if (s[i] == s[j])
+                {
+                    lps[i] = j + 1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+
+        return lps; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    public List<int> Search(string pat, string txt)
+    {
+        string s = pat + '$' + txt; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] lps = this.ComputeLPS(s);
+
+        // Length of pattern and text
+        int n = txt.Length;
+        int m = pat.Length;
+
+        // To store the result
+        List<int> ans = new List<int>();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i < s.Length; i++)
+        {
+            if (lps[i] == m)
+            {
+                ans.Add(i - 2 * m);
+            }
+        }
+
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        string text = "xyzabxyzabxyz";
+        string pattern = "xyz";
+
+        // Creating an instance of the solution class
+        Solution sol = new Solution();
+
+        // Function call to find all indices of pattern in text
+        List<int> ans = sol.Search(pattern, text);
+
+        Console.WriteLine(string.Join(" ", ans));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Compute the Longest Prefix Suffix (LPS) array for the combined string
+func computeLPS(s string) []int {
+	n := len(s)
+	LPS := make([]int, n)
+
+	i, j := 1, 0
+
+	// Iterate on the string
+	for i < n {
+		// If the character matches
+		if s[i] == s[j] {
+			LPS[i] = j + 1
+			i++
+			j++
+		} else {
+			// Trace back j pointer till it does not match
+			for j > 0 && s[i] != s[j] {
+				j = LPS[j-1]
+			}
+
+			// If a match is found after tracing back
+			if s[i] == s[j] {
+				LPS[i] = j + 1
+				j++
+			}
+			i++
+		}
+	}
+	return LPS
+}
+
+// Function to find all indices of pattern in text
+func search(pat string, txt string) []int {
+	// Combined string (pattern + '$' + text)
+	s := pat + "$" + txt
+
+	// Function call to find the LPS array for the combined string
+	LPS := computeLPS(s)
+
+	m := len(pat)
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i < len(s); i++ {
+		if LPS[i] == m {
+			ans = append(ans, i-2*m)
+		}
+	}
+
+	return ans
+}
+
+func main() {
+	text := "xyzabxyzabxyz"
+	pattern := "xyz"
+
+	// Function call to find all indices of pattern in text
+	ans := search(pattern, text)
+
+	// Output
+	for _, ind := range ans {
+		fmt.Printf("%d ", ind)
+	}
+}
+</code></pre></div></div></div>
+
+<h3>Complexity Analysis:</h3>
+<p>
+    <strong>Time Complexity: O(N)</strong>, where N is the length of the combined string <br>
+    Computing the LPS array takes O(N) time: 
+    </p><ul>
+        <li>The function iterates over the string (s) using i, which goes from 1 to N.</li>
+        <li>Inside the loop:
+            <ul>
+                <li>If s[i] == s[j], both i and j are incremented → Constant time operation.</li>
+                <li>If s[i] != s[j], j is backtracked using LPS[j-1] inside a while loop.</li>
+            </ul>
+        </li>
+    </ul> <br>
+    Note that the total number of backtracking steps (decrementing j via LPS[j-1]) across all iterations is <strong>at most n</strong> because: 
+    <ul>
+        <li>Each decrement follows a previous increment of j, meaning j moves forward and backward at most n times.</li>
+        <li>This ensures that the while loop runs in <strong>amortized O(1) time per character</strong>.</li>
+    </ul> <br>
+    Finding the matches requires iterating on the LPS taking O(N) time. Thus, the overall time complexity is O(N). <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, to store the LPS array.
+<p></p></body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Compute the Longest prefix suffix array for the combined string
+    vector&lt;int&gt; computeLPS(string s) {
+        int n = s.size(); // size of string
+        
+        // To store the longest prefix suffix
+        vector&lt;int&gt; LPS(n, 0);
+        
+        // Iterate on the string
+        for(int i=1; i &lt; n; i++) {
+            
+            // For all possible lengths
+            for(int len = 1; len &lt; i; len++) {
+                if(s.substr(0, len) == s.substr(i-len+1, len))
+                    LPS[i] = len;
+            }
+        }
+        
+        return LPS; // Return the computed LPS array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector&lt;int&gt; search(string pattern, string text)   {
+        string s = pattern + &#x27;$&#x27; + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector&lt;int&gt; LPS = computeLPS(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i &lt; s.size(); i++) {
+            if(LPS[i] == m) ans.push_back(i - 2*m);
+        }
+        
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] ComputeLPS(string s)
+    {
+        int n = s.Length; // size of string
+
+        // To store the longest prefix suffix
+        int[] lps = new int[n];
+
+        // Iterate on the string
+        for (int i = 1; i &lt; n; i++)
+        {
+            // For all possible lengths
+            for (int len = 1; len &lt; i; len++)
+            {
+                if (s.Substring(0, len).Equals(s.Substring(i - len + 1, len)))
+                {
+                    lps[i] = len;
+                }
+            }
+        }
+
+        return lps; // Return the computed LPS array
+    }
+
+    public List&lt;int&gt; Search(string pat, string txt)
+    {
+        string s = pat + &#x27;$&#x27; + txt; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] lps = ComputeLPS(s);
+
+        // Length of pattern and text
+        int n = txt.Length;
+        int m = pat.Length;
+
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i &lt; s.Length; i++)
+        {
+            if (lps[i] == m)
+            {
+                ans.Add(i - 2 * m);
+            }
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Compute the Longest prefix suffix array for the combined string
+func computeLPS(s string) []int {
+	n := len(s) // size of string
+
+	// To store the longest prefix suffix
+	LPS := make([]int, n)
+
+	// Iterate on the string
+	for i := 1; i &lt; n; i++ {
+		// For all possible lengths
+		for length := 1; length &lt; i; length++ {
+			if s[:length] == s[i-length+1:i+1] {
+				LPS[i] = length
+			}
+		}
+	}
+
+	return LPS // Return the computed LPS array
+}
+
+// Function to find all indices of pattern in text
+func search(pattern string, text string) []int {
+	s := pattern + &quot;$&quot; + text // Combined string
+
+	// Function call to find the LPS array for the combined string
+	LPS := computeLPS(s)
+
+	// Length of pattern
+	m := len(pattern)
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i &lt; len(s); i++ {
+		if LPS[i] == m {
+			ans = append(ans, i-2*m)
+		}
+	}
+
+	return ans
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] computeLPS(String s) {
+        int n = s.length(); // size of string
+
+        // To store the longest prefix suffix
+        int[] LPS = new int[n];
+
+        // Iterate on the string
+        for (int i = 1; i &lt; n; i++) {
+
+            // For all possible lengths
+            for (int len = 1; len &lt; i; len++) {
+                if (s.substring(0, len).equals(s.substring(i - len + 1, i + 1))) {
+                    LPS[i] = len;
+                }
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    public List&lt;Integer&gt; search(String pattern, String text) {
+        String s = pattern + &#x27;$&#x27; + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] LPS = computeLPS(s);
+
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+
+        // To store the result
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i &lt; s.length(); i++) {
+            if (LPS[i] == m) ans.add(i - 2 * m);
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    computeLPS(s) {
+        const n = s.length; // size of string
+
+        // To store the longest prefix suffix
+        const LPS = new Array(n).fill(0);
+
+        // Iterate on the string
+        for (let i = 1; i &lt; n; i++) {
+
+            // For all possible lengths
+            for (let len = 1; len &lt; i; len++) {
+                if (s.substring(0, len) === s.substring(i - len + 1, i + 1)) {
+                    LPS[i] = len;
+                }
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    search(pattern, text) {
+        const s = pattern + &#x27;$&#x27; + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        const LPS = this.computeLPS(s);
+
+        // Length of pattern and text
+        const n = text.length, m = pattern.length;
+
+        // To store the result
+        const ans = [];
+
+        // Iterate on the combined string after the delimiter
+        for (let i = m + 1; i &lt; s.length; i++) {
+            if (LPS[i] === m) {
+                ans.push(i - 2 * m);
+            }
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Compute the Longest prefix suffix array for the combined string
+    def computeLPS(self, s):
+        n = len(s)  # size of string
+
+        # To store the longest prefix suffix
+        LPS = [0] * n
+
+        # Iterate on the string
+        for i in range(1, n):
+
+            # For all possible lengths
+            for length in range(1, i):
+                if s[:length] == s[i - length + 1: i + 1]:
+                    LPS[i] = length
+
+        return LPS  # Return the computed LPS array
+
+    # Function to find all indices of pattern in text
+    def search(self, pattern, text):
+        s = pattern + &#x27;$&#x27; + text  # Combined string
+
+        # Function call to find the LPS array for the combined string
+        LPS = self.computeLPS(s)
+
+        # Length of pattern and text
+        n, m = len(text), len(pattern)
+
+        # To store the result
+        ans = []
+
+        # Iterate on the combined string after the delimiter
+        for i in range(m + 1, len(s)):
+            if LPS[i] == m:
+                ans.append(i - 2 * m)
+
+        return ans</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Compute the Longest prefix suffix array for the combined string
+    vector&lt;int&gt; computeLPS(string s) {
+        int n = s.size(); // size of string
+        
+        // To store the longest prefix suffix
+        vector&lt;int&gt; LPS(n, 0);
+        
+        int i = 1, j = 0;
+        
+        // Iterate on the string
+        while(i &lt; n) {
+            // If the character matches
+            if(s[i] == s[j]) {
+                LPS[i] = j+1;
+                i++, j++;
+            }
+            
+            // Otherwise
+            else {
+                // Trace back j pointer till it does not match
+                while(j &gt; 0 &amp;&amp; s[i] != s[j]) {
+                    j = LPS[j-1];
+                }
+                
+                // If a match is found
+                if(s[i] == s[j]) {
+                    LPS[i] = j+1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+        
+        return LPS; // Return the computed LPS array
+    }
+    
+public:
+    // Function to find all indices of pattern in text
+    vector&lt;int&gt; search(string pattern, string text)   {
+        string s = pattern + &#x27;$&#x27; + text; // Combined string
+        
+        // Function call to find the Z array for the combined string
+        vector&lt;int&gt; LPS = computeLPS(s);
+        
+        // Length of pattern and text
+        int n = text.size(), m = pattern.size();
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+        
+        // Iterate on the combined string after the delimiter
+        for(int i = m+1; i &lt; s.size(); i++) {
+            if(LPS[i] == m) ans.push_back(i - 2*m);
+        }
+        
+        return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] ComputeLPS(string s)
+    {
+        int n = s.Length; // size of string
+
+        // To store the longest prefix suffix
+        int[] lps = new int[n]; // C# arrays are zero-initialized by default
+
+        int i = 1, j = 0;
+
+        // Iterate on the string
+        while (i &lt; n)
+        {
+            // If the character matches
+            if (s[i] == s[j])
+            {
+                lps[i] = j + 1;
+                i++;
+                j++;
+            }
+            // Otherwise
+            else
+            {
+                // Trace back j pointer till it does not match
+                while (j &gt; 0 &amp;&amp; s[i] != s[j])
+                {
+                    j = lps[j - 1];
+                }
+
+                // If a match is found
+                if (s[i] == s[j])
+                {
+                    lps[i] = j + 1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+
+        return lps; // Return the computed LPS array
+    }
+
+    public List&lt;int&gt; Search(string pat, string txt)
+    {
+        string s = pat + &#x27;$&#x27; + txt; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] lps = this.ComputeLPS(s);
+
+        // Length of pattern and text
+        int n = txt.Length;
+        int m = pat.Length;
+
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i &lt; s.Length; i++)
+        {
+            if (lps[i] == m)
+            {
+                ans.Add(i - 2 * m);
+            }
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Compute the Longest Prefix Suffix (LPS) array for the combined string
+func computeLPS(s string) []int {
+	n := len(s)
+	LPS := make([]int, n)
+
+	i, j := 1, 0
+
+	// Iterate on the string
+	for i &lt; n {
+		// If the character matches
+		if s[i] == s[j] {
+			LPS[i] = j + 1
+			i++
+			j++
+		} else {
+			// Trace back j pointer till it does not match
+			for j &gt; 0 &amp;&amp; s[i] != s[j] {
+				j = LPS[j-1]
+			}
+
+			// If a match is found after tracing back
+			if s[i] == s[j] {
+				LPS[i] = j + 1
+				j++
+			}
+			i++
+		}
+	}
+	return LPS
+}
+
+// Function to find all indices of pattern in text
+func search(pat string, txt string) []int {
+	// Combined string (pattern + &#x27;$&#x27; + text)
+	s := pat + &quot;$&quot; + txt
+
+	// Function call to find the LPS array for the combined string
+	LPS := computeLPS(s)
+
+	m := len(pat)
+
+	// To store the result
+	var ans []int
+
+	// Iterate on the combined string after the delimiter
+	for i := m + 1; i &lt; len(s); i++ {
+		if LPS[i] == m {
+			ans = append(ans, i-2*m)
+		}
+	}
+
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    private int[] computeLPS(String s) {
+        int n = s.length(); // size of string
+
+        // To store the longest prefix suffix
+        int[] LPS = new int[n];
+
+        int i = 1, j = 0;
+
+        // Iterate on the string
+        while (i &lt; n) {
+            // If the character matches
+            if (s.charAt(i) == s.charAt(j)) {
+                LPS[i] = j + 1;
+                i++;
+                j++;
+            }
+
+            // Otherwise
+            else {
+                // Trace back j pointer till it does not match
+                while (j &gt; 0 &amp;&amp; s.charAt(i) != s.charAt(j)) {
+                    j = LPS[j - 1];
+                }
+
+                // If a match is found
+                if (s.charAt(i) == s.charAt(j)) {
+                    LPS[i] = j + 1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    public List&lt;Integer&gt; search(String pattern, String text) {
+        String s = pattern + &#x27;$&#x27; + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        int[] LPS = computeLPS(s);
+
+        // Length of pattern and text
+        int n = text.length(), m = pattern.length();
+
+        // To store the result
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+
+        // Iterate on the combined string after the delimiter
+        for (int i = m + 1; i &lt; s.length(); i++) {
+            if (LPS[i] == m) ans.add(i - 2 * m);
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Compute the Longest prefix suffix array for the combined string
+    computeLPS(s) {
+        let n = s.length; // size of string
+
+        // To store the longest prefix suffix
+        let LPS = new Array(n).fill(0);
+
+        let i = 1, j = 0;
+
+        // Iterate on the string
+        while (i &lt; n) {
+            // If the character matches
+            if (s[i] === s[j]) {
+                LPS[i] = j + 1;
+                i++;
+                j++;
+            }
+
+            // Otherwise
+            else {
+                // Trace back j pointer till it does not match
+                while (j &gt; 0 &amp;&amp; s[i] !== s[j]) {
+                    j = LPS[j - 1];
+                }
+
+                // If a match is found
+                if (s[i] === s[j]) {
+                    LPS[i] = j + 1;
+                    j++;
+                }
+                i += 1;
+            }
+        }
+
+        return LPS; // Return the computed LPS array
+    }
+
+    // Function to find all indices of pattern in text
+    search(pattern, text) {
+        let s = pattern + &#x27;$&#x27; + text; // Combined string
+
+        // Function call to find the LPS array for the combined string
+        let LPS = this.computeLPS(s);
+
+        // Length of pattern and text
+        let n = text.length, m = pattern.length;
+
+        // To store the result
+        let ans = [];
+
+        // Iterate on the combined string after the delimiter
+        for (let i = m + 1; i &lt; s.length; i++) {
+            if (LPS[i] === m) ans.push(i - 2 * m);
+        }
+
+        return ans;
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Compute the Longest prefix suffix array for the combined string
+    def computeLPS(self, s):
+        n = len(s)  # size of string
+
+        # To store the longest prefix suffix
+        LPS = [0] * n
+
+        i, j = 1, 0
+
+        # Iterate on the string
+        while i &lt; n:
+            # If the character matches
+            if s[i] == s[j]:
+                LPS[i] = j + 1
+                i += 1
+                j += 1
+            
+            # Otherwise
+            else:
+                # Trace back j pointer till it does not match
+                while j &gt; 0 and s[i] != s[j]:
+                    j = LPS[j - 1]
+                
+                # If a match is found
+                if s[i] == s[j]:
+                    LPS[i] = j + 1
+                    j += 1
+                
+                i += 1
+        
+        return LPS  # Return the computed LPS array
+
+    # Function to find all indices of pattern in text
+    def search(self, pattern, text):
+        s = pattern + &#x27;$&#x27; + text  # Combined string
+
+        # Function call to find the LPS array for the combined string
+        LPS = self.computeLPS(s)
+
+        # Length of pattern and text
+        n, m = len(text), len(pattern)
+
+        # To store the result
+        ans = []
+
+        # Iterate on the combined string after the delimiter
+        for i in range(m + 1, len(s)):
+            if LPS[i] == m:
+                ans.append(i - 2 * m)
+
+        return ans</code></pre></div>
+</body>
+</html>

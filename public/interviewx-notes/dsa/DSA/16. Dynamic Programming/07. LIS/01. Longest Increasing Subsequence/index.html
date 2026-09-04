@@ -1,0 +1,2695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Longest Increasing Subsequence</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Longest Increasing Subsequence</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Binary Search</span><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an integer array nums, return the length of the longest strictly increasing subsequence.</p><p><br></p><p>A subsequence is a sequence derived from an array by deleting some or no elements without changing the order of the remaining elements. For example, [3, 6, 2, 7] is a subsequence of [0, 3, 1, 6, 2, 2, 7].</p><p><br></p><p>The task is to find the length of the longest subsequence in which every element is greater than the previous one.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= nums.length <= 10<sup>5</sup></li><li>-10<sup>6</sup> <= nums[i] <= 10<sup>6</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: nums = [10, 9, 2, 5, 3, 7, 101, 18]</p><p>Output: 4</p><p>Explanation: The longest increasing subsequence is [2, 3, 7, 101], and its length is 4.</p><h3>Example 2</h3><p>Input: nums = [0, 1, 0, 3, 2, 3]</p><p>Output: 4</p><p>Explanation: The longest increasing subsequence is [0, 1, 2, 3], and its length is 4</p><h3>Example 3</h3><p>Input: nums = [7, 7, 7, 7, 7, 7, 7]</p></div>
+
+<div class="section"><h2>Editorial: Memoization</h2><p>
+    A naive approach to solve this problem is to generate all the possible subsequences (using Power Set or Recursion method), check if the subsequence is increasing and then store the longest among them. Clearly, this approach will not be a useful approach for the given problem as it will end up taking <strong>O(2<sup>N</sup>)</strong>, where N is the number of elements in the given array, i.e., exponential time complexity.
+</p>
+
+<h1>Recursion</h1>
+<p>
+    <h3>Intuition:</h3>
+    The idea is to generate all possible <strong>increasing</strong> subsequences and find the length of the longest among them. As we need to find all possible subsequences, recusion can be used to solve the problem.
+
+    <h3>Approach:</h3>
+
+    <h5>Steps to form the recursive solution:</h5>
+    <ul>
+        <li><strong>Express the problem in terms of indices:</strong> Let us define a function f(ind) that represents the length of the Longest Increasing Subsequence (LIS) starting from ind. Ultimately, the result will be the f(0). <br>
+            The problem is now reduced to calculating f(0).
+        </li>
+        <li>
+            <strong>Try all possible choices for each index:</strong> At each index ind, we consider whether the current element should extend a previous subsequence or not. This gives an idea to introduce another parameter prev_ind in the function such that the following two possibilities arise:
+                <ul>
+                    <li><strong>Not Take case (If arr[prev_ind] >= arr[ind]):</strong> In such case, the current element cannot be taken into consideration because the goal is to form an increasing subsequence. Since the element is not taken, the prev_ind remains the same and the call simply jumps to the next index i.e., f(ind+1, prev_ind).
+                    </li>
+                    <li><strong>Take case (If arr[prev_ind] < arr[ind]):</strong> In such case, the current element can be added to the previously considered subsequence (ending at prev_ind) thus increasing the length of LIS by 1 and the call simply jumps to func(ind + 1, ind). <br><br>
+                        Note that, the prev_ind is updated to ind, as now the ind becomes the last selected index for the further subsequence.
+                    </li>
+                    <li><strong>Initial case when the subsequence is empty:</strong> Initially, when the function call begins, there is no element chosen for the subsequence. To mark this, prev_ind can be set as -1 representing that the current element will be the first element that will be taken into consideration. <br><br>
+                        Hence, to get the answer, the initial function call must be f(0, -1). 
+                    
+                    </li> 
+                </ul>
+        </li>
+        <li><strong>Return the longest length of LIS found:</strong> After the take and notTake calls, the longest length of the subsequence found can be returned as the answer to the current function call.</li>
+    </ul>
+    <br>
+
+    <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+/* Function to return the length of LIS starting from 
+index i with the element prev_ind element refers to
+the previously selected element in the subsequence*/
+func(int i, int prev_ind, int arr[]) {
+    
+    // Not Take case
+    int notTake = func(i+1, prev_ind, arr);
+    
+    // Take case
+    int take = 0;
+    
+    // If no element is chosen till now
+    if(prev_ind == -1)
+        take = func(i+1, i, arr) + 1;
+    
+    /* Else the current element can be 
+    taken if it is strictly increasing */
+    else if(arr[i] > arr[prev_ind])
+        take = func(i+1, i, arr) + 1;
+    
+    // Return the maximum length obtained from both cases
+    return max(take, notTake);
+}</code></pre></div></div></div>
+
+    <h5>Base cases:</h5>
+    When the function call reaches the last index, the base case will be called and there will be two cases:
+    <ul>
+        <li><strong>Take case:</strong> If the last index element is greater than the prev_ind element in the subsequnce or if the last index element is the first element in the subsequence, it can be taken in the subsequence and 1 can be returned.</li>
+        <li><strong>Not Take case:</strong> Otherwise, the last index element can not be considered and 0 can be returned.
+        </li>
+    </ul>
+
+    <h3>Solution:</h3>
+
+    Note that submitting the following solution will result in Time Limit Exceeded. 
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Helper function to find the length of LIS
+    int func(int i, int prevInd, vector<int> &arr) {
+        
+        // base case
+        if(i == arr.size() - 1) {
+            if(prevInd == -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+        
+        // Not Take case
+        int notTake = func(i+1, prevInd, arr);
+        
+        int take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd == -1)
+            take = func(i+1, i, arr) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] > arr[prevInd])
+            take = func(i+1, i, arr) + 1;
+        
+        // Return the maximum length obtained from both cases
+        return max(take, notTake);
+    }
+    
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector<int>& nums) {
+        return func(0, -1, nums);
+    }    
+};
+
+
+int main() {
+    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    int lengthOfLIS = sol.LIS(nums);
+    
+    cout << "The length of the LIS for the given array is: " << lengthOfLIS << endl;
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="java" class="language-java">class Solution {
+    // Helper function to find the length of LIS
+    private int func(int i, int prevInd, int[] arr) {
+        
+        // base case
+        if(i == arr.length - 1) {
+            if(prevInd == -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+        
+        // Not Take case
+        int notTake = func(i + 1, prevInd, arr);
+        
+        int take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd == -1)
+            take = func(i + 1, i, arr) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] > arr[prevInd])
+            take = func(i + 1, i, arr) + 1;
+        
+        // Return the maximum length obtained from both cases
+        return Math.max(take, notTake);
+    }
+
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        return func(0, -1, nums);
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] nums = {10, 9, 2, 5, 3, 7, 101, 18};
+
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+
+        System.out.println("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Helper function to find the length of LIS
+    def func(self, i, prevInd, arr):
+        
+        # base case
+        if i == len(arr) - 1:
+            if prevInd == -1 or arr[prevInd] < arr[i]:
+                return 1
+            return 0
+        
+        # Not Take case
+        notTake = self.func(i + 1, prevInd, arr)
+        
+        take = 0  # Take case
+        
+        # If no element is chosen till now
+        if prevInd == -1:
+            take = self.func(i + 1, i, arr) + 1
+        
+        # Else the current element can be 
+        # taken if it is strictly increasing
+        elif arr[i] > arr[prevInd]:
+            take = self.func(i + 1, i, arr) + 1
+        
+        # Return the maximum length obtained from both cases
+        return max(take, notTake)
+
+    # Function to find the longest increasing 
+    # subsequence in the given array
+    def LIS(self, nums):
+        return self.func(0, -1, nums)
+
+
+if __name__ == "__main__":
+    nums = [10, 9, 2, 5, 3, 7, 101, 18]
+
+    # Creating an object of Solution class
+    sol = Solution()
+    lengthOfLIS = sol.LIS(nums)
+
+    print("The length of the LIS for the given array is:", lengthOfLIS)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Helper function to find the length of LIS
+    func(i, prevInd, arr) {
+        
+        // base case
+        if(i === arr.length - 1) {
+            if(prevInd === -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+        
+        // Not Take case
+        let notTake = this.func(i + 1, prevInd, arr);
+        
+        let take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd === -1)
+            take = this.func(i + 1, i, arr) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] > arr[prevInd])
+            take = this.func(i + 1, i, arr) + 1;
+        
+        // Return the maximum length obtained from both cases
+        return Math.max(take, notTake);
+    }
+
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        return this.func(0, -1, nums);
+    }
+}
+
+
+// Main execution
+const nums = [10, 9, 2, 5, 3, 7, 101, 18];
+
+// Creating an object of Solution class
+const sol = new Solution();
+const lengthOfLIS = sol.LIS(nums);
+
+console.log("The length of the LIS for the given array is:", lengthOfLIS);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Helper function to find the length of LIS
+    private int Func(int i, int prevInd, int[] arr)
+    {
+        // base case
+        if (i == arr.Length - 1)
+        {
+            if (prevInd == -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+
+        // Not Take case
+        int notTake = Func(i + 1, prevInd, arr);
+
+        int take = 0; // Take case
+
+        // If no element is chosen till now
+        if (prevInd == -1)
+            take = Func(i + 1, i, arr) + 1;
+        /* Else the current element can be 
+           taken if it is strictly increasing */
+        else if (arr[i] > arr[prevInd])
+            take = Func(i + 1, i, arr) + 1;
+
+        // Return the maximum length obtained from both cases
+        return Math.Max(take, notTake);
+    }
+
+    /* Function to find the longest increasing 
+       subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        return Func(0, -1, nums);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] nums = { 10, 9, 2, 5, 3, 7, 101, 18 };
+
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+
+        Console.WriteLine("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+    "fmt"
+    "sort"
+)
+
+// LIS finds the length of the longest strictly increasing subsequence in nums
+func LIS(nums []int) int {
+    if len(nums) == 0 {
+        return 0
+    }
+
+    // tails[k] will be the smallest possible tail value
+    // of any increasing subsequence of length k+1
+    tails := []int{nums[0]}
+
+    for _, x := range nums[1:] {
+        if x > tails[len(tails)-1] {
+            // extend existing subsequence
+            tails = append(tails, x)
+        } else {
+            // find the first element >= x and replace it
+            i := sort.SearchInts(tails, x)
+            tails[i] = x
+        }
+    }
+    return len(tails)
+}
+
+func main() {
+    nums := []int{10, 9, 2, 5, 3, 7, 101, 18}
+    length := LIS(nums)
+    fmt.Printf("The length of the LIS for the given array is: %d\n", length)
+}
+</code></pre></div></div></div>
+
+    <h3>Complexity Analysis:</h3>
+    <strong>Time Complexity: O(2<sup>N</sup>)</strong>, where N represents the number of elements in the given array. <br>
+    In each function call, two recursive calls are made (take and not take) resulting in an exponential time complexity. <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, because of the recursion stack space.
+</p>
+<hr>
+
+<h1>Memoization</h1>
+<p>
+    If you draw the recursion tree, you will see that there are overlapping subproblems. Hence the DP approach can be applied to the recursive solution to optimise it. <br>
+
+    <h5>Steps to convert the recursive solution to the Memoization solution:</h5>
+    <ul>
+        <li><strong>Declare a dp array of size n*n:</strong> There are two states of dp which are: 
+            <ul>
+                <li><strong>ind:</strong> which can go from 0 to n-1, requiring a total of n indices.</li>
+                <li><strong>prev_ind:</strong> which can go from -1 to n-2, requiring a total of (n-2 -(-1) +1) or n states.</li>
+            </ul>
+            
+            <h6>Important:</h6>
+            Note that there is no index as -1, hence, to store the state (prev_ind = -1), it is required to do a co-ordinate shift. We can map the -1 index to 0, 0 index to 1, and so on.... <br><br>
+
+            Hence, a 2D dp array is needed where dp[ind][prev_ind+1] stores the result of the function call func(ind, prev_ind). The dp array stores the calculations of subproblems hence it is initialized with -1, to indicate that no subproblem has been solved yet.
+        </li>
+        <li><strong>While encountering an overlapping subproblem:</strong> When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+        <li><strong>Store the value of subproblem:</strong> Whenever, a subproblem is enocountered and it is not solved yet (the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array before returning the function call.</li>
+    </ul>
+
+
+    <h3>Note</h3>
+    Note that submitting the following code will throw a runtime error because of the tight constraints set for the problem. N can go upto 10<sup>5</sup> and declaring a 2D dp of size N*N will require 10<sup>10</sup> space causing Memory Limit Exceeded resulting in runtime error. <br>
+
+
+    <h3>Solution:</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    // Helper function to find the length of LIS
+    int func(int i, int prevInd, vector<int> &arr, vector<vector<int>> &dp) {
+        
+        // base case
+        if(i == arr.size() - 1) {
+            if(prevInd == -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+        
+        // If subproblem is already calculated
+        if(dp[i][prevInd + 1] != -1) return dp[i][prevInd + 1];
+        
+        // Not Take case
+        int notTake = func(i+1, prevInd, arr, dp);
+        
+        int take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd == -1)
+            take = func(i+1, i, arr, dp) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] > arr[prevInd])
+            take = func(i+1, i, arr, dp) + 1;
+        
+        // Return the maximum length obtained from both cases
+        return dp[i][prevInd + 1] = max(take, notTake);
+    }
+    
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector<int>& nums) {
+        int n = nums.size();
+        
+        // DP array
+        vector<vector<int>> dp(n, vector<int>(n+1, -1));
+        
+        return func(0, -1, nums, dp);
+    }    
+};
+
+
+int main() {
+    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    int lengthOfLIS = sol.LIS(nums);
+    
+    cout << "The length of the LIS for the given array is: " << lengthOfLIS << endl;
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Helper function to find the length of LIS
+    private int func(int i, int prevInd, int[] arr, int[][] dp) {
+        
+        // base case
+        if(i == arr.length - 1) {
+            if(prevInd == -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+        
+        // If subproblem is already calculated
+        if(dp[i][prevInd + 1] != -1) return dp[i][prevInd + 1];
+        
+        // Not Take case
+        int notTake = func(i + 1, prevInd, arr, dp);
+        
+        int take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd == -1)
+            take = func(i + 1, i, arr, dp) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] > arr[prevInd])
+            take = func(i + 1, i, arr, dp) + 1;
+        
+        // Return the maximum length obtained from both cases
+        return dp[i][prevInd + 1] = Math.max(take, notTake);
+    }
+
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+
+        // DP array
+        int[][] dp = new int[n][n + 1];
+        for(int[] row : dp)
+            Arrays.fill(row, -1);
+
+        return func(0, -1, nums, dp);
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] nums = {10, 9, 2, 5, 3, 7, 101, 18};
+
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+
+        System.out.println("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Helper function to find the length of LIS
+    def func(self, i, prevInd, arr, dp):
+        
+        # base case
+        if i == len(arr) - 1:
+            if prevInd == -1 or arr[prevInd] < arr[i]:
+                return 1
+            return 0
+        
+        # If subproblem is already calculated
+        if dp[i][prevInd + 1] != -1:
+            return dp[i][prevInd + 1]
+        
+        # Not Take case
+        notTake = self.func(i + 1, prevInd, arr, dp)
+        
+        take = 0  # Take case
+        
+        # If no element is chosen till now
+        if prevInd == -1:
+            take = self.func(i + 1, i, arr, dp) + 1
+        
+        # Else the current element can be 
+        # taken if it is strictly increasing
+        elif arr[i] > arr[prevInd]:
+            take = self.func(i + 1, i, arr, dp) + 1
+        
+        # Return the maximum length obtained from both cases
+        dp[i][prevInd + 1] = max(take, notTake)
+        return dp[i][prevInd + 1]
+
+    # Function to find the longest increasing 
+    # subsequence in the given array
+    def LIS(self, nums):
+        n = len(nums)
+
+        # DP array
+        dp = [[-1] * (n + 1) for _ in range(n)]
+
+        return self.func(0, -1, nums, dp)
+
+
+if __name__ == "__main__":
+    nums = [10, 9, 2, 5, 3, 7, 101, 18]
+
+    # Creating an object of Solution class
+    sol = Solution()
+    lengthOfLIS = sol.LIS(nums)
+
+    print("The length of the LIS for the given array is:", lengthOfLIS)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Helper function to find the length of LIS
+    func(i, prevInd, arr, dp) {
+        
+        // base case
+        if(i === arr.length - 1) {
+            if(prevInd === -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+        
+        // If subproblem is already calculated
+        if(dp[i][prevInd + 1] !== -1) return dp[i][prevInd + 1];
+        
+        // Not Take case
+        let notTake = this.func(i + 1, prevInd, arr, dp);
+        
+        let take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd === -1)
+            take = this.func(i + 1, i, arr, dp) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] > arr[prevInd])
+            take = this.func(i + 1, i, arr, dp) + 1;
+        
+        // Return the maximum length obtained from both cases
+        dp[i][prevInd + 1] = Math.max(take, notTake);
+        return dp[i][prevInd + 1];
+    }
+
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        const n = nums.length;
+
+        // DP array
+        const dp = Array.from({ length: n }, () => Array(n + 1).fill(-1));
+
+        return this.func(0, -1, nums, dp);
+    }
+}
+
+
+// Main execution
+const nums = [10, 9, 2, 5, 3, 7, 101, 18];
+
+// Creating an object of Solution class
+const sol = new Solution();
+const lengthOfLIS = sol.LIS(nums);
+
+console.log("The length of the LIS for the given array is:", lengthOfLIS);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    // Helper function to find the length of LIS with memoization
+    private int Func(int i, int prevInd, int[] arr, int[,] dp)
+    {
+        int n = arr.Length;
+        // base case
+        if (i == n - 1)
+        {
+            if (prevInd == -1 || arr[prevInd] < arr[i]) return 1;
+            return 0;
+        }
+
+        // If subproblem is already calculated
+        if (dp[i, prevInd + 1] != -1)
+            return dp[i, prevInd + 1];
+
+        // Not Take case
+        int notTake = Func(i + 1, prevInd, arr, dp);
+
+        int take = 0; // Take case
+
+        // If no element is chosen till now
+        if (prevInd == -1)
+            take = Func(i + 1, i, arr, dp) + 1;
+        /* Else the current element can be 
+           taken if it is strictly increasing */
+        else if (arr[i] > arr[prevInd])
+            take = Func(i + 1, i, arr, dp) + 1;
+
+        // Memoize and return the maximum length obtained from both cases
+        dp[i, prevInd + 1] = Math.Max(take, notTake);
+        return dp[i, prevInd + 1];
+    }
+
+    /* Function to find the longest increasing 
+       subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        // DP array, initialized to -1
+        int[,] dp = new int[n, n + 1];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j <= n; j++)
+                dp[i, j] = -1;
+
+        return Func(0, -1, nums, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] nums = { 10, 9, 2, 5, 3, 7, 101, 18 };
+
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+
+        Console.WriteLine("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Helper function to find the length of LIS
+func funcLIS(i, prevInd int, arr []int) int {
+	// Base case
+	if i == len(arr)-1 {
+		if prevInd == -1 || arr[prevInd] < arr[i] {
+			return 1
+		}
+		return 0
+	}
+
+	// Not Take case
+	notTake := funcLIS(i+1, prevInd, arr)
+
+	take := 0 // Take case
+
+	// If no element is chosen till now
+	if prevInd == -1 {
+		take = funcLIS(i+1, i, arr) + 1
+	} else if arr[i] > arr[prevInd] {
+		// Else the current element can be taken if it is strictly increasing
+		take = funcLIS(i+1, i, arr) + 1
+	}
+
+	// Return the maximum length obtained from both cases
+	return max(take, notTake)
+}
+
+// Function to find the longest increasing subsequence in the given array
+func LIS(nums []int) int {
+	return funcLIS(0, -1, nums)
+}
+
+// Helper function to calculate max of two integers
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func main() {
+	nums := []int{10, 9, 2, 5, 3, 7, 101, 18}
+
+	// Function call to find the length of the LIS for the given array
+	lengthOfLIS := LIS(nums)
+
+	// Output the result
+	fmt.Println("The length of the LIS for the given array is:", lengthOfLIS)
+}</code></pre></div></div></div> 
+
+    <h3>Complexity Analysis:</h3>
+    <strong>Time Complexity: O(N<sup>2</sup>)</strong>, where N is the size of the array <br>
+    Because there will be a total of N*N states for which the function will be called. <br><br>
+    <strong>Space Complexity: O(N<sup>2</sup>)</strong>, because of the 2D dp array created taking O(N<sup>2</sup>) space and O(N) recursive stack space. 
+</p></div>
+<div class="section"><h2>Editorial: Tabulation</h2><p>
+    In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:
+
+    <ul>
+        <li><b>Declare a dp array of size [n+1][n+1]:</b> As there are two changing parameters in the recursive solution, i (current index) and prevInd (previous index). The maximum value i can attain is n, where n is the size of the array. The value of prevInd ranges from -1 to n-1, so we shift it by +1 to avoid negative indexing. Hence, we need a 2D dp array of size (n+1) x (n+1). Initialize the dp array with 0.</li>
+
+        <li><b>Setting Base Cases in the Array:</b> In the recursive code, our base condition was when i == n, which means we have exhausted all elements and the LIS length is 0. So in the tabulation approach, initialize the last row of the dp array such that dp[n][*] = 0, representing that no elements are left to be considered.</li>
+
+        <li><b>Iterative Computation Using Loops:</b> Since the recursive call depends on i + 1, we fill the dp table in a bottom-up manner. Start iterating i from n-1 down to 0, and for each i, iterate prevInd from i-1 down to -1. For every state (i, prevInd), compute:
+            <ul>
+                <li><b>Not Take case:</b> Move to the next index without taking the current element.</li>
+                <li><b>Take case:</b> Take the current element only if  prevInd == -1 or nums[i] > nums[prevInd]. Instead of recursive calls, use the already computed dp values to fill the current state.</li>
+            </ul>
+        </li>
+        <li><b>Returning the answer:</b> At the end of the bottom-up computation, dp[0][0] will store the length of the longest increasing subsequence, as it represents starting from index 0 with no previously chosen element.</li>
+    </ul>
+</p>
+
+<h3>Note:</h3>
+<p>
+    Note that submitting the following code will throw a runtime error because of the tight constraints set for the problem. N can go upto 105 and declaring a 2D dp of size N*N will require 1010 space causing Memory Limit Exceeded resulting in runtime error.
+</p>
+
+<h3>Solution:</h3>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector<int>& nums) {
+        int n = nums.size();
+        
+        // DP array
+        vector<vector<int>> dp(n+1, vector<int>(n+1, 0));
+        
+        // Fill the DP table
+        for(int i = n-1; i >= 0; i--) {
+            for(int prevInd = i-1; prevInd >= -1; prevInd--) {
+                // Not Take case
+                int notTake = dp[i+1][prevInd+1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if(prevInd == -1 || nums[i] > nums[prevInd]) {
+                    take = dp[i+1][i+1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i][prevInd+1] = max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0][0];
+    }    
+};
+
+
+int main() {
+    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    int lengthOfLIS = sol.LIS(nums);
+    
+    cout << "The length of the LIS for the given array is: " << lengthOfLIS << endl;
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+        
+        // DP array
+        int[][] dp = new int[n + 1][n + 1];
+        
+        // Fill the DP table
+        for (int i = n - 1; i >= 0; i--) {
+            for (int prevInd = i - 1; prevInd >= -1; prevInd--) {
+                // Not Take case
+                int notTake = dp[i + 1][prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] > nums[prevInd]) {
+                    take = dp[i + 1][i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i][prevInd + 1] = Math.max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0][0];
+    }    
+}
+
+public class Main {
+    public static void main(String[] args) {
+        int[] nums = {10, 9, 2, 5, 3, 7, 101, 18};
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+        
+        System.out.println("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    ''' Function to find the longest increasing 
+    subsequence in the given array '''
+    def LIS(self, nums):
+        n = len(nums)
+        
+        # DP array
+        dp = [[0] * (n + 1) for _ in range(n + 1)]
+        
+        # Fill the DP table
+        for i in range(n - 1, -1, -1):
+            for prevInd in range(i - 1, -2, -1):
+                # Not Take case
+                notTake = dp[i + 1][prevInd + 1]
+                
+                # Take case
+                take = 0
+                
+                # Check for the Take case
+                if prevInd == -1 or nums[i] > nums[prevInd]:
+                    take = dp[i + 1][i + 1] + 1
+                
+                # Store the maximum of the two cases
+                dp[i][prevInd + 1] = max(take, notTake)
+        
+        # Return the stored result
+        return dp[0][0]
+
+
+def main():
+    nums = [10, 9, 2, 5, 3, 7, 101, 18]
+    
+    # Creating an object of Solution class
+    sol = Solution()
+    lengthOfLIS = sol.LIS(nums)
+    
+    print("The length of the LIS for the given array is:", lengthOfLIS)
+
+
+if __name__ == "__main__":
+    main()
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        let n = nums.length;
+        
+        // DP array
+        let dp = Array.from({ length: n + 1 }, () => Array(n + 1).fill(0));
+        
+        // Fill the DP table
+        for (let i = n - 1; i >= 0; i--) {
+            for (let prevInd = i - 1; prevInd >= -1; prevInd--) {
+                // Not Take case
+                let notTake = dp[i + 1][prevInd + 1];
+                
+                // Take case
+                let take = 0;
+                
+                // Check for the Take case
+                if (prevInd === -1 || nums[i] > nums[prevInd]) {
+                    take = dp[i + 1][i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i][prevInd + 1] = Math.max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0][0];
+    }    
+}
+
+function main() {
+    let nums = [10, 9, 2, 5, 3, 7, 101, 18];
+    
+    // Creating an object of Solution class
+    let sol = new Solution();
+    let lengthOfLIS = sol.LIS(nums);
+    
+    console.log("The length of the LIS for the given array is: " + lengthOfLIS);
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        
+        // DP array
+        int[,] dp = new int[n + 1, n + 1];
+        
+        // Fill the DP table
+        for (int i = n - 1; i >= 0; i--)
+        {
+            for (int prevInd = i - 1; prevInd >= -1; prevInd--)
+            {
+                // Not Take case
+                int notTake = dp[i + 1, prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] > nums[prevInd])
+                {
+                    take = dp[i + 1, i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i, prevInd + 1] = Math.Max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0, 0];
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        int[] nums = { 10, 9, 2, 5, 3, 7, 101, 18 };
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+        
+        Console.WriteLine("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+/* Function to find the longest increasing 
+subsequence in the given array */
+func LIS(nums []int) int {
+	n := len(nums)
+
+	// DP array
+	dp := make([][]int, n+1)
+	for i := range dp {
+		dp[i] = make([]int, n+1)
+	}
+
+	// Fill the DP table
+	for i := n - 1; i >= 0; i-- {
+		for prevInd := i - 1; prevInd >= -1; prevInd-- {
+			// Not Take case
+			notTake := dp[i+1][prevInd+1]
+
+			// Take case
+			take := 0
+
+			// Check for the Take case
+			if prevInd == -1 || nums[i] > nums[prevInd] {
+				take = dp[i+1][i+1] + 1
+			}
+
+			// Store the maximum of the two cases
+			if take > notTake {
+				dp[i][prevInd+1] = take
+			} else {
+				dp[i][prevInd+1] = notTake
+			}
+		}
+	}
+
+	// Return the stored result
+	return dp[0][0]
+}
+
+func main() {
+	nums := []int{10, 9, 2, 5, 3, 7, 101, 18}
+
+	lengthOfLIS := LIS(nums)
+
+	fmt.Println("The length of the LIS for the given array is:", lengthOfLIS)
+}
+</code></pre></div></div></div>
+
+
+<h3>Complexity Analysis:</h3>
+<p>
+    <b>Time Complexity: O(N<sup>2</sup>)</b>, where N is the size of the array. <br>
+    There are two nested loops which accounts for O(N<sup>2</sup>) iterations. <br><br>
+
+    <b>Space Complexity: O(N<sup>2</sup>)</b>, as we are using a 2D array of size N*N to store the results of subproblems.
+</p>
+
+</div>
+<div class="section"><h2>Editorial: Space Optimization</h2><p>
+    If we observe the relation obtained in the tabulation approach, <br>
+    dp[i][prevInd+1] = max(dp[i+1][prevInd+1], 1 + dp[i+1][i+1]), <br><br>
+    
+    We can see that to calculate the value of a cell of the dp array, only the values from the next row (i + 1) are required. Hence, instead of storing the entire 2D DP array, we only need to keep track of two 1D arrays, one representing the next row and one for the current row. Therefore, the solution can be space optimized. <br><br>
+
+    <b>Note:</b> We first need to initialize the base case corresponding to i = n (i.e., when we are beyond the last index), which was implicitly handled in the tabulation approach.
+</p>
+
+<h5>Steps to consider for space optimization:</h5>
+<p>
+    <ul>
+        <li>Declare two arrays to store the results of subproblems: <b>next</b> and <b>cur</b>. The <b>next</b> array represents the DP values for index <b>i + 1</b>, and it is initially filled with zeros, matching the base case of the tabulation approach.</li>
+
+        <li>Iterate over the array in reverse order (from i = n - 1 to 0) and for each index, compute the values of the cur array using the same logic as in tabulation.</li>
+
+        <li>For each valid prevInd, calculate:
+            <ul>
+                <li>notTake using next[prevInd + 1]</li>
+                <li>take only if prevInd == -1 or nums[i] > nums[prevInd], using 1 + next[i + 1]</li>
+            </ul>
+
+        </li>
+        <li>Store the maximum of take and notTake in cur[prevInd + 1], since the problem asks for the maximum length of the increasing subsequence.</li>
+        <li>After completing the computation for a fixed i, update next with cur for the next iteration. At the end, the answer will be stored in next[0], which corresponds to dp[0][0] in the tabulation approach.</li>
+    </ul>
+</p>
+
+<h3>Note:</h3>
+<p>
+    Note that submitting the following code will throw a time limit exceeded error because of the tight constraints set for the problem. N can go up to 10<sup>5</sup> and the time complexity of the code is O(N<sup>2</sup>), which will require 10<sup>10</sup> space, causing Time Limit Exceeded Error.
+</p>
+
+<h3>Solution:</h3>
+ <div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector<int>& nums) {
+        int n = nums.size();
+        
+        // Arrays for computation
+        vector<int> next(n+1, 0), curr(n+1, 0);
+    
+        
+        // Fill the arrays 
+        for(int i = n-1; i >= 0; i--) {
+            for(int prevInd = i-1; prevInd >= -1; prevInd--) {
+                // Not Take case
+                int notTake = next[prevInd+1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if(prevInd == -1 || nums[i] > nums[prevInd]) {
+                    take = next[i+1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd+1] = max(take, notTake);
+            }
+            
+            next = curr;
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+};
+
+
+int main() {
+    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    int lengthOfLIS = sol.LIS(nums);
+    
+    cout << "The length of the LIS for the given array is: " << lengthOfLIS << endl;
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+        
+        // Arrays for computation
+        int[] next = new int[n + 1];
+        int[] curr = new int[n + 1];
+        
+        // Fill the arrays 
+        for (int i = n - 1; i >= 0; i--) {
+            for (int prevInd = i - 1; prevInd >= -1; prevInd--) {
+                // Not Take case
+                int notTake = next[prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] > nums[prevInd]) {
+                    take = next[i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd + 1] = Math.max(take, notTake);
+            }
+            
+            next = curr.clone();
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] nums = {10, 9, 2, 5, 3, 7, 101, 18};
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+        
+        System.out.println("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    ''' Function to find the longest increasing 
+    subsequence in the given array '''
+    def LIS(self, nums):
+        n = len(nums)
+        
+        # Arrays for computation
+        next = [0] * (n + 1)
+        curr = [0] * (n + 1)
+        
+        # Fill the arrays 
+        for i in range(n - 1, -1, -1):
+            for prevInd in range(i - 1, -2, -1):
+                # Not Take case
+                notTake = next[prevInd + 1]
+                
+                # Take case
+                take = 0
+                
+                # Check for the Take case
+                if prevInd == -1 or nums[i] > nums[prevInd]:
+                    take = next[i + 1] + 1
+                
+                # Store the maximum of the two cases
+                curr[prevInd + 1] = max(take, notTake)
+            
+            next = curr[:]
+        
+        # Return the stored result
+        return next[0]
+
+
+def main():
+    nums = [10, 9, 2, 5, 3, 7, 101, 18]
+    
+    # Creating an object of Solution class
+    sol = Solution()
+    lengthOfLIS = sol.LIS(nums)
+    
+    print("The length of the LIS for the given array is:", lengthOfLIS)
+
+
+if __name__ == "__main__":
+    main()
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        let n = nums.length;
+        
+        // Arrays for computation
+        let next = new Array(n + 1).fill(0);
+        let curr = new Array(n + 1).fill(0);
+        
+        // Fill the arrays 
+        for (let i = n - 1; i >= 0; i--) {
+            for (let prevInd = i - 1; prevInd >= -1; prevInd--) {
+                // Not Take case
+                let notTake = next[prevInd + 1];
+                
+                // Take case
+                let take = 0;
+                
+                // Check for the Take case
+                if (prevInd === -1 || nums[i] > nums[prevInd]) {
+                    take = next[i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd + 1] = Math.max(take, notTake);
+            }
+            
+            next = [...curr];
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+}
+
+function main() {
+    let nums = [10, 9, 2, 5, 3, 7, 101, 18];
+    
+    // Creating an object of Solution class
+    let sol = new Solution();
+    let lengthOfLIS = sol.LIS(nums);
+    
+    console.log("The length of the LIS for the given array is: " + lengthOfLIS);
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        
+        // Arrays for computation
+        int[] next = new int[n + 1];
+        int[] curr = new int[n + 1];
+        
+        // Fill the arrays 
+        for (int i = n - 1; i >= 0; i--)
+        {
+            for (int prevInd = i - 1; prevInd >= -1; prevInd--)
+            {
+                // Not Take case
+                int notTake = next[prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] > nums[prevInd])
+                {
+                    take = next[i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd + 1] = Math.Max(take, notTake);
+            }
+            
+            Array.Copy(curr, next, n + 1);
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+}
+
+class Program
+{
+    static void Main()
+    {
+        int[] nums = { 10, 9, 2, 5, 3, 7, 101, 18 };
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+        
+        Console.WriteLine("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+/* Function to find the longest increasing 
+subsequence in the given array */
+func LIS(nums []int) int {
+	n := len(nums)
+
+	// Arrays for computation
+	next := make([]int, n+1)
+	curr := make([]int, n+1)
+
+	// Fill the arrays 
+	for i := n - 1; i >= 0; i-- {
+		for prevInd := i - 1; prevInd >= -1; prevInd-- {
+			// Not Take case
+			notTake := next[prevInd+1]
+
+			// Take case
+			take := 0
+
+			// Check for the Take case
+			if prevInd == -1 || nums[i] > nums[prevInd] {
+				take = next[i+1] + 1
+			}
+
+			// Store the maximum of the two cases
+			if take > notTake {
+				curr[prevInd+1] = take
+			} else {
+				curr[prevInd+1] = notTake
+			}
+		}
+
+		copy(next, curr)
+	}
+
+	// Return the stored result
+	return next[0]
+}
+
+func main() {
+	nums := []int{10, 9, 2, 5, 3, 7, 101, 18}
+
+	lengthOfLIS := LIS(nums)
+
+	fmt.Println("The length of the LIS for the given array is:", lengthOfLIS)
+}
+</code></pre></div></div></div>
+
+
+<h3>Complexity Analysis:</h3>
+<p>
+    <b>Time Complexity: O(N<sup>2</sup>)</b>, where N is the size of the array. <br>
+    Because we are using two nested loops to compute the final result. <br><br>
+
+    <b>Space Complexity: O(N)</b>, because we are using two extra arrays of size N to store the computed values.
+</p>
+
+
+<hr>
+
+<h3>Note</h3>
+<p>
+    There is another way of solving this problem. You may find this approach here: <a href="https://takeuforward.org/plus/dsa/problems/print-longest-increasing-subsequence?category=dynamic-programming&subcategory=lis-dp&tab=editorial&approach=solution" target="_blank">Print Longest Increasing Subsequence</a>.
+</p></div>
+<div class="section"><h2>Editorial: Binary Search</h2><p>
+    <strong>Pre-requisites:</strong> <a href="/plus/dsa/problems/lower-bound-?category=binary-search&subcategory=fundamentals" target="_blank">Lower bound</a>
+</p>
+
+
+<h3>Intuition:</h3>
+<p>
+    To solve the problem efficiently, a greedy approach can be used. Instead of creating new subsequences everytime, we can store the length of LIS as we process elements one by one in the array. 
+
+    <h5>Understanding:</h5>
+    Consider the following array: <code>nums = [1, 5, 7, 2, 3]</code> <br>
+
+    Let us try to find the length of Longest Increase Subsequence step by step taking a temporary array (initially temp is empty):
+    <ul>
+        <li><strong>At i = 0:</strong> The element at index 0 (1) can be added to temp as it is the first element being added. Thus, <br>
+            <span style="display: block; text-align: center;">temp = [1]</span>
+        </li>
+
+        <li><strong>At i = 1:</strong> The element at index 1 (5) can be added to the subsequence as it is greater than the last element in temp, i.e., Since 5 > 1, <br>
+            <span style="display: block; text-align: center;">temp = [1, 5]</span>
+        </li>
+
+        <li><strong>At i = 2:</strong> The element at index 2 (7) can be added to the subsequence as it is greater than the last element in temp, i.e., Since 7 > 5, <br>
+            <span style="display: block; text-align: center;">temp = [1, 5, 7]</span>
+        </li>
+
+        <li><strong>At i = 3:</strong> The element at index 3 is 2 which is <strong>not</strong> greater than the last element, i.e., 2 ≯ 7. Now we cannot add it to the back of the temp array to form an increasing subsequence. Instead, we must find its correct index at which it can be placed in the current subsequence. <br>
+            This gives an idea of using Binary Search to find the index in the <strong>sorted</strong> temp array where the current element can be placed. <br><br>
+
+            As per the current example, the element 2 must be stored in the temp and the correct index where it will be placed is index 1. Hence, the element at index 1 in the temp array is replaced with 2. Thus, <br>
+            <span style="display: block; text-align: center;">temp = [1, 2, 7]</span> <br>
+
+            Note that temp array does not explicitly store the Longest Increasing Subsequence. Instead, the length of temp tells us about the <strong>length</strong> of Longest Increasing Subsequence seen till the current index.        
+        </li>
+        <li><strong>At i = 4:</strong> The element at index 4 is 3 which is <strong>not</strong> greater than the last element, i.e., 3 ≯ 7. Now we cannot add it to the back of the temp array to form an increasing subsequence. Instead, we must find its correct index at which it can be placed in the current subsequence. <br>
+            
+            As per the current example, the element 3 must be stored in the temp and the correct index where it will be placed is index 2. Hence, the element at index 2 in the temp array is replaced with 3. Thus, <br>
+            <span style="display: block; text-align: center;">temp = [1, 2, 3]</span>
+        </li>
+    </ul>
+
+    <h5>Role of Binary Search:</h5>
+    As we process each number in the input array:
+    <ul>
+        <li><strong>If the current number is greater than the last number in temp:</strong> The LIS can be extended by adding the current number to the end of temp.</li>
+        <li><strong>If the current number is smaller or equal to some number in temp:</strong> Replace the smallest number in temp that is greater than or equal to the current number. This ensures that temp remains as small as possible, leaving room for future elements to extend the sequence.</li>
+    </ul>
+
+    Now, in order to efficiently find where to place or replace the current number in temp, we use binary search (Lower Bound functionality).
+</p>
+
+<h3>Approach:</h3>
+<p>
+    <ul>
+        <li>Maintain a temporary list to represent the smallest possible increasing subsequence formed so far.</li>
+        <li>Iterate through each element in the input array:
+            <ul>
+                <li>If the current element is greater than the last element of the temporary list, append it to extend the subsequence.</li>
+                <li>Otherwise, use binary search to find the position in the temporary list where the current element should replace an element to keep the subsequence valid and minimal.</li>
+            </ul>
+        </li>
+        <li>The size of the temporary list at the end of the iteration represents the length of the longest increasing subsequence.</li>
+    </ul>
+</p>
+
+<h3>Solution:</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector<int>& nums) {
+        int n = nums.size();
+        
+        vector<int> temp;
+        temp.push_back(nums[0]);
+        
+        // Iterate on the elements of the array
+        for(int i=1; i < n; i++) {
+            
+            // If the current element can be added to the subsequence
+            if(nums[i] > temp.back()) 
+                temp.push_back(nums[i]); 
+                
+            // Otherwise
+            else {
+                // Index at which the current element must be placed
+                int ind = lower_bound(temp.begin(), temp.end(), nums[i]) -
+                          temp.begin();
+                          
+                // Place the current element in the subsequence
+                temp[ind] = nums[i];
+            }    
+            
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.size();
+    }    
+};
+
+
+int main() {
+    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};
+    
+    // Creating an object of Solution class
+    Solution sol;
+    int lengthOfLIS = sol.LIS(nums);
+    
+    cout << "The length of the LIS for the given array is: " << lengthOfLIS << endl;
+    
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+        
+        List<Integer> temp = new ArrayList<>();
+        temp.add(nums[0]);
+        
+        // Iterate on the elements of the array
+        for (int i = 1; i < n; i++) {
+            
+            // If the current element can be added to the subsequence
+            if (nums[i] > temp.get(temp.size() - 1)) 
+                temp.add(nums[i]); 
+                
+            // Otherwise
+            else {
+                // Index at which the current element must be placed
+                int ind = Collections.binarySearch(temp, nums[i]);
+                if (ind < 0) ind = -(ind + 1);
+                
+                // Place the current element in the subsequence
+                temp.set(ind, nums[i]);
+            }    
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.size();
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int[] nums = {10, 9, 2, 5, 3, 7, 101, 18};
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+        
+        System.out.println("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to find the longest increasing 
+    # subsequence in the given array
+    def LIS(self, nums):
+        n = len(nums)
+        
+        temp = []
+        temp.append(nums[0])
+        
+        # Iterate on the elements of the array
+        for i in range(1, n):
+            
+            # If the current element can be added to the subsequence
+            if nums[i] > temp[-1]:
+                temp.append(nums[i]) 
+            
+            # Otherwise
+            else:
+                # Index at which the current element must be placed
+                ind = self.lower_bound(temp, nums[i])
+                
+                # Place the current element in the subsequence
+                temp[ind] = nums[i]
+        
+        # Return the length of temporary subsequence created so far
+        return len(temp)
+
+    # Binary search to find the index of the smallest element >= target
+    def lower_bound(self, temp, target):
+        left, right = 0, len(temp) - 1
+        while left <= right:
+            mid = (left + right) // 2
+            if temp[mid] < target:
+                left = mid + 1
+            else:
+                right = mid - 1
+        return left
+
+# Example usage
+nums = [10, 9, 2, 5, 3, 7, 101, 18]
+
+# Creating an object of Solution class
+sol = Solution()
+lengthOfLIS = sol.LIS(nums)
+
+print("The length of the LIS for the given array is:", lengthOfLIS)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        let n = nums.length;
+        
+        let temp = [];
+        temp.push(nums[0]);
+        
+        // Iterate on the elements of the array
+        for (let i = 1; i < n; i++) {
+            
+            // If the current element can be added to the subsequence
+            if (nums[i] > temp[temp.length - 1]) 
+                temp.push(nums[i]); 
+                
+            // Otherwise
+            else {
+                // Index at which the current element must be placed
+                let ind = this.lowerBound(temp, nums[i]);
+                
+                // Place the current element in the subsequence
+                temp[ind] = nums[i];
+            }    
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.length;
+    }
+    
+    // Binary search to find the index of the smallest element >= target
+    lowerBound(temp, target) {
+        let left = 0, right = temp.length - 1;
+        while (left <= right) {
+            let mid = Math.floor((left + right) / 2);
+            if (temp[mid] < target) 
+                left = mid + 1;
+            else 
+                right = mid - 1;
+        }
+        return left;
+    }
+}
+
+// Example usage
+let nums = [10, 9, 2, 5, 3, 7, 101, 18];
+
+// Creating an object of Solution class
+let sol = new Solution();
+let lengthOfLIS = sol.LIS(nums);
+
+console.log("The length of the LIS for the given array is:", lengthOfLIS);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    /* Function to find the longest increasing 
+       subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        if (n == 0) return 0;
+        
+        List<int> temp = new List<int>();
+        temp.Add(nums[0]);
+        
+        // Iterate on the elements of the array
+        for (int i = 1; i < n; i++)
+        {
+            // If the current element can be added to the subsequence
+            if (nums[i] > temp[temp.Count - 1])
+            {
+                temp.Add(nums[i]);
+            }
+            // Otherwise
+            else
+            {
+                // Find the index at which the current element must be placed
+                int ind = temp.BinarySearch(nums[i]);
+                if (ind < 0)
+                    ind = ~ind;
+                
+                // Place the current element in the subsequence
+                temp[ind] = nums[i];
+            }
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.Count;
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[] nums = { 10, 9, 2, 5, 3, 7, 101, 18 };
+        
+        // Creating an object of Solution class
+        Solution sol = new Solution();
+        int lengthOfLIS = sol.LIS(nums);
+        
+        Console.WriteLine("The length of the LIS for the given array is: " + lengthOfLIS);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+	"sort"
+)
+
+/* Function to find the longest increasing
+subsequence in the given array */
+func LIS(nums []int) int {
+	n := len(nums)
+	if n == 0 {
+		return 0
+	}
+
+	// Temporary slice to store the increasing subsequence
+	temp := []int{nums[0]}
+
+	// Iterate on the elements of the array
+	for i := 1; i < n; i++ {
+
+		// If the current element can be added to the subsequence
+		if nums[i] > temp[len(temp)-1] {
+			temp = append(temp, nums[i])
+		} else {
+			// Index at which the current element must be placed
+			ind := sort.SearchInts(temp, nums[i])
+
+			// Place the current element in the subsequence
+			temp[ind] = nums[i]
+		}
+	}
+
+	// Return the length of temporary subsequence created so far
+	return len(temp)
+}
+
+func main() {
+	nums := []int{10, 9, 2, 5, 3, 7, 101, 18}
+
+	lengthOfLIS := LIS(nums)
+
+	fmt.Println("The length of the LIS for the given array is:", lengthOfLIS)
+}
+</code></pre></div></div></div>
+
+<h3>Complexity Analysis:</h3>
+<p>
+    <strong>Time Complexity: O(N*logN)</strong>, where N is the size of the given array <br>
+    Since the code leverages the Lower Bound function (implemented using binary search) it results is O(N*logN) complexity. <br><br>
+
+    <strong>Space Complexity: O(N)</strong>, to store the elements in the temp array.
+</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    // Helper function to find the length of LIS using memoization
+    int func(int i, int prevInd, vector&lt;int&gt; &amp;arr, vector&lt;vector&lt;int&gt;&gt; &amp;dp) {
+        // Base case: reached end of array
+        if (i == arr.size()) {
+            return 0;
+        }
+
+        // If already computed
+        if (dp[i][prevInd + 1] != -1) {
+            return dp[i][prevInd + 1];
+        }
+
+        // Option 1: Do not take current element
+        int notTake = func(i + 1, prevInd, arr, dp);
+
+        // Option 2: Take current element if valid
+        int take = 0;
+        if (prevInd == -1 || arr[i] &gt; arr[prevInd]) {
+            take = 1 + func(i + 1, i, arr, dp);
+        }
+
+        // Store and return the result
+        return dp[i][prevInd + 1] = max(take, notTake);
+    }
+
+public:
+    // Function to find the Longest Increasing Subsequence
+    int LIS(vector&lt;int&gt;&amp; nums) {
+        int n = nums.size();
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(n + 1, -1));
+        return func(0, -1, nums, dp);
+    }
+};
+</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    // Helper function to find the length of LIS with memoization
+    private int Func(int i, int prevInd, int[] arr, int[,] dp)
+    {
+        int n = arr.Length;
+        // base case
+        if (i == n - 1)
+        {
+            if (prevInd == -1 || arr[prevInd] &lt; arr[i]) return 1;
+            return 0;
+        }
+
+        // If subproblem is already calculated
+        if (dp[i, prevInd + 1] != -1)
+            return dp[i, prevInd + 1];
+
+        // Not Take case
+        int notTake = Func(i + 1, prevInd, arr, dp);
+
+        int take = 0; // Take case
+
+        // If no element is chosen till now
+        if (prevInd == -1)
+            take = Func(i + 1, i, arr, dp) + 1;
+        /* Else the current element can be 
+           taken if it is strictly increasing */
+        else if (arr[i] &gt; arr[prevInd])
+            take = Func(i + 1, i, arr, dp) + 1;
+
+        // Memoize and return the maximum length obtained from both cases
+        dp[i, prevInd + 1] = Math.Max(take, notTake);
+        return dp[i, prevInd + 1];
+    }
+
+    /* Function to find the longest increasing 
+       subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        // DP array, initialized to -1
+        int[,] dp = new int[n, n + 1];
+        for (int i = 0; i &lt; n; i++)
+            for (int j = 0; j &lt;= n; j++)
+                dp[i, j] = -1;
+
+        return Func(0, -1, nums, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to find the length of LIS
+func funcLIS(i, prevInd int, arr []int) int {
+	// Base case
+	if i == len(arr)-1 {
+		if prevInd == -1 || arr[prevInd] &lt; arr[i] {
+			return 1
+		}
+		return 0
+	}
+
+	// Not Take case
+	notTake := funcLIS(i+1, prevInd, arr)
+
+	take := 0 // Take case
+
+	// If no element is chosen till now
+	if prevInd == -1 {
+		take = funcLIS(i+1, i, arr) + 1
+	} else if arr[i] &gt; arr[prevInd] {
+		// Else the current element can be taken if it is strictly increasing
+		take = funcLIS(i+1, i, arr) + 1
+	}
+
+	// Return the maximum length obtained from both cases
+	return max(take, notTake)
+}
+
+// Function to find the longest increasing subsequence in the given array
+func LIS(nums []int) int {
+	return funcLIS(0, -1, nums)
+}
+
+// Helper function to calculate max of two integers
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Helper function to find the length of LIS
+    private int func(int i, int prevInd, int[] arr, int[][] dp) {
+        
+        // base case
+        if(i == arr.length - 1) {
+            if(prevInd == -1 || arr[prevInd] &lt; arr[i]) return 1;
+            return 0;
+        }
+        
+        // If subproblem is already calculated
+        if(dp[i][prevInd + 1] != -1) return dp[i][prevInd + 1];
+        
+        // Not Take case
+        int notTake = func(i + 1, prevInd, arr, dp);
+        
+        int take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd == -1)
+            take = func(i + 1, i, arr, dp) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] &gt; arr[prevInd])
+            take = func(i + 1, i, arr, dp) + 1;
+        
+        // Return the maximum length obtained from both cases
+        return dp[i][prevInd + 1] = Math.max(take, notTake);
+    }
+
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+
+        // DP array
+        int[][] dp = new int[n][n + 1];
+        for(int[] row : dp)
+            Arrays.fill(row, -1);
+
+        return func(0, -1, nums, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Helper function to find the length of LIS
+    func(i, prevInd, arr, dp) {
+        
+        // base case
+        if(i === arr.length - 1) {
+            if(prevInd === -1 || arr[prevInd] &lt; arr[i]) return 1;
+            return 0;
+        }
+        
+        // If subproblem is already calculated
+        if(dp[i][prevInd + 1] !== -1) return dp[i][prevInd + 1];
+        
+        // Not Take case
+        let notTake = this.func(i + 1, prevInd, arr, dp);
+        
+        let take = 0; // Take case
+        
+        // If no element is chosen till now
+        if(prevInd === -1)
+            take = this.func(i + 1, i, arr, dp) + 1;
+        
+        /* Else the current element can be 
+        taken if it is strictly increasing */
+        else if(arr[i] &gt; arr[prevInd])
+            take = this.func(i + 1, i, arr, dp) + 1;
+        
+        // Return the maximum length obtained from both cases
+        dp[i][prevInd + 1] = Math.max(take, notTake);
+        return dp[i][prevInd + 1];
+    }
+
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        const n = nums.length;
+
+        // DP array
+        const dp = Array.from({ length: n }, () =&gt; Array(n + 1).fill(-1));
+
+        return this.func(0, -1, nums, dp);
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Helper function to find the length of LIS
+    def func(self, i, prevInd, arr, dp):
+        
+        # base case
+        if i == len(arr) - 1:
+            if prevInd == -1 or arr[prevInd] &lt; arr[i]:
+                return 1
+            return 0
+        
+        # If subproblem is already calculated
+        if dp[i][prevInd + 1] != -1:
+            return dp[i][prevInd + 1]
+        
+        # Not Take case
+        notTake = self.func(i + 1, prevInd, arr, dp)
+        
+        take = 0  # Take case
+        
+        # If no element is chosen till now
+        if prevInd == -1:
+            take = self.func(i + 1, i, arr, dp) + 1
+        
+        # Else the current element can be 
+        # taken if it is strictly increasing
+        elif arr[i] &gt; arr[prevInd]:
+            take = self.func(i + 1, i, arr, dp) + 1
+        
+        # Return the maximum length obtained from both cases
+        dp[i][prevInd + 1] = max(take, notTake)
+        return dp[i][prevInd + 1]
+
+    # Function to find the longest increasing 
+    # subsequence in the given array
+    def LIS(self, nums):
+        n = len(nums)
+
+        # DP array
+        dp = [[-1] * (n + 1) for _ in range(n)]
+
+        return self.func(0, -1, nums, dp)
+</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector&lt;int&gt;&amp; nums) {
+        int n = nums.size();
+        
+        // DP array
+        vector&lt;vector&lt;int&gt;&gt; dp(n+1, vector&lt;int&gt;(n+1, 0));
+        
+        // Fill the DP table
+        for(int i = n-1; i &gt;= 0; i--) {
+            for(int prevInd = i-1; prevInd &gt;= -1; prevInd--) {
+                // Not Take case
+                int notTake = dp[i+1][prevInd+1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if(prevInd == -1 || nums[i] &gt; nums[prevInd]) {
+                    take = dp[i+1][i+1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i][prevInd+1] = max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0][0];
+    }    
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        
+        // DP array
+        int[,] dp = new int[n + 1, n + 1];
+        
+        // Fill the DP table
+        for (int i = n - 1; i &gt;= 0; i--)
+        {
+            for (int prevInd = i - 1; prevInd &gt;= -1; prevInd--)
+            {
+                // Not Take case
+                int notTake = dp[i + 1, prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] &gt; nums[prevInd])
+                {
+                    take = dp[i + 1, i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i, prevInd + 1] = Math.Max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0, 0];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to find the longest increasing 
+subsequence in the given array */
+func LIS(nums []int) int {
+	n := len(nums)
+
+	// DP array
+	dp := make([][]int, n+1)
+	for i := range dp {
+		dp[i] = make([]int, n+1)
+	}
+
+	// Fill the DP table
+	for i := n - 1; i &gt;= 0; i-- {
+		for prevInd := i - 1; prevInd &gt;= -1; prevInd-- {
+			// Not Take case
+			notTake := dp[i+1][prevInd+1]
+
+			// Take case
+			take := 0
+
+			// Check for the Take case
+			if prevInd == -1 || nums[i] &gt; nums[prevInd] {
+				take = dp[i+1][i+1] + 1
+			}
+
+			// Store the maximum of the two cases
+			if take &gt; notTake {
+				dp[i][prevInd+1] = take
+			} else {
+				dp[i][prevInd+1] = notTake
+			}
+		}
+	}
+
+	// Return the stored result
+	return dp[0][0]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+        
+        // DP array
+        int[][] dp = new int[n + 1][n + 1];
+        
+        // Fill the DP table
+        for (int i = n - 1; i &gt;= 0; i--) {
+            for (int prevInd = i - 1; prevInd &gt;= -1; prevInd--) {
+                // Not Take case
+                int notTake = dp[i + 1][prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] &gt; nums[prevInd]) {
+                    take = dp[i + 1][i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i][prevInd + 1] = Math.max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0][0];
+    }    
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        let n = nums.length;
+        
+        // DP array
+        let dp = Array.from({ length: n + 1 }, () =&gt; Array(n + 1).fill(0));
+        
+        // Fill the DP table
+        for (let i = n - 1; i &gt;= 0; i--) {
+            for (let prevInd = i - 1; prevInd &gt;= -1; prevInd--) {
+                // Not Take case
+                let notTake = dp[i + 1][prevInd + 1];
+                
+                // Take case
+                let take = 0;
+                
+                // Check for the Take case
+                if (prevInd === -1 || nums[i] &gt; nums[prevInd]) {
+                    take = dp[i + 1][i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                dp[i][prevInd + 1] = Math.max(take, notTake);
+            }
+        }
+        
+        // Return the stored result
+        return dp[0][0];
+    }    
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &#x27;&#x27;&#x27; Function to find the longest increasing 
+    subsequence in the given array &#x27;&#x27;&#x27;
+    def LIS(self, nums):
+        n = len(nums)
+        
+        # DP array
+        dp = [[0] * (n + 1) for _ in range(n + 1)]
+        
+        # Fill the DP table
+        for i in range(n - 1, -1, -1):
+            for prevInd in range(i - 1, -2, -1):
+                # Not Take case
+                notTake = dp[i + 1][prevInd + 1]
+                
+                # Take case
+                take = 0
+                
+                # Check for the Take case
+                if prevInd == -1 or nums[i] &gt; nums[prevInd]:
+                    take = dp[i + 1][i + 1] + 1
+                
+                # Store the maximum of the two cases
+                dp[i][prevInd + 1] = max(take, notTake)
+        
+        # Return the stored result
+        return dp[0][0]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector&lt;int&gt;&amp; nums) {
+        int n = nums.size();
+        
+        // Arrays for computation
+        vector&lt;int&gt; next(n+1, 0), curr(n+1, 0);
+    
+        
+        // Fill the arrays 
+        for(int i = n-1; i &gt;= 0; i--) {
+            for(int prevInd = i-1; prevInd &gt;= -1; prevInd--) {
+                // Not Take case
+                int notTake = next[prevInd+1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if(prevInd == -1 || nums[i] &gt; nums[prevInd]) {
+                    take = next[i+1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd+1] = max(take, notTake);
+            }
+            
+            next = curr;
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        
+        // Arrays for computation
+        int[] next = new int[n + 1];
+        int[] curr = new int[n + 1];
+        
+        // Fill the arrays 
+        for (int i = n - 1; i &gt;= 0; i--)
+        {
+            for (int prevInd = i - 1; prevInd &gt;= -1; prevInd--)
+            {
+                // Not Take case
+                int notTake = next[prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] &gt; nums[prevInd])
+                {
+                    take = next[i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd + 1] = Math.Max(take, notTake);
+            }
+            
+            Array.Copy(curr, next, n + 1);
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to find the longest increasing 
+subsequence in the given array */
+func LIS(nums []int) int {
+	n := len(nums)
+
+	// Arrays for computation
+	next := make([]int, n+1)
+	curr := make([]int, n+1)
+
+	// Fill the arrays 
+	for i := n - 1; i &gt;= 0; i-- {
+		for prevInd := i - 1; prevInd &gt;= -1; prevInd-- {
+			// Not Take case
+			notTake := next[prevInd+1]
+
+			// Take case
+			take := 0
+
+			// Check for the Take case
+			if prevInd == -1 || nums[i] &gt; nums[prevInd] {
+				take = next[i+1] + 1
+			}
+
+			// Store the maximum of the two cases
+			if take &gt; notTake {
+				curr[prevInd+1] = take
+			} else {
+				curr[prevInd+1] = notTake
+			}
+		}
+
+		copy(next, curr)
+	}
+
+	// Return the stored result
+	return next[0]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+        
+        // Arrays for computation
+        int[] next = new int[n + 1];
+        int[] curr = new int[n + 1];
+        
+        // Fill the arrays 
+        for (int i = n - 1; i &gt;= 0; i--) {
+            for (int prevInd = i - 1; prevInd &gt;= -1; prevInd--) {
+                // Not Take case
+                int notTake = next[prevInd + 1];
+                
+                // Take case
+                int take = 0;
+                
+                // Check for the Take case
+                if (prevInd == -1 || nums[i] &gt; nums[prevInd]) {
+                    take = next[i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd + 1] = Math.max(take, notTake);
+            }
+            
+            next = curr.clone();
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        let n = nums.length;
+        
+        // Arrays for computation
+        let next = new Array(n + 1).fill(0);
+        let curr = new Array(n + 1).fill(0);
+        
+        // Fill the arrays 
+        for (let i = n - 1; i &gt;= 0; i--) {
+            for (let prevInd = i - 1; prevInd &gt;= -1; prevInd--) {
+                // Not Take case
+                let notTake = next[prevInd + 1];
+                
+                // Take case
+                let take = 0;
+                
+                // Check for the Take case
+                if (prevInd === -1 || nums[i] &gt; nums[prevInd]) {
+                    take = next[i + 1] + 1;
+                }
+                
+                // Store the maximum of the two cases
+                curr[prevInd + 1] = Math.max(take, notTake);
+            }
+            
+            next = [...curr];
+        }
+        
+        // Return the stored result
+        return next[0];
+    }    
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &#x27;&#x27;&#x27; Function to find the longest increasing 
+    subsequence in the given array &#x27;&#x27;&#x27;
+    def LIS(self, nums):
+        n = len(nums)
+        
+        # Arrays for computation
+        next = [0] * (n + 1)
+        curr = [0] * (n + 1)
+        
+        # Fill the arrays 
+        for i in range(n - 1, -1, -1):
+            for prevInd in range(i - 1, -2, -1):
+                # Not Take case
+                notTake = next[prevInd + 1]
+                
+                # Take case
+                take = 0
+                
+                # Check for the Take case
+                if prevInd == -1 or nums[i] &gt; nums[prevInd]:
+                    take = next[i + 1] + 1
+                
+                # Store the maximum of the two cases
+                curr[prevInd + 1] = max(take, notTake)
+            
+            next = curr[:]
+        
+        # Return the stored result
+        return next[0]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    int LIS(vector&lt;int&gt;&amp; nums) {
+        int n = nums.size();
+        
+        vector&lt;int&gt; temp;
+        temp.push_back(nums[0]);
+        
+        // Iterate on the elements of the array
+        for(int i=1; i &lt; n; i++) {
+            
+            // If the current element can be added to the subsequence
+            if(nums[i] &gt; temp.back()) 
+                temp.push_back(nums[i]); 
+                
+            // Otherwise
+            else {
+                // Index at which the current element must be placed
+                int ind = lower_bound(temp.begin(), temp.end(), nums[i]) -
+                          temp.begin();
+                          
+                // Place the current element in the subsequence
+                temp[ind] = nums[i];
+            }    
+            
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.size();
+    }    
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to find the longest increasing 
+       subsequence in the given array */
+    public int LIS(int[] nums)
+    {
+        int n = nums.Length;
+        if (n == 0) return 0;
+        
+        List&lt;int&gt; temp = new List&lt;int&gt;();
+        temp.Add(nums[0]);
+        
+        // Iterate on the elements of the array
+        for (int i = 1; i &lt; n; i++)
+        {
+            // If the current element can be added to the subsequence
+            if (nums[i] &gt; temp[temp.Count - 1])
+            {
+                temp.Add(nums[i]);
+            }
+            // Otherwise
+            else
+            {
+                // Find the index at which the current element must be placed
+                int ind = temp.BinarySearch(nums[i]);
+                if (ind &lt; 0)
+                    ind = ~ind;
+                
+                // Place the current element in the subsequence
+                temp[ind] = nums[i];
+            }
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.Count;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>import &quot;sort&quot;
+
+/* Function to find the longest increasing
+subsequence in the given array */
+func LIS(nums []int) int {
+	n := len(nums)
+	if n == 0 {
+		return 0
+	}
+
+	// Temporary slice to store the increasing subsequence
+	temp := []int{nums[0]}
+
+	// Iterate on the elements of the array
+	for i := 1; i &lt; n; i++ {
+
+		// If the current element can be added to the subsequence
+		if nums[i] &gt; temp[len(temp)-1] {
+			temp = append(temp, nums[i])
+		} else {
+			// Index at which the current element must be placed
+			ind := sort.SearchInts(temp, nums[i])
+
+			// Place the current element in the subsequence
+			temp[ind] = nums[i]
+		}
+	}
+
+	// Return the length of temporary subsequence created so far
+	return len(temp)
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    public int LIS(int[] nums) {
+        int n = nums.length;
+        
+        List&lt;Integer&gt; temp = new ArrayList&lt;&gt;();
+        temp.add(nums[0]);
+        
+        // Iterate on the elements of the array
+        for (int i = 1; i &lt; n; i++) {
+            
+            // If the current element can be added to the subsequence
+            if (nums[i] &gt; temp.get(temp.size() - 1)) 
+                temp.add(nums[i]); 
+                
+            // Otherwise
+            else {
+                // Index at which the current element must be placed
+                int ind = Collections.binarySearch(temp, nums[i]);
+                if (ind &lt; 0) ind = -(ind + 1);
+                
+                // Place the current element in the subsequence
+                temp.set(ind, nums[i]);
+            }    
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.size();
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the longest increasing 
+    subsequence in the given array */
+    LIS(nums) {
+        let n = nums.length;
+        
+        let temp = [];
+        temp.push(nums[0]);
+        
+        // Iterate on the elements of the array
+        for (let i = 1; i &lt; n; i++) {
+            
+            // If the current element can be added to the subsequence
+            if (nums[i] &gt; temp[temp.length - 1]) 
+                temp.push(nums[i]); 
+                
+            // Otherwise
+            else {
+                // Index at which the current element must be placed
+                let ind = this.lowerBound(temp, nums[i]);
+                
+                // Place the current element in the subsequence
+                temp[ind] = nums[i];
+            }    
+        }
+        
+        // Return the length of temporary subsequence created so far
+        return temp.length;
+    }
+    
+    // Binary search to find the index of the smallest element &gt;= target
+    lowerBound(temp, target) {
+        let left = 0, right = temp.length - 1;
+        while (left &lt;= right) {
+            let mid = Math.floor((left + right) / 2);
+            if (temp[mid] &lt; target) 
+                left = mid + 1;
+            else 
+                right = mid - 1;
+        }
+        return left;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to find the longest increasing 
+    # subsequence in the given array
+    def LIS(self, nums):
+        n = len(nums)
+        
+        temp = []
+        temp.append(nums[0])
+        
+        # Iterate on the elements of the array
+        for i in range(1, n):
+            
+            # If the current element can be added to the subsequence
+            if nums[i] &gt; temp[-1]:
+                temp.append(nums[i]) 
+            
+            # Otherwise
+            else:
+                # Index at which the current element must be placed
+                ind = self.lower_bound(temp, nums[i])
+                
+                # Place the current element in the subsequence
+                temp[ind] = nums[i]
+        
+        # Return the length of temporary subsequence created so far
+        return len(temp)
+
+    # Binary search to find the index of the smallest element &gt;= target
+    def lower_bound(self, temp, target):
+        left, right = 0, len(temp) - 1
+        while left &lt;= right:
+            mid = (left + right) // 2
+            if temp[mid] &lt; target:
+                left = mid + 1
+            else:
+                right = mid - 1
+        return left</code></pre></div>
+</body>
+</html>

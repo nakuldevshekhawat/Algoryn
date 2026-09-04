@@ -1,0 +1,1747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topological sort or Kahn's algorithm</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Topological sort or Kahn's algorithm</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Graph</span><span>Depth-First Search</span><span>Breadth-First Search</span><span>Stack</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a Directed Acyclic Graph (DAG) with V vertices labeled from 0 to V-1.The graph is represented using an adjacency list where adj[i] lists all nodes connected to node. Find any <strong>Topological</strong> Sorting of that Graph.</p><p><br></p><p>In topological sorting, node u will always appear before node v if there is a directed edge from node u towards node v(u -> v).</p><p><br></p><p>The function should <strong>return </strong>an <strong>array </strong>representing the topological order. The output will be validated by our driver code, which checks the correctness of your topological sort. It will print <strong>True </strong>if the order is valid, otherwise <strong>False.</strong></p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ V ≤ 10⁴</li><li>0 ≤ number of edges ≤ 10⁴</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> V = 6,adj=[ [ ], [ ], [3], [1], [0,1], [0,2] ]</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-YmZlLBfA"></p><p><br></p><p><strong>Output:</strong> [5, 4, 2, 3, 1, 0]</p><p><strong>Explanation:</strong> A graph may have multiple topological sortings. </p><ul><li>Node 5 must appear before 0 and 2</li><li>Node 2 must appear before 3</li><li>Node 3 must appear before 1</li><li>Node 4 must appear before 0 and 1</li></ul><p><br></p><p><strong>One valid topological order is: [5, 4, 2, 3, 1, 0]</strong></p><h3>Example 2</h3><p><strong>Input:</strong> V = 4, adj=[ [ ], [0], [0], [0] ]</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-ZqsXEYq1"></p><p><br></p><p><strong>Output:</strong> [3, 2, 1, 0]</p><p><strong>Explanation:</strong> The necessary conditions for the ordering are:</p><ul><li>Nodes 1, 2, and 3 must all appear before 0.</li><li>Their internal order doesn’t matter.</li></ul><p><br></p><p><strong>One valid topological order is: [3, 2, 1, 0]</strong></p><h3>Example 3</h3><p>Input: V = 3, adj=[[1], [2], []]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>One interesting application of the topological sorting algorithm in real-world software development is in job scheduling. It helps to establish a sequence of tasks where some tasks are dependent on others being completed first. This algorithm helps in the correct priority-based execution of tasks for project management software and operating systems. Also, package managers use topological sorting to resolve dependencies between packages to ensure correct installation order.</p></div>
+<div class="section"><h2>Editorial: DFS</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>The topological sorting of a directed acyclic graph is nothing but the linear ordering of vertices such that if there is an edge between node u and v(u -> v), node u appears before v in that ordering. 
+    <br>
+
+    </p><h6>Why does topological sort only exist in DAG?</h6>
+    <p>
+        </p><ul>
+            <li><strong>If the edges are undirected:</strong> An undirected edge between node u and v signifies an edge from u to v (u->v) as well as from v to u (v->u) making it practically impossible to write such orderings where <strong>u appears before v</strong> and <strong>v appears before u</strong> simultaneously.</li>
+            <li><strong>If the directed graph contains a cycle:</strong> There is no linear ordering possible for nodes in cycles, making it impossible for topological sorting to exist.
+            </li>
+        </ul>
+    <p></p>
+
+    <h6>Understanding:</h6>
+    Depth-first search (DFS) is a natural fit for this problem because it allows us to explore each path of the graph deeply before backtracking, ensuring that all dependencies of a node are processed before the node itself.<br> 
+    <ul>
+        <li>During the DFS traversal, when a node is fully processed (i.e., all nodes it points to are visited), we push it onto a stack.</li>
+        <li>This stack helps us reverse the order of processing, as nodes deeper in the graph (dependent nodes) are pushed onto the stack first. When we later pop from the stack, we get the nodes in the correct topological order.</li>
+    </ul>
+    
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Prepare a list to store the topological order. Initialize a stack to keep track of the nodes in reverse order of their processing. Create a visited array to track which nodes have been visited.
+    </li>
+    <li>Define a recursive DFS function that marks the current node as visited. For each neighbor of the current node, if it is not visited, recursively perform DFS on it. After all neighbors are processed, push the current node onto the stack.</li>
+    <li>Traverse all nodes in the graph. For each unvisited node, initiate a DFS traversal.
+
+    </li>
+    <li>Once DFS is complete for all nodes, pop elements from the stack one by one and add them to the topological order list.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/1.png-Kpo_-Vfk" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/2.png-Sp2Xi0vR" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/3.png-1iA57QCx" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/4.png-BHCRz9pe" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/5.png-3TTO6OOf" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/6.png-mmGykUYF" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/7.png-E9Pt7dFf" alt="Image 7"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/1.png-Kpo_-Vfk" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/2.png-Sp2Xi0vR" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/3.png-1iA57QCx" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/4.png-BHCRz9pe" alt="Image 4"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/5.png-3TTO6OOf" alt="Image 5"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/6.png-mmGykUYF" alt="Image 6"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/7.png-E9Pt7dFf" alt="Image 7"></div></div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    // Function to perform DFS traversal
+    void dfs(int node, vector<int> adj[], 
+            vector<int> &vis, 
+            stack <int> &st) {
+                
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all the neighbors
+        for(auto it : adj[node]) {
+            
+            // If not visited, recursively perform DFS.
+            if(vis[it] == 0) dfs(it, adj, vis, st);
+        }
+        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+    
+public:
+
+	/* Function to return list containing 
+	vertices in Topological order */
+	vector<int> topoSort(int V, vector<int> adj[]) 
+	{
+	    // To store the result
+	    vector <int> ans;
+	    
+	    /* Stack to store processed 
+	    nodes in reverse order */
+	    stack <int> st;
+	    
+	    // Visited array
+	    vector<int> vis(V, 0);
+	    
+	    // Traverse the graph
+	    for(int i=0; i<V; i++) {
+	        
+	        // Start DFS traversal for unvisited node
+	        if(!vis[i]) {
+	            dfs(i, adj, vis, st);
+	        }
+	    }
+	    
+	    // Until the stack is empty
+	    while(!st.empty()) {
+	        
+	        // Add the top of stack to result
+	        ans.push_back(st.top());
+	        
+	        // Pop the top node
+	        st.pop();
+	    }
+	    
+	    // Return the result
+        return ans;
+	}
+};
+
+int main() {
+    
+    int V = 6;
+    vector<int> adj[V] = {
+         {}, 
+         {}, 
+         {3}, 
+         {1}, 
+         {0,1}, 
+         {0,2}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to return the 
+    topological sorting of given graph */
+    vector<int> ans = sol.topoSort(V, adj);
+    
+    // Output
+    cout << "The topological sorting of the given graph is: \n";
+    for(int i=0; i < V; i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    // Function to perform DFS traversal
+    private void dfs(int node, List<List<Integer>> adj,
+                     int[] vis, Stack<Integer> st) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all the neighbors
+        for (int it : adj.get(node)) {
+            // If not visited, recursively perform DFS
+            if (vis[it] == 0) {
+                dfs(it, adj, vis, st);
+            }
+        }
+
+        // Add the current node to stack after processing all connected nodes
+        st.push(node);
+    }
+
+    // Function to return array containing vertices in Topological order
+    public int[] topoSort(int V, List<List<Integer>> adj) {
+        // To store the result
+        int[] ans = new int[V];
+
+        // Stack to store processed nodes in reverse order
+        Stack<Integer> st = new Stack<>();
+
+        // Visited array
+        int[] vis = new int[V];
+
+        // Traverse the graph
+        for (int i = 0; i < V; i++) {
+            if (vis[i] == 0) {
+                dfs(i, adj, vis, st);
+            }
+        }
+
+        // Fill the result array using the stack
+        for (int i = 0; i < V; i++) {
+            ans[i] = st.pop();
+        }
+
+        return ans;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int V = 6;
+
+        // Initializing adjacency list with List<List<Integer>>
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+
+        // Adding directed edges
+        adj.get(2).add(3);
+        adj.get(3).add(1);
+        adj.get(4).add(0);
+        adj.get(4).add(1);
+        adj.get(5).add(0);
+        adj.get(5).add(2);
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Calling topoSort function
+        int[] ans = sol.topoSort(V, adj);
+
+        // Output the topological order
+        System.out.println("The topological sorting of the given graph is:");
+        for (int i = 0; i < V; i++) {
+            System.out.print(ans[i] + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to perform DFS traversal
+    def dfs(self, node, adj, vis, st):
+        # Mark the node as visited
+        vis[node] = 1
+        
+        # Traverse all the neighbors
+        for it in adj[node]:
+            
+            # If not visited, recursively perform DFS.
+            if vis[it] == 0:
+                self.dfs(it, adj, vis, st)
+        
+        # Add the current node to stack 
+        # once all the nodes connected to it 
+        # have been processed
+        st.append(node)
+    
+    # Function to return list containing 
+    # vertices in Topological order
+    def topoSort(self, V, adj):
+        # To store the result
+        ans = []
+        
+        # Stack to store processed 
+        # nodes in reverse order
+        st = []
+        
+        # Visited array
+        vis = [0] * V
+        
+        # Traverse the graph
+        for i in range(V):
+            
+            # Start DFS traversal for unvisited node
+            if vis[i] == 0:
+                self.dfs(i, adj, vis, st)
+        
+        # Until the stack is empty
+        while st:
+            
+            # Add the top of stack to result
+            ans.append(st.pop())
+        
+        # Return the result
+        return ans
+
+if __name__ == "__main__":
+    
+    V = 6
+    adj = [
+        [], 
+        [], 
+        [3], 
+        [1], 
+        [0, 1], 
+        [0, 2]
+    ]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to return the 
+    # topological sorting of given graph
+    ans = sol.topoSort(V, adj)
+    
+    # Output
+    print("The topological sorting of the given graph is:")
+    for i in range(V):
+        print(ans[i], end=" ")</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to perform DFS traversal
+    dfs(node, adj, vis, st) {
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all the neighbors
+        for (let it of adj[node]) {
+            
+            // If not visited, recursively perform DFS.
+            if (vis[it] === 0) this.dfs(it, adj, vis, st);
+        }
+        
+        // Add the current node to stack 
+        // once all the nodes connected to it 
+        // have been processed
+        st.push(node);
+    }
+
+    // Function to return list containing 
+    // vertices in Topological order
+    topoSort(V, adj) {
+        // To store the result
+        let ans = [];
+        
+        // Stack to store processed 
+        // nodes in reverse order
+        let st = [];
+        
+        // Visited array
+        let vis = new Array(V).fill(0);
+        
+        // Traverse the graph
+        for (let i = 0; i < V; i++) {
+            
+            // Start DFS traversal for unvisited node
+            if (vis[i] === 0) {
+                this.dfs(i, adj, vis, st);
+            }
+        }
+        
+        // Until the stack is empty
+        while (st.length > 0) {
+            
+            // Add the top of stack to result
+            ans.push(st.pop());
+        }
+        
+        // Return the result
+        return ans;
+    }
+}
+
+// Main function to test the code
+const main = () => {
+    
+    const V = 6;
+    const adj = [
+        [], 
+        [], 
+        [3], 
+        [1], 
+        [0, 1], 
+        [0, 2]
+    ];
+    
+    // Creating an instance of 
+    // Solution class
+    const sol = new Solution();
+    
+    // Function call to return the 
+    // topological sorting of given graph
+    const ans = sol.topoSort(V, adj);
+    
+    // Output
+    console.log("The topological sorting of the given graph is:");
+    for (let i = 0; i < V; i++) {
+        console.log(ans[i] + " ");
+    }
+};
+
+// Call the main function
+main();</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    // Function to perform DFS traversal
+    private void dfs(int node, List<List<int>> adj, bool[] vis, Stack<int> st)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+
+        // Traverse all the neighbors
+        foreach (int neighbor in adj[node])
+        {
+            // If not visited, recursively perform DFS.
+            if (!vis[neighbor])
+            {
+                this.dfs(neighbor, adj, vis, st);
+            }
+        }
+
+        // Add the current node to stack 
+        // once all the nodes connected to it 
+        // have been processed
+        st.Push(node);
+    }
+
+    // Function to return list containing 
+    // vertices in Topological order
+    public List<int> TopoSort(int V, List<List<int>> adj)
+    {
+        // To store the result
+        List<int> ans = new List<int>();
+
+        // Stack to store processed 
+        // nodes in reverse order
+        Stack<int> st = new Stack<int>();
+
+        // Visited array
+        bool[] vis = new bool[V]; // Default initialized to false
+
+        // Traverse the graph
+        for (int i = 0; i < V; i++)
+        {
+            // Start DFS traversal for unvisited node
+            if (!vis[i])
+            {
+                this.dfs(i, adj, vis, st);
+            }
+        }
+
+        // Until the stack is empty
+        while (st.Count > 0)
+        {
+            // Add the top of stack to result
+            ans.Add(st.Pop());
+        }
+
+        // Return the result
+        return ans;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int V = 6;
+        List<List<int>> adj = new List<List<int>>
+        {
+            new List<int>(),
+            new List<int>(),
+            new List<int> {3},
+            new List<int> {1},
+            new List<int> {0, 1},
+            new List<int> {0, 2}
+        };
+
+        // Creating an instance of 
+        // Solution class
+        Solution sol = new Solution();
+
+        // Function call to return the 
+        // topological sorting of given graph
+        List<int> ans = sol.TopoSort(V, adj);
+
+        // Output
+        Console.WriteLine("The topological sorting of the given graph is:");
+        foreach (int node in ans)
+        {
+            Console.WriteLine(node + " ");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// dfs performs DFS traversal and pushes nodes to stack after processing all neighbors
+func dfs(node int, adj [][]int, vis []bool, st *[]int) {
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all the neighbors
+	for _, it := range adj[node] {
+		// If not visited, recursively perform DFS
+		if !vis[it] {
+			dfs(it, adj, vis, st)
+		}
+	}
+
+	/* Add the current node to stack
+	once all the nodes connected to it
+	have been processed */
+	*st = append(*st, node)
+}
+
+// topoSort returns a list containing vertices in Topological order
+func topoSort(V int, adj [][]int) []int {
+	// To store the result
+	ans := []int{}
+
+	/* Stack to store processed
+	nodes in reverse order */
+	st := []int{}
+
+	// Visited array
+	vis := make([]bool, V)
+
+	// Traverse the graph
+	for i := 0; i < V; i++ {
+		// Start DFS traversal for unvisited node
+		if !vis[i] {
+			dfs(i, adj, vis, &st)
+		}
+	}
+
+	// Until the stack is empty (reverse the stored order)
+	for i := len(st) - 1; i >= 0; i-- {
+		ans = append(ans, st[i])
+	}
+
+	// Return the result
+	return ans
+}
+
+// ---------------- Driver Code ----------------
+func main() {
+	V := 6
+	adj := [][]int{
+		{},       // 0
+		{},       // 1
+		{3},      // 2
+		{1},      // 3
+		{0, 1},   // 4
+		{0, 2},   // 5
+	}
+
+	/* Function call to return the
+	topological sorting of given graph */
+	ans := topoSort(V, adj)
+
+	// Output
+	fmt.Println("The topological sorting of the given graph is:")
+	for _, v := range ans {
+		fmt.Printf("%d ", v)
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where V and E represent the number of nodes and edges in the graph) <br>
+A simple DFS traversal takes O(V+E) time.</p>
+
+<p><strong>Space Complexity: O(V)</strong> <br>
+    The stack will store at most V nodes taking O(V) space and the array to store the topological sort takes O(V) space.
+</p>
+</body></html></div>
+<div class="section"><h2>Editorial: BFS (Kahn's Agorithm)</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>The topological sorting of a directed acyclic graph is nothing but the linear ordering of vertices such that if there is an edge between node u and v(u -> v), node u appears before v in that ordering. 
+    <br>
+
+    </p><h6>Why does topological sort only exist in DAG?</h6>
+    <p>
+        </p><ul>
+            <li><strong>If the edges are undirected:</strong> An undirected edge between node u and v signifies an edge from u to v (u->v) as well as from v to u (v->u) making it practically impossible to write such orderings where <strong>u appears before v</strong> and <strong>v appears before u</strong> simultaneously.</li>
+            <li><strong>If the directed graph contains a cycle:</strong> There is no linear ordering possible for nodes in cycles, making it impossible for topological sorting to exist.
+            </li>
+        </ul>
+    <p></p>
+
+    To solve the problem using BFS traversal, Kahn's algorithm can be used.
+    <h6>Kahn's Algorithm:</h6>
+    The algorithm suggests that there will always be at least one node having in-degree as zero, which means all such nodes can be put before any other node in the ordering as there is no node pointing to any of these nodes. <br> <br>
+    After such nodes are added to the ordering, the edges from these nodes can be removed, updating the in-degree of other nodes and exposing more nodes having an in-degree of zero. This process can be repeated till there are nodes left in the graph to get the required linear ordering. 
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Prepare a list to store the topological order. Create an array to track the in-degree (number of incoming edges) of each node. Traverse each node and update the in-degree of its neighbors based on the adjacency list representation of the graph.
+    </li>
+    <li>Initialize a queue and add all nodes with zero in-degree to it. These nodes have no dependencies and can be processed first.</li>
+    <li>Use a loop to process nodes from the queue until it is empty:
+        <ul>
+            <li>Remove a node from the front of the queue and add it to the topological order list.</li>
+            <li>For each neighbor of the removed node, reduce its in-degree by one.</li>
+            <li>If a neighbor's in-degree becomes zero, all its parent nodes are processed so add it to the queue.</li>
+        </ul>
+    </li>
+    <li>After processing all nodes, the topological order list will contain a valid topological sorting of the graph.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container"><div class="carousel-container"><div class="carousel"><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/1.png-lPVR-4T1" alt="Image 1"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/2.png-Z8P82JtN" alt="Image 2"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/3.png-CiyYKBur" alt="Image 3"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/4.png-TIfmQ3w5" alt="Image 4"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/5.png-ceqwmA8H" alt="Image 5"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/image-6-8qGvLY3R" alt="Image 6"></div><div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/7.png-8BxztsJI" alt="Image 7"></div></div><div class="control-container"><div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"></path></svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"></path></svg></button></div><div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link"><path d="M15 3h6v6"></path><path d="M10 14L21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg></button></div></div></div><div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/1.png-lPVR-4T1" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/2.png-Z8P82JtN" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/3.png-CiyYKBur" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/4.png-TIfmQ3w5" alt="Image 4"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/5.png-ceqwmA8H" alt="Image 5"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/image-6-8qGvLY3R" alt="Image 6"><img src="https://static.takeuforward.org/premium/Graphs/Cycles/Topological sort or Kahn's algorithm/7.png-8BxztsJI" alt="Image 7"></div></div>
+
+<h3>Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to return the topological
+     sorting of given graph */
+    vector<int> topoSort(int V, vector<int> adj[]) {
+        
+        // To store the result
+        vector<int> ans;
+        
+        // To store the In-degrees of nodes
+	    vector<int> inDegree(V, 0);
+	    
+	    // Calculating the In-degree of the given graph
+	    for(int i=0; i<V; i++) {
+	        for(auto it : adj[i]) inDegree[it]++;
+	    }
+	    
+	    // Queue to facilitate BFS
+	    queue<int> q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i<V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+};
+
+int main() {
+    
+    int V = 6;
+    vector<int> adj[V] = {
+         {}, 
+         {}, 
+         {3}, 
+         {1}, 
+         {0,1}, 
+         {0,2}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to return the 
+    topological sorting of given graph */
+    vector<int> ans = sol.topoSort(V, adj);
+    
+    // Output
+    cout << "The topological sorting of the given graph is: \n";
+    for(int i=0; i < V; i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to return the topological sorting of given graph */
+    public int[] topoSort(int V, List<List<Integer>> adj) {
+        // To store the result
+        int[] ans = new int[V];
+
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+
+        // Calculating the In-degree of the given graph
+        for (int i = 0; i < V; i++) {
+            for (int it : adj.get(i)) inDegree[it]++;
+        }
+
+        // Queue to facilitate BFS
+        Queue<Integer> q = new LinkedList<>();
+
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i < V; i++) {
+            if (inDegree[i] == 0) q.add(i);
+        }
+
+        int index = 0; // Index to store elements in ans array
+
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+            // Get the node
+            int node = q.poll();
+
+            // Add it to the answer
+            ans[index++] = node;
+
+            // Traverse the neighbours
+            for (int it : adj.get(node)) {
+                // Decrement the in-degree
+                inDegree[it]--;
+
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if (inDegree[it] == 0) q.add(it);
+            }
+        }
+
+        // Return the result
+        return ans;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int V = 6;
+        
+        // Initializing adjacency list with List<List<Integer>>
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+
+        // Adding directed edges to the graph
+        adj.get(2).add(3);
+        adj.get(3).add(1);
+        adj.get(4).add(0);
+        adj.get(4).add(1);
+        adj.get(5).add(0);
+        adj.get(5).add(2);
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution(); 
+
+        // Calling topoSort function
+        int[] ans = sol.topoSort(V, adj);
+
+        // Output the topological order
+        System.out.println("The topological sorting of the given graph is:");
+        for (int i = 0; i < V; i++) {
+            System.out.print(ans[i] + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+class Solution:
+    # Function to return the topological
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        
+        # To store the result
+        ans = []
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Calculating the In-degree of the given graph
+        for i in range(V):
+            for it in adj[i]:
+                inDegree[it] += 1
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+if __name__ == "__main__":
+    
+    V = 6
+    adj = [
+        [], 
+        [], 
+        [3], 
+        [1], 
+        [0,1], 
+        [0,2]
+    ]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to return the 
+    # topological sorting of given graph
+    ans = sol.topoSort(V, adj)
+    
+    # Output
+    print("The topological sorting of the given graph is:")
+    for i in range(V):
+        print(ans[i], end=" ")</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to return the topological
+     sorting of given graph */
+    topoSort(V, adj) {
+        
+        // To store the result
+        let ans = [];
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        // Calculating the In-degree of the given graph
+        for (let i = 0; i < V; i++) {
+            for (let it of adj[i]) inDegree[it]++;
+        }
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for (let i = 0; i < V; i++) {
+            if (inDegree[i] === 0) q.push(i);
+        }
+        
+        // Until the queue is empty
+        while (q.length > 0) {
+            
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for (let it of adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if (inDegree[it] === 0) q.push(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+}
+
+// Main function to test the code
+const main = () => {
+    
+    const V = 6;
+    const adj = [
+        [], 
+        [], 
+        [3], 
+        [1], 
+        [0, 1], 
+        [0, 2]
+    ];
+    
+    /* Creating an instance of 
+    Solution class */
+    const sol = new Solution();
+    
+    /* Function call to return the 
+    topological sorting of given graph */
+    const ans = sol.topoSort(V, adj);
+    
+    // Output
+    console.log("The topological sorting of the given graph is:");
+    for (let i = 0; i < V; i++) {
+        console.log(ans[i] + " ");
+    }
+};
+
+// Call the main function
+main();</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        const int V = 6;
+        List<List<int>> adj = new List<List<int>>
+        {
+            new List<int>(), 
+            new List<int>(), 
+            new List<int> {3}, 
+            new List<int> {1}, 
+            new List<int> {0, 1}, 
+            new List<int> {0, 2}
+        };
+        
+        /* Creating an instance of 
+    Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to return the 
+    topological sorting of given graph */
+        List<int> ans = sol.TopoSort(V, adj);
+        
+        // Output
+        Console.WriteLine("The topological sorting of the given graph is:");
+        for (int i = 0; i < V; i++) {
+            Console.WriteLine(ans[i] + " ");
+        }
+    }
+}
+
+class Solution
+{
+    /* Function to return the topological
+     sorting of given graph */
+    public List<int> TopoSort(int V, List<List<int>> adj)
+    {
+        
+        // To store the result
+        List<int> ans = new List<int>();
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        // Calculating the In-degree of the given graph
+        for (int i = 0; i < V; i++) {
+            foreach (int it in adj[i]) inDegree[it]++;
+        }
+        
+        // Queue to facilitate BFS
+        Queue<int> q = new Queue<int>();
+        
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i < V; i++) {
+            if (inDegree[i] == 0) q.Enqueue(i);
+        }
+        
+        // Until the queue is empty
+        while (q.Count > 0) {
+            
+            // Get the node
+            int node = q.Dequeue();
+            
+            // Add it to the answer
+            ans.Add(node);
+            
+            // Traverse the neighbours
+            foreach (int it in adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if (inDegree[it] == 0) q.Enqueue(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to return the topological sorting of given graph
+func topoSort(V int, adj [][]int) []int {
+
+	// To store the result
+	ans := []int{}
+
+	// To store the In-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Calculating the In-degree of the given graph
+	for i := 0; i < V; i++ {
+		for _, it := range adj[i] {
+			inDegree[it]++
+		}
+	}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i < V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) > 0 {
+		// Get the node
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+			// Decrement the in-degree
+			inDegree[it]--
+
+			/* Add the node to queue if
+			its in-degree becomes zero */
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+func main() {
+	V := 6
+	adj := [][]int{
+		{},       // 0
+		{},       // 1
+		{3},      // 2
+		{1},      // 3
+		{0, 1},   // 4
+		{0, 2},   // 5
+	}
+
+	// Function call to return the topological sorting of given graph
+	ans := topoSort(V, adj)
+
+	// Output
+	fmt.Println("The topological sorting of the given graph is:")
+	for _, v := range ans {
+		fmt.Printf("%d ", v)
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where V and E represent the number of nodes and edges in the graph) <br>
+A simple BFS traversal takes O(V+E) time.</p>
+
+<p><strong>Space Complexity: O(V)</strong> <br>
+    Array to store in-degrees require O(V) space and queue space will store O(V) nodes at maximum.
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    // Function to perform DFS traversal
+    void dfs(int node, vector&lt;int&gt; adj[], 
+            vector&lt;int&gt; &amp;vis, 
+            stack &lt;int&gt; &amp;st) {
+                
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all the neighbors
+        for(auto it : adj[node]) {
+            
+            // If not visited, recursively perform DFS.
+            if(vis[it] == 0) dfs(it, adj, vis, st);
+        }
+        
+        /* Add the current node to stack 
+        once all the nodes connected to it 
+        have been processed */
+        st.push(node);
+    }
+    
+public:
+
+	/* Function to return list containing 
+	vertices in Topological order */
+	vector&lt;int&gt; topoSort(int V, vector&lt;int&gt; adj[]) 
+	{
+	    // To store the result
+	    vector &lt;int&gt; ans;
+	    
+	    /* Stack to store processed 
+	    nodes in reverse order */
+	    stack &lt;int&gt; st;
+	    
+	    // Visited array
+	    vector&lt;int&gt; vis(V, 0);
+	    
+	    // Traverse the graph
+	    for(int i=0; i&lt;V; i++) {
+	        
+	        // Start DFS traversal for unvisited node
+	        if(!vis[i]) {
+	            dfs(i, adj, vis, st);
+	        }
+	    }
+	    
+	    // Until the stack is empty
+	    while(!st.empty()) {
+	        
+	        // Add the top of stack to result
+	        ans.push_back(st.top());
+	        
+	        // Pop the top node
+	        st.pop();
+	    }
+	    
+	    // Return the result
+        return ans;
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to perform DFS traversal
+    private void dfs(int node, List&lt;List&lt;int&gt;&gt; adj, bool[] vis, Stack&lt;int&gt; st)
+    {
+        // Mark the node as visited
+        vis[node] = true;
+        
+        // Traverse all the neighbors
+        foreach (int neighbor in adj[node])
+        {
+            
+            // If not visited, recursively perform DFS.
+            if (!vis[neighbor]) this.dfs(neighbor, adj, vis, st);
+        }
+        
+        // Add the current node to stack 
+        // once all the nodes connected to it 
+        // have been processed
+        st.Push(node);
+    }
+
+    // Function to return list containing 
+    // vertices in Topological order
+    public List&lt;int&gt; TopoSort(int V, List&lt;List&lt;int&gt;&gt; adj)
+    {
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+        
+        // Stack to store processed 
+        // nodes in reverse order
+        Stack&lt;int&gt; st = new Stack&lt;int&gt;();
+        
+        // Visited array
+        bool[] vis = new bool[V]; // Default initialized to false
+        
+        // Traverse the graph
+        for (int i = 0; i &lt; V; i++) {
+            
+            // Start DFS traversal for unvisited node
+            if (!vis[i]) {
+                this.dfs(i, adj, vis, st);
+            }
+        }
+        
+        // Until the stack is empty
+        while (st.Count &gt; 0) {
+            
+            // Add the top of stack to result
+            ans.Add(st.Pop());
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// dfs performs DFS traversal and pushes nodes to stack after processing all neighbors
+func dfs(node int, adj [][]int, vis []bool, st *[]int) {
+	// Mark the node as visited
+	vis[node] = true
+
+	// Traverse all the neighbors
+	for _, it := range adj[node] {
+		// If not visited, recursively perform DFS
+		if !vis[it] {
+			dfs(it, adj, vis, st)
+		}
+	}
+
+	/* Add the current node to stack
+	once all the nodes connected to it
+	have been processed */
+	*st = append(*st, node)
+}
+
+// topoSort returns a list containing vertices in Topological order
+func topoSort(V int, adj [][]int) []int {
+	// To store the result
+	ans := []int{}
+
+	/* Stack to store processed
+	nodes in reverse order */
+	st := []int{}
+
+	// Visited array
+	vis := make([]bool, V)
+
+	// Traverse the graph
+	for i := 0; i &lt; V; i++ {
+		// Start DFS traversal for unvisited node
+		if !vis[i] {
+			dfs(i, adj, vis, &amp;st)
+		}
+	}
+
+	// Until the stack is empty (reverse the stored order)
+	for i := len(st) - 1; i &gt;= 0; i-- {
+		ans = append(ans, st[i])
+	}
+
+	// Return the result
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+
+    // Function to perform DFS traversal
+    private void dfs(int node, List&lt;List&lt;Integer&gt;&gt; adj,
+                     int[] vis, Stack&lt;Integer&gt; st) {
+        // Mark the node as visited
+        vis[node] = 1;
+
+        // Traverse all the neighbors
+        for (int it : adj.get(node)) {
+            // If not visited, recursively perform DFS
+            if (vis[it] == 0) {
+                dfs(it, adj, vis, st);
+            }
+        }
+
+        // Add the current node to stack after processing all connected nodes
+        st.push(node);
+    }
+
+    // Function to return array containing vertices in Topological order
+    public int[] topoSort(int V, List&lt;List&lt;Integer&gt;&gt; adj) {
+        // To store the result
+        int[] ans = new int[V];
+
+        // Stack to store processed nodes in reverse order
+        Stack&lt;Integer&gt; st = new Stack&lt;&gt;();
+
+        // Visited array
+        int[] vis = new int[V];
+
+        // Traverse the graph
+        for (int i = 0; i &lt; V; i++) {
+            if (vis[i] == 0) {
+                dfs(i, adj, vis, st);
+            }
+        }
+
+        // Fill the result array using the stack
+        for (int i = 0; i &lt; V; i++) {
+            ans[i] = st.pop();
+        }
+
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to perform DFS traversal
+    dfs(node, adj, vis, st) {
+        // Mark the node as visited
+        vis[node] = 1;
+        
+        // Traverse all the neighbors
+        for (let it of adj[node]) {
+            
+            // If not visited, recursively perform DFS.
+            if (vis[it] === 0) this.dfs(it, adj, vis, st);
+        }
+        
+        // Add the current node to stack 
+        // once all the nodes connected to it 
+        // have been processed
+        st.push(node);
+    }
+
+    // Function to return list containing 
+    // vertices in Topological order
+    topoSort(V, adj) {
+        // To store the result
+        let ans = [];
+        
+        // Stack to store processed 
+        // nodes in reverse order
+        let st = [];
+        
+        // Visited array
+        let vis = new Array(V).fill(0);
+        
+        // Traverse the graph
+        for (let i = 0; i &lt; V; i++) {
+            
+            // Start DFS traversal for unvisited node
+            if (vis[i] === 0) {
+                this.dfs(i, adj, vis, st);
+            }
+        }
+        
+        // Until the stack is empty
+        while (st.length &gt; 0) {
+            
+            // Add the top of stack to result
+            ans.push(st.pop());
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to perform DFS traversal
+    def dfs(self, node, adj, vis, st):
+        # Mark the node as visited
+        vis[node] = 1
+        
+        # Traverse all the neighbors
+        for it in adj[node]:
+            
+            # If not visited, recursively perform DFS.
+            if vis[it] == 0:
+                self.dfs(it, adj, vis, st)
+        
+        # Add the current node to stack 
+        # once all the nodes connected to it 
+        # have been processed
+        st.append(node)
+    
+    # Function to return list containing 
+    # vertices in Topological order
+    def topoSort(self, V, adj):
+        # To store the result
+        ans = []
+        
+        # Stack to store processed 
+        # nodes in reverse order
+        st = []
+        
+        # Visited array
+        vis = [0] * V
+        
+        # Traverse the graph
+        for i in range(V):
+            
+            # Start DFS traversal for unvisited node
+            if vis[i] == 0:
+                self.dfs(i, adj, vis, st)
+        
+        # Until the stack is empty
+        while st:
+            
+            # Add the top of stack to result
+            ans.append(st.pop())
+        
+        # Return the result
+        return ans
+
+def check(V, res, adj):
+    if V != len(res):
+        return False
+    
+    map = [-1] * V
+    for i in range(V):
+        map[res[i]] = i
+    
+    for i in range(V):
+        for v in adj[i]:
+            if map[i] &gt; map[v]:
+                return False
+    return True</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to return the topological
+     sorting of given graph */
+    vector&lt;int&gt; topoSort(int V, vector&lt;int&gt; adj[]) {
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+        
+        // To store the In-degrees of nodes
+	    vector&lt;int&gt; inDegree(V, 0);
+	    
+	    // Calculating the In-degree of the given graph
+	    for(int i=0; i&lt;V; i++) {
+	        for(auto it : adj[i]) inDegree[it]++;
+	    }
+	    
+	    // Queue to facilitate BFS
+	    queue&lt;int&gt; q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i&lt;V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Function to return the topological
+     sorting of given graph */
+    public List&lt;int&gt; TopoSort(int V, List&lt;List&lt;int&gt;&gt; adj)
+    {
+        
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        // Calculating the In-degree of the given graph
+        for (int i = 0; i &lt; V; i++) {
+            foreach (int it in adj[i]) inDegree[it]++;
+        }
+        
+        // Queue to facilitate BFS
+        Queue&lt;int&gt; q = new Queue&lt;int&gt;();
+        
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i &lt; V; i++) {
+            if (inDegree[i] == 0) q.Enqueue(i);
+        }
+        
+        // Until the queue is empty
+        while (q.Count &gt; 0) {
+            
+            // Get the node
+            int node = q.Dequeue();
+            
+            // Add it to the answer
+            ans.Add(node);
+            
+            // Traverse the neighbours
+            foreach (int it in adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if (inDegree[it] == 0) q.Enqueue(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to return the topological sorting of given graph
+func topoSort(V int, adj [][]int) []int {
+
+	// To store the result
+	ans := []int{}
+
+	// To store the In-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Calculating the In-degree of the given graph
+	for i := 0; i &lt; V; i++ {
+		for _, it := range adj[i] {
+			inDegree[it]++
+		}
+	}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i &lt; V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) &gt; 0 {
+		// Get the node
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+			// Decrement the in-degree
+			inDegree[it]--
+
+			/* Add the node to queue if
+			its in-degree becomes zero */
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to return the topological sorting of given graph */
+    public int[] topoSort(int V, List&lt;List&lt;Integer&gt;&gt; adj) {
+        // To store the result
+        int[] ans = new int[V];
+
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+
+        // Calculating the In-degree of the given graph
+        for (int i = 0; i &lt; V; i++) {
+            for (int it : adj.get(i)) inDegree[it]++;
+        }
+
+        // Queue to facilitate BFS
+        Queue&lt;Integer&gt; q = new LinkedList&lt;&gt;();
+
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i &lt; V; i++) {
+            if (inDegree[i] == 0) q.add(i);
+        }
+
+        int index = 0; // Index to store elements in ans array
+
+        // Until the queue is empty
+        while (!q.isEmpty()) {
+            // Get the node
+            int node = q.poll();
+
+            // Add it to the answer
+            ans[index++] = node;
+
+            // Traverse the neighbours
+            for (int it : adj.get(node)) {
+                // Decrement the in-degree
+                inDegree[it]--;
+
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if (inDegree[it] == 0) q.add(it);
+            }
+        }
+
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to return the topological
+     sorting of given graph */
+    topoSort(V, adj) {
+        
+        // To store the result
+        let ans = [];
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        // Calculating the In-degree of the given graph
+        for (let i = 0; i &lt; V; i++) {
+            for (let it of adj[i]) inDegree[it]++;
+        }
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for (let i = 0; i &lt; V; i++) {
+            if (inDegree[i] === 0) q.push(i);
+        }
+        
+        // Until the queue is empty
+        while (q.length &gt; 0) {
+            
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for (let it of adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if (inDegree[it] === 0) q.push(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to return the topological
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        
+        # To store the result
+        ans = []
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Calculating the In-degree of the given graph
+        for i in range(V):
+            for it in adj[i]:
+                inDegree[it] += 1
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+def check(V, res, adj):
+    if V != len(res):
+        return False
+    
+    map = [-1] * V
+    for i in range(V):
+        map[res[i]] = i
+    
+    for i in range(V):
+        for v in adj[i]:
+            if map[i] &gt; map[v]:
+                return False
+    return True</code></pre></div>
+</body>
+</html>

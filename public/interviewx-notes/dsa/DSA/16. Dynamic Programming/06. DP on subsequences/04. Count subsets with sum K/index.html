@@ -1,0 +1,2762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Count subsets with sum K</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Count subsets with sum K</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given an array arr of n integers and an integer K, count the number of subsets of the given array that have a sum equal to K. Return the result modulo (10<sup>9</sup> + 7).</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li> 1 <= n <= 100</li><li>1 <= arr[i] <= 10<sup>3</sup></li><li>1 <= K <= 10<sup>3</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: arr = [2, 3, 5, 16, 8, 10], K = 10</p><p>Output: 3</p><p>Explanation: The subsets are [2, 8], [10], and [2, 3, 5].</p><h3>Example 2</h3><p>Input: arr = [1, 2, 3, 4, 5], K = 5</p><p>Output: 3</p><p>Explanation: The subsets are [5], [2, 3], and [1, 4].</p><h3>Example 3</h3><p>Input: arr = [2, 2, 2, 2], K = 4</p></div>
+<div class="section"><h2>Fun Fact</h2><p>An interesting real-world application of this problem can be found in the development of algorithms for financial portfolio management systems. These systems must often identify subsets of stocks (from a larger pool) that sum to a specific target value. This allows fund managers to balance their portfolios for risk and return. Counting the number of such subsets can be a part of the process to identify multiple possibilities for optimal portfolio constructions based on different risk-return preferences.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+
+<p>The idea is to generate all pssible subsets and whenever a single subsets is found whose sum is equal to the given target, simply  count it. As, all the subsets needs to generated, recursion can be used to solve this problem.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count subsets with sum K/-T2ZXEe0b"><br>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes: </b>The array will have an index but there is one more parameter “target”.  So, we can say that initially, we need to find(n-1, target) which means that we are counting the number of subsets in the array from index 0 to n-1, whose sum is equal to the target. </li>
+<p>So, f(ind, target) will count the number of subsets that exists in the array from index 0 to 'ind', whose sum is equal to target.</p>
+
+<li><b>Try out all possible choices at a given index: </b>As all the subsets needs to be generated, we will use the pick/non-pick technique.There will be two choices in each function call:</li>
+<p><b>Do not include the current element in the subset: </b>First try to find a subset without considering the current index element. For this, make a recursive call to f(ind-1,target).</p>
+<p><b>Include the current element in the subset: </b>Now try to find a subset by considering the current index element as part of subset. As the current element(arr[ind]) is included, the remaining target sum will be target - arr[ind]. Therefore, make a function call of f(ind-1,target-arr[ind]).</p>
+<p><b>Note: </b>Consider the current element in the subset only when the current element is less or equal to the target.</p>
+<br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, target){
+    not pick = f(ind-1, target)
+    pick = 0
+    if(arr[ind] <= target){
+        pick = f(ind-1, target - arr[ind])
+    }
+           
+}</code></pre></div></div></div><br>
+
+<li><b>Return sum of pick and not pick: </b>As we have to return the total count of subsets with the target sum, we will return the sum of taken and notTaken from our recursive call.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode  and it is not tied to 
+any specific programming  language*/
+
+f(ind, target){
+   not pick = f(ind-1, target)
+    pick = 0
+    if(arr[ind] <= target){
+        pick = f(ind-1, target - arr[ind])
+    }
+    return pick + not pick  
+}</code></pre></div></div></div><br>
+
+<li><b>Base cases: </b>There will be tow base cases, First, when target == 0, it means that the subset is already found from the previous steps, so simply return 1. Another, when ind==0, it means we are at the first element, so return arr[ind]==target. If the element is equal to the target it will return 1 else 0.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+    int modulo = 1e9+7;
+private:
+    /*Function to count the number of 
+    subsets with sum k using recursion*/
+    int findWaysUtil(int ind, int target, vector<int>& arr) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset*/
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0*/
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        // Exclude the current element
+        int notTaken = findWaysUtil(ind - 1, target, arr);
+
+        /* Include the current element if
+        it doesn't exceed the target*/
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = findWaysUtil(ind - 1, target - arr[ind], arr);
+
+        /* Return the result. Also, take
+        modulo for the code to be accepted*/
+        return (notTaken + taken)%modulo;
+    }
+public:
+    //Function to find out number of subsets with sum k
+	int perfectSum(vector<int>&arr, int K){
+        int n = arr.size();
+        
+        //Return the result
+        return findWaysUtil(n - 1, K, arr);
+	}
+};
+
+int main() {
+    vector<int> arr = {1, 2, 2, 3};
+    int k = 3;
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    //Print the result
+    cout << "The number of subsets found are " << sol.perfectSum(arr, k);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Arrays;
+
+class Solution {
+    private static final int MODULO = 1000000007;
+
+    /* Function to count the number of 
+    subsets with sum k using recursion */
+    private int findWaysUtil(int ind, int target, int[] arr) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset */
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0 */
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        // Exclude the current element
+        int notTaken = findWaysUtil(ind - 1, target, arr);
+
+        /* Include the current element if
+        it doesn't exceed the target */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = findWaysUtil(ind - 1, target - arr[ind], arr);
+
+        /* Return the result. Also, take
+        modulo for the code to be accepted*/
+        return (notTaken + taken) % MODULO;
+    }
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K) {
+        int n = arr.length;
+
+        // Return the result
+        return findWaysUtil(n - 1, K, arr);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The number of subsets found are " + sol.perfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="python" class="language-python">MODULO = 10**9 + 7
+
+class Solution:
+    """ Function to count the number of 
+    subsets with sum k using recursion """
+    def findWaysUtil(self, ind, target, arr):
+        """ Base case: If the target sum 
+        is 0, we found a valid subset """
+        if target == 0:
+            return 1
+
+        """ Base case: If we have considered all elements
+        and the target is still not 0, return 0 """
+        if ind == 0:
+            return 1 if arr[0] == target else 0
+
+        # Exclude the current element
+        notTaken = self.findWaysUtil(ind - 1, target, arr)
+
+        """ Include the current element if
+        it doesn't exceed the target"""
+        taken = 0
+        if arr[ind] <= target:
+            taken = self.findWaysUtil(ind - 1, target - arr[ind], arr)
+
+        """ Return the result. Also, take
+        modulo for the code to be accepted"""
+        return (notTaken + taken) % MODULO
+
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+
+        # Return the result
+        return self.findWaysUtil(n - 1, K, arr)
+
+if __name__ == "__main__":
+    arr = [1, 2, 2, 3]
+    k = 3
+    
+    #Create an instance of Solution class
+    sol = Solution()
+    
+    #Print the result
+    print(f"The number of subsets found are {sol.perfectSum(arr, k)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">const MODULO = 1e9 + 7;
+
+class Solution {
+    /* Function to count the number of 
+    subsets with sum k using recursion */
+    findWaysUtil(ind, target, arr) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset */
+        if (target === 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0 */
+        if (ind === 0)
+            return arr[0] === target ? 1 : 0;
+
+        // Exclude the current element
+        const notTaken = this.findWaysUtil(ind - 1, target, arr);
+
+        /* Include the current element if
+        it doesn't exceed the target */
+        let taken = 0;
+        if (arr[ind] <= target)
+            taken = this.findWaysUtil(ind - 1, target - arr[ind], arr);
+
+        /* Return the result. Also, take
+        modulo for the code to be accepted*/
+        return (notTaken + taken) % MODULO;
+    }
+
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+
+        // Return the result
+        return this.findWaysUtil(n - 1, K, arr);
+    }
+}
+const arr = [1, 2, 2, 3];
+const k = 3;
+
+//Create an instance of Solution class
+const sol = new Solution();
+
+//Print the result
+console.log(`The number of subsets found are ${sol.perfectSum(arr, k)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    private int modulo = (int)1e9 + 7;
+
+    /* Function to count the number of 
+       subsets with sum k using recursion */
+    private int FindWaysUtil(int ind, int target, int[] arr)
+    {
+        /* Base case: If the target sum 
+           is 0, we found a valid subset */
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+           and the target is still not 0, return 0 */
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        // Exclude the current element
+        int notTaken = FindWaysUtil(ind - 1, target, arr);
+
+        /* Include the current element if
+           it doesn't exceed the target */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = FindWaysUtil(ind - 1, target - arr[ind], arr);
+
+        /* Return the result. Also, take
+           modulo for the code to be accepted */
+        return (notTaken + taken) % modulo;
+    }
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        // Return the result
+        return FindWaysUtil(n - 1, K, arr);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The number of subsets found are " + sol.perfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Define modulo as a constant
+const modulo = 1e9 + 7
+
+/*Function to count the number of 
+subsets with sum k using recursion*/
+func findWaysUtil(ind int, target int, arr []int) int {
+    /* Base case: If the target sum 
+    is 0, we found a valid subset*/
+    if target == 0 {
+        return 1
+    }
+
+    /* Base case: If we have considered all elements
+    and the target is still not 0, return 0*/
+    if ind == 0 {
+        if arr[0] == target {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+    // Exclude the current element
+    notTaken := findWaysUtil(ind-1, target, arr)
+
+    /* Include the current element if
+    it doesn't exceed the target*/
+    taken := 0
+    if arr[ind] <= target {
+        taken = findWaysUtil(ind-1, target-arr[ind], arr)
+    }
+
+    /* Return the result. Also, take
+    modulo for the code to be accepted*/
+    return (notTaken + taken) % int(modulo)
+}
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+    n := len(arr)
+
+    // Return the result
+    return findWaysUtil(n-1, K, arr)
+}
+
+func main() {
+    arr := []int{1, 2, 2, 3}
+    k := 3
+
+    // Create an instance of Solution class (not needed in Go)
+    // Print the result
+    fmt.Printf("The number of subsets found are %d\n", perfectSum(arr, k))
+}
+
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(2<sup>(N)</sup>), where N is the length of the array. As, for each index, ther are two possible options.<br><br>
+<strong>Space Complexity:</strong>O(N), at maximum the depth of the recursive stack can go upto N.</div>
+<div class="section"><h2>Editorial: Memoization</h2>
+
+<p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count subsets with sum K/-iViDKDeD"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][target+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'target'. The maximum value 'ind' can attain is (n), where n is the size of array and for 'target'  only values between 0 to target. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+    int modulo = 1e9+7;
+private:
+    /*Function to count the number of 
+    subsets with sum k using memoization*/
+    int findWaysUtil(int ind, int target, vector<int>& arr, vector<vector<int>>& dp) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset*/
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0*/
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        /* If the result for this state 
+        is already calculated, return it*/
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        int notTaken = findWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+        it doesn't exceed the target*/
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = findWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+        Also, take modulo for the code to be accepted*/
+        return dp[ind][target] = (notTaken + taken)%modulo;
+    }
+public:
+    //Function to find out number of subsets with sum k
+	int perfectSum(vector<int>&arr, int K){
+        int n = arr.size();
+        
+        //DP array to store the subproblems
+        vector<vector<int>> dp(n, vector<int>(K + 1, -1));
+        
+        //Return the result
+        return findWaysUtil(n - 1, K, arr, dp);
+	}
+};
+
+int main() {
+    vector<int> arr = {1, 2, 2, 3};
+    int k = 3;
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    //Print the result
+    cout << "The number of subsets found are " << sol.perfectSum(arr, k);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Arrays;
+
+class Solution {
+    private static final int MODULO = 1000000007;
+
+    /* Function to count the number of 
+    subsets with sum k using memoization */
+    private int findWaysUtil(int ind, int target, int[] arr, int[][] dp) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset */
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0 */
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        /* If the result for this state 
+        is already calculated, return it */
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        int notTaken = findWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+        it doesn't exceed the target */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = findWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+        Also, take modulo for the code to be accepted*/
+        return dp[ind][target] = (notTaken + taken) % MODULO;
+    }
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K) {
+        int n = arr.length;
+
+        // DP array to store the subproblems
+        int[][] dp = new int[n][K + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        // Return the result
+        return findWaysUtil(n - 1, K, arr, dp);
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The number of subsets found are " + sol.perfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="python" class="language-python">MODULO = 10**9 + 7
+
+class Solution:
+    """ Function to count the number of 
+    subsets with sum k using memoization """
+    def findWaysUtil(self, ind, target, arr, dp):
+        """ Base case: If the target sum 
+        is 0, we found a valid subset """
+        if target == 0:
+            return 1
+
+        """ Base case: If we have considered all elements
+        and the target is still not 0, return 0 """
+        if ind == 0:
+            return 1 if arr[0] == target else 0
+
+        """ If the result for this state 
+        is already calculated, return it """
+        if dp[ind][target] != -1:
+            return dp[ind][target]
+
+        # Exclude the current element
+        notTaken = self.findWaysUtil(ind - 1, target, arr, dp)
+
+        """ Include the current element if
+        it doesn't exceed the target"""
+        taken = 0
+        if arr[ind] <= target:
+            taken = self.findWaysUtil(ind - 1, target - arr[ind], arr, dp)
+
+        """Store the result in DP table and return
+        Also, take modulo for the code to be accepted"""
+        dp[ind][target] = (notTaken + taken) % MODULO
+        return dp[ind][target]
+
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+
+        # DP array to store the subproblems
+        dp = [[-1] * (K + 1) for _ in range(n)]
+
+        # Return the result
+        return self.findWaysUtil(n - 1, K, arr, dp)
+
+if __name__ == "__main__":
+    arr = [1, 2, 2, 3]
+    k = 3
+    
+    #Create an instance of Solution class
+    sol = Solution()
+    
+    #Print the result
+    print(f"The number of subsets found are {sol.perfectSum(arr, k)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">const MODULO = 1e9 + 7;
+
+class Solution {
+    /* Function to count the number of 
+    subsets with sum k using memoization */
+    findWaysUtil(ind, target, arr, dp) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset */
+        if (target === 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0 */
+        if (ind === 0)
+            return arr[0] === target ? 1 : 0;
+
+        /* If the result for this state 
+        is already calculated, return it */
+        if (dp[ind][target] !== -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        const notTaken = this.findWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+        it doesn't exceed the target */
+        let taken = 0;
+        if (arr[ind] <= target)
+            taken = this.findWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+        Also, take modulo for the code to be accepted*/
+        dp[ind][target] = (notTaken + taken) % MODULO;
+        return dp[ind][target];
+    }
+
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+
+        // DP array to store the subproblems
+        const dp = Array.from({ length: n }, () => Array(K + 1).fill(-1));
+
+        // Return the result
+        return this.findWaysUtil(n - 1, K, arr, dp);
+    }
+}
+const arr = [1, 2, 2, 3];
+const k = 3;
+
+//Create an instance of Solution class
+const sol = new Solution();
+
+//Print the result
+console.log(`The number of subsets found are ${sol.perfectSum(arr, k)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    int modulo = (int)1e9 + 7;
+
+    /* Function to count the number of 
+       subsets with sum k using memoization */
+    private int FindWaysUtil(int ind, int target, int[] arr, int[,] dp)
+    {
+        /* Base case: If the target sum 
+           is 0, we found a valid subset */
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+           and the target is still not 0, return 0 */
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        /* If the result for this state 
+           is already calculated, return it */
+        if (dp[ind, target] != -1)
+            return dp[ind, target];
+
+        // Exclude the current element
+        int notTaken = FindWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+           it doesn't exceed the target */
+        int taken = 0;
+        if (arr[ind] <= target)
+            taken = FindWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+           Also, take modulo for the code to be accepted */
+        return dp[ind, target] = (notTaken + taken) % modulo;
+    }
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        // DP array to store the subproblems
+        int[,] dp = new int[n, K + 1];
+
+        // Initialize DP table with -1
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = 0; j <= K; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+
+        // Return the result
+        return FindWaysUtil(n - 1, K, arr, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The number of subsets found are " + sol.perfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+var modulo int = 1000000007 // 1e9+7
+
+/* Function to count the number of
+subsets with sum k using memoization */
+func findWaysUtil(ind int, target int, arr []int, dp [][]int) int {
+	/* Base case: If the target sum
+	is 0, we found a valid subset */
+	if target == 0 {
+		return 1
+	}
+
+	/* Base case: If we have considered all elements
+	and the target is still not 0, return 0 */
+	if ind == 0 {
+		if arr[0] == target {
+			return 1
+		}
+		return 0
+	}
+
+	/* If the result for this state
+	is already calculated, return it */
+	if dp[ind][target] != -1 {
+		return dp[ind][target]
+	}
+
+	// Exclude the current element
+	notTaken := findWaysUtil(ind-1, target, arr, dp)
+
+	/* Include the current element if
+	it doesn't exceed the target */
+	taken := 0
+	if arr[ind] <= target {
+		taken = findWaysUtil(ind-1, target-arr[ind], arr, dp)
+	}
+
+	/* Store the result in DP table and return
+	Also, take modulo for the code to be accepted */
+	dp[ind][target] = (notTaken + taken) % modulo
+	return dp[ind][target]
+}
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+	n := len(arr)
+
+	// DP array to store the subproblems
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, K+1)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Return the result
+	return findWaysUtil(n-1, K, arr, dp)
+}
+
+func main() {
+	arr := []int{1, 2, 2, 3}
+	k := 3
+
+	// Print the result
+	fmt.Println("The number of subsets found are", perfectSum(arr, k))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*target), There are 'N*target' states therefore at max ‘N*target’ new problems will be solved.<br><br>
+<strong>Space Complexity:</strong>O(N*target) + O(N), As we are using a recursion stack space(O(N)) and a 2D array ( O(N*target)).</div>
+<div class="section"><h2>Editorial: Tabulation</h2>
+
+<p> To convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li><b>Declare a dp array of size [n][target+1]: </b>As there are two changing parameters in the recursive solution,  'ind' and 'target'.  The maximum value 'ind' can attain is (n) and including 0 its n, where n is the size of array, for 'target' can have any values between 0 to 'target'.  So we need a 2D dp array. Set its type as int and initialize it as 0.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count subsets with sum K/-dcwAj91a"><br>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when target == 0, it means the required subset is found and we were returning 1. So, set '1' in the dp array for every index where target = 0.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count subsets with sum K/-Llnw4_h4"><br>
+
+<p>The first row dp[0][] indicates that only the first element of the array is considered, therefore for the target value equal to arr[0], only cell with that target will be true, so explicitly set dp[0][arr[0]] =1, (dp[0][arr[0]] means that we are considering the first element of the array with the target equal to the first element itself). Please note that it can happen that arr[0]>target, so we first check it: if(arr[0]<=target) then set dp[0][arr[0]] = 1</p>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on subsequences/Count subsets with sum K/-QwlPxFw1"><br>
+
+<li><b>Iterative Computation Using Loops: </b>Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.</li>
+
+<li><b>Returning the answer: </b>At last dp[n-1][target] will hold the solution after the completion of whole process, as we are doing the calculations in bottom-up manner.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+    int modulo = 1e9+7;
+public:
+    //Function to find out number of subsets with sum k
+	int perfectSum(vector<int>&arr, int K){
+        int n = arr.size();
+        
+        /* Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros*/
+        vector<vector<int>> dp(n, vector<int>(K + 1, 0));
+
+        /* Base case: If the target sum is 0, there
+        is one valid subset (the empty subset)*/
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] <= K) {
+            dp[0][arr[0]] = 1;
+        }
+
+        // Fill in the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 1; target <= K; target++) {
+                // Exclude the current element
+                int notTaken = dp[ind - 1][target];
+
+                /* Include the current element
+                if it doesn't exceed the target*/
+                int taken = 0;
+                if (arr[ind] <= target) {
+                    taken = (dp[ind - 1][target - arr[ind]]) % modulo;
+                }
+
+                /* Update the DP table and take 
+                modulo for the code to be accepted*/
+                dp[ind][target] = (notTaken + taken)%modulo;
+            }
+        }
+
+        // The final result is in the last cell of table
+        return dp[n - 1][K];
+	}
+};
+
+int main() {
+    vector<int> arr = {1, 2, 2, 3};
+    int k = 3;
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    //Print the result
+    cout << "The number of subsets found are " << sol.perfectSum(arr, k);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private static final int MODULO = 1000000007;
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K) {
+        int n = arr.length;
+        
+        /* Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros */
+        int[][] dp = new int[n][K + 1];
+
+        /* Base case: If the target sum is 0, there
+        is one valid subset (the empty subset) */
+        for (int i = 0; i < n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] <= K) {
+            dp[0][arr[0]] = 1;
+        }
+
+        // Fill in the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++) {
+            for (int target = 1; target <= K; target++) {
+                // Exclude the current element
+                int notTaken = dp[ind - 1][target];
+
+                /* Include the current element
+                if it doesn't exceed the target */
+                int taken = 0;
+                if (arr[ind] <= target) {
+                    taken = dp[ind - 1][target - arr[ind]] % MODULO;
+                }
+
+                /* Update the DP table and take 
+                modulo for the code to be accepted */
+                dp[ind][target] = (notTaken + taken) % MODULO;
+            }
+        }
+
+        // The final result is in the last cell of table
+        return dp[n - 1][K];
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the result
+        System.out.println("The number of subsets found are " + sol.perfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="python" class="language-python">MODULO = 10**9 + 7
+
+class Solution:
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+        
+        """ Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros"""
+        dp = [[0] * (K + 1) for _ in range(n)]
+
+        """ Base case: If the target sum is 0, there
+        is one valid subset (the empty subset)"""
+        for i in range(n):
+            dp[i][0] = 1
+
+        """ Initialize the first row based 
+        on the first element of the array"""
+        if arr[0] <= K:
+            dp[0][arr[0]] = 1
+
+        # Fill in the DP table using a bottom-up approach
+        for ind in range(1, n):
+            for target in range(1, K + 1):
+                # Exclude the current element
+                notTaken = dp[ind - 1][target]
+
+                """ Include the current element if
+                it doesn't exceed the target"""
+                taken = 0
+                if arr[ind] <= target:
+                    taken = dp[ind - 1][target - arr[ind]] % MODULO
+
+                """ Update the DP table and take
+                modulo for the code to be accepted"""
+                dp[ind][target] = (notTaken + taken) % MODULO
+
+        # The final result is in the last cell of table
+        return dp[n - 1][K]
+
+if __name__ == "__main__":
+    arr = [1, 2, 2, 3]
+    k = 3
+    
+    #Create an instance of Solution class
+    sol = Solution()
+    
+    #Print the answer
+    print(f"The number of subsets found are {sol.perfectSum(arr, k)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">const MODULO = 1e9 + 7;
+
+class Solution {
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+        
+        /* Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros*/
+        const dp = Array.from({ length: n }, () => Array(K + 1).fill(0));
+
+        /* Base case: If the target sum is 0,
+        there is one valid subset (the empty subset)*/
+        for (let i = 0; i < n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] <= K) {
+            dp[0][arr[0]] = 1;
+        }
+
+        // Fill in the DP table using a bottom-up approach
+        for (let ind = 1; ind < n; ind++) {
+            for (let target = 1; target <= K; target++) {
+                // Exclude the current element
+                const notTaken = dp[ind - 1][target];
+
+                /* Include the current element 
+                if it doesn't exceed the target*/
+                let taken = 0;
+                if (arr[ind] <= target) {
+                    taken = dp[ind - 1][target - arr[ind]] % MODULO;
+                }
+
+                /* Update the DP table and take
+                modulo for the code to be accepted*/
+                dp[ind][target] = (notTaken + taken) % MODULO;
+            }
+        }
+
+        // The final result is in the last cell of table
+        return dp[n - 1][K];
+    }
+}
+const arr = [1, 2, 2, 3];
+const k = 3;
+
+//Create an instance of Solution class
+const sol = new Solution();
+
+//Print the result
+console.log(`The number of subsets found are ${sol.perfectSum(arr, k)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    int modulo = (int)1e9 + 7;
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        /* Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros */
+        int[,] dp = new int[n, K + 1];
+
+        /* Base case: If the target sum is 0, there
+        is one valid subset (the empty subset) */
+        for (int i = 0; i < n; i++)
+        {
+            dp[i, 0] = 1;
+        }
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] <= K)
+        {
+            dp[0, arr[0]] = 1;
+        }
+
+        // Fill in the DP table using a bottom-up approach
+        for (int ind = 1; ind < n; ind++)
+        {
+            for (int target = 1; target <= K; target++)
+            {
+                // Exclude the current element
+                int notTaken = dp[ind - 1, target];
+
+                /* Include the current element
+                if it doesn't exceed the target */
+                int taken = 0;
+                if (arr[ind] <= target)
+                {
+                    taken = dp[ind - 1, target - arr[ind]] % modulo;
+                }
+
+                /* Update the DP table and take 
+                modulo for the code to be accepted */
+                dp[ind, target] = (notTaken + taken) % modulo;
+            }
+        }
+
+        // The final result is in the last cell of table
+        return dp[n - 1, K];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The number of subsets found are " + sol.perfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+var modulo int = 1000000007 // 1e9+7
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+	n := len(arr)
+
+	/* Create a 2D DP table with dimensions
+	n x K+1, initialized with zeros */
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, K+1)
+	}
+
+	/* Base case: If the target sum is 0, there
+	is one valid subset (the empty subset) */
+	for i := 0; i < n; i++ {
+		dp[i][0] = 1
+	}
+
+	/* Initialize the first row based
+	on the first element of the array */
+	if arr[0] <= K {
+		dp[0][arr[0]] = 1
+	}
+
+	// Fill in the DP table using a bottom-up approach
+	for ind := 1; ind < n; ind++ {
+		for target := 1; target <= K; target++ {
+			// Exclude the current element
+			notTaken := dp[ind-1][target]
+
+			/* Include the current element
+			if it doesn't exceed the target */
+			taken := 0
+			if arr[ind] <= target {
+				taken = dp[ind-1][target-arr[ind]] % modulo
+			}
+
+			/* Update the DP table and take
+			modulo for the code to be accepted */
+			dp[ind][target] = (notTaken + taken) % modulo
+		}
+	}
+
+	// The final result is in the last cell of table
+	return dp[n-1][K]
+}
+
+func main() {
+	arr := []int{1, 2, 2, 3}
+	k := 3
+
+	// Print the result
+	fmt.Println("The number of subsets found are", perfectSum(arr, k))
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*target),  As, here are three nested loops that account for O(N*target) complexity.<br><br>
+<strong>Space Complexity:</strong>O(N*target),  As a 2D array  of size N*target  is used.</div>
+<div class="section"><h2>Editorial: Space Optimization</h2>
+
+<p>If we observe the relation, dp[ind][target] =  dp[ind-1][target] + dp[ind-1][target-arr[ind]]. We find that to calculate a value of a cell of the dp array, we need only the previous row values (say prev). So, we don’t need to store an entire array. Hence we can space optimize it.</p>
+
+
+<h5><strong>Steps to space optimize the tabulation approach: </strong></h5>
+<ol>
+ <li>Decalre an array of size target to store the previous row of the DP table. Initialize the first row and first column of the DP table based on the base conditions discussed in tabulation.
+<li>Now, initiate two nested loops in bottom-up approach. The first loop will run for 'ind' and the second loop will run for the 'target' variable.</li>
+<li>In order to store the current row of the DP table, initialize  a new array 'cur' and fill the first cell to 1 for base condition.
+<li> Do the calculations for 'cur' row by performing the pick/non-pick technique used in previous approaches.
+<li>Now, update the previous row with the current row for the next iteration and at last return the final result stored in the last cell of the previous row(prev[k]).</ol>
+<br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+    int modulo = 1e9+7;
+public:
+    //Function to find out number of subsets with sum k
+	int perfectSum(vector<int>&arr, int K){
+        int n = arr.size();
+        
+        /* Initialize a vector 'prev' to represent
+        the previous row of the DP table*/
+        vector<int> prev(K + 1, 0);
+
+        /* Base case: If the target sum is 0, 
+        there is one valid subset (the empty subset)*/
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] <= K) {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table 
+        using a bottom-up approach*/
+        for (int ind = 1; ind < n; ind++) {
+            /* Create a vector 'cur' to represent
+            the current row of the DP table*/
+            vector<int> cur(K + 1, 0);
+
+            cur[0] = 1;
+
+            for (int target = 1; target <= K; target++) {
+                // Exclude the current element
+                int notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn't exceed the target*/
+                int taken = 0;
+                if (arr[ind] <= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken)%modulo;
+            }
+
+            // Set 'cur' as 'prev' for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the 'prev' vector*/
+        return prev[K];
+	}
+};
+
+int main() {
+    vector<int> arr = {1, 2, 2, 3};
+    int k = 3;
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    //Print the result
+    cout << "The number of subsets found are " << sol.perfectSum(arr, k);
+
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private static final int MODULO = 1000000007;
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K) {
+        int n = arr.length;
+
+        /* Initialize a vector 'prev' to represent
+        the previous row of the DP table */
+        int[] prev = new int[K + 1];
+        Arrays.fill(prev, 0);
+
+        /* Base case: If the target sum is 0, 
+        there is one valid subset (the empty subset) */
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] <= K) {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table 
+        using a bottom-up approach */
+        for (int ind = 1; ind < n; ind++) {
+            /* Create a vector 'cur' to represent
+            the current row of the DP table */
+            int[] cur = new int[K + 1];
+            Arrays.fill(cur, 0);
+
+            cur[0] = 1;
+
+            for (int target = 1; target <= K; target++) {
+                // Exclude the current element
+                int notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn't exceed the target */
+                int taken = 0;
+                if (arr[ind] <= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken) % MODULO;
+            }
+
+            // Set 'cur' as 'prev' for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the 'prev' vector */
+        return prev[K];
+    }
+
+    public static void main(String[] args) {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The number of subsets found are " + sol.perfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span></div><pre class="wp-block-code"><code lang="python" class="language-python">MODULO = 10**9 + 7
+
+class Solution:
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+
+        """ Initialize a vector 'prev' to represent
+        the previous row of the DP table"""
+        prev = [0] * (K + 1)
+
+        """ Base case: If the target sum is 0,
+        there is one valid subset (the empty subset)"""
+        prev[0] = 1
+
+        """ Initialize the first row based
+        on the first element of the array"""
+        if arr[0] <= K:
+            prev[arr[0]] = 1
+
+        """ Fill in the DP table
+        using a bottom-up approach"""
+        for ind in range(1, n):
+            """ Create a vector 'cur' to represent
+            the current row of the DP table"""
+            cur = [0] * (K + 1)
+
+            cur[0] = 1
+
+            for target in range(1, K + 1):
+                # Exclude the current element
+                notTaken = prev[target]
+
+                """ Include the current element
+                if it doesn't exceed the target"""
+                taken = 0
+                if arr[ind] <= target:
+                    taken = prev[target - arr[ind]]
+
+                # Update the current row of the DP table
+                cur[target] = (notTaken + taken) % MODULO
+
+            # Set 'cur' as 'prev' for the next iteration
+            prev = cur
+
+        """ The final result is in the
+        last cell of the 'prev' vector"""
+        return prev[K]
+
+if __name__ == "__main__":
+    arr = [1, 2, 2, 3]
+    k = 3
+    
+    #Create an instance of Solution class
+    sol = Solution()
+    
+    #Print the result
+    print(f"The number of subsets found are {sol.perfectSum(arr, k)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">const MODULO = 1e9 + 7;
+
+class Solution {
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+
+        /* Initialize a vector 'prev' to represent
+        the previous row of the DP table*/
+        let prev = new Array(K + 1).fill(0);
+
+        /* Base case: If the target sum is 0,
+        there is one valid subset (the empty subset)*/
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] <= K) {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table
+        using a bottom-up approach*/
+        for (let ind = 1; ind < n; ind++) {
+            /* Create a vector 'cur' to represent
+            the current row of the DP table*/
+            let cur = new Array(K + 1).fill(0);
+
+            cur[0] = 1;
+
+            for (let target = 1; target <= K; target++) {
+                // Exclude the current element
+                let notTaken = prev[target];
+
+                /* Include the current element
+                if it doesn't exceed the target*/
+                let taken = 0;
+                if (arr[ind] <= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken) % MODULO;
+            }
+
+            // Set 'cur' as 'prev' for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the 'prev' vector*/
+        return prev[K];
+    }
+}
+
+const arr = [1, 2, 2, 3];
+const k = 3;
+
+//Create an instance of Solution class
+const sol = new Solution();
+
+//Print the result
+console.log(`The number of subsets found are ${sol.perfectSum(arr, k)}`);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    int modulo = (int)1e9 + 7;
+
+    // Function to find out number of subsets with sum k
+    public int PerfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        /* Initialize a vector 'prev' to represent
+        the previous row of the DP table */
+        int[] prev = new int[K + 1];
+
+        /* Base case: If the target sum is 0, 
+        there is one valid subset (the empty subset) */
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] <= K)
+        {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table 
+        using a bottom-up approach */
+        for (int ind = 1; ind < n; ind++)
+        {
+            /* Create a vector 'cur' to represent
+            the current row of the DP table */
+            int[] cur = new int[K + 1];
+
+            cur[0] = 1;
+
+            for (int target = 1; target <= K; target++)
+            {
+                // Exclude the current element
+                int notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn't exceed the target */
+                int taken = 0;
+                if (arr[ind] <= target)
+                {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken) % modulo;
+            }
+
+            // Set 'cur' as 'prev' for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the 'prev' vector */
+        return prev[K];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[] arr = {1, 2, 2, 3};
+        int k = 3;
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The number of subsets found are " + sol.PerfectSum(arr, k));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+var modulo int = 1000000007 // 1e9+7
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+	n := len(arr)
+
+	/* Initialize a slice 'prev' to represent
+	the previous row of the DP table */
+	prev := make([]int, K+1)
+
+	/* Base case: If the target sum is 0,
+	there is one valid subset (the empty subset) */
+	prev[0] = 1
+
+	/* Initialize the first row based
+	on the first element of the array */
+	if arr[0] <= K {
+		prev[arr[0]] = 1
+	}
+
+	/* Fill in the DP table
+	using a bottom-up approach */
+	for ind := 1; ind < n; ind++ {
+		/* Create a slice 'cur' to represent
+		the current row of the DP table */
+		cur := make([]int, K+1)
+
+		cur[0] = 1
+
+		for target := 1; target <= K; target++ {
+			// Exclude the current element
+			notTaken := prev[target]
+
+			/* Include the current element
+			if it doesn't exceed the target */
+			taken := 0
+			if arr[ind] <= target {
+				taken = prev[target-arr[ind]]
+			}
+
+			// Update the current row of the DP table
+			cur[target] = (notTaken + taken) % modulo
+		}
+
+		// Set 'cur' as 'prev' for the next iteration
+		prev = cur
+	}
+
+	/* The final result is in the
+	last cell of the 'prev' slice */
+	return prev[K]
+}
+
+func main() {
+	arr := []int{1, 2, 2, 3}
+	k := 3
+
+	// Print the result
+	fmt.Println("The number of subsets found are", perfectSum(arr, k))
+}
+</code></pre></div></div></div>
+
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N*target),  As, here are three nested loops that account for O(N*target) complexity.<br><br>
+<strong>Space Complexity:</strong>O(target),  As we are using an external array of size ‘K+1’ to store only one row.</div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+    int modulo = 1e9+7;
+private:
+    /*Function to count the number of 
+    subsets with sum k using recursion*/
+    int findWaysUtil(int ind, int target, vector&lt;int&gt;&amp; arr) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset*/
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0*/
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        // Exclude the current element
+        int notTaken = findWaysUtil(ind - 1, target, arr);
+
+        /* Include the current element if
+        it doesn&#x27;t exceed the target*/
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = findWaysUtil(ind - 1, target - arr[ind], arr);
+
+        /* Return the result. Also, take
+        modulo for the code to be accepted*/
+        return (notTaken + taken)%modulo;
+    }
+public:
+    //Function to find out number of subsets with sum k
+    int perfectSum(vector&lt;int&gt;&amp;arr, int K){
+        int n = arr.size();
+        
+        //Return the result
+        return findWaysUtil(n - 1, K, arr);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    private int modulo = (int)1e9 + 7;
+
+    /* Function to count the number of 
+       subsets with sum k using recursion */
+    private int FindWaysUtil(int ind, int target, int[] arr)
+    {
+        /* Base case: If the target sum 
+           is 0, we found a valid subset */
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+           and the target is still not 0, return 0 */
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        // Exclude the current element
+        int notTaken = FindWaysUtil(ind - 1, target, arr);
+
+        /* Include the current element if
+           it doesn&#x27;t exceed the target */
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = FindWaysUtil(ind - 1, target - arr[ind], arr);
+
+        /* Return the result. Also, take
+           modulo for the code to be accepted */
+        return (notTaken + taken) % modulo;
+    }
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        // Return the result
+        return FindWaysUtil(n - 1, K, arr);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Define modulo as a constant
+const modulo = 1e9 + 7
+
+/*Function to count the number of 
+subsets with sum k using recursion*/
+func findWaysUtil(ind int, target int, arr []int) int {
+    /* Base case: If the target sum 
+    is 0, we found a valid subset*/
+    if target == 0 {
+        return 1
+    }
+
+    /* Base case: If we have considered all elements
+    and the target is still not 0, return 0*/
+    if ind == 0 {
+        if arr[0] == target {
+            return 1
+        } else {
+            return 0
+        }
+    }
+
+    // Exclude the current element
+    notTaken := findWaysUtil(ind-1, target, arr)
+
+    /* Include the current element if
+    it doesn&#x27;t exceed the target*/
+    taken := 0
+    if arr[ind] &lt;= target {
+        taken = findWaysUtil(ind-1, target-arr[ind], arr)
+    }
+
+    /* Return the result. Also, take
+    modulo for the code to be accepted*/
+    return (notTaken + taken) % int(modulo)
+}
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+    n := len(arr)
+
+    // Return the result
+    return findWaysUtil(n-1, K, arr)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+private static final int MODULO = 1000000007;
+
+/* Function to count the number of 
+subsets with sum k using recursion */
+private int findWaysUtil(int ind, int target, int[] arr) {
+    /* Base case: If the target sum 
+    is 0, we found a valid subset */
+    if (target == 0)
+        return 1;
+
+    /* Base case: If we have considered all elements
+    and the target is still not 0, return 0 */
+    if (ind == 0)
+        return (arr[0] == target) ? 1 : 0;
+
+    // Exclude the current element
+    int notTaken = findWaysUtil(ind - 1, target, arr);
+
+    /* Include the current element if
+    it doesn&#x27;t exceed the target */
+    int taken = 0;
+    if (arr[ind] &lt;= target)
+        taken = findWaysUtil(ind - 1, target - arr[ind], arr);
+
+    /* Return the result. Also, take
+    modulo for the code to be accepted*/
+    return (notTaken + taken) % MODULO;
+}
+
+// Function to find out number of subsets with sum k
+public int perfectSum(int[] arr, int K) {
+    int n = arr.length;
+
+    // Return the result
+    return findWaysUtil(n - 1, K, arr);
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>const MODULO = 1e9 + 7;
+
+class Solution {
+    /* Function to count the number of 
+    subsets with sum k using recursion */
+    findWaysUtil(ind, target, arr) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset */
+        if (target === 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0 */
+        if (ind === 0)
+            return arr[0] === target ? 1 : 0;
+
+        // Exclude the current element
+        const notTaken = this.findWaysUtil(ind - 1, target, arr);
+
+        /* Include the current element if
+        it doesn&#x27;t exceed the target */
+        let taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = this.findWaysUtil(ind - 1, target - arr[ind], arr);
+
+        /* Return the result. Also, take
+        modulo for the code to be accepted*/
+        return (notTaken + taken) % MODULO;
+    }
+
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+
+        // Return the result
+        return this.findWaysUtil(n - 1, K, arr);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    MODULO = 10**9 + 7
+
+    &quot;&quot;&quot; Function to count the number of 
+    subsets with sum k using recursion &quot;&quot;&quot;
+    def findWaysUtil(self, ind, target, arr):
+        &quot;&quot;&quot; Base case: If the target sum 
+        is 0, we found a valid subset &quot;&quot;&quot;
+        if target == 0:
+            return 1
+
+        &quot;&quot;&quot; Base case: If we have considered all elements
+        and the target is still not 0, return 0 &quot;&quot;&quot;
+        if ind == 0:
+            return 1 if arr[0] == target else 0
+
+        # Exclude the current element
+        notTaken = self.findWaysUtil(ind - 1, target, arr)
+
+        &quot;&quot;&quot; Include the current element if
+        it doesn&#x27;t exceed the target&quot;&quot;&quot;
+        taken = 0
+        if arr[ind] &lt;= target:
+            taken = self.findWaysUtil(ind - 1, target - arr[ind], arr)
+
+        &quot;&quot;&quot; Return the result. Also, take
+        modulo for the code to be accepted&quot;&quot;&quot;
+        return (notTaken + taken) % self.MODULO
+
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+
+        # Return the result
+        return self.findWaysUtil(n - 1, K, arr)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+    int modulo = 1e9+7;
+private:
+    /*Function to count the number of 
+    subsets with sum k using memoization*/
+    int findWaysUtil(int ind, int target, vector&lt;int&gt;&amp; arr, vector&lt;vector&lt;int&gt;&gt;&amp; dp) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset*/
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0*/
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        /* If the result for this state 
+        is already calculated, return it*/
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        int notTaken = findWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+        it doesn&#x27;t exceed the target*/
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = findWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+        Also, take modulo for the code to be accepted*/
+        return dp[ind][target] = (notTaken + taken)%modulo;
+    }
+public:
+    //Function to find out number of subsets with sum k
+	int perfectSum(vector&lt;int&gt;&amp;arr, int K){
+        int n = arr.size();
+        
+        //DP array to store the subproblems
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(K + 1, -1));
+        
+        //Return the result
+        return findWaysUtil(n - 1, K, arr, dp);
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    int modulo = (int)1e9 + 7;
+
+    /* Function to count the number of 
+       subsets with sum k using memoization */
+    private int FindWaysUtil(int ind, int target, int[] arr, int[,] dp)
+    {
+        /* Base case: If the target sum 
+           is 0, we found a valid subset */
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+           and the target is still not 0, return 0 */
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        /* If the result for this state 
+           is already calculated, return it */
+        if (dp[ind, target] != -1)
+            return dp[ind, target];
+
+        // Exclude the current element
+        int notTaken = FindWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+           it doesn&#x27;t exceed the target */
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = FindWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+           Also, take modulo for the code to be accepted */
+        return dp[ind, target] = (notTaken + taken) % modulo;
+    }
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        // DP array to store the subproblems
+        int[,] dp = new int[n, K + 1];
+
+        // Initialize DP table with -1
+        for (int i = 0; i &lt; n; i++)
+        {
+            for (int j = 0; j &lt;= K; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+
+        // Return the result
+        return FindWaysUtil(n - 1, K, arr, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>var modulo int = 1000000007 // 1e9+7
+
+/* Function to count the number of
+subsets with sum k using memoization */
+func findWaysUtil(ind int, target int, arr []int, dp [][]int) int {
+	/* Base case: If the target sum
+	is 0, we found a valid subset */
+	if target == 0 {
+		return 1
+	}
+
+	/* Base case: If we have considered all elements
+	and the target is still not 0, return 0 */
+	if ind == 0 {
+		if arr[0] == target {
+			return 1
+		}
+		return 0
+	}
+
+	/* If the result for this state
+	is already calculated, return it */
+	if dp[ind][target] != -1 {
+		return dp[ind][target]
+	}
+
+	// Exclude the current element
+	notTaken := findWaysUtil(ind-1, target, arr, dp)
+
+	/* Include the current element if
+	it doesn&#x27;t exceed the target */
+	taken := 0
+	if arr[ind] &lt;= target {
+		taken = findWaysUtil(ind-1, target-arr[ind], arr, dp)
+	}
+
+	/* Store the result in DP table and return
+	Also, take modulo for the code to be accepted */
+	dp[ind][target] = (notTaken + taken) % modulo
+	return dp[ind][target]
+}
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+	n := len(arr)
+
+	// DP array to store the subproblems
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, K+1)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Return the result
+	return findWaysUtil(n-1, K, arr, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    private static final int MODULO = 1000000007;
+
+    /* Function to count the number of 
+    subsets with sum k using memoization */
+    private int findWaysUtil(int ind, int target, int[] arr, int[][] dp) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset */
+        if (target == 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0 */
+        if (ind == 0)
+            return (arr[0] == target) ? 1 : 0;
+
+        /* If the result for this state 
+        is already calculated, return it */
+        if (dp[ind][target] != -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        int notTaken = findWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+        it doesn&#x27;t exceed the target */
+        int taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = findWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+        Also, take modulo for the code to be accepted*/
+        return dp[ind][target] = (notTaken + taken) % MODULO;
+    }
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K) {
+        int n = arr.length;
+
+        // DP array to store the subproblems
+        int[][] dp = new int[n][K + 1];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        // Return the result
+        return findWaysUtil(n - 1, K, arr, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>const MODULO = 1e9 + 7;
+class Solution {
+    /* Function to count the number of 
+    subsets with sum k using memoization */
+    findWaysUtil(ind, target, arr, dp) {
+        /* Base case: If the target sum 
+        is 0, we found a valid subset */
+        if (target === 0)
+            return 1;
+
+        /* Base case: If we have considered all elements
+        and the target is still not 0, return 0 */
+        if (ind === 0)
+            return arr[0] === target ? 1 : 0;
+
+        /* If the result for this state 
+        is already calculated, return it */
+        if (dp[ind][target] !== -1)
+            return dp[ind][target];
+
+        // Exclude the current element
+        const notTaken = this.findWaysUtil(ind - 1, target, arr, dp);
+
+        /* Include the current element if
+        it doesn&#x27;t exceed the target */
+        let taken = 0;
+        if (arr[ind] &lt;= target)
+            taken = this.findWaysUtil(ind - 1, target - arr[ind], arr, dp);
+
+        /* Store the result in DP table and return
+        Also, take modulo for the code to be accepted*/
+        dp[ind][target] = (notTaken + taken) % MODULO;
+        return dp[ind][target];
+    }
+
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+
+        // DP array to store the subproblems
+        const dp = Array.from({ length: n }, () =&gt; Array(K + 1).fill(-1));
+
+        // Return the result
+        return this.findWaysUtil(n - 1, K, arr, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>MODULO = 10**9 + 7
+
+class Solution:
+    &quot;&quot;&quot; Function to count the number of 
+    subsets with sum k using memoization &quot;&quot;&quot;
+    def findWaysUtil(self, ind, target, arr, dp):
+        &quot;&quot;&quot; Base case: If the target sum 
+        is 0, we found a valid subset &quot;&quot;&quot;
+        if target == 0:
+            return 1
+
+        &quot;&quot;&quot; Base case: If we have considered all elements
+        and the target is still not 0, return 0 &quot;&quot;&quot;
+        if ind == 0:
+            return 1 if arr[0] == target else 0
+
+        &quot;&quot;&quot; If the result for this state 
+        is already calculated, return it &quot;&quot;&quot;
+        if dp[ind][target] != -1:
+            return dp[ind][target]
+
+        # Exclude the current element
+        notTaken = self.findWaysUtil(ind - 1, target, arr, dp)
+
+        &quot;&quot;&quot; Include the current element if
+        it doesn&#x27;t exceed the target&quot;&quot;&quot;
+        taken = 0
+        if arr[ind] &lt;= target:
+            taken = self.findWaysUtil(ind - 1, target - arr[ind], arr, dp)
+
+        &quot;&quot;&quot;Store the result in DP table and return
+        Also, take modulo for the code to be accepted&quot;&quot;&quot;
+        dp[ind][target] = (notTaken + taken) % MODULO
+        return dp[ind][target]
+
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+
+        # DP array to store the subproblems
+        dp = [[-1] * (K + 1) for _ in range(n)]
+
+        # Return the result
+        return self.findWaysUtil(n - 1, K, arr, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+    int modulo = 1e9+7;
+public:
+    //Function to find out number of subsets with sum k
+    int perfectSum(vector&lt;int&gt;&amp;arr, int K){
+        int n = arr.size();
+        
+        /* Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros*/
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(K + 1, 0));
+
+        /* Base case: If the target sum is 0, there
+        is one valid subset (the empty subset)*/
+        for (int i = 0; i &lt; n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] &lt;= K) {
+            dp[0][arr[0]] = 1;
+        }
+
+        // Fill in the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++) {
+            for (int target = 1; target &lt;= K; target++) {
+                // Exclude the current element
+                int notTaken = dp[ind - 1][target];
+
+                /* Include the current element
+                if it doesn&#x27;t exceed the target*/
+                int taken = 0;
+                if (arr[ind] &lt;= target) {
+                    taken = (dp[ind - 1][target - arr[ind]]) % modulo;
+                }
+
+                /* Update the DP table and take 
+                modulo for the code to be accepted*/
+                dp[ind][target] = (notTaken + taken) % modulo;
+            }
+        }
+
+        // The final result is in the last cell of table
+        return dp[n - 1][K];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    int modulo = (int)1e9 + 7;
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        /* Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros */
+        int[,] dp = new int[n, K + 1];
+
+        /* Base case: If the target sum is 0, there
+        is one valid subset (the empty subset) */
+        for (int i = 0; i &lt; n; i++)
+        {
+            dp[i, 0] = 1;
+        }
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] &lt;= K)
+        {
+            dp[0, arr[0]] = 1;
+        }
+
+        // Fill in the DP table using a bottom-up approach
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            for (int target = 1; target &lt;= K; target++)
+            {
+                // Exclude the current element
+                int notTaken = dp[ind - 1, target];
+
+                /* Include the current element
+                if it doesn&#x27;t exceed the target */
+                int taken = 0;
+                if (arr[ind] &lt;= target)
+                {
+                    taken = dp[ind - 1, target - arr[ind]] % modulo;
+                }
+
+                /* Update the DP table and take 
+                modulo for the code to be accepted */
+                dp[ind, target] = (notTaken + taken) % modulo;
+            }
+        }
+
+        // The final result is in the last cell of table
+        return dp[n - 1, K];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>var modulo int = 1000000007 // 1e9+7
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+	n := len(arr)
+
+	/* Create a 2D DP table with dimensions
+	n x K+1, initialized with zeros */
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, K+1)
+	}
+
+	/* Base case: If the target sum is 0, there
+	is one valid subset (the empty subset) */
+	for i := 0; i &lt; n; i++ {
+		dp[i][0] = 1
+	}
+
+	/* Initialize the first row based
+	on the first element of the array */
+	if arr[0] &lt;= K {
+		dp[0][arr[0]] = 1
+	}
+
+	// Fill in the DP table using a bottom-up approach
+	for ind := 1; ind &lt; n; ind++ {
+		for target := 1; target &lt;= K; target++ {
+			// Exclude the current element
+			notTaken := dp[ind-1][target]
+
+			/* Include the current element
+			if it doesn&#x27;t exceed the target */
+			taken := 0
+			if arr[ind] &lt;= target {
+				taken = dp[ind-1][target-arr[ind]] % modulo
+			}
+
+			/* Update the DP table and take
+			modulo for the code to be accepted */
+			dp[ind][target] = (notTaken + taken) % modulo
+		}
+	}
+
+	// The final result is in the last cell of table
+	return dp[n-1][K]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+private static final int MODULO = 1000000007;
+
+// Function to find out number of subsets with sum k
+public int perfectSum(int[] arr, int K) {
+    int n = arr.length;
+    
+    /* Create a 2D DP table with dimensions
+    n x k+1, initialized with zeros */
+    int[][] dp = new int[n][K + 1];
+
+    /* Base case: If the target sum is 0, there
+    is one valid subset (the empty subset) */
+    for (int i = 0; i &lt; n; i++) {
+        dp[i][0] = 1;
+    }
+
+    /* Initialize the first row based
+    on the first element of the array */
+    if (arr[0] &lt;= K) {
+        dp[0][arr[0]] = 1;
+    }
+
+    // Fill in the DP table using a bottom-up approach
+    for (int ind = 1; ind &lt; n; ind++) {
+        for (int target = 1; target &lt;= K; target++) {
+            // Exclude the current element
+            int notTaken = dp[ind - 1][target];
+
+            /* Include the current element
+            if it doesn&#x27;t exceed the target */
+            int taken = 0;
+            if (arr[ind] &lt;= target) {
+                taken = dp[ind - 1][target - arr[ind]] % MODULO;
+            }
+
+            /* Update the DP table and take 
+            modulo for the code to be accepted */
+            dp[ind][target] = (notTaken + taken) % MODULO;
+        }
+    }
+
+    // The final result is in the last cell of table
+    return dp[n - 1][K];
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>const MODULO = 1e9 + 7;
+class Solution {
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+        
+        /* Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros*/
+        const dp = Array.from({ length: n }, () =&gt; Array(K + 1).fill(0));
+
+        /* Base case: If the target sum is 0,
+        there is one valid subset (the empty subset)*/
+        for (let i = 0; i &lt; n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] &lt;= K) {
+            dp[0][arr[0]] = 1;
+        }
+
+        // Fill in the DP table using a bottom-up approach
+        for (let ind = 1; ind &lt; n; ind++) {
+            for (let target = 1; target &lt;= K; target++) {
+                // Exclude the current element
+                const notTaken = dp[ind - 1][target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target*/
+                let taken = 0;
+                if (arr[ind] &lt;= target) {
+                    taken = dp[ind - 1][target - arr[ind]] % MODULO;
+                }
+
+                /* Update the DP table and take
+                modulo for the code to be accepted*/
+                dp[ind][target] = (notTaken + taken) % MODULO;
+            }
+        }
+
+        // The final result is in the last cell of table
+        return dp[n - 1][K];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    MODULO = 10**9 + 7
+
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+        
+        &quot;&quot;&quot; Create a 2D DP table with dimensions
+        n x k+1, initialized with zeros&quot;&quot;&quot;
+        dp = [[0] * (K + 1) for _ in range(n)]
+
+        &quot;&quot;&quot; Base case: If the target sum is 0, there
+        is one valid subset (the empty subset)&quot;&quot;&quot;
+        for i in range(n):
+            dp[i][0] = 1
+
+        &quot;&quot;&quot; Initialize the first row based 
+        on the first element of the array&quot;&quot;&quot;
+        if arr[0] &lt;= K:
+            dp[0][arr[0]] = 1
+
+        # Fill in the DP table using a bottom-up approach
+        for ind in range(1, n):
+            for target in range(1, K + 1):
+                # Exclude the current element
+                notTaken = dp[ind - 1][target]
+
+                &quot;&quot;&quot; Include the current element if
+                it doesn&#x27;t exceed the target&quot;&quot;&quot;
+                taken = 0
+                if arr[ind] &lt;= target:
+                    taken = dp[ind - 1][target - arr[ind]] % self.MODULO
+
+                &quot;&quot;&quot; Update the DP table and take
+                modulo for the code to be accepted&quot;&quot;&quot;
+                dp[ind][target] = (notTaken + taken) % self.MODULO
+
+        # The final result is in the last cell of table
+        return dp[n - 1][K]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+    int modulo = 1e9+7;
+public:
+    //Function to find out number of subsets with sum k
+	int perfectSum(vector&lt;int&gt;&amp;arr, int K){
+        int n = arr.size();
+        
+        /* Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table*/
+        vector&lt;int&gt; prev(K + 1, 0);
+
+        /* Base case: If the target sum is 0, 
+        there is one valid subset (the empty subset)*/
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] &lt;= K) {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table 
+        using a bottom-up approach*/
+        for (int ind = 1; ind &lt; n; ind++) {
+            /* Create a vector &#x27;cur&#x27; to represent
+            the current row of the DP table*/
+            vector&lt;int&gt; cur(K + 1, 0);
+
+            cur[0] = 1;
+
+            for (int target = 1; target &lt;= K; target++) {
+                // Exclude the current element
+                int notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target*/
+                int taken = 0;
+                if (arr[ind] &lt;= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken)%modulo;
+            }
+
+            // Set &#x27;cur&#x27; as &#x27;prev&#x27; for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the &#x27;prev&#x27; vector*/
+        return prev[K];
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    int modulo = (int)1e9 + 7;
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K)
+    {
+        int n = arr.Length;
+
+        /* Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table */
+        int[] prev = new int[K + 1];
+
+        /* Base case: If the target sum is 0, 
+        there is one valid subset (the empty subset) */
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] &lt;= K)
+        {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table 
+        using a bottom-up approach */
+        for (int ind = 1; ind &lt; n; ind++)
+        {
+            /* Create a vector &#x27;cur&#x27; to represent
+            the current row of the DP table */
+            int[] cur = new int[K + 1];
+
+            cur[0] = 1;
+
+            for (int target = 1; target &lt;= K; target++)
+            {
+                // Exclude the current element
+                int notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target */
+                int taken = 0;
+                if (arr[ind] &lt;= target)
+                {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken) % modulo;
+            }
+
+            // Set &#x27;cur&#x27; as &#x27;prev&#x27; for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the &#x27;prev&#x27; vector */
+        return prev[K];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>var modulo int = 1000000007 // 1e9+7
+
+// Function to find out number of subsets with sum k
+func perfectSum(arr []int, K int) int {
+	n := len(arr)
+
+	/* Initialize a slice &#x27;prev&#x27; to represent
+	the previous row of the DP table */
+	prev := make([]int, K+1)
+
+	/* Base case: If the target sum is 0,
+	there is one valid subset (the empty subset) */
+	prev[0] = 1
+
+	/* Initialize the first row based
+	on the first element of the array */
+	if arr[0] &lt;= K {
+		prev[arr[0]] = 1
+	}
+
+	/* Fill in the DP table
+	using a bottom-up approach */
+	for ind := 1; ind &lt; n; ind++ {
+		/* Create a slice &#x27;cur&#x27; to represent
+		the current row of the DP table */
+		cur := make([]int, K+1)
+
+		cur[0] = 1
+
+		for target := 1; target &lt;= K; target++ {
+			// Exclude the current element
+			notTaken := prev[target]
+
+			/* Include the current element
+			if it doesn&#x27;t exceed the target */
+			taken := 0
+			if arr[ind] &lt;= target {
+				taken = prev[target-arr[ind]]
+			}
+
+			// Update the current row of the DP table
+			cur[target] = (notTaken + taken) % modulo
+		}
+
+		// Set &#x27;cur&#x27; as &#x27;prev&#x27; for the next iteration
+		prev = cur
+	}
+
+	/* The final result is in the
+	last cell of the &#x27;prev&#x27; slice */
+	return prev[K]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    private static final int MODULO = 1000000007;
+
+    // Function to find out number of subsets with sum k
+    public int perfectSum(int[] arr, int K) {
+        int n = arr.length;
+
+        /* Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table */
+        int[] prev = new int[K + 1];
+        Arrays.fill(prev, 0);
+
+        /* Base case: If the target sum is 0, 
+        there is one valid subset (the empty subset) */
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array */
+        if (arr[0] &lt;= K) {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table 
+        using a bottom-up approach */
+        for (int ind = 1; ind &lt; n; ind++) {
+            /* Create a vector &#x27;cur&#x27; to represent
+            the current row of the DP table */
+            int[] cur = new int[K + 1];
+            Arrays.fill(cur, 0);
+
+            cur[0] = 1;
+
+            for (int target = 1; target &lt;= K; target++) {
+                // Exclude the current element
+                int notTaken = prev[target];
+
+                /* Include the current element 
+                if it doesn&#x27;t exceed the target */
+                int taken = 0;
+                if (arr[ind] &lt;= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken) % MODULO;
+            }
+
+            // Set &#x27;cur&#x27; as &#x27;prev&#x27; for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the &#x27;prev&#x27; vector */
+        return prev[K];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to find out number of subsets with sum k
+    perfectSum(arr, K) {
+        const n = arr.length;
+
+        /* Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table*/
+        let prev = new Array(K + 1).fill(0);
+
+        /* Base case: If the target sum is 0,
+        there is one valid subset (the empty subset)*/
+        prev[0] = 1;
+
+        /* Initialize the first row based
+        on the first element of the array*/
+        if (arr[0] &lt;= K) {
+            prev[arr[0]] = 1;
+        }
+
+        /* Fill in the DP table
+        using a bottom-up approach*/
+        for (let ind = 1; ind &lt; n; ind++) {
+            /* Create a vector &#x27;cur&#x27; to represent
+            the current row of the DP table*/
+            let cur = new Array(K + 1).fill(0);
+
+            cur[0] = 1;
+
+            for (let target = 1; target &lt;= K; target++) {
+                // Exclude the current element
+                let notTaken = prev[target];
+
+                /* Include the current element
+                if it doesn&#x27;t exceed the target*/
+                let taken = 0;
+                if (arr[ind] &lt;= target) {
+                    taken = prev[target - arr[ind]];
+                }
+
+                // Update the current row of the DP table
+                cur[target] = (notTaken + taken) % (1e9 + 7);
+            }
+
+            // Set &#x27;cur&#x27; as &#x27;prev&#x27; for the next iteration
+            prev = cur;
+        }
+
+        /* The final result is in the
+        last cell of the &#x27;prev&#x27; vector*/
+        return prev[K];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>MODULO = 10**9 + 7
+
+class Solution:
+    # Function to find out number of subsets with sum k
+    def perfectSum(self, arr, K):
+        n = len(arr)
+
+        &quot;&quot;&quot; Initialize a vector &#x27;prev&#x27; to represent
+        the previous row of the DP table&quot;&quot;&quot;
+        prev = [0] * (K + 1)
+
+        &quot;&quot;&quot; Base case: If the target sum is 0,
+        there is one valid subset (the empty subset)&quot;&quot;&quot;
+        prev[0] = 1
+
+        &quot;&quot;&quot; Initialize the first row based
+        on the first element of the array&quot;&quot;&quot;
+        if arr[0] &lt;= K:
+            prev[arr[0]] = 1
+
+        &quot;&quot;&quot; Fill in the DP table
+        using a bottom-up approach&quot;&quot;&quot;
+        for ind in range(1, n):
+            &quot;&quot;&quot; Create a vector &#x27;cur&#x27; to represent
+            the current row of the DP table&quot;&quot;&quot;
+            cur = [0] * (K + 1)
+
+            cur[0] = 1
+
+            for target in range(1, K + 1):
+                # Exclude the current element
+                notTaken = prev[target]
+
+                &quot;&quot;&quot; Include the current element
+                if it doesn&#x27;t exceed the target&quot;&quot;&quot;
+                taken = 0
+                if arr[ind] &lt;= target:
+                    taken = prev[target - arr[ind]]
+
+                # Update the current row of the DP table
+                cur[target] = (notTaken + taken) % MODULO
+
+            # Set &#x27;cur&#x27; as &#x27;prev&#x27; for the next iteration
+            prev = cur
+
+        &quot;&quot;&quot; The final result is in the
+        last cell of the &#x27;prev&#x27; vector&quot;&quot;&quot;
+        return prev[K]</code></pre></div>
+</body>
+</html>

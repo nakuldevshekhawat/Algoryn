@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bellman ford algorithm</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Bellman ford algorithm</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span><span>Graph</span><span>Algorithms</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a weighted and directed graph of V vertices and E edges. An edge is represented as [ai, bi, wi], meaning there is a directed edge from a<sub>i </sub>to b<sub>i</sub> having weight w<sub>i</sub>. Find the <strong>shortest distance</strong> of all the vertices from the source vertex S. If a vertex can't be reached from the S then mark the distance as 10<sup>9</sup>.</p><p><br></p><p>If the graph contains a negative cycle then return -1 in a list.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 ≤ V ≤ 500</li><li>1 ≤ E ≤ V*(V-1)</li><li>-1000 ≤ edges[i][3] ≤ 1000</li><li>0 ≤ S < V</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-B14DtTpA"></p><p><br></p><p><strong>Input :</strong> V = 6, Edges = [[3, 2, 6], [5, 3, 1], [0, 1, 5], [1, 5, -3], [1, 2, -2], [3, 4, -2], [2, 4, 3]], S = 0</p><p><strong>Output: </strong>0 5 3 3 1 2</p><p><strong>Explanation:</strong></p><p>For node 1, shortest path is 0->1 (distance=5).</p><p>For node 2, shortest path is 0->1->2 (distance=3)</p><p>For node 3, shortest path is 0->1->5->3 (distance=3)</p><p>For node 4, shortest path is 0->1->5->3->4 (distance=1)</p><p>For node 5, shortest path is 0->1->5 (distance=2)</p><h3>Example 2</h3><p><strong>Input :</strong> V = 2, Edges = [[0,1,9]], S = 0</p><p><strong>Output:</strong> 0 9</p><p><strong>Explanation:</strong> For node 1, the shortest path is 0->1 (distance=9)</p><h3>Example 3</h3><p>Input: V=3, Edges = [[0,1,5],[1,0,3],[1,2,-1],[2,0,1]], S = 2</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem of finding the shortest path in a weighted, directed graph is a fundamental component of many practical applications in software development. For instance, it forms the backbone of routing protocols used in GPS systems or mapping software (like Google Maps), allowing them to calculate the shortest or fastest route between two points. In these routing systems, vertices can represent intersections or waypoints, while weights can represent distance or travel time. Detecting a negative cycle can be useful as it can represent a routing error or "time paradox" in scheduling or network applications where travel or processing time is represented.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    The first thing that comes to mind when the requirement is to find shortest distance of all vertices from the source vertex S is <strong>Dijkstra's Algorithm</strong>. But this problem suggests that graphs can contain negative edges for which the Dijkstra's algorithm will fail. <br> <br>
+    To solve such issue, the <strong>Bellman Ford Algorithm</strong> will come in picture. It not only works when the graph contains negative edges, but also helps identify if the graph contains negative cycle (a cycle where sum of all weights is negative). The algorithm finds the minimum distance to reach any node by performing <strong>N-1</strong> times <strong>Edge Relaxation</strong> (where N is the number of nodes in the graph). Though <strong>Bellman Ford Algorithm</strong> is more versatile, it is slower when compared to <strong>Dijkstra's Algorithm</strong>.  
+    
+    </p><h6>Edge Relaxation:</h6>
+    Consider an edge between node u and node v having a weight of wt as shown in the figure: 
+    <img src="">
+    <br>
+    Consider the distance to reach <strong>node u</strong> and <strong>node v</strong> (via paths explored till now) be dist[u] and dist[v] respectively. If the distance taken to reach <strong>node v</strong> via some <strong>node u</strong> (dist[u] + wt) is smaller than the known distance to reach <strong>node v</strong> (dist[v]), then a shorter path to reach <strong>node v</strong> is found, which passes via <strong>node u</strong>. Thus, we update the distance to reach <strong>node v</strong> (dist[v]) to dist[u] + wt.
+    This process of updating the distance is known as Edge Relaxation. <br><br>
+
+    <h6>Why exactly N-1 iterations?</h6>
+    <ul>
+        <li><strong>Longest Path in a Graph:</strong> The longest possible path without cycles in a graph with N nodes consists of (N-1) edges. And during each iteration, the Bellman-Ford algorithm updates the shortest path information for one more edge in the path.</li>
+        <li><strong>Ensuring All Paths Are Considered:</strong> By repeating the relaxation process (N-1) times, the algorithm ensures that all vertices are updated based on paths that could extend up to (N-1) edges.</li>
+    </ul> <br>
+    
+    <h6>How to detect a negative cycle in the graph?</h6>
+    <ul>
+        <li>It is already known to us that if a graph has negative cycle, the edge relaxation can be done for an infinite number of times. But the algorithm suggests that all the edges will be relaxed after exactly (N-1) iterations. </li>
+        <li>Thus in order to check the existence of a negative cycle, an extra iteration can be performed to check if the edge relaxation is possible or not.</li>
+        <li>If in the extra iteration, the edge relaxation was possible, a negative cycle is confirmed in the graph.
+        </li>
+    </ul>
+    
+    <br>
+    
+
+    <h6>Algorithm:</h6>
+    <ul>
+        <li>Set the distance to the starting node as 0 and to all other nodes as infinity.</li>
+        <li>On all the edges, perform <strong>Edge Relaxation</strong> for (N-1) times updating the distances of all nodes.</li>
+        <li>To detect if negative cycle exists, try performing edge relaxation on all the edges once more. </li>
+        <li>If for any edge, relaxation was possible, the graph contains a negative cycle.</li>
+    </ul>
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+   <li>Initialize a distance array with a very large value (1e<sup>9</sup>) for all vertices. Set the distance of the source vertex to 0.</li> 
+   <li>Perform edge relaxation on all edges for V-1 times, where V is the number of vertices i.e., check if the known distance to the destination vertex can be minimized by taking the edge. If yes, update the distance.
+   </li>
+   <li>Perform an additional iteration over all edges to check for negative weight cycles. If any distance can still be minimized, a negative cycle exists in the graph, and the algorithm returns {-1}.</li>
+   <li>Return the distance array, which contains the shortest distances from the source to all other vertices, or {-1} if a negative cycle is detected.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Bellman ford algorithm/-AAlGkJ7E">
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+
+    /* Function to implement 
+    Bellman Ford Algorithm */
+    vector<int> bellman_ford(int V, vector<vector<int>>& edges, 
+                             int S) {
+                                 
+        // To store the distance
+        vector<int> dist(V, 1e9);
+        
+        // Distane of source from itself is zero
+        dist[S] = 0;
+        
+        // Repeat for V-1 times
+        for(int i=0; i<V-1; i++) {
+            
+            // Iterate on all the edges
+            for(auto it : edges) {
+                
+                int u = it[0]; // node 1
+                int v = it[1]; // node 2
+                int wt = it[2]; // edge weight
+                
+                // Edge relaxation
+                if(dist[u] != 1e9 && 
+                   dist[u] + wt < dist[v]) {
+                       
+                    // Updating the known distance
+                    dist[v] = dist[u] + wt;
+                }
+            }
+        }
+        
+        /* An extra relaxation to check if the 
+        graph consists of a negative cycle */
+        for(auto it : edges) {
+            
+            int u = it[0]; // node 1
+            int v = it[1]; // node 2
+            int wt = it[2]; // edge weight
+            
+            /* If edge relaxation is possible, 
+            negative cycle exists */
+            if(dist[u] != 1e9 && 
+               dist[u] + wt < dist[v]) {
+                   
+                // Return {-1}
+                return {-1};
+            }
+        }
+        
+        // Return the computed result
+        return dist;
+    }
+};
+
+int main() {
+    int V = 6, S = 0;
+    vector<vector<int>> edges = {
+        {3, 2, 6}, {5, 3, 1}, 
+        {0, 1, 5}, {1, 5, -3}, 
+        {1, 2, -2}, {3, 4, -2}, 
+        {2, 4, 3}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to implement 
+    Bellman Ford Algorithm */
+    vector<int> ans = sol.bellman_ford(V, edges, S);
+    
+    // Output
+    if(ans == vector<int>(1, -1))
+        cout << "The graph contains negative cycle.";
+    else{
+        cout << "The shortest distance from source is: ";
+        for(int i=0; i < V; i++) {
+            cout << ans[i] << " ";
+        }
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    /* Function to implement 
+    Bellman Ford Algorithm */
+    public int[] bellman_ford(int V, 
+        ArrayList<ArrayList<Integer>> edges, 
+        int S) {
+        
+        // To store the distance
+        int[] dist = new int[V];
+        Arrays.fill(dist, (int) 1e9);
+        
+        // Distance of source from itself is zero
+        dist[S] = 0;
+        
+        // Repeat for V-1 times
+        for(int i = 0; i < V-1; i++) {
+            
+            // Iterate on all the edges
+            for(ArrayList<Integer> it : edges) {
+                
+                int u = it.get(0); // node 1
+                int v = it.get(1); // node 2
+                int wt = it.get(2); // edge weight
+                
+                // Edge relaxation
+                if(dist[u] != 1e9 && 
+                   dist[u] + wt < dist[v]) {
+                       
+                    // Updating the known distance
+                    dist[v] = dist[u] + wt;
+                }
+            }
+        }
+        
+        /* An extra relaxation to check if the 
+        graph consists of a negative cycle */
+        for(ArrayList<Integer> it : edges) {
+            
+            int u = it.get(0); // node 1
+            int v = it.get(1); // node 2
+            int wt = it.get(2); // edge weight
+            
+            /* If edge relaxation is possible, 
+            negative cycle exists */
+            if(dist[u] != 1e9 && 
+               dist[u] + wt < dist[v]) {
+                   
+                // Return {-1}
+                return new int[]{-1};
+            }
+        }
+        
+        // Return the computed result
+        return dist;
+    }
+
+    public static void main(String[] args) {
+        int V = 6, S = 0;
+        ArrayList<ArrayList<Integer>> edges = new ArrayList<>();
+        edges.add(new ArrayList<>(Arrays.asList(3, 2, 6)));
+        edges.add(new ArrayList<>(Arrays.asList(5, 3, 1)));
+        edges.add(new ArrayList<>(Arrays.asList(0, 1, 5)));
+        edges.add(new ArrayList<>(Arrays.asList(1, 5, -3)));
+        edges.add(new ArrayList<>(Arrays.asList(1, 2, -2)));
+        edges.add(new ArrayList<>(Arrays.asList(3, 4, -2)));
+        edges.add(new ArrayList<>(Arrays.asList(2, 4, 3)));
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to implement 
+        Bellman Ford Algorithm */
+        int[] ans = sol.bellman_ford(V, edges, S);
+        
+        // Output
+        if(ans.length == 1 && ans[0] == -1)
+            System.out.println("The graph contains negative cycle.");
+        else{
+            System.out.print("The shortest distance from source is: ");
+            for(int i = 0; i < V; i++) {
+                System.out.print(ans[i] + " ");
+            }
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+
+    # Function to implement 
+    # Bellman Ford Algorithm
+    def bellman_ford(self, V, edges, S):
+        
+        # To store the distance
+        dist = [int(1e9)] * V
+        
+        # Distance of source from itself is zero
+        dist[S] = 0
+        
+        # Repeat for V-1 times
+        for _ in range(V-1):
+            
+            # Iterate on all the edges
+            for u, v, wt in edges:
+                
+                # Edge relaxation
+                if (dist[u] != int(1e9) and 
+                    dist[u] + wt < dist[v]):
+                       
+                    # Updating the known distance
+                    dist[v] = dist[u] + wt
+        
+        # An extra relaxation to check if the 
+        # graph consists of a negative cycle
+        for u, v, wt in edges:
+            
+            # If edge relaxation is possible, 
+            # negative cycle exists
+            if (dist[u] != int(1e9) and 
+                dist[u] + wt < dist[v]):
+                   
+                # Return [-1]
+                return [-1]
+        
+        # Return the computed result
+        return dist
+
+
+if __name__ == "__main__":
+    V, S = 6, 0
+    edges = [
+        [3, 2, 6], [5, 3, 1], 
+        [0, 1, 5], [1, 5, -3], 
+        [1, 2, -2], [3, 4, -2], 
+        [2, 4, 3]
+    ]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to implement 
+    # Bellman Ford Algorithm
+    ans = sol.bellman_ford(V, edges, S)
+    
+    # Output
+    if ans == [-1]:
+        print("The graph contains negative cycle.")
+    else:
+        print("The shortest distance from source is: ", end=" ")
+        for d in ans:
+            print(d, end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+
+    /* Function to implement 
+    Bellman Ford Algorithm */
+    bellman_ford(V, edges, S) {
+        
+        // To store the distance
+        let dist = new Array(V).fill(1e9);
+        
+        // Distance of source from itself is zero
+        dist[S] = 0;
+        
+        // Repeat for V-1 times
+        for (let i = 0; i < V-1; i++) {
+            
+            // Iterate on all the edges
+            for (let it of edges) {
+                
+                let u = it[0]; // node 1
+                let v = it[1]; // node 2
+                let wt = it[2]; // edge weight
+                
+                // Edge relaxation
+                if (dist[u] != 1e9 && dist[u] + wt < dist[v]) {
+                       
+                    // Updating the known distance
+                    dist[v] = dist[u] + wt;
+                }
+            }
+        }
+        
+        /* An extra relaxation to check if the 
+        graph consists of a negative cycle */
+        for (let it of edges) {
+            
+            let u = it[0]; // node 1
+            let v = it[1]; // node 2
+            let wt = it[2]; // edge weight
+            
+            /* If edge relaxation is possible, 
+            negative cycle exists */
+            if (dist[u] != 1e9 && dist[u] + wt < dist[v]) {
+                   
+                // Return [-1]
+                return [-1];
+            }
+        }
+        
+        // Return the computed result
+        return dist;
+    }
+}
+
+// Main function
+let V = 6, S = 0;
+let edges = [
+    [3, 2, 6], [5, 3, 1], 
+    [0, 1, 5], [1, 5, -3], 
+    [1, 2, -2], [3, 4, -2], 
+    [2, 4, 3]
+];
+
+/* Creating an instance of 
+Solution class */
+let sol = new Solution();
+
+/* Function call to implement 
+Bellman Ford Algorithm */
+let ans = sol.bellman_ford(V, edges, S);
+
+// Output
+if (ans.length === 1 && ans[0] === -1)
+    console.log("The graph contains negative cycle.");
+else {
+    console.log("The shortest distance from source is: ", ans.join(" "));
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Program
+{
+    public class Solution
+    {
+        /* Function to implement 
+        Bellman Ford Algorithm */
+        public int[] BellmanFord(int V, List<List<int>> edges, int S)
+        {
+            // To store the distance
+            int[] dist = new int[V];
+            const int INF = 1000000000; // Equivalent to 1e9
+            
+            for (int i = 0; i < V; i++)
+            {
+                dist[i] = INF;
+            }
+
+            // Distance of source from itself is zero
+            dist[S] = 0;
+
+            // Repeat for V-1 times
+            for (int i = 0; i < V - 1; i++)
+            {
+                // Iterate on all the edges
+                foreach (var edge in edges)
+                {
+                    int u = edge[0]; // node 1
+                    int v = edge[1]; // node 2
+                    int wt = edge[2]; // edge weight
+
+                    // Edge relaxation
+                    if (dist[u] != INF && (long)dist[u] + wt < dist[v])
+                    {
+                        // Updating the known distance
+                        dist[v] = dist[u] + wt;
+                    }
+                }
+            }
+
+            /* An extra relaxation to check if the 
+            graph consists of a negative cycle */
+            foreach (var edge in edges)
+            {
+                int u = edge[0]; // node 1
+                int v = edge[1]; // node 2
+                int wt = edge[2]; // edge weight
+
+                /* If edge relaxation is possible, 
+                negative cycle exists */
+                if (dist[u] != INF && (long)dist[u] + wt < dist[v])
+                {
+                    // Return [-1]
+                    return new int[] { -1 };
+                }
+            }
+
+            // Return the computed result
+            return dist;
+        }
+    }
+
+    public static void Main(string[] args)
+    {
+        // Main function
+        int V = 6, S = 0;
+        List<List<int>> edges = new List<List<int>>
+        {
+            new List<int> {3, 2, 6}, new List<int> {5, 3, 1}, 
+            new List<int> {0, 1, 5}, new List<int> {1, 5, -3}, 
+            new List<int> {1, 2, -2}, new List<int> {3, 4, -2}, 
+            new List<int> {2, 4, 3}
+        };
+
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+
+        /* Function call to implement 
+        Bellman Ford Algorithm */
+        int[] ans = sol.BellmanFord(V, edges, S);
+
+        // Output
+        if (ans.Length == 1 && ans[0] == -1)
+            Console.WriteLine("The graph contains negative cycle.");
+        else
+        {
+            Console.WriteLine("The shortest distance from source is: " + string.Join(" ", ans));
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// bellman_ford implements the Bellman-Ford Algorithm
+func bellman_ford(V int, edges [][]int, S int) []int {
+	// To store the distance
+	dist := make([]int, V)
+	for i := 0; i < V; i++ {
+		dist[i] = int(1e9) // Initialize with infinity
+	}
+
+	// Distance of source from itself is zero
+	dist[S] = 0
+
+	// Repeat for V-1 times
+	for i := 0; i < V-1; i++ {
+		// Iterate on all the edges
+		for _, edge := range edges {
+			u, v, wt := edge[0], edge[1], edge[2]
+
+			// Edge relaxation
+			if dist[u] != int(1e9) && dist[u]+wt < dist[v] {
+				// Updating the known distance
+				dist[v] = dist[u] + wt
+			}
+		}
+	}
+
+	// Extra relaxation to check for negative cycle
+	for _, edge := range edges {
+		u, v, wt := edge[0], edge[1], edge[2]
+
+		// If edge relaxation is possible, negative cycle exists
+		if dist[u] != int(1e9) && dist[u]+wt < dist[v] {
+			return []int{-1}
+		}
+	}
+
+	// Return the computed result
+	return dist
+}
+
+func main() {
+	V, S := 6, 0
+	edges := [][]int{
+		{3, 2, 6}, {5, 3, 1},
+		{0, 1, 5}, {1, 5, -3},
+		{1, 2, -2}, {3, 4, -2},
+		{2, 4, 3},
+	}
+
+	// Function call to implement Bellman-Ford Algorithm
+	ans := bellman_ford(V, edges, S)
+
+	// Output
+	if len(ans) == 1 && ans[0] == -1 {
+		fmt.Println("The graph contains negative cycle.")
+	} else {
+		fmt.Print("The shortest distance from source is: ")
+		for i := 0; i < V; i++ {
+			if ans[i] == int(1e9) {
+				fmt.Print("INF ")
+			} else {
+				fmt.Print(ans[i], " ")
+			}
+		}
+	}
+}
+</code></pre></div></div></div>
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V*E)</strong> <br>
+   All the E edges are relaxed for a total of V-1 times. And an extra iteration is performed to detect negative cycle, making the algorithm take O(V*E) time.
+</p>
+
+<p><strong>Space Complexity: O(V)</strong> <br>
+   The distance array takes O(V) time.
+</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+
+    /* Function to implement 
+    Bellman Ford Algorithm */
+    vector&lt;int&gt; bellman_ford(int V, vector&lt;vector&lt;int&gt;&gt;&amp; edges, 
+                             int S) {
+                                 
+        // To store the distance
+        vector&lt;int&gt; dist(V, 1e9);
+        
+        // Distane of source from itself is zero
+        dist[S] = 0;
+        
+        // Repeat for V-1 times
+        for(int i=0; i&lt;V-1; i++) {
+            
+            // Iterate on all the edges
+            for(auto it : edges) {
+                
+                int u = it[0]; // node 1
+                int v = it[1]; // node 2
+                int wt = it[2]; // edge weight
+                
+                // Edge relaxation
+                if(dist[u] != 1e9 &amp;&amp; 
+                   dist[u] + wt &lt; dist[v]) {
+                       
+                    // Updating the known distance
+                    dist[v] = dist[u] + wt;
+                }
+            }
+        }
+        
+        /* An extra relaxation to check if the 
+        graph consists of a negative cycle */
+        for(auto it : edges) {
+            
+            int u = it[0]; // node 1
+            int v = it[1]; // node 2
+            int wt = it[2]; // edge weight
+            
+            /* If edge relaxation is possible, 
+            negative cycle exists */
+            if(dist[u] != 1e9 &amp;&amp; 
+               dist[u] + wt &lt; dist[v]) {
+                   
+                // Return {-1}
+                return {-1};
+            }
+        }
+        
+        // Return the computed result
+        return dist;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+    {
+        /* Function to implement 
+        Bellman Ford Algorithm */
+        public int[] BellmanFord(int V, List&lt;List&lt;int&gt;&gt; edges, int S)
+        {
+            // To store the distance
+            int[] dist = new int[V];
+            const int INF = 1000000000; // Equivalent to 1e9
+            
+            for (int i = 0; i &lt; V; i++)
+            {
+                dist[i] = INF;
+            }
+
+            // Distance of source from itself is zero
+            dist[S] = 0;
+
+            // Repeat for V-1 times
+            for (int i = 0; i &lt; V - 1; i++)
+            {
+                // Iterate on all the edges
+                foreach (var edge in edges)
+                {
+                    int u = edge[0]; // node 1
+                    int v = edge[1]; // node 2
+                    int wt = edge[2]; // edge weight
+
+                    // Edge relaxation
+                    if (dist[u] != INF &amp;&amp; (long)dist[u] + wt &lt; dist[v])
+                    {
+                        // Updating the known distance
+                        dist[v] = dist[u] + wt;
+                    }
+                }
+            }
+
+            /* An extra relaxation to check if the 
+            graph consists of a negative cycle */
+            foreach (var edge in edges)
+            {
+                int u = edge[0]; // node 1
+                int v = edge[1]; // node 2
+                int wt = edge[2]; // edge weight
+
+                /* If edge relaxation is possible, 
+                negative cycle exists */
+                if (dist[u] != INF &amp;&amp; (long)dist[u] + wt &lt; dist[v])
+                {
+                    // Return [-1]
+                    return new int[] { -1 };
+                }
+            }
+
+            // Return the computed result
+            return dist;
+        }
+    }</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// bellman_ford implements the Bellman-Ford Algorithm
+func bellman_ford(V int, edges [][]int, S int) []int {
+	// To store the distance
+	dist := make([]int, V)
+	for i := 0; i &lt; V; i++ {
+		dist[i] = int(1e9) // Initialize with infinity
+	}
+
+	// Distance of source from itself is zero
+	dist[S] = 0
+
+	// Repeat for V-1 times
+	for i := 0; i &lt; V-1; i++ {
+		// Iterate on all the edges
+		for _, edge := range edges {
+			u, v, wt := edge[0], edge[1], edge[2]
+
+			// Edge relaxation
+			if dist[u] != int(1e9) &amp;&amp; dist[u]+wt &lt; dist[v] {
+				// Updating the known distance
+				dist[v] = dist[u] + wt
+			}
+		}
+	}
+
+	// Extra relaxation to check for negative cycle
+	for _, edge := range edges {
+		u, v, wt := edge[0], edge[1], edge[2]
+
+		// If edge relaxation is possible, negative cycle exists
+		if dist[u] != int(1e9) &amp;&amp; dist[u]+wt &lt; dist[v] {
+			return []int{-1}
+		}
+	}
+
+	// Return the computed result
+	return dist
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to implement 
+    Bellman Ford Algorithm */
+    static int[] bellman_ford(int V, 
+        ArrayList&lt;ArrayList&lt;Integer&gt;&gt; edges, 
+        int S) {
+        
+        // To store the distance
+        int[] dist = new int[V];
+        Arrays.fill(dist, (int) 1e9);
+        
+        // Distance of source from itself is zero
+        dist[S] = 0;
+        
+        // Repeat for V-1 times
+        for(int i = 0; i &lt; V-1; i++) {
+            
+            // Iterate on all the edges
+            for(ArrayList&lt;Integer&gt; it : edges) {
+                
+                int u = it.get(0); // node 1
+                int v = it.get(1); // node 2
+                int wt = it.get(2); // edge weight
+                
+                // Edge relaxation
+                if(dist[u] != 1e9 &amp;&amp; 
+                   dist[u] + wt &lt; dist[v]) {
+                       
+                    // Updating the known distance
+                    dist[v] = dist[u] + wt;
+                }
+            }
+        }
+        
+        /* An extra relaxation to check if the 
+        graph consists of a negative cycle */
+        for(ArrayList&lt;Integer&gt; it : edges) {
+            
+            int u = it.get(0); // node 1
+            int v = it.get(1); // node 2
+            int wt = it.get(2); // edge weight
+            
+            /* If edge relaxation is possible, 
+            negative cycle exists */
+            if(dist[u] != 1e9 &amp;&amp; 
+               dist[u] + wt &lt; dist[v]) {
+                   
+                // Return {-1}
+                return new int[]{-1};
+            }
+        }
+        
+        // Return the computed result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to implement 
+    Bellman Ford Algorithm */
+    bellman_ford(V, edges, S) {
+        
+        // To store the distance
+        let dist = new Array(V).fill(1e9);
+        
+        // Distance of source from itself is zero
+        dist[S] = 0;
+        
+        // Repeat for V-1 times
+        for (let i = 0; i &lt; V-1; i++) {
+            
+            // Iterate on all the edges
+            for (let it of edges) {
+                
+                let u = it[0]; // node 1
+                let v = it[1]; // node 2
+                let wt = it[2]; // edge weight
+                
+                // Edge relaxation
+                if (dist[u] != 1e9 &amp;&amp; dist[u] + wt &lt; dist[v]) {
+                       
+                    // Updating the known distance
+                    dist[v] = dist[u] + wt;
+                }
+            }
+        }
+        
+        /* An extra relaxation to check if the 
+        graph consists of a negative cycle */
+        for (let it of edges) {
+            
+            let u = it[0]; // node 1
+            let v = it[1]; // node 2
+            let wt = it[2]; // edge weight
+            
+            /* If edge relaxation is possible, 
+            negative cycle exists */
+            if (dist[u] != 1e9 &amp;&amp; dist[u] + wt &lt; dist[v]) {
+                   
+                // Return [-1]
+                return [-1];
+            }
+        }
+        
+        // Return the computed result
+        return dist;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to implement 
+    # Bellman Ford Algorithm
+    def bellman_ford(self, V, edges, S):
+        
+        # To store the distance
+        dist = [int(1e9)] * V
+        
+        # Distance of source from itself is zero
+        dist[S] = 0
+        
+        # Repeat for V-1 times
+        for _ in range(V-1):
+            
+            # Iterate on all the edges
+            for u, v, wt in edges:
+                
+                # Edge relaxation
+                if (dist[u] != int(1e9) and 
+                    dist[u] + wt &lt; dist[v]):
+                       
+                    # Updating the known distance
+                    dist[v] = dist[u] + wt
+        
+        # An extra relaxation to check if the 
+        # graph consists of a negative cycle
+        for u, v, wt in edges:
+            
+            # If edge relaxation is possible, 
+            # negative cycle exists
+            if (dist[u] != int(1e9) and 
+                dist[u] + wt &lt; dist[v]):
+                   
+                # Return [-1]
+                return [-1]
+        
+        # Return the computed result
+        return dist</code></pre></div>
+</body>
+</html>

@@ -1,0 +1,2771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ninja's training</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Ninja's training</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>A ninja has planned a n-day training schedule. Each day he has to perform one of <strong>three activities</strong> - running, stealth training, or fighting practice. The same activity cannot be done on two consecutive days and the ninja earns a specific number of merit points, based on the activity and the given day.</p><p><br></p><p>Given a n x 3-sized matrix, where matrix[i][0], matrix[i][1], and matrix[i][2], represent the merit points associated with running, stealth and fighting practice, on the (i+1)<sup>th</sup> day respectively. Return the <strong>maximum</strong> possible merit points that the ninja can earn.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 10<sup>4</sup></li><li>n == number of rows in matrix</li><li>3 == number of columns in matrix</li><li>0 <= matrix[i][j] <= 1000</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: matrix = [[10, 40, 70], [20, 50, 80], [30, 60, 90]]</p><p><strong>Output</strong>: 210</p><p><strong>Explanation</strong>:</p><p>Day 1: fighting practice = 70</p><p>Day 2: stealth training = 50</p><p>Day 3: fighting practice = 90</p><p>Total = 70 + 50 + 90 = 210</p><p>This gives the optimal points.</p><h3>Example 2</h3><p><strong>Input</strong>: matrix = [[70, 40, 10], [180, 20, 5], [200, 60, 30]]</p><p><strong>Output</strong>: 290</p><p><strong>Explanation</strong>:</p><p>Day 1: running = 70</p><p>Day 2: stealth training = 20</p><p>Day 3: running = 200</p><p>Total = 70 + 20 + 200 = 290</p><p>This gives the optimal points.</p><h3>Example 3</h3><p><strong>Input</strong>: matrix = [[20, 10, 10], [20, 10, 10], [20, 30, 10]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This programming problem is an example of dynamic programming, a commonly used problem-solving approach in software development. The concept of maximizing merit points over a range of choices without repeating the same activity, is similar to the real-world challenges that software like Google Calendar or Apple Health face. These apps need to suggest optimal fitness or productivity schedules based on a user's availability and preferences, ensuring a range of activities are covered without repetition on consecutive days. Such problems are solved using dynamic programming algorithms, just like this ninja training schedule problem.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Why greedy approach will not work:</strong></h5>
+
+<P>As the question asks to maximizing points, the initial approach that comes to mind is the greedy approach. The greedy strategy involves selecting the task with the maximum points each day, ensuring that the same task isn't repeated from the previous day. However, following this approach consistently may result in missing out on tasks that offer higher total points over time.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/2D DP/Ninja's training/-coPZ9fgv"><br>
+<p>So, we observe that the greedy solution imposes restrictions on our choices, we can lose activity with better points on the next day in the greedy solution. Therefore, it is more advantageous to explore all possible choices as our next solution. We will employ recursion to generate all possible options.</p>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<li><b>Express the problem in terms of indexes:</b> On observation we find that the number of days(day0, day1 etc) breaks the problem in different steps. Clearly, we have n days (from 0 to n-1), so one changing parameter which can be expressed in terms of indexes is ‘day’.</li>
+
+<p>Every day we have the option of three activities(say 0,1,2) to be performed. Suppose that we are at a day_i.  So we must know the task that was performed on the last day so that we do not repeat it on the present day. It is the ‘last’ choice that we tried out on day_i+1 ( i+1 in case of top-down recursion). Unless we know the last choice we made, we  can not decide whether a choice we are making is correct or not.</p>
+
+<p>Now there are three options each day(say 0,1,2) which becomes the ‘last’ of the next day. If we are just starting from the day(n-1), then for this day we can try all three options. We can say ‘last’ for this day is 3, which means any activity can be performed.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/2D DP/Ninja's training/-qRkJ8-OD"><br>
+
+<p>Therefore our function will take two parameters - day and last. f(day, last) will give the maximum points that can be made from  day 'day' to  day '0', keeping in check that the last activity is not being repeated on consecutive days.</p>
+
+<li><b>Try out all possible choices at a given index:</b> We are writing a top-down recursive function. We start from day_n-1 to day_0. Therefore whenever we call the recursive function for the next day we call it for f(day-1, last).
+Now let’s discuss the second parameter. The choices we have for a current day depend on the ‘last’ variable. If we are at our base case (day=0), we will have the following choices.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/2D DP/Ninja's training/Image_1-BWkDoqT1"><br>
+<p>Other than the base case, whenever we perform an activity(i), its merit points will be given by points[day][i] and to get merit points of the remaining days we will let recursion do its job by passing f(d-1, i). We are passing the second parameter as i because the current day’s activity will become the next day’s last.</p><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode and it is not tied to 
+any specific programming language.*/
+f(day,last){
+    if(day == 0){
+        for(int i = 0; i <= 2; i++){
+            if(i != last)   //code
+        }
+    }
+    for(int i = 0; i <= 2; i++){
+        if(i != last){
+            activity = points[day][i] + f(day-1, i)
+        }
+    }
+
+}
+</code></pre></div></div></div><br>
+
+<li><b>Take the maximum of all choices: </b>As the problem statement wants us to find the maximum merit points, take the maximum of all choices.</li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode and it is not tied to 
+any specific programming language.*/
+f(day,last){
+    if(day == 0){
+        maxi = 0
+        for(int i = 0; i <= 2; i++){
+            if(i != last)   maxi = max(maxi,points[0][i]
+        }
+        return maxi
+    } 
+    maxi = 0
+    for(int i = 0; i <= 2; i++){
+        if(i != last){
+            activity = points[day][i] + f(day-1, i)
+            maxi = max(maxi, activity)
+        }
+    }
+    return maxi
+
+}
+</code></pre></div></div></div><br>
+
+
+<li><b>Base condition: </b> when the day is 0, preform the activities according to the 'last' and return the maximum points.</li><br>
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    int func(int day, int last, vector<vector<int>> &points) {
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i <= 2; i++) {
+                if (i != last)  maxi = max(maxi, points[0][i]);
+            }
+        // Return the maximum points
+        return maxi;
+    }
+
+    int maxi = 0;
+    
+    // Iterate through activities for the current day
+    for (int i = 0; i <= 2; i++) {
+        if (i != last) {
+            
+            /* Calculate the points for the current activity
+            and add it to the maximum points obtained so far */
+            int activity = points[day][i] + func(day - 1, i, points);
+            maxi = max(maxi, activity);
+        }
+    }
+
+    // Return the maximum points
+    return maxi;
+}
+public:
+    int ninjaTraining(vector<vector<int>>& matrix) {
+        int day = matrix.size()-1;
+        int last = 3;
+        return func(day, last, matrix);
+    }
+};
+int main() {
+    vector<vector<int>> points = {{10, 40, 70},
+                                 {20, 50, 80},
+                                 {30, 60, 90}};
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << sol.ninjaTraining(points);
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    private int func(int day, int last, int[][] points) {
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i < 3; i++) {
+                if (i != last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            // Return the maximum points for the first day
+            return maxi;
+        }
+
+        // Initialize max points for the current day
+        int maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (int i = 0; i < 3; i++) {
+            if (i != last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far */
+                int activity = points[day][i] + func(day - 1, i, points);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        // Return the maximum points for the current day
+        return maxi;
+    }
+
+    // Function to find the maximum points for ninja training
+    public int ninjaTraining(int[][] points) {
+        // Get the number of days
+        int days = points.length;
+        
+        // Return the maximum points
+        return func(days - 1, 3, points);
+    }
+
+    public static void main(String[] args) {
+        int[][] points = {
+            {10, 40, 70},
+            {20, 50, 80},
+            {30, 60, 90}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the maximum points for ninja training
+        System.out.println(sol.ninjaTraining(points));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Recursive function to calculate the 
+    maximum points for the ninja training"""
+    def func(self, day, last, points):
+        # Base case
+        if day == 0:
+            maxi = 0
+        
+            """ Calculate the maximum points for the first day
+            by choosing an activity different from last one"""
+            for i in range(3):
+                if i != last:
+                    maxi = max(maxi, points[0][i])
+            # Return the maximum points for the first day
+            return maxi
+
+        # Initialize max points for the current day
+        maxi = 0
+        
+        # Iterate through activities for the current day
+        for i in range(3):
+            if i != last:
+                """Calculate the points for the current activity
+                and add it to the maximum points obtained so far"""
+                activity = points[day][i] + self.func(day - 1, i, points)
+                maxi = max(maxi, activity)
+
+        # Return the maximum points for the current day
+        return maxi
+
+    # Function to find the maximum points for ninja training
+    def ninjaTraining(self, points):
+        # Get the number of days
+        days = len(points)
+        
+        # If there are no days, return 0
+        if days == 0:
+            return 0
+
+        # Return the maximum points
+        return self.func(days - 1, 3, points)
+
+points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+]
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the maximum points for ninja training
+print(sol.ninjaTraining(points))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    func(day, last, points) {
+        // Base case
+        if (day === 0) {
+            let maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (let i = 0; i < 3; i++) {
+                if (i !== last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            // Return the maximum points for the first day
+            return maxi;
+        }
+
+        // Initialize max points for the current day
+        let maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (let i = 0; i < 3; i++) {
+            if (i !== last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far*/
+                let activity = points[day][i] + this.func(day - 1, i, points);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        // Return the maximum points for the current day
+        return maxi;
+    }
+
+    // Function to find the maximum points for ninja training
+    ninjaTraining(points) {
+        // Get the number of days
+        let days = points.length;
+        
+        // If there are no days, return 0
+        if (days === 0) return 0;
+
+        // Return the maximum points
+        return this.func(days - 1, 3, points);
+    }
+}
+
+let points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Print the maximum points for ninja training
+console.log(sol.ninjaTraining(points));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+class Solution
+{
+    /* Recursive function to calculate the 
+       maximum points for the ninja training */
+    private int Func(int day, int last, int[][] points)
+    {
+        // Base case
+        if (day == 0)
+        {
+            int maxi = 0;
+
+            /* Calculate the maximum points for the first day
+               by choosing an activity different from last one */
+            for (int i = 0; i <= 2; i++)
+            {
+                if (i != last)
+                    maxi = Math.Max(maxi, points[0][i]);
+            }
+            // Return the maximum points
+            return maxi;
+        }
+
+        int result = 0;
+        // Iterate through activities for the current day
+        for (int i = 0; i <= 2; i++)
+        {
+            if (i != last)
+            {
+                /* Calculate the points for the current activity
+                   and add it to the maximum points obtained so far */
+                int activity = points[day][i] + Func(day - 1, i, points);
+                result = Math.Max(result, activity);
+            }
+        }
+        // Return the maximum points
+        return result;
+    }
+
+    public int NinjaTraining(int[][] matrix)
+    {
+        int day = matrix.Length - 1;
+        int last = 3;
+        return Func(day, last, matrix);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        int[][] points = new int[][]
+        {
+            new[] { 10, 40, 70 },
+            new[] { 20, 50, 80 },
+            new[] { 30, 60, 90 }
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        Console.WriteLine(sol.NinjaTraining(points));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+ /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+func funcRec(day, last int, points [][]int) int {
+    // Base case
+    if day == 0 {
+        maxi := 0
+
+        /* Calculate the maximum points for the first day
+        by choosing an activity different from last one*/
+        for i := 0; i <= 2; i++ {
+            if i != last && points[0][i] > maxi {
+                maxi = points[0][i]
+            }
+        }
+        // Return the maximum points
+        return maxi
+    }
+
+    maxi := 0
+
+    // Iterate through activities for the current day
+    for i := 0; i <= 2; i++ {
+        if i != last {
+            /* Calculate the points for the current activity
+            and add it to the maximum points obtained so far */
+            activity := points[day][i] + funcRec(day-1, i, points)
+            if activity > maxi {
+                maxi = activity
+            }
+        }
+    }
+
+    // Return the maximum points
+    return maxi
+}
+
+// Function to find the maximum points for ninja training
+func ninjaTraining(matrix [][]int) int {
+    day := len(matrix) - 1
+    last := 3
+    return funcRec(day, last, matrix)
+}
+
+func main() {
+    points := [][]int{
+        {10, 40, 70},
+        {20, 50, 80},
+        {30, 60, 90},
+    }
+    // Create an instance of Solution class (simulated)
+    result := ninjaTraining(points)
+    fmt.Println(result)
+}
+
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(3<sup>N</sup>), where N is the given size of 2D array. Exponential time complexity due to the recursive nature where each day can have up to 3 choices.<br><br>
+<strong>Space Complexity:</strong>O(N), As the recursion depth is equal to the number of days (days). Therefore, the maximum depth of the recursion stack is O(N).
+
+</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence DP approaches can be applied on the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/2D DP/Ninja's training/-tsbV755s"><br>
+<p>In order to convert a recursive solution to memoization the following steps will be taken:</p>
+<li><b>Declare a dp array of size [n][4]:</b> As there are two parameters in the recursive solution which are changing, first one is 'day' and the other one is 'last'.  There are total ‘n’ days and for every day, there can be 4 choices (0,1,2 and 3). Therefore we take the dp array as dp[n][4]. </li>
+<p>It represents the solution to the subproblem for any given index. Initially, fill the array with -1, to indicate that no subproblem has been solved yet.</p>
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    int func(int day, int last, vector<vector<int>> &points, vector<vector<int>> &dp) {
+        /* If the result for this day and last 
+        activity is already calculated, return it*/
+        if (dp[day][last] != -1) return dp[day][last];
+        
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i <= 2; i++) {
+                if (i != last)  maxi = max(maxi, points[0][i]);
+            }
+        // Store the result in dp array and return it
+        return dp[day][last] = maxi;
+    }
+
+    int maxi = 0;
+    
+    // Iterate through activities for the current day
+    for (int i = 0; i <= 2; i++) {
+        if (i != last) {
+            
+            /* Calculate the points for the current activity
+            and add it to the maximum points obtained so far */
+            int activity = points[day][i] + func(day - 1, i, points, dp);
+            maxi = max(maxi, activity);
+        }
+    }
+
+    // Store the result in dp array and return it
+    return dp[day][last] = maxi;
+}
+public:
+    int ninjaTraining(vector<vector<int>>& matrix) {
+        int day = matrix.size();
+        
+        /* Create a memoization table 
+        to store intermediate results*/
+        vector<vector<int>> dp(day, vector<int>(4, -1));
+        
+        int last = 3;
+        return func(day-1, last, matrix, dp);
+    }
+};
+int main() {
+    vector<vector<int>> points = {{10, 40, 70},
+                                 {20, 50, 80},
+                                 {30, 60, 90}};
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << sol.ninjaTraining(points);
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    private int func(int day, int last, int[][] points, int[][] dp) {
+        // If the result is already calculated, return it
+        if (dp[day][last] != -1) return dp[day][last];
+        
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i < 3; i++) {
+                if (i != last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            // Store the result in dp array and return it
+            return dp[day][last] = maxi;
+        }
+
+        // Initialize max points for the current day
+        int maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (int i = 0; i < 3; i++) {
+            if (i != last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far */
+                int activity = points[day][i] + func(day - 1, i, points, dp);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        // Store the result in dp array and return it
+        return dp[day][last] = maxi;
+    }
+
+    // Function to find the maximum points for ninja training
+    public int ninjaTraining(int[][] points) {
+        // Get the number of days
+        int days = points.length;
+        
+        // Initialize a memoization table with -1 values
+        int dp[][] = new int[days][4];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+            
+        // Return the maximum points
+        return func(days - 1, 3, points, dp);
+    }
+
+    public static void main(String[] args) {
+        int[][] points = {
+            {10, 40, 70},
+            {20, 50, 80},
+            {30, 60, 90}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the maximum points for ninja training
+        System.out.println(sol.ninjaTraining(points));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Recursive function to calculate the 
+    maximum points for the ninja training"""
+    def func(self, day, last, points, dp):
+        """ Check if the result for this day and 
+        last activity is already computed."""
+        if dp[day][last] != -1:
+            return dp[day][last]
+        
+        # Base case
+        if day == 0:
+            maxi = 0
+        
+            """ Calculate the maximum points for the first day
+            by choosing an activity different from last one"""
+            for i in range(3):
+                if i != last:
+                    maxi = max(maxi, points[0][i])
+            
+            # Store maximum points in the DP table and return it.
+            dp[day][last] = maxi
+            return dp[day][last]
+
+        # Initialize max points for the current day
+        maxi = 0
+        
+        # Iterate through activities for the current day
+        for i in range(3):
+            if i != last:
+                """Calculate the points for the current activity
+                and add it to the maximum points obtained so far"""
+                activity = points[day][i] + self.func(day - 1, i, points, dp)
+                maxi = max(maxi, activity)
+
+        # Store maximum points in the DP table and return it.
+        dp[day][last] = maxi
+        return dp[day][last]
+
+    # Function to find the maximum points for ninja training
+    def ninjaTraining(self, points):
+        # Get the number of days
+        days = len(points)
+        
+        # Initialize a DP table to store the computed results.
+        dp = [[-1 for j in range(4)] for i in range(days)]
+        
+        # If there are no days, return 0
+        if days == 0:
+            return 0
+
+        # Return the maximum points
+        return self.func(days - 1, 3, points, dp)
+
+points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+]
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the maximum points for ninja training
+print(sol.ninjaTraining(points))  # Output should be 210
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    func(day, last, points, dp) {
+        /* If the result for this day and last 
+        activity is already calculated, return it */
+        if (dp[day][last] !== -1) return dp[day][last];
+        
+        // Base case
+        if (day === 0) {
+            let maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (let i = 0; i < 3; i++) {
+                if (i !== last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            //Store the result in dp array and return it
+            dp[day][last] = maxi;
+            return dp[day][last];
+        }
+
+        // Initialize max points for the current day
+        let maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (let i = 0; i < 3; i++) {
+            if (i !== last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far*/
+                let activity = points[day][i] + this.func(day - 1, i, points, dp);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        //Store the result in dp array and return it
+        dp[day][last] = maxi;
+        return dp[day][last];
+    }
+
+    // Function to find the maximum points for ninja training
+    ninjaTraining(points) {
+        // Get the number of days
+        let days = points.length;
+        
+        /* Create a memoization table 
+        to store intermediate results*/
+        let dp = new Array(days);
+        for (let i = 0; i < days; i++) {
+            dp[i] = new Array(4).fill(-1);
+        }
+
+        // Return the maximum points
+        return this.func(days - 1, 3, points, dp);
+    }
+}
+
+let points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Print the maximum points for ninja training
+console.log(sol.ninjaTraining(points));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    private int func(int day, int last, int[][] points, int[][] dp)
+    {
+        /* If the result for this day and last 
+        activity is already calculated, return it */
+        if (dp[day][last] != -1) return dp[day][last];
+        
+        // Base case
+        if (day == 0)
+        {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i < 3; i++)
+            {
+                if (i != last)
+                {
+                    maxi = Math.Max(maxi, points[0][i]);
+                }
+            }
+            //Store the result in dp array and return it
+            dp[day][last] = maxi;
+            return dp[day][last];
+        }
+
+        // Initialize max points for the current day
+        int currentMaxi = 0;
+        
+        // Iterate through activities for the current day
+        for (int i = 0; i < 3; i++)
+        {
+            if (i != last)
+            {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far*/
+                int activity = points[day][i] + func(day - 1, i, points, dp);
+                currentMaxi = Math.Max(currentMaxi, activity);
+            }
+        }
+
+        //Store the result in dp array and return it
+        dp[day][last] = currentMaxi;
+        return dp[day][last];
+    }
+
+    // Function to find the maximum points for ninja training
+    public int NinjaTraining(int[][] points)
+    {
+        // Get the number of days
+        int days = points.Length;
+        
+        /* Create a memoization table 
+        to store intermediate results*/
+        int[][] dp = new int[days][];
+        for (int i = 0; i < days; i++)
+        {
+            dp[i] = new int[4];
+            Array.Fill(dp[i], -1);
+        }
+
+        // Return the maximum points
+        return func(days - 1, 3, points, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[][] points = new int[][]
+        {
+            new int[] {10, 40, 70},
+            new int[] {20, 50, 80},
+            new int[] {30, 60, 90}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the maximum points for ninja training
+        Console.WriteLine(sol.NinjaTraining(points));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function to get the maximum of two integers
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Recursive function to calculate the maximum points for ninja training
+func funcRec(day, last int, points [][]int, dp [][]int) int {
+	// If already calculated, return stored result
+	if dp[day][last] != -1 {
+		return dp[day][last]
+	}
+
+	// Base case
+	if day == 0 {
+		maxi := 0
+		// Choose maximum points on day 0, but not the same as 'last'
+		for i := 0; i <= 2; i++ {
+			if i != last {
+				maxi = max(maxi, points[0][i])
+			}
+		}
+		dp[day][last] = maxi
+		return maxi
+	}
+
+	maxi := 0
+	// Try all activities for the current day except the last activity
+	for i := 0; i <= 2; i++ {
+		if i != last {
+			activity := points[day][i] + funcRec(day-1, i, points, dp)
+			maxi = max(maxi, activity)
+		}
+	}
+
+	dp[day][last] = maxi
+	return maxi
+}
+
+// Function to calculate maximum points using recursion + memoization
+func ninjaTraining(matrix [][]int) int {
+	n := len(matrix)
+
+	// Create dp table initialized with -1
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, 4)
+		for j := 0; j < 4; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	last := 3
+	return funcRec(n-1, last, matrix, dp)
+}
+
+func main() {
+	points := [][]int{
+		{10, 40, 70},
+		{20, 50, 80},
+		{30, 60, 90},
+	}
+
+	fmt.Println(ninjaTraining(points)) // Output: 210
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong> O(N*4*3). There are N*4 states and for every state, we are running a for loop iterating three times.<br><br>
+<strong>Space Complexity:</strong>O(N) + O(N*4), We are using a recursion stack space(O(N)) and a 2D array (again O(N*4)). Therefore total space complexity will be O(N) + O(N) ≈ O(N)</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:
+
+<li><b>Declare a dp array of size [n][4]:</b> There are total ‘n’ days and for every day, there can be 4 choices (0,1,2 and 3). Therefore we take the dp array as dp[n][4] and dp[i][j] represents the maximum points at day i, considering the last activity as j.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/2D DP/Ninja's training/-2Uq014hV" width="350"><br>
+<li><b>Setting Base Cases in the Array: </b> In the recursive code, we knew the answer for base case, when 'day' = 0, Therefore, we can say that the following will be the base conditions
+<p>dp[0][0] = max(points[0][1], points[0][2]), when the last activity is 0.</p>
+<p>dp[0][1] = max(points[0][0], points[0][2]), when the last activity is 1. </p>
+<p>dp[0][2] = max(points[0][0], points[0][1]), when the last activity is 2. </p>
+<p>dp[0][3] = max(points[0][0], points[0][1] and points[0][2]), when the last is 3, it means we are just starting from here and no activity has been performed yet. </p>
+</li>
+<li><b>Iterative Computation Using Loops: </b>Set an iterative loop that traverses the array( from index 1 to n-1), for each day iterate through all the 4 choices of the 'last' and  then Iterate through the tasks for the current day.  Calculate the points for the current activity and add it to the maximum points obtained on the previous day.
+</li><li><b>Choosing the maximum: </b>Update dp[day][last] to store the maximum of dp[day][last] and current calculation.</li>
+<li><b>Returning the last element: </b>The last element of the dp array is returned because it holds the optimal solution to the entire problem after the bottom-up computation has been completed.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    int ninjaTraining(vector<vector<int>>& matrix) {
+        int n = matrix.size();
+        // Create a 2D DP table to store the maximum points
+        vector<vector<int>> dp(n, vector<int>(4, 0));
+
+       // Initialize the DP table for the first day (day 0)
+       dp[0][0] = max(matrix[0][1], matrix[0][2]);
+       dp[0][1] = max(matrix[0][0], matrix[0][2]);
+       dp[0][2] = max(matrix[0][0], matrix[0][1]);
+       dp[0][3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]));
+
+       // Iterate through the days starting from day 1
+       for (int day = 1; day < n; day++) {
+           for (int last = 0; last < 4; last++) {
+               dp[day][last] = 0;
+               // Iterate through the tasks for the current day
+               for (int task = 0; task <= 2; task++) {
+                   if (task != last) {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        int activity = matrix[day][task] + dp[day - 1][task];
+                   
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = max(dp[day][last], activity);
+                    }
+                }
+            }
+       }
+
+       /* The maximum points for the last day with 
+       any activity can be found in dp[n-1][3]*/
+       return dp[n - 1][3];
+    }
+};
+int main() {
+    vector<vector<int>> points = {{10, 40, 70},
+                                 {20, 50, 80},
+                                 {30, 60, 90}};
+                                 
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << sol.ninjaTraining(points);
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Arrays;
+
+class Solution {
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    public int ninjaTraining(int[][] matrix) {
+        int n = matrix.length;
+        // Create a 2D DP table to store the maximum points
+        int[][] dp = new int[n][4];
+
+        // Initialize the DP table for the first day (day 0)
+        dp[0][0] = Math.max(matrix[0][1], matrix[0][2]);
+        dp[0][1] = Math.max(matrix[0][0], matrix[0][2]);
+        dp[0][2] = Math.max(matrix[0][0], matrix[0][1]);
+        dp[0][3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day < n; day++) {
+            for (int last = 0; last < 4; last++) {
+                dp[day][last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task <= 2; task++) {
+                    if (task != last) {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        int activity = matrix[day][task] + dp[day - 1][task];
+
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = Math.max(dp[day][last], activity);
+                    }
+                }
+            }
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]*/
+        return dp[n - 1][3];
+    }
+
+    public static void main(String[] args) {
+        int[][] points = {
+            {10, 40, 70},
+            {20, 50, 80},
+            {30, 60, 90}
+        };
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Print the maximum points for ninja training
+        System.out.println(sol.ninjaTraining(points)); 
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to calculate the maximum
+    points for the ninja training"""
+    def ninjaTraining(self, matrix):
+        n = len(matrix)
+        # Create a 2D DP table to store the maximum points
+        dp = [[0] * 4 for _ in range(n)]
+
+        # Initialize the DP table for the first day (day 0)
+        dp[0][0] = max(matrix[0][1], matrix[0][2])
+        dp[0][1] = max(matrix[0][0], matrix[0][2])
+        dp[0][2] = max(matrix[0][0], matrix[0][1])
+        dp[0][3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+        # Iterate through the days starting from day 1
+        for day in range(1, n):
+            for last in range(4):
+                dp[day][last] = 0
+                # Iterate through the tasks for the current day
+                for task in range(3):
+                    if task != last:
+                        """ Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day"""
+                        activity = matrix[day][task] + dp[day - 1][task]
+
+                        """Update the maximum points for 
+                        the current day and last activity"""
+                        dp[day][last] = max(dp[day][last], activity)
+
+        """ The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]"""
+        return dp[n - 1][3]
+
+points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+]
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the maximum points for ninja training
+print(sol.ninjaTraining(points))  
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to find the maximum 
+    points for ninja training*/
+    ninjaTraining(matrix) {
+        let n = matrix.length;
+        // Create a 2D DP table to store the maximum points
+        let dp = new Array(n);
+        for (let i = 0; i < n; i++) {
+            dp[i] = new Array(4).fill(0);
+        }
+
+        // Initialize the DP table for the first day (day 0)
+        dp[0][0] = Math.max(matrix[0][1], matrix[0][2]);
+        dp[0][1] = Math.max(matrix[0][0], matrix[0][2]);
+        dp[0][2] = Math.max(matrix[0][0], matrix[0][1]);
+        dp[0][3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (let day = 1; day < n; day++) {
+            for (let last = 0; last < 4; last++) {
+                dp[day][last] = 0;
+                // Iterate through the tasks for the current day
+                for (let task = 0; task < 3; task++) {
+                    if (task !== last) {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        let activity = matrix[day][task] + dp[day - 1][task];
+
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = Math.max(dp[day][last], activity);
+                    }
+                }
+            }
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]*/
+        return dp[n - 1][3];
+    }
+}
+
+let points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Print the maximum points for ninja training
+console.log(sol.ninjaTraining(points)); 
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to find the maximum 
+    points for ninja training*/
+    public int NinjaTraining(int[][] matrix)
+    {
+        int n = matrix.Length;
+        // Create a 2D DP table to store the maximum points
+        int[][] dp = new int[n][];
+        for (int i = 0; i < n; i++)
+        {
+            dp[i] = new int[4];
+        }
+
+        // Initialize the DP table for the first day (day 0)
+        dp[0][0] = Math.Max(matrix[0][1], matrix[0][2]);
+        dp[0][1] = Math.Max(matrix[0][0], matrix[0][2]);
+        dp[0][2] = Math.Max(matrix[0][0], matrix[0][1]);
+        dp[0][3] = Math.Max(matrix[0][0], Math.Max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day < n; day++)
+        {
+            for (int last = 0; last < 4; last++)
+            {
+                dp[day][last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task < 3; task++)
+                {
+                    if (task != last)
+                    {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        int activity = matrix[day][task] + dp[day - 1][task];
+
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = Math.Max(dp[day][last], activity);
+                    }
+                }
+            }
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]*/
+        return dp[n - 1][3];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[][] points = new int[][]
+        {
+            new int[] {10, 40, 70},
+            new int[] {20, 50, 80},
+            new int[] {30, 60, 90}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the maximum points for ninja training
+        Console.WriteLine(sol.NinjaTraining(points));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function to get maximum of two integers
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Function to calculate the maximum points for the ninja training
+func ninjaTraining(matrix [][]int) int {
+	n := len(matrix)
+
+	// Create a 2D DP table to store the maximum points
+	dp := make([][]int, n)
+	for i := 0; i < n; i++ {
+		dp[i] = make([]int, 4)
+	}
+
+	// Initialize the DP table for the first day (day 0)
+	dp[0][0] = max(matrix[0][1], matrix[0][2])
+	dp[0][1] = max(matrix[0][0], matrix[0][2])
+	dp[0][2] = max(matrix[0][0], matrix[0][1])
+	dp[0][3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+	// Iterate through the days starting from day 1
+	for day := 1; day < n; day++ {
+		for last := 0; last < 4; last++ {
+			dp[day][last] = 0
+			// Iterate through the tasks for the current day
+			for task := 0; task <= 2; task++ {
+				if task != last {
+					/* Calculate the points for the current
+					   activity and add it to the maximum points
+					   obtained on the previous day */
+					activity := matrix[day][task] + dp[day-1][task]
+
+					/* Update the maximum points for
+					   the current day and last activity */
+					dp[day][last] = max(dp[day][last], activity)
+				}
+			}
+		}
+	}
+
+	/* The maximum points for the last day with
+	   any activity can be found in dp[n-1][3] */
+	return dp[n-1][3]
+}
+
+func main() {
+	points := [][]int{
+		{10, 40, 70},
+		{20, 50, 80},
+		{30, 60, 90},
+	}
+
+	fmt.Println(ninjaTraining(points)) // Output: 210
+}
+</code></pre></div></div></div>
+
+
+
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong> O(N*4*3). There are N*4 states and for every state, we are running a for loop iterating three times.<br><br>
+<strong>Space Complexity:</strong>O(N*4), 2D array is being used to store the intermediate calculations.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we closely look the relation obtained in the tabulation approach, dp[day][last] =  max(dp[day][last],matrix[day][task] + dp[day-1][task])</p>
+<p>Here the task can be anything from 0 to 3 and day-1 is the previous stage of recursion. So in order to compute any dp array value, we only require the last row to calculate it.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/2D DP/Ninja's training/-IpvybDX2"><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/2D DP/Ninja's training/-Q-ZxAW37"><br>
+
+<li>So rather than storing the entire 2D Array of size N*4, we can just store values of size 4(say prev). </li>
+<li>We can then take a dummy array, again of size 4 (say temp) and calculate the next row’s value using the array we stored in step 1.</li>
+<li>After that whenever we move to the next day, the temp array becomes our prev for the next step.</li>
+<li>At last prev[3] will give us the answer because it will be the last element, storing the maximum points in bottom-up manner.</li><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    int ninjaTraining(vector<vector<int>>& matrix) {
+        int n = matrix.size();
+        
+        /* Initialize a vector to store the maximum
+        points for the previous day's activities*/
+        vector<int> prev(4, 0);
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = max(matrix[0][1], matrix[0][2]);
+        prev[1] = max(matrix[0][0], matrix[0][2]);
+        prev[2] = max(matrix[0][0], matrix[0][1]);
+        prev[3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day < n; day++) {
+            /* Create a temporary vector to store the
+            maximum points for the current day's activities*/
+            vector<int> temp(4, 0);
+            for (int last = 0; last < 4; last++) {
+                temp[last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task <= 2; task++) {
+                    if (task != last) {
+                    /* Calculate the points for the current activity
+                    and add it to the maximum points obtained on the
+                    previous day (stored in prev)*/
+                    temp[last] = max(temp[last], matrix[day][task] + prev[task]);
+                }
+            }
+        }
+        // Update prev with maximum points for the current day
+        prev = temp;
+       }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+};
+int main() {
+    vector<vector<int>> points = {{10, 40, 70},
+                                 {20, 50, 80},
+                                 {30, 60, 90}};
+                                 
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << sol.ninjaTraining(points);
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Arrays;
+
+class Solution {
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    public int ninjaTraining(int[][] matrix) {
+        int n = matrix.length;
+
+         /* Initialize a vector to store the maximum
+        points for the previous day's activities*/
+        int[] prev = new int[4];
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = Math.max(matrix[0][1], matrix[0][2]);
+        prev[1] = Math.max(matrix[0][0], matrix[0][2]);
+        prev[2] = Math.max(matrix[0][0], matrix[0][1]);
+        prev[3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day < n; day++) {
+            /* Initialize a temporary vector to store the
+            maximum points for the current day's activities*/
+            int[] temp = new int[4];
+
+            for (int last = 0; last < 4; last++) {
+                temp[last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task <= 2; task++) {
+                    if (task != last) {
+                        /* Calculate the points for the current activity
+                        and add it to the maximum points obtained on the
+                        previous day (stored in prev)*/
+                        temp[last] = Math.max(temp[last], matrix[day][task] + prev[task]);
+                    }
+                }
+            }
+
+            // Update prev with maximum points for the current day
+            prev = temp;
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+
+    public static void main(String[] args) {
+        int[][] points = {
+            {10, 40, 70},
+            {20, 50, 80},
+            {30, 60, 90}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the maximum points for ninja training
+        System.out.println(sol.ninjaTraining(points)); 
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to calculate the maximum
+    points for the ninja training"""
+    def ninjaTraining(self, matrix):
+        n = len(matrix)
+
+        """ Initialize an array to store the maximum
+        points for the previous day's activities"""
+        prev = [0] * 4
+
+        # Initialize the prev array for the first day (day 0)
+        prev[0] = max(matrix[0][1], matrix[0][2])
+        prev[1] = max(matrix[0][0], matrix[0][2])
+        prev[2] = max(matrix[0][0], matrix[0][1])
+        prev[3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+        # Iterate through the days starting from day 1
+        for day in range(1, n):
+            """ Initialize a temporary array to store the 
+            maximum points for the current day's activities"""
+            temp = [0] * 4
+
+            for last in range(4):
+                temp[last] = 0
+                # Iterate through the tasks for the current day
+                for task in range(3):
+                    if task != last:
+                        """ Calculate the points for the current activity
+                        and add it to the maximum points obtained on 
+                        the previous day"""
+                        temp[last] = max(temp[last], matrix[day][task] + prev[task])
+
+            # Update prev with maximum points for the current day
+            prev = temp
+
+        """ The maximum points for the last day with 
+        any activity can be found in prev[3]"""
+        return prev[3]
+
+points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+]
+
+# Create an instance of Solution class
+sol = Solution()
+
+# Print the maximum points for ninja training
+print(sol.ninjaTraining(points))  
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to calculate the maximum 
+    points for the ninja training*/
+    ninjaTraining(matrix) {
+        let n = matrix.length;
+
+        /* Initialize an array to store the maximum
+        points for the previous day's activities*/
+        let prev = [0, 0, 0, 0];
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = Math.max(matrix[0][1], matrix[0][2]);
+        prev[1] = Math.max(matrix[0][0], matrix[0][2]);
+        prev[2] = Math.max(matrix[0][0], matrix[0][1]);
+        prev[3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (let day = 1; day < n; day++) {
+            /* Initialize a temporary array to store the 
+            maximum points for the current day's activities*/
+            let temp = [0, 0, 0, 0];
+
+            for (let last = 0; last < 4; last++) {
+                temp[last] = 0;
+                // Iterate through the tasks for the current day
+                for (let task = 0; task <= 2; task++) {
+                    if (task !== last) {
+                        /* Calculate the points for the current activity
+                        and add it to the maximum points obtained on
+                        the previous day*/
+                        temp[last] = Math.max(temp[last], matrix[day][task] + prev[task]);
+                    }
+                }
+            }
+
+            // Update prev with maximum points for the current day
+            prev = temp;
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+}
+
+let points = [
+    [10, 40, 70],
+    [20, 50, 80],
+    [30, 60, 90]
+];
+
+// Create an instance of Solution class
+let sol = new Solution();
+
+// Print the maximum points for ninja training
+console.log(sol.ninjaTraining(points)); // Output: 210
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int[][] points = new int[][]
+        {
+            new int[] {10, 40, 70},
+            new int[] {20, 50, 80},
+            new int[] {30, 60, 90}
+        };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the maximum points for ninja training
+        Console.WriteLine(sol.NinjaTraining(points)); // Output: 210
+    }
+}
+
+class Solution
+{
+    /* Function to calculate the maximum 
+    points for the ninja training*/
+    public int NinjaTraining(int[][] matrix)
+    {
+        int n = matrix.Length;
+
+        /* Initialize an array to store the maximum
+        points for the previous day's activities*/
+        int[] prev = new int[4];
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = Math.Max(matrix[0][1], matrix[0][2]);
+        prev[1] = Math.Max(matrix[0][0], matrix[0][2]);
+        prev[2] = Math.Max(matrix[0][0], matrix[0][1]);
+        prev[3] = Math.Max(matrix[0][0], Math.Max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day < n; day++)
+        {
+            /* Initialize a temporary array to store the 
+            maximum points for the current day's activities*/
+            int[] temp = new int[4];
+
+            for (int last = 0; last < 4; last++)
+            {
+                // Iterate through the tasks for the current day
+                for (int task = 0; task <= 2; task++)
+                {
+                    if (task != last)
+                    {
+                        /* Calculate the points for the current activity
+                        and add it to the maximum points obtained on
+                        the previous day*/
+                        temp[last] = Math.Max(temp[last], matrix[day][task] + prev[task]);
+                    }
+                }
+            }
+
+            // Update prev with maximum points for the current day
+            prev = temp;
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Helper function for max of two integers
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+// Function to calculate the maximum points for the ninja training
+func ninjaTraining(matrix [][]int) int {
+	n := len(matrix)
+
+	/* Initialize a slice to store the maximum
+	points for the previous day's activities */
+	prev := make([]int, 4)
+
+	// Initialize the prev array for the first day (day 0)
+	prev[0] = max(matrix[0][1], matrix[0][2])
+	prev[1] = max(matrix[0][0], matrix[0][2])
+	prev[2] = max(matrix[0][0], matrix[0][1])
+	prev[3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+	// Iterate through the days starting from day 1
+	for day := 1; day < n; day++ {
+		/* Create a temporary slice to store the
+		maximum points for the current day's activities */
+		temp := make([]int, 4)
+
+		for last := 0; last < 4; last++ {
+			temp[last] = 0
+			// Iterate through the tasks for the current day
+			for task := 0; task <= 2; task++ {
+				if task != last {
+					/* Calculate the points for the current activity
+					and add it to the maximum points obtained on the
+					previous day (stored in prev) */
+					temp[last] = max(temp[last], matrix[day][task]+prev[task])
+				}
+			}
+		}
+
+		// Update prev with maximum points for the current day
+		prev = temp
+	}
+
+	/* The maximum points for the last day with
+	any activity can be found in prev[3] */
+	return prev[3]
+}
+
+func main() {
+	points := [][]int{
+		{10, 40, 70},
+		{20, 50, 80},
+		{30, 60, 90},
+	}
+
+	fmt.Println(ninjaTraining(points)) // Output: 210
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong> O(N*4*3). There are N*4 states and for every state, we are running a for loop iterating three times.<br><br>
+<strong>Space Complexity:</strong>O(4), We are using an external array of size ‘4’ to store only one row.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    int func(int day, int last, vector&lt;vector&lt;int&gt;&gt; &amp;points) {
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i &lt;= 2; i++) {
+                if (i != last)  maxi = max(maxi, points[0][i]);
+            }
+            // Return the maximum points
+            return maxi;
+        }
+
+        int maxi = 0;
+    
+        // Iterate through activities for the current day
+        for (int i = 0; i &lt;= 2; i++) {
+            if (i != last) {
+            
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far */
+                int activity = points[day][i] + func(day - 1, i, points);
+                maxi = max(maxi, activity);
+            }
+        }
+
+        // Return the maximum points
+        return maxi;
+    }
+public:
+    int ninjaTraining(vector&lt;vector&lt;int&gt;&gt;&amp; matrix) {
+        int day = matrix.size()-1;
+        int last = 3;
+        return func(day, last, matrix);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Recursive function to calculate the 
+       maximum points for the ninja training */
+    private int Func(int day, int last, int[][] points)
+    {
+        // Base case
+        if (day == 0)
+        {
+            int maxi = 0;
+
+            /* Calculate the maximum points for the first day
+               by choosing an activity different from last one */
+            for (int i = 0; i &lt;= 2; i++)
+            {
+                if (i != last)
+                    maxi = Math.Max(maxi, points[0][i]);
+            }
+            // Return the maximum points
+            return maxi;
+        }
+
+        int result = 0;
+        // Iterate through activities for the current day
+        for (int i = 0; i &lt;= 2; i++)
+        {
+            if (i != last)
+            {
+                /* Calculate the points for the current activity
+                   and add it to the maximum points obtained so far */
+                int activity = points[day][i] + Func(day - 1, i, points);
+                result = Math.Max(result, activity);
+            }
+        }
+        // Return the maximum points
+        return result;
+    }
+
+    public int NinjaTraining(int[][] matrix)
+    {
+        int day = matrix.Length - 1;
+        int last = 3;
+        return Func(day, last, matrix);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code> /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+func funcRec(day, last int, points [][]int) int {
+    // Base case
+    if day == 0 {
+        maxi := 0
+
+        /* Calculate the maximum points for the first day
+        by choosing an activity different from last one*/
+        for i := 0; i &lt;= 2; i++ {
+            if i != last &amp;&amp; points[0][i] &gt; maxi {
+                maxi = points[0][i]
+            }
+        }
+        // Return the maximum points
+        return maxi
+    }
+
+    maxi := 0
+
+    // Iterate through activities for the current day
+    for i := 0; i &lt;= 2; i++ {
+        if i != last {
+            /* Calculate the points for the current activity
+            and add it to the maximum points obtained so far */
+            activity := points[day][i] + funcRec(day-1, i, points)
+            if activity &gt; maxi {
+                maxi = activity
+            }
+        }
+    }
+
+    // Return the maximum points
+    return maxi
+}
+
+// Function to find the maximum points for ninja training
+func ninjaTraining(matrix [][]int) int {
+    day := len(matrix) - 1
+    last := 3
+    return funcRec(day, last, matrix)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    private int func(int day, int last, int[][] points) {
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i &lt; 3; i++) {
+                if (i != last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            // Return the maximum points for the first day
+            return maxi;
+        }
+
+        // Initialize max points for the current day
+        int maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (int i = 0; i &lt; 3; i++) {
+            if (i != last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far */
+                int activity = points[day][i] + func(day - 1, i, points);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        // Return the maximum points for the current day
+        return maxi;
+    }
+
+    // Function to find the maximum points for ninja training
+    public int ninjaTraining(int[][] points) {
+        // Get the number of days
+        int days = points.length;
+        
+        // Return the maximum points
+        return func(days - 1, 3, points);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    func(day, last, points) {
+        // Base case
+        if (day === 0) {
+            let maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (let i = 0; i &lt; 3; i++) {
+                if (i !== last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            // Return the maximum points for the first day
+            return maxi;
+        }
+
+        // Initialize max points for the current day
+        let maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (let i = 0; i &lt; 3; i++) {
+            if (i !== last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far*/
+                let activity = points[day][i] + this.func(day - 1, i, points);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        // Return the maximum points for the current day
+        return maxi;
+    }
+
+    // Function to find the maximum points for ninja training
+    ninjaTraining(points) {
+        // Get the number of days
+        let days = points.length;
+        
+        // If there are no days, return 0
+        if (days === 0) return 0;
+
+        // Return the maximum points
+        return this.func(days - 1, 3, points);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Recursive function to calculate the 
+    maximum points for the ninja training&quot;&quot;&quot;
+    def func(self, day, last, points):
+        # Base case
+        if day == 0:
+            maxi = 0
+        
+            &quot;&quot;&quot; Calculate the maximum points for the first day
+            by choosing an activity different from last one&quot;&quot;&quot;
+            for i in range(3):
+                if i != last:
+                    maxi = max(maxi, points[0][i])
+            # Return the maximum points for the first day
+            return maxi
+
+        # Initialize max points for the current day
+        maxi = 0
+        
+        # Iterate through activities for the current day
+        for i in range(3):
+            if i != last:
+                &quot;&quot;&quot;Calculate the points for the current activity
+                and add it to the maximum points obtained so far&quot;&quot;&quot;
+                activity = points[day][i] + self.func(day - 1, i, points)
+                maxi = max(maxi, activity)
+
+        # Return the maximum points for the current day
+        return maxi
+
+    # Function to find the maximum points for ninja training
+    def ninjaTraining(self, points):
+        # Get the number of days
+        days = len(points)
+        
+        # If there are no days, return 0
+        if days == 0:
+            return 0
+
+        # Return the maximum points
+        return self.func(days - 1, 3, points)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    int func(int day, int last, vector&lt;vector&lt;int&gt;&gt; &amp;points, vector&lt;vector&lt;int&gt;&gt; &amp;dp) {
+        /* If the result for this day and last 
+        activity is already calculated, return it*/
+        if (dp[day][last] != -1) return dp[day][last];
+        
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i &lt;= 2; i++) {
+                if (i != last)  maxi = max(maxi, points[0][i]);
+            }
+            // Store the result in dp array and return it
+            return dp[day][last] = maxi;
+        }
+
+        int maxi = 0;
+    
+        // Iterate through activities for the current day
+        for (int i = 0; i &lt;= 2; i++) {
+            if (i != last) {
+                
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far */
+                int activity = points[day][i] + func(day - 1, i, points, dp);
+                maxi = max(maxi, activity);
+            }
+        }
+
+        // Store the result in dp array and return it
+        return dp[day][last] = maxi;
+    }
+public:
+    int ninjaTraining(vector&lt;vector&lt;int&gt;&gt;&amp; matrix) {
+        int day = matrix.size();
+        
+        /* Create a memoization table 
+        to store intermediate results*/
+        vector&lt;vector&lt;int&gt;&gt; dp(day, vector&lt;int&gt;(4, -1));
+        
+        int last = 3;
+        return func(day-1, last, matrix, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    private int func(int day, int last, int[][] points, int[][] dp)
+    {
+        /* If the result for this day and last 
+        activity is already calculated, return it */
+        if (dp[day][last] != -1) return dp[day][last];
+        
+        // Base case
+        if (day == 0)
+        {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i &lt; 3; i++)
+            {
+                if (i != last)
+                {
+                    maxi = System.Math.Max(maxi, points[0][i]);
+                }
+            }
+            //Store the result in dp array and return it
+            dp[day][last] = maxi;
+            return dp[day][last];
+        }
+
+        // Initialize max points for the current day
+        int currentMaxi = 0;
+        
+        // Iterate through activities for the current day
+        for (int i = 0; i &lt; 3; i++)
+        {
+            if (i != last)
+            {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far*/
+                int activity = points[day][i] + func(day - 1, i, points, dp);
+                currentMaxi = System.Math.Max(currentMaxi, activity);
+            }
+        }
+
+        //Store the result in dp array and return it
+        dp[day][last] = currentMaxi;
+        return dp[day][last];
+    }
+
+    public int NinjaTraining(int[][] matrix)
+    {
+        // Get the number of days
+        int days = matrix.Length;
+        
+        /* Create a memoization table 
+        to store intermediate results*/
+        int[][] dp = new int[days][];
+        for (int i = 0; i &lt; days; i++)
+        {
+            dp[i] = new int[4];
+            // Initialize with -1
+            for (int j = 0; j &lt; 4; j++)
+            {
+                dp[i][j] = -1;
+            }
+        }
+
+        // Return the maximum points
+        return func(days - 1, 3, matrix, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to get the maximum of two integers
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+// Recursive function to calculate the maximum points for ninja training
+func funcRec(day, last int, points [][]int, dp [][]int) int {
+	// If already calculated, return stored result
+	if dp[day][last] != -1 {
+		return dp[day][last]
+	}
+
+	// Base case
+	if day == 0 {
+		maxi := 0
+		// Choose maximum points on day 0, but not the same as &#x27;last&#x27;
+		for i := 0; i &lt;= 2; i++ {
+			if i != last {
+				maxi = max(maxi, points[0][i])
+			}
+		}
+		dp[day][last] = maxi
+		return maxi
+	}
+
+	maxi := 0
+	// Try all activities for the current day except the last activity
+	for i := 0; i &lt;= 2; i++ {
+		if i != last {
+			activity := points[day][i] + funcRec(day-1, i, points, dp)
+			maxi = max(maxi, activity)
+		}
+	}
+
+	dp[day][last] = maxi
+	return maxi
+}
+
+// Function to calculate maximum points using recursion + memoization
+func ninjaTraining(matrix [][]int) int {
+	n := len(matrix)
+
+	// Create dp table initialized with -1
+	dp := make([][]int, n)
+	for i := range dp {
+		dp[i] = make([]int, 4)
+		for j := 0; j &lt; 4; j++ {
+			dp[i][j] = -1
+		}
+	}
+
+	last := 3
+	return funcRec(n-1, last, matrix, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    private int func(int day, int last, int[][] points, int[][] dp) {
+        // If the result is already calculated, return it
+        if (dp[day][last] != -1) return dp[day][last];
+        
+        // Base case
+        if (day == 0) {
+            int maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (int i = 0; i &lt; 3; i++) {
+                if (i != last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            // Store the result in dp array and return it
+            return dp[day][last] = maxi;
+        }
+
+        // Initialize max points for the current day
+        int maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (int i = 0; i &lt; 3; i++) {
+            if (i != last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far */
+                int activity = points[day][i] + func(day - 1, i, points, dp);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        // Store the result in dp array and return it
+        return dp[day][last] = maxi;
+    }
+
+    // Function to find the maximum points for ninja training
+    public int ninjaTraining(int[][] points) {
+        // Get the number of days
+        int days = points.length;
+        
+        // Initialize a memoization table with -1 values
+        int dp[][] = new int[days][4];
+        for (int[] row : dp)
+            Arrays.fill(row, -1);
+            
+        // Return the maximum points
+        return func(days - 1, 3, points, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Recursive function to calculate the 
+    maximum points for the ninja training*/
+    func(day, last, points, dp) {
+        /* If the result for this day and last 
+        activity is already calculated, return it */
+        if (dp[day][last] !== -1) return dp[day][last];
+        
+        // Base case
+        if (day === 0) {
+            let maxi = 0;
+        
+            /* Calculate the maximum points for the first day
+            by choosing an activity different from last one*/
+            for (let i = 0; i &lt; 3; i++) {
+                if (i !== last) {
+                    maxi = Math.max(maxi, points[0][i]);
+                }
+            }
+            //Store the result in dp array and return it
+            dp[day][last] = maxi;
+            return dp[day][last];
+        }
+
+        // Initialize max points for the current day
+        let maxi = 0;
+        
+        // Iterate through activities for the current day
+        for (let i = 0; i &lt; 3; i++) {
+            if (i !== last) {
+                /* Calculate the points for the current activity
+                and add it to the maximum points obtained so far*/
+                let activity = points[day][i] + this.func(day - 1, i, points, dp);
+                maxi = Math.max(maxi, activity);
+            }
+        }
+
+        //Store the result in dp array and return it
+        dp[day][last] = maxi;
+        return dp[day][last];
+    }
+
+    // Function to find the maximum points for ninja training
+    ninjaTraining(points) {
+        // Get the number of days
+        let days = points.length;
+        
+        /* Create a memoization table 
+        to store intermediate results*/
+        let dp = new Array(days);
+        for (let i = 0; i &lt; days; i++) {
+            dp[i] = new Array(4).fill(-1);
+        }
+
+        // Return the maximum points
+        return this.func(days - 1, 3, points, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Recursive function to calculate the 
+    maximum points for the ninja training&quot;&quot;&quot;
+    def func(self, day, last, points, dp):
+        &quot;&quot;&quot; Check if the result for this day and 
+        last activity is already computed.&quot;&quot;&quot;
+        if dp[day][last] != -1:
+            return dp[day][last]
+        
+        # Base case
+        if day == 0:
+            maxi = 0
+        
+            &quot;&quot;&quot; Calculate the maximum points for the first day
+            by choosing an activity different from last one&quot;&quot;&quot;
+            for i in range(3):
+                if i != last:
+                    maxi = max(maxi, points[0][i])
+            
+            # Store maximum points in the DP table and return it.
+            dp[day][last] = maxi
+            return dp[day][last]
+
+        # Initialize max points for the current day
+        maxi = 0
+        
+        # Iterate through activities for the current day
+        for i in range(3):
+            if i != last:
+                &quot;&quot;&quot;Calculate the points for the current activity
+                and add it to the maximum points obtained so far&quot;&quot;&quot;
+                activity = points[day][i] + self.func(day - 1, i, points, dp)
+                maxi = max(maxi, activity)
+
+        # Store maximum points in the DP table and return it.
+        dp[day][last] = maxi
+        return dp[day][last]
+
+    # Function to find the maximum points for ninja training
+    def ninjaTraining(self, points):
+        # Get the number of days
+        days = len(points)
+        
+        # Initialize a DP table to store the computed results.
+        dp = [[-1 for j in range(4)] for i in range(days)]
+        
+        # If there are no days, return 0
+        if days == 0:
+            return 0
+
+        # Return the maximum points
+        return self.func(days - 1, 3, points, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    int ninjaTraining(vector&lt;vector&lt;int&gt;&gt;&amp; matrix) {
+        int n = matrix.size();
+        // Create a 2D DP table to store the maximum points
+        vector&lt;vector&lt;int&gt;&gt; dp(n, vector&lt;int&gt;(4, 0));
+
+       // Initialize the DP table for the first day (day 0)
+       dp[0][0] = max(matrix[0][1], matrix[0][2]);
+       dp[0][1] = max(matrix[0][0], matrix[0][2]);
+       dp[0][2] = max(matrix[0][0], matrix[0][1]);
+       dp[0][3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]));
+
+       // Iterate through the days starting from day 1
+       for (int day = 1; day &lt; n; day++) {
+           for (int last = 0; last &lt; 4; last++) {
+               dp[day][last] = 0;
+               // Iterate through the tasks for the current day
+               for (int task = 0; task &lt;= 2; task++) {
+                   if (task != last) {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        int activity = matrix[day][task] + dp[day - 1][task];
+                   
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = max(dp[day][last], activity);
+                    }
+                }
+            }
+       }
+
+       /* The maximum points for the last day with 
+       any activity can be found in dp[n-1][3]*/
+       return dp[n - 1][3];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int NinjaTraining(int[][] matrix)
+    {
+        int n = matrix.Length;
+        // Create a 2D DP table to store the maximum points
+        int[][] dp = new int[n][];
+        for (int i = 0; i &lt; n; i++)
+        {
+            dp[i] = new int[4];
+        }
+
+        // Initialize the DP table for the first day (day 0)
+        dp[0][0] = System.Math.Max(matrix[0][1], matrix[0][2]);
+        dp[0][1] = System.Math.Max(matrix[0][0], matrix[0][2]);
+        dp[0][2] = System.Math.Max(matrix[0][0], matrix[0][1]);
+        dp[0][3] = System.Math.Max(matrix[0][0], System.Math.Max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day &lt; n; day++)
+        {
+            for (int last = 0; last &lt; 4; last++)
+            {
+                dp[day][last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task &lt; 3; task++)
+                {
+                    if (task != last)
+                    {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        int activity = matrix[day][task] + dp[day - 1][task];
+
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = System.Math.Max(dp[day][last], activity);
+                    }
+                }
+            }
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]*/
+        return dp[n - 1][3];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function to get maximum of two integers
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+// Function to calculate the maximum points for the ninja training
+func ninjaTraining(matrix [][]int) int {
+	n := len(matrix)
+
+	// Create a 2D DP table to store the maximum points
+	dp := make([][]int, n)
+	for i := 0; i &lt; n; i++ {
+		dp[i] = make([]int, 4)
+	}
+
+	// Initialize the DP table for the first day (day 0)
+	dp[0][0] = max(matrix[0][1], matrix[0][2])
+	dp[0][1] = max(matrix[0][0], matrix[0][2])
+	dp[0][2] = max(matrix[0][0], matrix[0][1])
+	dp[0][3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+	// Iterate through the days starting from day 1
+	for day := 1; day &lt; n; day++ {
+		for last := 0; last &lt; 4; last++ {
+			dp[day][last] = 0
+			// Iterate through the tasks for the current day
+			for task := 0; task &lt;= 2; task++ {
+				if task != last {
+					/* Calculate the points for the current
+					   activity and add it to the maximum points
+					   obtained on the previous day */
+					activity := matrix[day][task] + dp[day-1][task]
+
+					/* Update the maximum points for
+					   the current day and last activity */
+					dp[day][last] = max(dp[day][last], activity)
+				}
+			}
+		}
+	}
+
+	/* The maximum points for the last day with
+	   any activity can be found in dp[n-1][3] */
+	return dp[n-1][3]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    public int ninjaTraining(int[][] matrix) {
+        int n = matrix.length;
+        // Create a 2D DP table to store the maximum points
+        int[][] dp = new int[n][4];
+
+        // Initialize the DP table for the first day (day 0)
+        dp[0][0] = Math.max(matrix[0][1], matrix[0][2]);
+        dp[0][1] = Math.max(matrix[0][0], matrix[0][2]);
+        dp[0][2] = Math.max(matrix[0][0], matrix[0][1]);
+        dp[0][3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day &lt; n; day++) {
+            for (int last = 0; last &lt; 4; last++) {
+                dp[day][last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task &lt;= 2; task++) {
+                    if (task != last) {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        int activity = matrix[day][task] + dp[day - 1][task];
+
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = Math.max(dp[day][last], activity);
+                    }
+                }
+            }
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]*/
+        return dp[n - 1][3];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to find the maximum 
+    points for ninja training*/
+    ninjaTraining(matrix) {
+        let n = matrix.length;
+        // Create a 2D DP table to store the maximum points
+        let dp = new Array(n);
+        for (let i = 0; i &lt; n; i++) {
+            dp[i] = new Array(4).fill(0);
+        }
+
+        // Initialize the DP table for the first day (day 0)
+        dp[0][0] = Math.max(matrix[0][1], matrix[0][2]);
+        dp[0][1] = Math.max(matrix[0][0], matrix[0][2]);
+        dp[0][2] = Math.max(matrix[0][0], matrix[0][1]);
+        dp[0][3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (let day = 1; day &lt; n; day++) {
+            for (let last = 0; last &lt; 4; last++) {
+                dp[day][last] = 0;
+                // Iterate through the tasks for the current day
+                for (let task = 0; task &lt; 3; task++) {
+                    if (task !== last) {
+                        /* Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day */
+                        let activity = matrix[day][task] + dp[day - 1][task];
+
+                        /* Update the maximum points for 
+                        the current day and last activity*/
+                        dp[day][last] = Math.max(dp[day][last], activity);
+                    }
+                }
+            }
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]*/
+        return dp[n - 1][3];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to calculate the maximum
+    points for the ninja training&quot;&quot;&quot;
+    def ninjaTraining(self, matrix):
+        n = len(matrix)
+        # Create a 2D DP table to store the maximum points
+        dp = [[0] * 4 for _ in range(n)]
+
+        # Initialize the DP table for the first day (day 0)
+        dp[0][0] = max(matrix[0][1], matrix[0][2])
+        dp[0][1] = max(matrix[0][0], matrix[0][2])
+        dp[0][2] = max(matrix[0][0], matrix[0][1])
+        dp[0][3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+        # Iterate through the days starting from day 1
+        for day in range(1, n):
+            for last in range(4):
+                dp[day][last] = 0
+                # Iterate through the tasks for the current day
+                for task in range(3):
+                    if task != last:
+                        &quot;&quot;&quot; Calculate the points for the current 
+                        activity and add it to the maximum points
+                        obtained on the previous day&quot;&quot;&quot;
+                        activity = matrix[day][task] + dp[day - 1][task]
+
+                        &quot;&quot;&quot;Update the maximum points for 
+                        the current day and last activity&quot;&quot;&quot;
+                        dp[day][last] = max(dp[day][last], activity)
+
+        &quot;&quot;&quot; The maximum points for the last day with 
+        any activity can be found in dp[n-1][3]&quot;&quot;&quot;
+        return dp[n - 1][3]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    int ninjaTraining(vector&lt;vector&lt;int&gt;&gt;&amp; matrix) {
+        int n = matrix.size();
+        
+        /* Initialize a vector to store the maximum
+        points for the previous day&#x27;s activities*/
+        vector&lt;int&gt; prev(4, 0);
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = max(matrix[0][1], matrix[0][2]);
+        prev[1] = max(matrix[0][0], matrix[0][2]);
+        prev[2] = max(matrix[0][0], matrix[0][1]);
+        prev[3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day &lt; n; day++) {
+            /* Create a temporary vector to store the
+            maximum points for the current day&#x27;s activities*/
+            vector&lt;int&gt; temp(4, 0);
+            for (int last = 0; last &lt; 4; last++) {
+                temp[last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task &lt;= 2; task++) {
+                    if (task != last) {
+                    /* Calculate the points for the current activity
+                    and add it to the maximum points obtained on the
+                    previous day (stored in prev)*/
+                    temp[last] = max(temp[last], matrix[day][task] + prev[task]);
+                }
+            }
+        }
+        // Update prev with maximum points for the current day
+        prev = temp;
+       }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public int NinjaTraining(int[][] matrix)
+    {
+        int n = matrix.Length;
+
+        /* Initialize an array to store the maximum
+        points for the previous day&#x27;s activities*/
+        int[] prev = new int[4];
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = Math.Max(matrix[0][1], matrix[0][2]);
+        prev[1] = Math.Max(matrix[0][0], matrix[0][2]);
+        prev[2] = Math.Max(matrix[0][0], matrix[0][1]);
+        prev[3] = Math.Max(matrix[0][0], Math.Max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day &lt; n; day++)
+        {
+            /* Initialize a temporary array to store the 
+            maximum points for the current day&#x27;s activities*/
+            int[] temp = new int[4];
+
+            for (int last = 0; last &lt; 4; last++)
+            {
+                // Iterate through the tasks for the current day
+                for (int task = 0; task &lt;= 2; task++)
+                {
+                    if (task != last)
+                    {
+                        /* Calculate the points for the current activity
+                        and add it to the maximum points obtained on
+                        the previous day*/
+                        temp[last] = Math.Max(temp[last], matrix[day][task] + prev[task]);
+                    }
+                }
+            }
+
+            // Update prev with maximum points for the current day
+            prev = temp;
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Helper function for max of two integers
+func max(a, b int) int {
+	if a &gt; b {
+		return a
+	}
+	return b
+}
+
+// Function to calculate the maximum points for the ninja training
+func ninjaTraining(matrix [][]int) int {
+	n := len(matrix)
+
+	/* Initialize a slice to store the maximum
+	points for the previous day&#x27;s activities */
+	prev := make([]int, 4)
+
+	// Initialize the prev array for the first day (day 0)
+	prev[0] = max(matrix[0][1], matrix[0][2])
+	prev[1] = max(matrix[0][0], matrix[0][2])
+	prev[2] = max(matrix[0][0], matrix[0][1])
+	prev[3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+	// Iterate through the days starting from day 1
+	for day := 1; day &lt; n; day++ {
+		/* Create a temporary slice to store the
+		maximum points for the current day&#x27;s activities */
+		temp := make([]int, 4)
+
+		for last := 0; last &lt; 4; last++ {
+			temp[last] = 0
+			// Iterate through the tasks for the current day
+			for task := 0; task &lt;= 2; task++ {
+				if task != last {
+					/* Calculate the points for the current activity
+					and add it to the maximum points obtained on the
+					previous day (stored in prev) */
+					temp[last] = max(temp[last], matrix[day][task]+prev[task])
+				}
+			}
+		}
+
+		// Update prev with maximum points for the current day
+		prev = temp
+	}
+
+	/* The maximum points for the last day with
+	any activity can be found in prev[3] */
+	return prev[3]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to calculate the maximum
+    points for the ninja training*/
+    public int ninjaTraining(int[][] matrix) {
+        int n = matrix.length;
+
+         /* Initialize a vector to store the maximum
+        points for the previous day&#x27;s activities*/
+        int[] prev = new int[4];
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = Math.max(matrix[0][1], matrix[0][2]);
+        prev[1] = Math.max(matrix[0][0], matrix[0][2]);
+        prev[2] = Math.max(matrix[0][0], matrix[0][1]);
+        prev[3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (int day = 1; day &lt; n; day++) {
+            /* Initialize a temporary vector to store the
+            maximum points for the current day&#x27;s activities*/
+            int[] temp = new int[4];
+
+            for (int last = 0; last &lt; 4; last++) {
+                temp[last] = 0;
+                // Iterate through the tasks for the current day
+                for (int task = 0; task &lt;= 2; task++) {
+                    if (task != last) {
+                        /* Calculate the points for the current activity
+                        and add it to the maximum points obtained on the
+                        previous day (stored in prev)*/
+                        temp[last] = Math.max(temp[last], matrix[day][task] + prev[task]);
+                    }
+                }
+            }
+
+            // Update prev with maximum points for the current day
+            prev = temp;
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to calculate the maximum 
+    points for the ninja training*/
+    ninjaTraining(matrix) {
+        let n = matrix.length;
+
+        /* Initialize an array to store the maximum
+        points for the previous day&#x27;s activities*/
+        let prev = [0, 0, 0, 0];
+
+        // Initialize the prev array for the first day (day 0)
+        prev[0] = Math.max(matrix[0][1], matrix[0][2]);
+        prev[1] = Math.max(matrix[0][0], matrix[0][2]);
+        prev[2] = Math.max(matrix[0][0], matrix[0][1]);
+        prev[3] = Math.max(matrix[0][0], Math.max(matrix[0][1], matrix[0][2]));
+
+        // Iterate through the days starting from day 1
+        for (let day = 1; day &lt; n; day++) {
+            /* Initialize a temporary array to store the 
+            maximum points for the current day&#x27;s activities*/
+            let temp = [0, 0, 0, 0];
+
+            for (let last = 0; last &lt; 4; last++) {
+                temp[last] = 0;
+                // Iterate through the tasks for the current day
+                for (let task = 0; task &lt;= 2; task++) {
+                    if (task !== last) {
+                        /* Calculate the points for the current activity
+                        and add it to the maximum points obtained on
+                        the previous day*/
+                        temp[last] = Math.max(temp[last], matrix[day][task] + prev[task]);
+                    }
+                }
+            }
+
+            // Update prev with maximum points for the current day
+            prev = temp;
+        }
+
+        /* The maximum points for the last day with 
+        any activity can be found in prev[3]*/
+        return prev[3];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to calculate the maximum
+    points for the ninja training&quot;&quot;&quot;
+    def ninjaTraining(self, matrix):
+        n = len(matrix)
+
+        &quot;&quot;&quot; Initialize an array to store the maximum
+        points for the previous day&#x27;s activities&quot;&quot;&quot;
+        prev = [0] * 4
+
+        # Initialize the prev array for the first day (day 0)
+        prev[0] = max(matrix[0][1], matrix[0][2])
+        prev[1] = max(matrix[0][0], matrix[0][2])
+        prev[2] = max(matrix[0][0], matrix[0][1])
+        prev[3] = max(matrix[0][0], max(matrix[0][1], matrix[0][2]))
+
+        # Iterate through the days starting from day 1
+        for day in range(1, n):
+            &quot;&quot;&quot; Initialize a temporary array to store the 
+            maximum points for the current day&#x27;s activities&quot;&quot;&quot;
+            temp = [0] * 4
+
+            for last in range(4):
+                temp[last] = 0
+                # Iterate through the tasks for the current day
+                for task in range(3):
+                    if task != last:
+                        &quot;&quot;&quot; Calculate the points for the current activity
+                        and add it to the maximum points obtained on 
+                        the previous day&quot;&quot;&quot;
+                        temp[last] = max(temp[last], matrix[day][task] + prev[task])
+
+            # Update prev with maximum points for the current day
+            prev = temp
+
+        &quot;&quot;&quot; The maximum points for the last day with 
+        any activity can be found in prev[3]&quot;&quot;&quot;
+        return prev[3]</code></pre></div>
+</body>
+</html>

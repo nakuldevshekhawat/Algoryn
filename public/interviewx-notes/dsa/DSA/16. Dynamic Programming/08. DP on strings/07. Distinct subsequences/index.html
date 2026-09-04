@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distinct subsequences</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Distinct subsequences</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span><span>String</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given two strings s and t, return the number of distinct subsequences of s that equal t.</p><p><br></p><p>A subsequence of a string is a new string generated from the original string with some characters (can be none) deleted without changing the relative order of the remaining characters. For example, "ace" is a subsequence of "abcde" while "aec" is not.</p><p><br></p><p>The task is to count how many different ways we can form t from s by deleting some (or no) characters from s. Return the result modulo 10<sup>9</sup>+7.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= s.length, t.length <= 1000</li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: s = "axbxax", t = "axa"</p><p><br></p><p>Output: 2</p><p><br></p><p>Explanation: In the string "axbxax", there are two distinct subsequences "axa":</p><p><br></p><p>(a)(x)bx(a)x</p><p>(a)xb(x)(a)x</p><h3>Example 2</h3><p>Input: s = "babgbag", t = "bag"</p><p><br></p><p>Output: 5</p><p><br></p><p>Explanation: In the string "babgbag", there are five distinct subsequences "bag":</p><p><br></p><p>(ba)(b)(ga)(g)</p><p>(ba)(bg)(ag)</p><p>(bab)(ga)(g)</p><p>(bab)(g)(ag)</p><p>(babg)(a)(g)</p><h3>Example 3</h3><p>Input: s = "abcde", t = "ace"</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem concept is actually widely used in the field of Natural Language Processing (NLP), a subfield of artificial intelligence. In particular, it can be utilized in applications like text completion, correction, and even autocomplete. When processing user input, the software can compute possible subsequences from a pre-defined dictionary of words and phrases, and provide autocorrect or autocomplete suggestions that match the user's typed string, improving the user's experience by reducing the effort required to type long or complex phrases.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<p>We have to find distinct subsequences of 's' in 't'. As there is no uniformity in data, there is no other way to find out than to try out all possible ways. To do so we will need to use recursion.</p>
+
+<h5><strong>Steps to form the recursive solution: </h5></strong>
+<ol>
+<li><b>Express the problem in terms of indexes: </b>We are given two strings. We can represent them with the help of two indexes i and j. Initially, i=n-1 and j=m-1, where n and m are lengths of strings s and t Initially, we will call f(n-1,j-1), which means the count of all subsequences of string s[0…m-1] in string t[0…n-1]. We can generalize it as, f(i, j) gives the count of all distinct subsequences of t[form index 0 to j-1] in the string s[form index 0 to i-1].</li>
+
+<li><b>Try out all possible choices at a given index: </b>Now, i and j represent two characters from strings s and t respectively. We want to find distinct subsequences. There are only two options that make sense: either the characters represented by i and j match or they don’t.</li>
+
+<p><b>(Case 1)When the characters match: </b>If(s[i] == t[j]), let’s understand it with the following example:</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-fgUT8NoR">
+
+<p>s[i] == t[j], now as the characters at i and j match, we would want to check the possibility of the remaining characters of str2 in str1 therefore we reduce the length of both the strings by 1 and call the function recursively.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-IKpqVzj3">
+
+<p>Now, if we only make the above single recursive call, we are rejecting the opportunities to find more than one subsequences because it can happen that the jth character may match with more characters in s[0…i-1], for example where there are more occurrences of ‘g’ in str1 from which also an answer needs to be explored.</p>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-8P8YB7xM">
+<p>To explore all such possibilities, we make another recursive call in which we reduce the length of the s string by 1 but keep the t string the same, i.e we call f(i-1,j).</p>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-HhTvkmap">
+
+<p><b>(Case 2) When the characters don’t match: </b>If(s[i] != t[j]), it means that we don’t have any other choice than to try the next character of s and match it with the current character t.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-U2dHoJOb">
+
+<p></strong>This can be summarized as :</strong></p>
+<ol>
+<li>If(s[i] == t[j]), call f(i-1,j-1) and f(i-1,j).
+<li>If(s[i]! = t[j]), call f(i-1,j).</li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode and it is not related 
+to any specific programming language */
+f(i, j){
+    if(s[i] == t[j]){
+        return f(i-1, j-1) + f(i-1, j)
+    }
+     else
+        return f(i-1, j)
+}</code></pre></div></div></div>
+</ol>
+<li><b>Return the sum of choices: </b>As we have to return the total count, we will return the sum of f(i-1,j-1) and f(i-1,j) in case 1 and simply return f(i-1,j) in case 2. </li>
+
+<li><b>Base Cases: </b>We are reducing i and j in our recursive relation, there can be two possibilities, either i becomes -1 or j becomes -1.</li>
+<ol>
+<li> If j<0, it means we have matched all characters of s with characters of t, so we return 1.</li>
+<li>If i<0, it means we have checked all characters of 's' but we are not able to match all characters of 't', therefore we return 0.</li></ol></ol><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:	
+    const int prime = 1e9 + 7;
+    int countUtil(string s1, string s2, int ind1, int ind2) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 < 0)
+            return 1;
+    
+        /* If s1 has been completely traversed
+        but s2 hasn't, return 0*/
+        if (ind1 < 0)
+            return 0;
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] == s2[ind2]) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don't match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2);
+        }
+
+        // Return the result
+        return result;
+    }
+public:
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+	int distinctSubsequences(string s, string t){
+		int lt = s.size();
+		int ls = t.size();
+        return countUtil(s, t, lt - 1, ls - 1);
+	}
+};
+int main() {
+    string s1 = "babgbag";
+    string s2 = "bag";
+    
+    //Create an instace of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Count of Distinct Subsequences is " << sol.distinctSubsequences(s1, s2);
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private static final int prime = (int)(1e9 + 7);
+    /* Function to count the number of 
+    distinct subsequences of s2 in s1*/
+    private int countUtil(String s1, String s2, int ind1, int ind2) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 < 0)
+            return 1;
+            
+        /* If s1 has been completely traversed
+        but s2 hasn't, return 0*/
+        if (ind1 < 0)
+            return 0;
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1.charAt(ind1) == s2.charAt(ind2)) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don't match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2);
+        }
+        // Return the result
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int lt = s.length();
+        int ls = t.length();
+        return countUtil(s, t, lt - 1, ls - 1);
+    }
+
+    public static void main(String[] args) {
+        String s1 = "babgbag";
+        String s2 = "bag";
+
+        //Create an instace of Solution class
+        Solution sol = new Solution();
+        
+        // Print the result
+        System.out.println("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    prime = 10**9 + 7
+    """ Function to count the number of 
+    distinct subsequences of s2 in s1"""
+    def countUtil(self, s1, s2, ind1, ind2):
+        """ If s2 has been completely matched,
+        return 1 (found a valid subsequence)"""
+        if ind2 < 0:
+            return 1
+            
+        """ If the result for this state has
+        already been calculated, return it"""
+        if ind1 < 0:
+            return 0
+
+        result = 0
+        
+        """ If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2"""
+        if s1[ind1] == s2[ind2]:
+            leaveOne = self.countUtil(s1, s2, ind1 - 1, ind2 - 1)
+            stay = self.countUtil(s1, s2, ind1 - 1, ind2)
+
+            result = (leaveOne + stay) % self.prime
+        else:
+            """ If characters don't match, just leave
+            one character in s1 and continue matching s2"""
+            result = self.countUtil(s1, s2, ind1 - 1, ind2)
+        
+        # Return the result
+        return result
+    
+    """ Function to count the number of
+    distinct subsequences of s in t"""
+    def distinctSubsequences(self, s, t):
+        lt = len(s)
+        ls = len(t)
+        return self.countUtil(s, t, lt - 1, ls - 1)
+
+s1 = "babgbag"
+s2 = "bag"
+
+#Create an instace of Solution class
+sol = Solution()
+
+# Print the result
+print(f"The Count of Distinct Subsequences is {sol.distinctSubsequences(s1, s2)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+    countUtil(s1, s2, ind1, ind2) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 < 0) return 1;
+        
+        /* If s1 has been completely traversed
+        but s2 hasn't, return 0*/
+        if (ind1 < 0) return 0;
+
+        let result = 0;
+        
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] === s2[ind2]) {
+            let leaveOne = this.countUtil(s1, s2, ind1 - 1, ind2 - 1);
+            let stay = this.countUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % this.prime;
+        } else {
+            /* If characters don't match, just leave
+            one character in s1 and continue matching s2*/
+            result = this.countUtil(s1, s2, ind1 - 1, ind2);
+        }
+        // Return the result
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let lt = s.length;
+        let ls = t.length;
+        return this.countUtil(s, t, lt - 1, ls - 1);
+    }
+}
+
+let s1 = "babgbag";
+let s2 = "bag";
+
+//Create an instace of Solution class
+let sol = new Solution();
+
+// Print the result
+console.log("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    private const int prime = 1000000007;
+
+    private int CountUtil(string s1, string s2, int ind1, int ind2)
+    {
+        /* If s2 has been completely matched,
+           return 1 (found a valid subsequence) */
+        if (ind2 < 0)
+            return 1;
+
+        /* If s1 has been completely traversed
+           but s2 hasn't, return 0 */
+        if (ind1 < 0)
+            return 0;
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+           either leave one character in s1 and s2 or leave 
+           one character in s1 and continue matching s2 */
+        if (s1[ind1] == s2[ind2])
+        {
+            int leaveOne = CountUtil(s1, s2, ind1 - 1, ind2 - 1);
+            int stay     = CountUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % prime;
+        }
+        else
+        {
+            /* If characters don't match, just leave
+               one character in s1 and continue matching s2 */
+            result = CountUtil(s1, s2, ind1 - 1, ind2);
+        }
+
+        // Return the result
+        return result;
+    }
+
+    /* Function to count the number of
+       distinct subsequences of t in s */
+    public int DistinctSubsequences(string s, string t)
+    {
+        int lt = s.Length;
+        int ls = t.Length;
+        return CountUtil(s, t, lt - 1, ls - 1);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        string s1 = "babgbag";
+        string s2 = "bag";
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Count of Distinct Subsequences is " 
+            + sol.DistinctSubsequences(s1, s2));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+const prime = 1000000007  
+
+func countUtil(s1, s2 string, ind1, ind2 int) int {
+    /* If s2 has been completely matched,
+    return 1 (found a valid subsequence)*/
+    if ind2 < 0 {
+        return 1
+    }
+
+    /* If s1 has been completely traversed
+    but s2 hasn't, return 0*/
+    if ind1 < 0 {
+        return 0
+    }
+
+    result := 0
+
+    /* If the characters match, consider two options:
+    either leave one character in s1 and s2 or leave 
+    one character in s1 and continue matching s2*/
+    if s1[ind1] == s2[ind2] {
+        leaveOne := countUtil(s1, s2, ind1-1, ind2-1)
+        stay     := countUtil(s1, s2, ind1-1, ind2)
+
+        result = (leaveOne + stay) % prime
+    } else {
+        /* If characters don't match, just leave
+        one character in s1 and continue matching s2*/
+        result = countUtil(s1, s2, ind1-1, ind2)
+    }
+
+    // Return the result
+    return result
+}
+
+/* Function to count the number of
+distinct subsequences of s in t*/
+func DistinctSubsequences(s, t string) int {
+    return countUtil(s, t, len(s)-1, len(t)-1)
+}
+
+func main() {
+    s1 := "babgbag"
+    s2 := "bag"
+
+    // Print the result
+    fmt.Printf("The Count of Distinct Subsequences is %d\n",
+        DistinctSubsequences(s1, s2))
+}
+
+</code></pre></div></div></div>
+
+
+
+<h3><strong>Complexity Analysis:</h3></strong>
+<strong>Time Complexity:  </strong>Exponential <br><br>
+
+<strong>Space Complexity: </strong>O(N+M), We are using a recursion stack space (O(N+M)).</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-hh4x6M82"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][m]: </b>where n and m are the lengths of 's' and 't' respectively. As there are two changing parameters in the recursive solution,  'i' and 'j'. The maximum value 'i' can attain is (n-1) and 'j' can attain maximum value of (m-1). Therefore, we need 2D dp array. </li>
+<p>The dp array shows the calculations of the subproblems, initialize it with -1 to show that no subproblem is solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+
+
+
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:	
+    const int prime = 1e9 + 7;
+    int countUtil(string s1, string s2, int ind1, int ind2, vector<vector<int>>& dp) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 < 0)
+            return 1;
+    
+        /* If s1 has been completely traversed
+        but s2 hasn't, return 0*/
+        if (ind1 < 0)
+            return 0;
+
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1][ind2] != -1)
+            return dp[ind1][ind2];
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] == s2[ind2]) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don't match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+
+        // Store the result and return it
+        dp[ind1][ind2] = result;
+        return result;
+    }
+public:
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+	int distinctSubsequences(string s, string t){
+		int lt = s.size();
+		int ls = t.size();
+	    vector<vector<int>> dp(lt, vector<int>(ls, -1));
+        return countUtil(s, t, lt - 1, ls - 1, dp);
+	}
+};
+int main() {
+    string s1 = "babgbag";
+    string s2 = "bag";
+    
+    //Create an instace of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Count of Distinct Subsequences is " << sol.distinctSubsequences(s1, s2);
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private static final int prime = (int)(1e9 + 7);
+    /* Function to count the number of 
+    distinct subsequences of s2 in s1*/
+    private int countUtil(String s1, String s2, int ind1, int ind2, int[][] dp) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 < 0)
+            return 1;
+            
+        /* If s1 has been completely traversed
+        but s2 hasn't, return 0*/
+        if (ind1 < 0)
+            return 0;
+            
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1][ind2] != -1)
+            return dp[ind1][ind2];
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1.charAt(ind1) == s2.charAt(ind2)) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don't match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+        // Store the result and return it
+        dp[ind1][ind2] = result;
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int lt = s.length();
+        int ls = t.length();
+        int[][] dp = new int[lt][ls];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+        return countUtil(s, t, lt - 1, ls - 1, dp);
+    }
+
+    public static void main(String[] args) {
+        String s1 = "babgbag";
+        String s2 = "bag";
+
+        //Create an instace of Solution class
+        Solution sol = new Solution();
+        
+        // Print the result
+        System.out.println("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    prime = 10**9 + 7
+    """ Function to count the number of 
+    distinct subsequences of s2 in s1"""
+    def countUtil(self, s1, s2, ind1, ind2, dp):
+        """ If s2 has been completely matched,
+        return 1 (found a valid subsequence)"""
+        if ind2 < 0:
+            return 1
+            
+        """ If the result for this state has
+        already been calculated, return it"""
+        if ind1 < 0:
+            return 0
+            
+        """ If the result for this state has
+        already been calculated, return it"""
+        if dp[ind1][ind2] != -1:
+            return dp[ind1][ind2]
+
+        result = 0
+        
+        """ If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2"""
+        if s1[ind1] == s2[ind2]:
+            leaveOne = self.countUtil(s1, s2, ind1 - 1, ind2 - 1, dp)
+            stay = self.countUtil(s1, s2, ind1 - 1, ind2, dp)
+
+            result = (leaveOne + stay) % self.prime
+        else:
+            """ If characters don't match, just leave
+            one character in s1 and continue matching s2"""
+            result = self.countUtil(s1, s2, ind1 - 1, ind2, dp)
+        
+        # Store the result and return it
+        dp[ind1][ind2] = result
+        return result
+    
+    """ Function to count the number of
+    distinct subsequences of s in t"""
+    def distinctSubsequences(self, s, t):
+        lt = len(s)
+        ls = len(t)
+        dp = [[-1] * ls for _ in range(lt)]
+        return self.countUtil(s, t, lt - 1, ls - 1, dp)
+
+s1 = "babgbag"
+s2 = "bag"
+
+#Create an instace of Solution class
+sol = Solution()
+
+# Print the result
+print(f"The Count of Distinct Subsequences is {sol.distinctSubsequences(s1, s2)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+    countUtil(s1, s2, ind1, ind2, dp) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 < 0) return 1;
+        
+        /* If s1 has been completely traversed
+        but s2 hasn't, return 0*/
+        if (ind1 < 0) return 0;
+        
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1][ind2] !== -1) return dp[ind1][ind2];
+
+        let result = 0;
+        
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] === s2[ind2]) {
+            let leaveOne = this.countUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            let stay = this.countUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % this.prime;
+        } else {
+            /* If characters don't match, just leave
+            one character in s1 and continue matching s2*/
+            result = this.countUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+        // Store the result and return it
+        dp[ind1][ind2] = result;
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let lt = s.length;
+        let ls = t.length;
+        let dp = Array.from({ length: lt }, () => Array(ls).fill(-1));
+        return this.countUtil(s, t, lt - 1, ls - 1, dp);
+    }
+}
+
+let s1 = "babgbag";
+let s2 = "bag";
+
+//Create an instace of Solution class
+let sol = new Solution();
+
+// Print the result
+console.log("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        string s1 = "babgbag";
+        string s2 = "bag";
+
+        Solution sol = new Solution();
+
+        Console.WriteLine("The Count of Distinct Subsequences is " + sol.DistinctSubsequences(s1, s2));
+    }
+}
+
+public class Solution
+{
+    private const int prime = 1000000007;
+
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+    private int CountUtil(string s1, string s2, int ind1, int ind2, int[,] dp)
+    {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 < 0) return 1;
+
+        /* If s1 has been completely traversed
+        but s2 hasn't, return 0*/
+        if (ind1 < 0) return 0;
+
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1, ind2] != -1) return dp[ind1, ind2];
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] == s2[ind2])
+        {
+            int leaveOne = CountUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            int stay = CountUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % prime;
+        }
+        else
+        {
+            /* If characters don't match, just leave
+            one character in s1 and continue matching s2*/
+            result = CountUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+        // Store the result and return it
+        dp[ind1, ind2] = result;
+        return result;
+    }
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int DistinctSubsequences(string s, string t)
+    {
+        int lt = s.Length;
+        int ls = t.Length;
+        int[,] dp = new int[lt, ls];
+
+        // Initialize dp array with -1
+        for (int i = 0; i < lt; i++)
+        {
+            for (int j = 0; j < ls; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+        return CountUtil(s, t, lt - 1, ls - 1, dp);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+const prime = 1000000007
+
+// Helper function to calculate the number of distinct subsequences using memoization
+func countUtil(s1, s2 string, ind1, ind2 int, dp [][]int) int {
+	/* If s2 has been completely matched,
+	   return 1 (found a valid subsequence) */
+	if ind2 < 0 {
+		return 1
+	}
+
+	/* If s1 has been completely traversed
+	   but s2 hasn't, return 0 */
+	if ind1 < 0 {
+		return 0
+	}
+
+	/* If the result for this state has
+	   already been calculated, return it */
+	if dp[ind1][ind2] != -1 {
+		return dp[ind1][ind2]
+	}
+
+	result := 0
+
+	/* If the characters match, consider two options:
+	   either leave one character in s1 and s2 or leave
+	   one character in s1 and continue matching s2 */
+	if s1[ind1] == s2[ind2] {
+		leaveOne := countUtil(s1, s2, ind1-1, ind2-1, dp)
+		stay := countUtil(s1, s2, ind1-1, ind2, dp)
+		result = (leaveOne + stay) % prime
+	} else {
+		/* If characters don't match, just leave
+		   one character in s1 and continue matching s2 */
+		result = countUtil(s1, s2, ind1-1, ind2, dp)
+	}
+
+	// Store the result and return it
+	dp[ind1][ind2] = result
+	return result
+}
+
+// Function to count the number of distinct subsequences of s in t
+func DistinctSubsequences(s string, t string) int {
+	lt := len(s)
+	ls := len(t)
+
+	// Create a 2D DP table initialized with -1
+	dp := make([][]int, lt)
+	for i := range dp {
+		dp[i] = make([]int, ls)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	return countUtil(s, t, lt-1, ls-1, dp)
+}
+
+func main() {
+	s1 := "babgbag"
+	s2 := "bag"
+
+	fmt.Println("The Count of Distinct Subsequences is", DistinctSubsequences(s1, s2))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:  </strong>O(N*M), Where N is the length of string 's' and M is the length of string 't'. As there are N*M states therefore at max ‘N*M’ new problems will be solved.<br><br>
+
+<strong>Space Complexity: </strong> O(N*M) + O(N+M), We are using a recursion stack space (O(N+M)) and a 2D array ( O(N*M)).</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li><b>Declare a dp array of size [n][m]: </b>where n and m are the lengths of 's' and 't' respectively. As there are two changing parameters in the recursive solution,  'i' and 'j'. The maximum value 'i' can attain is (n-1) and 'j' can attain maximum value of (m-1). Therefore, we need 2D dp array. </li>
+
+<li><b>Setting Base Cases in the Array: </b>In the recursive code, our base condition was when i < 0 or j < 0, but we can’t set the dp array’s index to -1. Therefore a hack for this issue is to shift every index by 1 towards the right.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-9nHp1IOA">
+
+<p>Therefore, we set the base condition (keep in mind 1-based indexing), we set the first column’s value as 1 and the first row as 1.</p>
+
+<li><b>Iterative Computation Using Loops: </b>Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. Instead of recursive calls, use the dp array itself to find the values of intermediate calculations.  Keeping in mind the shifting of indexes, as for example str1[ind1] will be converted to str1[ind1-1]. </li>
+
+<li><b>Returning the answer: </b>At last dp[n][m] will hold the solution after the completion of whole process, as we are doing the calculations in bottom-up manner.</li></ol><br>
+
+
+
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:	
+  const int prime = 1e9 + 7;
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+	int distinctSubsequences(string s, string t){
+        int n = s.size();
+        int m = t.size();
+		vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));
+
+        /* Initialize the first row: empty string s2
+        can be matched with any non-empty s1 in one way*/
+        for (int i = 0; i <= n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first column: 
+        s1 can't match any non-empty s2*/
+        for (int i = 1; i <= m; i++) {
+            dp[0][i] = 0;
+        }
+
+        // Fill in the DP array
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= m; j++) {
+                if (s[i - 1] == t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % prime;
+                } else {
+                    /* If the characters don't match, we can 
+                    only leave the current character in s*/
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+ 
+        /* The value at dp[n][m] contains
+        the count of distinct subsequences*/
+        return dp[n][m];
+	}
+};
+int main() {
+    string s1 = "babgbag";
+    string s2 = "bag";
+    
+    //Create an instace of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Count of Distinct Subsequences is " << sol.distinctSubsequences(s1, s2);
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    private static final int prime = (int)(1e9 + 7);
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int n = s.length();
+        int m = t.length();
+        
+        int[][] dp = new int[n + 1][m + 1];
+        
+        /* Initialize the first row: empty string t can
+        be matched with any non-empty s in one way*/
+        for (int i = 0; i <= n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first column:
+        s can't match any non-empty t*/
+        for (int i = 1; i <= m; i++) {
+            dp[0][i] = 0;
+        }
+        
+        // Fill in the DP array
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= m; j++) {
+                if (s.charAt(i - 1) == t.charAt(j - 1)) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % prime;
+                } else {
+                    /* If the characters don't match, we can
+                    only leave the current character in s*/
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+        /* The value at dp[n][m] contains
+        the count of distinct subsequences*/
+        return dp[n][m];
+    }
+
+    public static void main(String[] args) {
+        String s1 = "babgbag";
+        String s2 = "bag";
+
+        //Create an instace of Solution class
+        Solution sol = new Solution();
+        
+        // Print the result
+        System.out.println("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    prime = 10**9 + 7
+    
+    """ Function to count the number of
+    distinct subsequences of s in t"""
+    def distinctSubsequences(self, s, t):
+        n = len(s)
+        m = len(t)
+        dp = [[0] * (m + 1) for _ in range(n + 1)]
+
+        """ Initialize the first row: empty string t can 
+        be matched with any non-empty s in one way"""
+        for i in range(n + 1):
+            dp[i][0] = 1
+
+        """ Initialize the first column:
+        s can't match any non-empty t"""
+        for i in range(1, m + 1):
+            dp[0][i] = 0
+        
+        # Fill in the DP array
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                if s[i - 1] == t[j - 1]:
+                    """If the characters match, consider two options:
+                    either leave one character in s and t or leave
+                    one character in s and continue matching t"""
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % self.prime
+                else:
+                    """ If the characters don't match, we can 
+                    only leave the current character in s"""
+                    dp[i][j] = dp[i - 1][j]
+
+        """ The value at dp[n][m] contains 
+        the count of distinct subsequences"""
+        return dp[n][m]
+
+s1 = "babgbag"
+s2 = "bag"
+
+#Create an instace of Solution class
+sol = Solution()
+
+# Print the result
+print(f"The Count of Distinct Subsequences is {sol.distinctSubsequences(s1, s2)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let n = s.length;
+        let m = t.length;
+        let dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+
+        /* Initialize the first row: empty string t can 
+        be matched with any non-empty s in one way*/
+        for (let i = 0; i <= n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first column:
+        s can't match any non-empty t*/
+        for (let i = 1; i <= m; i++) {
+            dp[0][i] = 0;
+        }
+        // Fill in the DP array
+        for (let i = 1; i <= n; i++) {
+            for (let j = 1; j <= m; j++) {
+                if (s[i - 1] === t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave
+                    one character in s and continue matching t*/
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % this.prime;
+                } else {
+                    /* If the characters don't match, we can
+                    only leave the current character in s*/
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+
+        /* The value at dp[n][m] contains 
+        the count of distinct subsequences*/
+        return dp[n][m];
+
+    }
+}
+
+let s1 = "babgbag";
+let s2 = "bag";
+
+//Create an instace of Solution class
+let sol = new Solution();
+
+// Print the result
+console.log("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    private const int prime = 1000000007;
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int DistinctSubsequences(string s, string t)
+    {
+        int n = s.Length;
+        int m = t.Length;
+        int[,] dp = new int[n + 1, m + 1];
+
+        /* Initialize the first row: empty string t can 
+        be matched with any non-empty s in one way*/
+        for (int i = 0; i <= n; i++)
+        {
+            dp[i, 0] = 1;
+        }
+
+        /* Initialize the first column:
+        s can't match any non-empty t*/
+        for (int i = 1; i <= m; i++)
+        {
+            dp[0, i] = 0;
+        }
+        // Fill in the DP array
+        for (int i = 1; i <= n; i++)
+        {
+            for (int j = 1; j <= m; j++)
+            {
+                if (s[i - 1] == t[j - 1])
+                {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave
+                    one character in s and continue matching t*/
+                    dp[i, j] = (dp[i - 1, j - 1] + dp[i - 1, j]) % prime;
+                }
+                else
+                {
+                    /* If the characters don't match, we can
+                    only leave the current character in s*/
+                    dp[i, j] = dp[i - 1, j];
+                }
+            }
+        }
+
+        /* The value at dp[n][m] contains 
+        the count of distinct subsequences*/
+        return dp[n, m];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        string s1 = "babgbag";
+        string s2 = "bag";
+
+        //Create an instace of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        Console.WriteLine("The Count of Distinct Subsequences is " + sol.DistinctSubsequences(s1, s2));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+const prime = 1000000007
+
+// Function to count the number of distinct subsequences of t in s
+func DistinctSubsequences(s string, t string) int {
+	n := len(s)
+	m := len(t)
+
+	// Create a DP table with dimensions (n+1) x (m+1)
+	dp := make([][]int, n+1)
+	for i := range dp {
+		dp[i] = make([]int, m+1)
+	}
+
+	/* Initialize the first column: empty string t
+	   can be matched with any non-empty s in one way */
+	for i := 0; i <= n; i++ {
+		dp[i][0] = 1
+	}
+
+	/* Initialize the first row: s can't match any non-empty t */
+	for j := 1; j <= m; j++ {
+		dp[0][j] = 0
+	}
+
+	// Fill in the DP array
+	for i := 1; i <= n; i++ {
+		for j := 1; j <= m; j++ {
+			if s[i-1] == t[j-1] {
+				/* If the characters match, consider two options:
+				   either leave one character in s and t or leave
+				   one character in s and continue matching t */
+				dp[i][j] = (dp[i-1][j-1] + dp[i-1][j]) % prime
+			} else {
+				/* If the characters don't match, we can
+				   only leave the current character in s */
+				dp[i][j] = dp[i-1][j]
+			}
+		}
+	}
+
+	/* The value at dp[n][m] contains
+	   the count of distinct subsequences */
+	return dp[n][m]
+}
+
+func main() {
+	s1 := "babgbag"
+	s2 := "bag"
+
+	fmt.Println("The Count of Distinct Subsequences is", DistinctSubsequences(s1, s2))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:  </strong>O(N*M), Where N is the length of string 's' and M is the length of string 't'. As there are two nested loops used.<br><br>
+
+<strong>Space Complexity: </strong> O(N*M), We are using a 2D array ( O(N*M)).</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we observe the relation obtained in the tabulation approach, dp[i][j] =  dp[i-1][j-1] + dp[i-1][j]  or dp[i][j] = dp[i-1][j]. We see that to calculate a value of a cell of the dp array, we need only the previous row values (say prev). So, we don’t need to store an entire array. Hence we can space optimize it. We will be space-optimizing this solution using only one row.</p>
+
+<h5><strong>Understanding:</strong></h5>
+<p>If we see the values required, dp[i-1][j-1] and dp[i-1][j], we can say that if we are at a column j, we will only require the values shown in the grey box from the previous row and other values will be from the cur row itself. So we do not need to store an entire array for it.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Distinct subsequences/-ieClrP1E">
+
+<p>If we need only two values from the prev row, there is no need to store an entire row. We can work a bit smarter.</p>
+
+<p>We can use the cur row itself to store the required value in the following way:</p>
+<ol>
+<li>We take a single row ‘prev’ and initialize it to the base condition as prev[0] = 1.
+</li><li>Whenever we want to compute a value of the cell prev[j], we take the already existing value (prev[j] before </li><li>new computation) and prev[j-1] (if required, in case of character match).
+</li><li>We perform the above step on all the indexes as discussed in recursive approach.
+</li></ol><br>
+
+
+
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:	
+  const int prime = 1e9 + 7;
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+	int distinctSubsequences(string s, string t){
+        int n = s.size();
+        int m = t.size();
+		/* Declare an array to store the count of 
+		distinct subsequences for each character in t*/
+        vector<int> prev(m + 1, 0);
+
+        // Initialize the count for an empty string 
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (int i = 1; i <= n; i++) {
+            
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (int j = m; j >= 1; j--) { 
+                if (s[i - 1] == t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+	}
+};
+int main() {
+    string s1 = "babgbag";
+    string s2 = "bag";
+    
+    //Create an instace of Solution class
+    Solution sol;
+
+    // Print the result
+    cout << "The Count of Distinct Subsequences is " << sol.distinctSubsequences(s1, s2);
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.Arrays;
+
+class Solution {
+    private static final int prime = 1000000007;
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int n = s.length();
+        int m = t.length();
+        /* Declare an array to store the count of 
+        distinct subsequences for each character in t*/
+        int[] prev = new int[m + 1];
+
+        // Initialize the count for an empty string 
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (int i = 1; i <= n; i++) {
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (int j = m; j >= 1; j--) {
+                if (s.charAt(i - 1) == t.charAt(j - 1)) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+    }
+
+    public static void main(String[] args) {
+        String s1 = "babgbag";
+        String s2 = "bag";
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    prime = 10**9 + 7
+
+    """ Function to count the number of
+    distinct subsequences of s in t"""
+    def distinctSubsequences(self, s, t):
+        n = len(s)
+        m = len(t)
+        """ Declare an array to store the count of 
+        distinct subsequences for each character in s"""
+        prev = [0] * (m + 1)
+
+        # Initialize the count for an empty string (base case)
+        prev[0] = 1
+
+        # Iterate through s and t to calculate counts
+        for i in range(1, n + 1):
+            
+            """ Iterate in reverse direction to
+            avoid overwriting values prematurely"""
+            for j in range(m, 0, -1):
+                if s[i - 1] == t[j - 1]:
+                    """ If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t"""
+                    prev[j] = (prev[j - 1] + prev[j]) % self.prime
+                """ No need for an else statement since we
+                can simply leave the previous count as is"""
+
+        """ The value at prev[m] contains
+        the count of distinct subsequences"""
+        return prev[m]
+
+s1 = "babgbag"
+s2 = "bag"
+
+#Create an instance of Solution class
+sol = Solution()
+
+#Print the result
+print(f"The Count of Distinct Subsequences is {sol.distinctSubsequences(s1, s2)}")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let n = s.length;
+        let m = t.length;
+        /* Declare an array to store the count of 
+        distinct subsequences for each character in t*/
+        let prev = Array(m + 1).fill(0);
+
+        // Initialize the count for an empty string (base case)
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (let i = 1; i <= n; i++) {
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (let j = m; j >= 1; j--) {
+                if (s[i - 1] === t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % this.prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+    }
+}
+let s1 = "babgbag";
+let s2 = "bag";
+
+//Create an instance of Solution class
+let sol = new Solution();
+
+//Print the result
+console.log("The Count of Distinct Subsequences is " + sol.distinctSubsequences(s1, s2));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    private readonly int prime = 1000000007;
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int DistinctSubsequences(string s, string t)
+    {
+        int n = s.Length;
+        int m = t.Length;
+        /* Declare an array to store the count of 
+        distinct subsequences for each character in t*/
+        int[] prev = new int[m + 1];
+
+        // Initialize the count for an empty string (base case)
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (int i = 1; i <= n; i++)
+        {
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (int j = m; j >= 1; j--)
+            {
+                if (s[i - 1] == t[j - 1])
+                {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+    }
+
+    public static void Main(string[] args)
+    {
+        string s1 = "babgbag";
+        string s2 = "bag";
+
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        //Print the result
+        Console.WriteLine("The Count of Distinct Subsequences is " + sol.DistinctSubsequences(s1, s2));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+const prime = 1000000007
+
+// Function to count the number of distinct subsequences of t in s
+func DistinctSubsequences(s string, t string) int {
+	n := len(s)
+	m := len(t)
+
+	/* Declare an array to store the count of
+	   distinct subsequences for each character in t */
+	prev := make([]int, m+1)
+
+	// Initialize the count for an empty string
+	prev[0] = 1
+
+	// Iterate through s and t to calculate counts
+	for i := 1; i <= n; i++ {
+
+		/* Iterate in reverse direction to
+		   avoid overwriting values prematurely */
+		for j := m; j >= 1; j-- {
+			if s[i-1] == t[j-1] {
+				/* If the characters match, consider two options:
+				   either leave one character in s and t or leave
+				   one character in s and continue matching t */
+				prev[j] = (prev[j-1] + prev[j]) % prime
+			}
+			/* No need for an else statement since we
+			   can simply leave the previous count as is */
+		}
+	}
+
+	/* The value at prev[m] contains
+	   the count of distinct subsequences */
+	return prev[m]
+}
+
+func main() {
+	s1 := "babgbag"
+	s2 := "bag"
+
+	// Print the result
+	fmt.Println("The Count of Distinct Subsequences is", DistinctSubsequences(s1, s2))
+}
+</code></pre></div></div></div>
+
+
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:  </strong>O(N*M), Where N is the length of string 's' and M is the length of string 't'. As there are two nested loops used.<br><br>
+
+<strong>Space Complexity: </strong> O(M), We are using an external array of size ‘M+1’ to store only one row.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:    
+    const int prime = 1e9 + 7;
+    int countUtil(string s1, string s2, int ind1, int ind2) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 &lt; 0)
+            return 1;
+    
+        /* If s1 has been completely traversed
+        but s2 hasn&#x27;t, return 0*/
+        if (ind1 &lt; 0)
+            return 0;
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] == s2[ind2]) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2);
+        }
+
+        // Return the result
+        return result;
+    }
+public:
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    int distinctSubsequences(string s, string t){
+        int lt = s.size();
+        int ls = t.size();
+        return countUtil(s, t, lt - 1, ls - 1);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    private const int prime = 1000000007;
+
+    private int CountUtil(string s1, string s2, int ind1, int ind2)
+    {
+        /* If s2 has been completely matched,
+           return 1 (found a valid subsequence) */
+        if (ind2 &lt; 0)
+            return 1;
+
+        /* If s1 has been completely traversed
+           but s2 hasn&#x27;t, return 0 */
+        if (ind1 &lt; 0)
+            return 0;
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+           either leave one character in s1 and s2 or leave 
+           one character in s1 and continue matching s2 */
+        if (s1[ind1] == s2[ind2])
+        {
+            int leaveOne = CountUtil(s1, s2, ind1 - 1, ind2 - 1);
+            int stay     = CountUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % prime;
+        }
+        else
+        {
+            /* If characters don&#x27;t match, just leave
+               one character in s1 and continue matching s2 */
+            result = CountUtil(s1, s2, ind1 - 1, ind2);
+        }
+
+        // Return the result
+        return result;
+    }
+
+    /* Function to count the number of
+       distinct subsequences of t in s */
+    public int DistinctSubsequences(string s, string t)
+    {
+        int lt = s.Length;
+        int ls = t.Length;
+        return CountUtil(s, t, lt - 1, ls - 1);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const prime = 1000000007  
+
+func countUtil(s1, s2 string, ind1, ind2 int) int {
+    /* If s2 has been completely matched,
+    return 1 (found a valid subsequence)*/
+    if ind2 &lt; 0 {
+        return 1
+    }
+
+    /* If s1 has been completely traversed
+    but s2 hasn&#x27;t, return 0*/
+    if ind1 &lt; 0 {
+        return 0
+    }
+
+    result := 0
+
+    /* If the characters match, consider two options:
+    either leave one character in s1 and s2 or leave 
+    one character in s1 and continue matching s2*/
+    if s1[ind1] == s2[ind2] {
+        leaveOne := countUtil(s1, s2, ind1-1, ind2-1)
+        stay     := countUtil(s1, s2, ind1-1, ind2)
+
+        result = (leaveOne + stay) % prime
+    } else {
+        /* If characters don&#x27;t match, just leave
+        one character in s1 and continue matching s2*/
+        result = countUtil(s1, s2, ind1-1, ind2)
+    }
+
+    // Return the result
+    return result
+}
+
+/* Function to count the number of
+distinct subsequences of s in t*/
+func DistinctSubsequences(s, t string) int {
+    return countUtil(s, t, len(s)-1, len(t)-1)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    private static final int prime = (int)(1e9 + 7);
+    /* Function to count the number of 
+    distinct subsequences of s2 in s1*/
+    private int countUtil(String s1, String s2, int ind1, int ind2) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 &lt; 0)
+            return 1;
+            
+        /* If s1 has been completely traversed
+        but s2 hasn&#x27;t, return 0*/
+        if (ind1 &lt; 0)
+            return 0;
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1.charAt(ind1) == s2.charAt(ind2)) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2);
+        }
+        // Return the result
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int lt = s.length();
+        int ls = t.length();
+        return countUtil(s, t, lt - 1, ls - 1);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+    countUtil(s1, s2, ind1, ind2) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 &lt; 0) return 1;
+        
+        /* If s1 has been completely traversed
+        but s2 hasn&#x27;t, return 0*/
+        if (ind1 &lt; 0) return 0;
+
+        let result = 0;
+        
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] === s2[ind2]) {
+            let leaveOne = this.countUtil(s1, s2, ind1 - 1, ind2 - 1);
+            let stay = this.countUtil(s1, s2, ind1 - 1, ind2);
+
+            result = (leaveOne + stay) % this.prime;
+        } else {
+            /* If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2*/
+            result = this.countUtil(s1, s2, ind1 - 1, ind2);
+        }
+        // Return the result
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let lt = s.length;
+        let ls = t.length;
+        return this.countUtil(s, t, lt - 1, ls - 1);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    prime = 10**9 + 7
+    &quot;&quot;&quot; Function to count the number of 
+    distinct subsequences of s2 in s1&quot;&quot;&quot;
+    def countUtil(self, s1, s2, ind1, ind2):
+        &quot;&quot;&quot; If s2 has been completely matched,
+        return 1 (found a valid subsequence)&quot;&quot;&quot;
+        if ind2 &lt; 0:
+            return 1
+            
+        &quot;&quot;&quot; If the result for this state has
+        already been calculated, return it&quot;&quot;&quot;
+        if ind1 &lt; 0:
+            return 0
+
+        result = 0
+        
+        &quot;&quot;&quot; If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2&quot;&quot;&quot;
+        if s1[ind1] == s2[ind2]:
+            leaveOne = self.countUtil(s1, s2, ind1 - 1, ind2 - 1)
+            stay = self.countUtil(s1, s2, ind1 - 1, ind2)
+
+            result = (leaveOne + stay) % self.prime
+        else:
+            &quot;&quot;&quot; If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2&quot;&quot;&quot;
+            result = self.countUtil(s1, s2, ind1 - 1, ind2)
+        
+        # Return the result
+        return result
+    
+    &quot;&quot;&quot; Function to count the number of
+    distinct subsequences of s in t&quot;&quot;&quot;
+    def distinctSubsequences(self, s, t):
+        lt = len(s)
+        ls = len(t)
+        return self.countUtil(s, t, lt - 1, ls - 1)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:	
+    const int prime = 1e9 + 7;
+    int countUtil(string s1, string s2, int ind1, int ind2, vector&lt;vector&lt;int&gt;&gt;&amp; dp) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 &lt; 0)
+            return 1;
+    
+        /* If s1 has been completely traversed
+        but s2 hasn&#x27;t, return 0*/
+        if (ind1 &lt; 0)
+            return 0;
+
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1][ind2] != -1)
+            return dp[ind1][ind2];
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] == s2[ind2]) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+
+        // Store the result and return it
+        dp[ind1][ind2] = result;
+        return result;
+    }
+public:
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+	int distinctSubsequences(string s, string t){
+		int lt = s.size();
+		int ls = t.size();
+	    vector&lt;vector&lt;int&gt;&gt; dp(lt, vector&lt;int&gt;(ls, -1));
+        return countUtil(s, t, lt - 1, ls - 1, dp);
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    private const int prime = 1000000007;
+
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+    private int CountUtil(string s1, string s2, int ind1, int ind2, int[,] dp)
+    {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 &lt; 0) return 1;
+
+        /* If s1 has been completely traversed
+        but s2 hasn&#x27;t, return 0*/
+        if (ind1 &lt; 0) return 0;
+
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1, ind2] != -1) return dp[ind1, ind2];
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] == s2[ind2])
+        {
+            int leaveOne = CountUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            int stay = CountUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % prime;
+        }
+        else
+        {
+            /* If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2*/
+            result = CountUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+        // Store the result and return it
+        dp[ind1, ind2] = result;
+        return result;
+    }
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int DistinctSubsequences(string s, string t)
+    {
+        int lt = s.Length;
+        int ls = t.Length;
+        int[,] dp = new int[lt, ls];
+
+        // Initialize dp array with -1
+        for (int i = 0; i &lt; lt; i++)
+        {
+            for (int j = 0; j &lt; ls; j++)
+            {
+                dp[i, j] = -1;
+            }
+        }
+        return CountUtil(s, t, lt - 1, ls - 1, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const prime = 1000000007
+
+// Helper function to calculate the number of distinct subsequences using memoization
+func countUtil(s1, s2 string, ind1, ind2 int, dp [][]int) int {
+	/* If s2 has been completely matched,
+	   return 1 (found a valid subsequence) */
+	if ind2 &lt; 0 {
+		return 1
+	}
+
+	/* If s1 has been completely traversed
+	   but s2 hasn&#x27;t, return 0 */
+	if ind1 &lt; 0 {
+		return 0
+	}
+
+	/* If the result for this state has
+	   already been calculated, return it */
+	if dp[ind1][ind2] != -1 {
+		return dp[ind1][ind2]
+	}
+
+	result := 0
+
+	/* If the characters match, consider two options:
+	   either leave one character in s1 and s2 or leave
+	   one character in s1 and continue matching s2 */
+	if s1[ind1] == s2[ind2] {
+		leaveOne := countUtil(s1, s2, ind1-1, ind2-1, dp)
+		stay := countUtil(s1, s2, ind1-1, ind2, dp)
+		result = (leaveOne + stay) % prime
+	} else {
+		/* If characters don&#x27;t match, just leave
+		   one character in s1 and continue matching s2 */
+		result = countUtil(s1, s2, ind1-1, ind2, dp)
+	}
+
+	// Store the result and return it
+	dp[ind1][ind2] = result
+	return result
+}
+
+// Function to count the number of distinct subsequences of s in t
+func DistinctSubsequences(s string, t string) int {
+	lt := len(s)
+	ls := len(t)
+
+	// Create a 2D DP table initialized with -1
+	dp := make([][]int, lt)
+	for i := range dp {
+		dp[i] = make([]int, ls)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	return countUtil(s, t, lt-1, ls-1, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    private static final int prime = (int)(1e9 + 7);
+    /* Function to count the number of 
+    distinct subsequences of s2 in s1*/
+    private int countUtil(String s1, String s2, int ind1, int ind2, int[][] dp) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 &lt; 0)
+            return 1;
+            
+        /* If s1 has been completely traversed
+        but s2 hasn&#x27;t, return 0*/
+        if (ind1 &lt; 0)
+            return 0;
+            
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1][ind2] != -1)
+            return dp[ind1][ind2];
+
+        int result = 0;
+
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1.charAt(ind1) == s2.charAt(ind2)) {
+            int leaveOne = countUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            int stay = countUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % prime;
+        } else {
+            /* If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2*/
+            result = countUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+        // Store the result and return it
+        dp[ind1][ind2] = result;
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int lt = s.length();
+        int ls = t.length();
+        int[][] dp = new int[lt][ls];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+        return countUtil(s, t, lt - 1, ls - 1, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+    countUtil(s1, s2, ind1, ind2, dp) {
+        /* If s2 has been completely matched,
+        return 1 (found a valid subsequence)*/
+        if (ind2 &lt; 0) return 1;
+        
+        /* If s1 has been completely traversed
+        but s2 hasn&#x27;t, return 0*/
+        if (ind1 &lt; 0) return 0;
+        
+        /* If the result for this state has
+        already been calculated, return it*/
+        if (dp[ind1][ind2] !== -1) return dp[ind1][ind2];
+
+        let result = 0;
+        
+        /* If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2*/
+        if (s1[ind1] === s2[ind2]) {
+            let leaveOne = this.countUtil(s1, s2, ind1 - 1, ind2 - 1, dp);
+            let stay = this.countUtil(s1, s2, ind1 - 1, ind2, dp);
+
+            result = (leaveOne + stay) % this.prime;
+        } else {
+            /* If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2*/
+            result = this.countUtil(s1, s2, ind1 - 1, ind2, dp);
+        }
+        // Store the result and return it
+        dp[ind1][ind2] = result;
+        return result;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let lt = s.length;
+        let ls = t.length;
+        let dp = Array.from({ length: lt }, () =&gt; Array(ls).fill(-1));
+        return this.countUtil(s, t, lt - 1, ls - 1, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    prime = 10**9 + 7
+    &quot;&quot;&quot; Function to count the number of 
+    distinct subsequences of s2 in s1&quot;&quot;&quot;
+    def countUtil(self, s1, s2, ind1, ind2, dp):
+        &quot;&quot;&quot; If s2 has been completely matched,
+        return 1 (found a valid subsequence)&quot;&quot;&quot;
+        if ind2 &lt; 0:
+            return 1
+            
+        &quot;&quot;&quot; If the result for this state has
+        already been calculated, return it&quot;&quot;&quot;
+        if ind1 &lt; 0:
+            return 0
+            
+        &quot;&quot;&quot; If the result for this state has
+        already been calculated, return it&quot;&quot;&quot;
+        if dp[ind1][ind2] != -1:
+            return dp[ind1][ind2]
+
+        result = 0
+        
+        &quot;&quot;&quot; If the characters match, consider two options:
+        either leave one character in s1 and s2 or leave 
+        one character in s1 and continue matching s2&quot;&quot;&quot;
+        if s1[ind1] == s2[ind2]:
+            leaveOne = self.countUtil(s1, s2, ind1 - 1, ind2 - 1, dp)
+            stay = self.countUtil(s1, s2, ind1 - 1, ind2, dp)
+
+            result = (leaveOne + stay) % self.prime
+        else:
+            &quot;&quot;&quot; If characters don&#x27;t match, just leave
+            one character in s1 and continue matching s2&quot;&quot;&quot;
+            result = self.countUtil(s1, s2, ind1 - 1, ind2, dp)
+        
+        # Store the result and return it
+        dp[ind1][ind2] = result
+        return result
+    
+    &quot;&quot;&quot; Function to count the number of
+    distinct subsequences of s in t&quot;&quot;&quot;
+    def distinctSubsequences(self, s, t):
+        lt = len(s)
+        ls = len(t)
+        dp = [[-1] * ls for _ in range(lt)]
+        return self.countUtil(s, t, lt - 1, ls - 1, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:	
+  const int prime = 1e9 + 7;
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+	int distinctSubsequences(string s, string t){
+        int n = s.size();
+        int m = t.size();
+		vector&lt;vector&lt;int&gt;&gt; dp(n + 1, vector&lt;int&gt;(m + 1, 0));
+
+        /* Initialize the first row: empty string s2
+        can be matched with any non-empty s1 in one way*/
+        for (int i = 0; i &lt;= n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first column: 
+        s1 can&#x27;t match any non-empty s2*/
+        for (int i = 1; i &lt;= m; i++) {
+            dp[0][i] = 0;
+        }
+
+        // Fill in the DP array
+        for (int i = 1; i &lt;= n; i++) {
+            for (int j = 1; j &lt;= m; j++) {
+                if (s[i - 1] == t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % prime;
+                } else {
+                    /* If the characters don&#x27;t match, we can 
+                    only leave the current character in s*/
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+ 
+        /* The value at dp[n][m] contains
+        the count of distinct subsequences*/
+        return dp[n][m];
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    private const int prime = 1000000007;
+
+    public int DistinctSubsequences(string s, string t)
+    {
+        int n = s.Length;
+        int m = t.Length;
+        int[,] dp = new int[n + 1, m + 1];
+
+        /* Initialize the first row: empty string t can 
+        be matched with any non-empty s in one way*/
+        for (int i = 0; i &lt;= n; i++)
+        {
+            dp[i, 0] = 1;
+        }
+
+        /* Initialize the first column:
+        s can&#x27;t match any non-empty t*/
+        for (int i = 1; i &lt;= m; i++)
+        {
+            dp[0, i] = 0;
+        }
+        // Fill in the DP array
+        for (int i = 1; i &lt;= n; i++)
+        {
+            for (int j = 1; j &lt;= m; j++)
+            {
+                if (s[i - 1] == t[j - 1])
+                {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave
+                    one character in s and continue matching t*/
+                    dp[i, j] = (dp[i - 1, j - 1] + dp[i - 1, j]) % prime;
+                }
+                else
+                {
+                    /* If the characters don&#x27;t match, we can
+                    only leave the current character in s*/
+                    dp[i, j] = dp[i - 1, j];
+                }
+            }
+        }
+
+        /* The value at dp[n][m] contains 
+        the count of distinct subsequences*/
+        return dp[n, m];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const prime = 1000000007
+
+// Function to count the number of distinct subsequences of t in s
+func DistinctSubsequences(s string, t string) int {
+	n := len(s)
+	m := len(t)
+
+	// Create a DP table with dimensions (n+1) x (m+1)
+	dp := make([][]int, n+1)
+	for i := range dp {
+		dp[i] = make([]int, m+1)
+	}
+
+	/* Initialize the first column: empty string t
+	   can be matched with any non-empty s in one way */
+	for i := 0; i &lt;= n; i++ {
+		dp[i][0] = 1
+	}
+
+	/* Initialize the first row: s can&#x27;t match any non-empty t */
+	for j := 1; j &lt;= m; j++ {
+		dp[0][j] = 0
+	}
+
+	// Fill in the DP array
+	for i := 1; i &lt;= n; i++ {
+		for j := 1; j &lt;= m; j++ {
+			if s[i-1] == t[j-1] {
+				/* If the characters match, consider two options:
+				   either leave one character in s and t or leave
+				   one character in s and continue matching t */
+				dp[i][j] = (dp[i-1][j-1] + dp[i-1][j]) % prime
+			} else {
+				/* If the characters don&#x27;t match, we can
+				   only leave the current character in s */
+				dp[i][j] = dp[i-1][j]
+			}
+		}
+	}
+
+	/* The value at dp[n][m] contains
+	   the count of distinct subsequences */
+	return dp[n][m]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    private static final int prime = (int)(1e9 + 7);
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int n = s.length();
+        int m = t.length();
+        
+        int[][] dp = new int[n + 1][m + 1];
+        
+        /* Initialize the first row: empty string t can
+        be matched with any non-empty s in one way*/
+        for (int i = 0; i &lt;= n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first column:
+        s can&#x27;t match any non-empty t*/
+        for (int i = 1; i &lt;= m; i++) {
+            dp[0][i] = 0;
+        }
+        
+        // Fill in the DP array
+        for (int i = 1; i &lt;= n; i++) {
+            for (int j = 1; j &lt;= m; j++) {
+                if (s.charAt(i - 1) == t.charAt(j - 1)) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % prime;
+                } else {
+                    /* If the characters don&#x27;t match, we can
+                    only leave the current character in s*/
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+        /* The value at dp[n][m] contains
+        the count of distinct subsequences*/
+        return dp[n][m];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let n = s.length;
+        let m = t.length;
+        let dp = Array.from({ length: n + 1 }, () =&gt; Array(m + 1).fill(0));
+
+        /* Initialize the first row: empty string t can 
+        be matched with any non-empty s in one way*/
+        for (let i = 0; i &lt;= n; i++) {
+            dp[i][0] = 1;
+        }
+
+        /* Initialize the first column:
+        s can&#x27;t match any non-empty t*/
+        for (let i = 1; i &lt;= m; i++) {
+            dp[0][i] = 0;
+        }
+        // Fill in the DP array
+        for (let i = 1; i &lt;= n; i++) {
+            for (let j = 1; j &lt;= m; j++) {
+                if (s[i - 1] === t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave
+                    one character in s and continue matching t*/
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % this.prime;
+                } else {
+                    /* If the characters don&#x27;t match, we can
+                    only leave the current character in s*/
+                    dp[i][j] = dp[i - 1][j];
+                }
+            }
+        }
+
+        /* The value at dp[n][m] contains 
+        the count of distinct subsequences*/
+        return dp[n][m];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    prime = 10**9 + 7
+    
+    &quot;&quot;&quot; Function to count the number of
+    distinct subsequences of s in t&quot;&quot;&quot;
+    def distinctSubsequences(self, s, t):
+        n = len(s)
+        m = len(t)
+        dp = [[0] * (m + 1) for _ in range(n + 1)]
+
+        &quot;&quot;&quot; Initialize the first row: empty string t can 
+        be matched with any non-empty s in one way&quot;&quot;&quot;
+        for i in range(n + 1):
+            dp[i][0] = 1
+
+        &quot;&quot;&quot; Initialize the first column:
+        s can&#x27;t match any non-empty t&quot;&quot;&quot;
+        for i in range(1, m + 1):
+            dp[0][i] = 0
+        
+        # Fill in the DP array
+        for i in range(1, n + 1):
+            for j in range(1, m + 1):
+                if s[i - 1] == t[j - 1]:
+                    &quot;&quot;&quot;If the characters match, consider two options:
+                    either leave one character in s and t or leave
+                    one character in s and continue matching t&quot;&quot;&quot;
+                    dp[i][j] = (dp[i - 1][j - 1] + dp[i - 1][j]) % self.prime
+                else:
+                    &quot;&quot;&quot; If the characters don&#x27;t match, we can 
+                    only leave the current character in s&quot;&quot;&quot;
+                    dp[i][j] = dp[i - 1][j]
+
+        &quot;&quot;&quot; The value at dp[n][m] contains 
+        the count of distinct subsequences&quot;&quot;&quot;
+        return dp[n][m]</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:	
+    const int prime = 1e9 + 7;
+    /* Function to count the number of
+    distinct subsequences of s2 in s1*/
+	int distinctSubsequences(string s, string t){
+        int n = s.size();
+        int m = t.size();
+		/* Declare an array to store the count of 
+		distinct subsequences for each character in t*/
+        vector&lt;int&gt; prev(m + 1, 0);
+
+        // Initialize the count for an empty string 
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (int i = 1; i &lt;= n; i++) {
+            
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (int j = m; j &gt;= 1; j--) { 
+                if (s[i - 1] == t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+	}
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    private readonly int prime = 1000000007;
+
+    public int DistinctSubsequences(string s, string t)
+    {
+        int n = s.Length;
+        int m = t.Length;
+        /* Declare an array to store the count of 
+        distinct subsequences for each character in t*/
+        int[] prev = new int[m + 1];
+
+        // Initialize the count for an empty string (base case)
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (int i = 1; i &lt;= n; i++)
+        {
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (int j = m; j &gt;= 1; j--)
+            {
+                if (s[i - 1] == t[j - 1])
+                {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const prime = 1000000007
+
+// Function to count the number of distinct subsequences of t in s
+func DistinctSubsequences(s string, t string) int {
+	n := len(s)
+	m := len(t)
+
+	/* Declare an array to store the count of
+	   distinct subsequences for each character in t */
+	prev := make([]int, m+1)
+
+	// Initialize the count for an empty string
+	prev[0] = 1
+
+	// Iterate through s and t to calculate counts
+	for i := 1; i &lt;= n; i++ {
+
+		/* Iterate in reverse direction to
+		   avoid overwriting values prematurely */
+		for j := m; j &gt;= 1; j-- {
+			if s[i-1] == t[j-1] {
+				/* If the characters match, consider two options:
+				   either leave one character in s and t or leave
+				   one character in s and continue matching t */
+				prev[j] = (prev[j-1] + prev[j]) % prime
+			}
+			/* No need for an else statement since we
+			   can simply leave the previous count as is */
+		}
+	}
+
+	/* The value at prev[m] contains
+	   the count of distinct subsequences */
+	return prev[m]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    private static final int prime = 1000000007;
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    public int distinctSubsequences(String s, String t) {
+        int n = s.length();
+        int m = t.length();
+        /* Declare an array to store the count of 
+        distinct subsequences for each character in t*/
+        int[] prev = new int[m + 1];
+
+        // Initialize the count for an empty string 
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (int i = 1; i &lt;= n; i++) {
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (int j = m; j &gt;= 1; j--) {
+                if (s.charAt(i - 1) == t.charAt(j - 1)) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    constructor() {
+        this.prime = 1000000007;
+    }
+
+    /* Function to count the number of
+    distinct subsequences of s in t*/
+    distinctSubsequences(s, t) {
+        let n = s.length;
+        let m = t.length;
+        /* Declare an array to store the count of 
+        distinct subsequences for each character in t*/
+        let prev = Array(m + 1).fill(0);
+
+        // Initialize the count for an empty string (base case)
+        prev[0] = 1;
+
+        // Iterate through s and t to calculate counts
+        for (let i = 1; i &lt;= n; i++) {
+            /* Iterate in reverse direction to
+            avoid overwriting values prematurely*/
+            for (let j = m; j &gt;= 1; j--) {
+                if (s[i - 1] === t[j - 1]) {
+                    /* If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t*/
+                    prev[j] = (prev[j - 1] + prev[j]) % this.prime;
+                }
+                /* No need for an else statement since we
+                can simply leave the previous count as is*/
+            }
+        }
+
+        /* The value at prev[m] contains
+        the count of distinct subsequences*/
+        return prev[m];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    prime = 10**9 + 7
+
+    &quot;&quot;&quot; Function to count the number of
+    distinct subsequences of s in t&quot;&quot;&quot;
+    def distinctSubsequences(self, s, t):
+        n = len(s)
+        m = len(t)
+        &quot;&quot;&quot; Declare an array to store the count of 
+        distinct subsequences for each character in s&quot;&quot;&quot;
+        prev = [0] * (m + 1)
+
+        # Initialize the count for an empty string (base case)
+        prev[0] = 1
+
+        # Iterate through s and t to calculate counts
+        for i in range(1, n + 1):
+            
+            &quot;&quot;&quot; Iterate in reverse direction to
+            avoid overwriting values prematurely&quot;&quot;&quot;
+            for j in range(m, 0, -1):
+                if s[i - 1] == t[j - 1]:
+                    &quot;&quot;&quot; If the characters match, consider two options:
+                    either leave one character in s and t or leave 
+                    one character in s and continue matching t&quot;&quot;&quot;
+                    prev[j] = (prev[j - 1] + prev[j]) % self.prime
+                &quot;&quot;&quot; No need for an else statement since we
+                can simply leave the previous count as is&quot;&quot;&quot;
+
+        &quot;&quot;&quot; The value at prev[m] contains
+        the count of distinct subsequences&quot;&quot;&quot;
+        return prev[m]</code></pre></div>
+</body>
+</html>

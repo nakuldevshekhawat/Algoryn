@@ -4,8 +4,9 @@ import { LectureCard } from '../components/LectureCard';
 import { Search as SearchIcon, Video, CheckCircle2 } from 'lucide-react';
 import { useMode } from '../contexts/ModeContext';
 import { Link } from 'react-router-dom';
-import { subjectsOrder, interviewXData, getInterviewXSubjectProgress } from '../services/interviewXStore';
-import { extractCleanFilename } from '../utils/courseParser';
+import { subjectsOrder, getInterviewXSubjectProgress } from '../services/interviewXStore';
+import { interviewXSubjects } from '../data/interviewXSubjects';
+import { buildCourseTree } from '../utils/courseParser';
 
 export const Search = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,23 +35,38 @@ export const Search = () => {
     const results: any[] = [];
 
     subjectsOrder.forEach(sub => {
-      const dataset = interviewXData[`../data/interviewX/interviewx-${sub.id}.json`];
+      const datasetConfig = interviewXSubjects[sub.id as keyof typeof interviewXSubjects];
+      if (!datasetConfig) return;
+      
       const { completedIds } = getInterviewXSubjectProgress(sub.id);
       const completedSet = new Set(completedIds);
+      
+      const tree = buildCourseTree(datasetConfig.data.videos || [], datasetConfig.notesData);
+      
+      const getAllLessons = (nodes: any[]): any[] => {
+        let lessons: any[] = [];
+        for (const node of nodes) {
+          if (node.type === 'lesson') lessons.push(node);
+          if (node.children) lessons = lessons.concat(getAllLessons(node.children));
+        }
+        return lessons;
+      };
 
-      if (dataset && dataset.videos) {
-        dataset.videos.forEach((vid: any) => {
-          const cleanName = extractCleanFilename(vid.title || '');
-          if (cleanName.toLowerCase().includes(query) || vid.id.toString().includes(query)) {
-            results.push({
-              subject: sub,
-              video: vid,
-              cleanName: cleanName,
-              completed: completedSet.has(vid.id)
-            });
-          }
-        });
-      }
+      const lessons = getAllLessons(tree);
+
+      lessons.forEach(lessonNode => {
+        const lesson = lessonNode.lesson;
+        if (!lesson) return;
+        
+        if (lesson.cleanName.toLowerCase().includes(query) || lesson.id.toString().includes(query)) {
+          results.push({
+            subject: sub,
+            lesson: lesson,
+            cleanName: lesson.cleanName,
+            completed: completedSet.has(lesson.id)
+          });
+        }
+      });
     });
 
     return results;
@@ -95,8 +111,8 @@ export const Search = () => {
               </h2>
               {filteredInterviewX.map((res: any, idx: number) => (
                 <Link 
-                  key={`ix-search-${res.subject.id}-${res.video.id}-${idx}`}
-                  to={`/interviewX/${res.subject.id}?video=${res.video.id}`}
+                  key={`ix-search-${res.subject.id}-${res.lesson.id}-${idx}`}
+                  to={`/interviewX/${res.subject.id}?lesson=${res.lesson.id}`}
                   className={`block bg-theme-card border ${res.completed ? 'border-brand-primary bg-brand-primary-light/10' : 'border-border-subtle'} rounded-[24px] p-6 shadow-softer hover:-translate-y-1 hover:shadow-soft transition-all group relative overflow-hidden`}
                 >
                   {res.completed && (
@@ -109,10 +125,10 @@ export const Search = () => {
                        <Video className="w-5 h-5 text-text-main" />
                      </div>
                      <div className="flex-1 pr-16">
-                       <h3 className="font-bold text-text-main text-lg mb-1">{res.cleanName || `Video ${res.video.id}`}</h3>
+                       <h3 className="font-bold text-text-main text-lg mb-1">{res.cleanName}</h3>
                        <div className="flex items-center gap-3 text-text-muted font-bold text-sm">
                          <span className="bg-theme-bg px-2.5 py-1 rounded-md">{res.subject.name}</span>
-                         <span>Video {res.video.id}</span>
+                         <span>Lesson {res.lesson.id.replace('v-', '').replace('n-unmatched-', 'N')}</span>
                        </div>
                      </div>
                   </div>

@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Print Shortest Path </title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Print Shortest Path </h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Breadth-First Search</span><span>Graph</span><span>Heap (Priority Queue)</span><span>Shortest Path</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a <strong>weighted</strong> undirected graph having n vertices numbered from 1 to n and m edges describing there are edges, where edges[i]=[a<sub>i</sub>,b<sub>i</sub>,w<sub>i</sub>], representing an edge from vertex a<sub>i</sub> to b<sub>i </sub>with weight w<sub>i</sub>.</p><p><br></p><p>Find the <strong>shortest path</strong> between the vertex 1 and the vertex n and if path does not exist then return a list consisting of only -1.</p><p><br></p><p>If there exists a path, then return a list whose first element is the weight of the path and the remaining elements represent the shortest path from vertex 1 to vertex n.</p><p><br></p><p><strong>Note</strong>: On IDE only the total sum of weights will be shown as output. As there might be more than one path (The path will be validated through driver code and If wrong then output shown will be -2.).</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>2 <= n <= 10<sup>4</sup></li><li>0 <= m <= 2*10<sup>4</sup></li><li>1 <= a, b <= n</li><li>1 <= w <= 10<sup>5</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-Bqkfe0u6"></p><p><br></p><p><strong>Input:</strong> n = 5, m= 6, edges = [[1,2,2], [2,5,5], [2,3,4], [1,4,1],[4,3,3],[3,5,1]]</p><p><strong>Output:</strong> 5 1 4 3 5</p><p><strong>Explanation:</strong> The source vertex is 1. Hence, the shortest distance path of node 5 from the source will be 1->4->3->5 as this is the path with a minimum sum of edge weights from source to destination.</p><h3>Example 2</h3><p><img src="https://static.takeuforward.org/content/ProblemSetter-Jhz16YEs"></p><p><br></p><p><strong>Input:</strong> n = 4, m = 4, edges = [[1,2,2], [2,3,4], [1,4,1],[4,3,3]]</p><p><strong>Output:</strong>1 1 4 </p><p><strong>Explanation:</strong> The source vertex is 1. Hence, the shortest distance path of node 4 from the source will be 1->4 as this is the path with the minimum sum of edge weights from source to destination.</p><h3>Example 3</h3><p><strong>Input:</strong> n = 3, m = 1, edges = [[1,2,2]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The Weighted undirected graph problem is a crucial part of the Dijkstra's algorithm, which is a fundamental part of routing protocols that enables the internet to work effectively. These routing protocols, including Open Shortest Path First (OSPF) and Border Gateway Protocol (BGP), spin Dijkstra's algorithm continuously to determine the shortest path for routing data from one node to another. So, every time you use Google Maps for the shortest route or stream a Netflix video, you're indirectly using the principles of weighted graph problem!</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><p><strong>Pre requisite: </strong> <a href="/plus/dsa/problems/dijkstra's-algorithm?category=graph&subcategory=shortest-path-algorithms" target="_blank">Dijkstra's Algorithm</a></p>
+
+<h3>Intuition:</h3> 
+<p>
+    Since the problem requires the shortest path from <strong>source node</strong>(node 1) to <strong>node n</strong>, the first thought that must come to the mind is to use <strong>Dijkstra's Algorithm</strong>. 
+
+    </p><h5>Modification:</h5>
+    Since the shortest path needs from <strong>source node</strong>(node 1) to <strong>node n</strong> is required, for every node possible, its parent node must be stored via which the node is reachable through minimum distance. Hence, in the Dijkstra's Algorithm, a slight modification can be done where whenever an <strong>edge relaxation</strong> happens for a particular node, it's parent node is stored in an array.
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Use a priority queue to process nodes by their shortest known distance.</li>
+    <li>Initialize two array 
+        <ul>
+            <li>One to store shortest distances, with the source node set to 0 and all others to infinity.</li>
+            <li>Another for parent nodes, setting each node as its own parent initially.</li>
+        </ul></li>
+    <li>Add the source node to the priority queue with a distance of 0.</li>
+    <li>Extract the node with the smallest distance from the queue and perfom edge relaxation (update the distances to its neighbors if a shorter path is found). Add the updated neighbors back to the queue and update the parent of node.</li>
+    <li>The distance array maintains the shortest distances from the source to all nodes, while the parent array tracks the path.</li>
+    <li>If the destination node is reachable, use the parent array to trace back from the destination to the source, forming the path. If unreachable, return [-1].</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<div class="image-carousel-container">
+    <div class="carousel-container">
+        <div class="carousel">
+            <div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p1.drawio.png--GFJXIQR" alt="Image 1"></div>
+            <div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p2-V8qvq1yt" alt="Image 2"></div>
+            <div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p3-QYoKB44z" alt="Image 3"></div>
+            <div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p4-rmaLDDzH" alt="Image 4"></div>
+            <div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p5-Bu_CMU9N" alt="Image 5"></div>
+            <div class="carousel-image"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p6-Ea1Fd6YV" alt="Image 6"></div>
+        </div>
+        <div class="control-container">
+            <div class="control-container-2"><button class="image-carousel-arrow image-carousel-left-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left">
+                        <path d="m15 18-6-6 6-6"></path>
+                    </svg></button><span class="image-number"></span><button class="image-carousel-arrow image-carousel-right-arrow group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg></button></div>
+            <div class="control-buttons"><button class="image-carousel-control-button image-carousel-play-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-play">
+                        <polygon points="6 3 20 12 6 21 6 3"></polygon>
+                    </svg></button><button class="image-carousel-control-button image-carousel-pause-button group"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause">
+                        <rect x="14" y="4" width="4" height="16" rx="1"></rect>
+                        <rect x="6" y="4" width="4" height="16" rx="1"></rect>
+                    </svg></button><button class="image-carousel-control-button image-carousel-down-button group"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" strokewidth="2" strokelinecap="round" strokelinejoin="round" class="lucide lucide-external-link">
+                        <path d="M15 3h6v6"></path>
+                        <path d="M10 14L21 3"></path>
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                    </svg></button></div>
+        </div>
+    </div>
+    <div class="vertical-view" id="vertical-view"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p1.drawio.png--GFJXIQR" alt="Image 1"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p2-V8qvq1yt" alt="Image 2"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p3-QYoKB44z" alt="Image 3"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p4-rmaLDDzH" alt="Image 4"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p5-Bu_CMU9N" alt="Image 5"><img src="https://static.takeuforward.org/premium/Graphs/Shortest Path Algorithms/Print Shortest Path/p6-Ea1Fd6YV" alt="Image 6"></div>
+</div>
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/* Define P as a shorthand 
+for the pair<int, int> type */
+#define P pair<int,int>
+
+class Solution {
+public:
+    /* Function to find the shortest 
+    path from node 1 to node n */
+    vector<int> shortestPath(int n, int m, 
+                vector<vector<int>> &edges) {
+                    
+        // Adjacency list to store graph
+        vector<pair<int, int>> adj[n + 1];
+        
+        // Adding the edges to the graph
+        for (auto it : edges) {
+            adj[it[0]].push_back({it[1], it[2]});
+            adj[it[1]].push_back({it[0], it[2]});
+        }
+        
+        
+        /* Using priority queue to 
+        implement Dijkstra Algorithm */
+        priority_queue<P, vector<P>, greater<P>> pq;
+
+        // Distance array
+        vector<int> dist(n + 1, 1e9);
+        
+        // Parent array
+        vector<int> parent(n + 1);
+        
+        /* Marking each node as 
+        its own parent initially */
+        for (int i = 1; i <= n; i++)
+            parent[i] = i;
+        
+        /* Distance of source node 
+        (node 1) to itself is zero */
+        dist[1] = 0;
+
+        // Push the source node to the queue.
+        pq.push({0, 1});
+        
+        // Until the queue is empty
+        while (!pq.empty())
+        {
+            /* Get the pair containing node having 
+            minimum distance from source node */
+            auto it = pq.top();
+            pq.pop();
+            
+            int node = it.second; // node
+            int dis = it.first; // distance
+
+            // Iterate through the neighbors
+            for (auto it : adj[node]) {
+                
+                int adjNode = it.first; // node
+                int edWt = it.second; // edge weight
+
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edWt < dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+                    
+                    // Push the new pair to priority queue
+                    pq.push({dis + edWt, adjNode});
+
+                    /* Update the parent of the adjNode 
+                    to the recent node(where it came from) */
+                    parent[adjNode] = node;
+                }
+            }
+        }
+
+        /* If distance to the node could not be found, 
+        return an array containing -1. */
+        if (dist[n] == 1e9)
+            return {-1};
+
+        // Array to store the path
+        vector<int> path;
+        
+        // Start from the destination node
+        int node = n;
+        
+        /* Iterate backwards from destination 
+        to source through the parent array */
+        while (parent[node] != node) {
+            
+            // Add the node to the path
+            path.push_back(node); 
+            
+            // Take a step back
+            node = parent[node];
+        }
+        
+        // Add the source node to the path
+        path.push_back(1);
+
+        /* Since the path stored is in a 
+        reverse order, reverse the array 
+        to get the actual path */
+        reverse(path.begin(), path.end());
+        
+        // Add the path weight in the beginning
+        path.insert(path.begin(), dist[n]);
+        
+        // Return the result
+        return path;
+    }
+};
+
+int main() {
+    
+    int n = 5, m = 6;
+    vector<vector<int>> edges = {
+        {1,2,2}, {2,5,5}, {2,3,4}, 
+        {1,4,1}, {4,3,3}, {3,5,1}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to find the shortest distance 
+    of each node from the source node */
+    vector<int> ans = sol.shortestPath(n, m, edges);
+    
+    // Output
+    cout << "The resulting path weight is: " << ans[0] << endl;
+    cout << "The path is: " << endl;
+    for(int i=1; i < ans.size(); i++) {
+        cout << ans[i] << " ";
+    }
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+public class Solution {
+    /* Function to find the shortest 
+    path from node 1 to node n */
+    public List<Integer> shortestPath(int n, int m, int[][] edges) {
+        
+        // Adjacency list to store graph
+        List<List<int[]>> adj = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        // Adding the edges to the graph
+        for (int[] edge : edges) {
+            adj.get(edge[0]).add(new int[]{edge[1], edge[2]});
+            adj.get(edge[1]).add(new int[]{edge[0], edge[2]});
+        }
+        
+        /* Using priority queue to 
+        implement Dijkstra Algorithm */
+        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));
+        
+        // Distance array
+        int[] dist = new int[n + 1];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        
+        // Parent array
+        int[] parent = new int[n + 1];
+        
+        /* Marking each node as 
+        its own parent initially */
+        for (int i = 1; i <= n; i++) {
+            parent[i] = i;
+        }
+        
+        /* Distance of source node 
+        (node 1) to itself is zero */
+        dist[1] = 0;
+        
+        // Push the source node to the queue.
+        pq.add(new int[]{0, 1});
+        
+        // Until the queue is empty
+        while (!pq.isEmpty()) {
+            /* Get the pair containing node having 
+            minimum distance from source node */
+            int[] curr = pq.poll();
+            
+            int node = curr[1]; // node
+            int dis = curr[0]; // distance
+            
+            // Iterate through the neighbors
+            for (int[] neighbor : adj.get(node)) {
+                int adjNode = neighbor[0]; // node
+                int edWt = neighbor[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edWt < dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+                    
+                    // Push the new pair to priority queue
+                    pq.add(new int[]{dis + edWt, adjNode});
+                    
+                    /* Update the parent of the adjNode 
+                    to the recent node(where it came from) */
+                    parent[adjNode] = node;
+                }
+            }
+        }
+        
+        /* If distance to the node could not be found, 
+        return an array containing -1. */
+        if (dist[n] == Integer.MAX_VALUE) {
+            return Arrays.asList(-1);
+        }
+        
+        // Array to store the path
+        List<Integer> path = new ArrayList<>();
+        
+        // Start from the destination node
+        int node = n;
+        
+        /* Iterate backwards from destination 
+        to source through the parent array */
+        while (parent[node] != node) {
+            
+            // Add the node to the path
+            path.add(node); 
+            
+            // Take a step back
+            node = parent[node];
+        }
+        
+        // Add the source node to the path
+        path.add(1);
+        
+        /* Since the path stored is in a 
+        reverse order, reverse the array 
+        to get the actual path */
+        Collections.reverse(path);
+        
+        // Add the path weight in the beginning
+        path.add(0, dist[n]);
+        
+        // Return the result
+        return path;
+    }
+
+    public static void main(String[] args) {
+        int n = 5, m = 6;
+        int[][] edges = {
+            {1, 2, 2}, {2, 5, 5}, {2, 3, 4}, 
+            {1, 4, 1}, {4, 3, 3}, {3, 5, 1}
+        };
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to find the shortest distance 
+        of each node from the source node */
+        List<Integer> ans = sol.shortestPath(n, m, edges);
+        
+        // Output
+        System.out.println("The resulting path weight is: " + ans.get(0));
+        System.out.println("The path is: ");
+        for (int i = 1; i < ans.size(); i++) {
+            System.out.print(ans.get(i) + " ");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span></div><pre class="wp-block-code"><code lang="python" class="language-python">import heapq
+
+class Solution:
+    # Function to find the shortest 
+    # path from node 1 to node n
+    def shortestPath(self, n, m, edges):
+        
+        # Adjacency list to store graph
+        adj = [[] for _ in range(n + 1)]
+        
+        # Adding the edges to the graph
+        for edge in edges:
+            adj[edge[0]].append((edge[1], edge[2]))
+            adj[edge[1]].append((edge[0], edge[2]))
+        
+        # Using priority queue to 
+        # implement Dijkstra Algorithm
+        pq = []
+        
+        # Distance array
+        dist = [float('inf')] * (n + 1)
+        
+        # Parent array
+        parent = list(range(n + 1))
+        
+        # Distance of source node 
+        # (node 1) to itself is zero
+        dist[1] = 0
+        
+        # Push the source node to the queue.
+        heapq.heappush(pq, (0, 1))
+        
+        # Until the queue is empty
+        while pq:
+            # Get the pair containing node having 
+            # minimum distance from source node
+            dis, node = heapq.heappop(pq)
+            
+            # Iterate through the neighbors
+            for adjNode, edWt in adj[node]:
+                # If the tentative distance to 
+                # reach adjacent node is smaller 
+                # than the known distance
+                if dis + edWt < dist[adjNode]:
+                    
+                    # Update the known distance
+                    dist[adjNode] = dis + edWt
+                    
+                    # Push the new pair to priority queue
+                    heapq.heappush(pq, (dis + edWt, adjNode))
+                    
+                    # Update the parent of the adjNode 
+                    # to the recent node(where it came from)
+                    parent[adjNode] = node
+        
+        # If distance to the node could not be found, 
+        # return an array containing -1.
+        if dist[n] == float('inf'):
+            return [-1]
+        
+        # Array to store the path
+        path = []
+        
+        # Start from the destination node
+        node = n
+        
+        # Iterate backwards from destination 
+        # to source through the parent array
+        while parent[node] != node:
+            # Add the node to the path
+            path.append(node)
+            # Take a step back
+            node = parent[node]
+        
+        # Add the source node to the path
+        path.append(1)
+        
+        # Since the path stored is in a 
+        # reverse order, reverse the array 
+        # to get the actual path
+        path.reverse()
+        
+        # Add the path weight in the beginning
+        path.insert(0, dist[n])
+        
+        # Return the result
+        return path
+
+if __name__ == "__main__":
+    n = 5
+    m = 6
+    edges = [
+        [1, 2, 2], [2, 5, 5], [2, 3, 4], 
+        [1, 4, 1], [4, 3, 3], [3, 5, 1]
+    ]
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to find the shortest distance 
+    # of each node from the source node
+    ans = sol.shortestPath(n, m, edges)
+    
+    # Output
+    print("The resulting path weight is:", ans[0])
+    print("The path is:")
+    for i in range(1, len(ans)):
+        print(ans[i], end=" ")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">//Priority Queue Implementation
+class MinPriorityQueue {
+    constructor() {
+        this.heap = [];
+    }
+
+    enqueue(element) {
+        this.heap.push(element);
+        this.bubbleUp();
+    }
+
+    dequeue() {
+        const min = this.heap[0];
+        const end = this.heap.pop();
+        if (this.heap.length > 0) {
+            this.heap[0] = end;
+            this.bubbleDown();
+        }
+        return min;
+    }
+
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        const element = this.heap[index];
+        while (index > 0) {
+            let parentIndex = Math.floor((index - 1) / 2);
+            let parent = this.heap[parentIndex];
+            if (element[0] >= parent[0]) break;
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+        this.heap[index] = element;
+    }
+
+    bubbleDown() {
+        let index = 0;
+        const length = this.heap.length;
+        const element = this.heap[0];
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let leftChild, rightChild;
+            let swap = null;
+
+            if (leftChildIndex < length) {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild[0] < element[0]) {
+                    swap = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex < length) {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swap === null && rightChild[0] < element[0]) ||
+                    (swap !== null && rightChild[0] < leftChild[0])
+                ) {
+                    swap = rightChildIndex;
+                }
+            }
+
+            if (swap === null) break;
+            this.heap[index] = this.heap[swap];
+            index = swap;
+        }
+        this.heap[index] = element;
+    }
+
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+}
+
+class Solution {
+    // Function to find the shortest 
+    // path from node 1 to node n
+    shortestPath(n, m, edges) {
+        
+        // Adjacency list to store graph
+        const adj = Array.from({ length: n + 1 }, () => []);
+        
+        // Adding the edges to the graph
+        for (const edge of edges) {
+            adj[edge[0]].push([edge[1], edge[2]]);
+            adj[edge[1]].push([edge[0], edge[2]]);
+        }
+        
+        // Using priority queue to 
+        // implement Dijkstra Algorithm
+        const pq = new MinPriorityQueue();
+        
+        // Distance array
+        const dist = new Array(n + 1).fill(Infinity);
+        
+        // Parent array
+        const parent = Array.from({ length: n + 1 }, (_, i) => i);
+        
+        // Distance of source node 
+        // (node 1) to itself is zero
+        dist[1] = 0;
+        
+        // Push the source node to the queue.
+        pq.enqueue([0, 1]);
+        
+        // Until the queue is empty
+        while (!pq.isEmpty()) {
+            // Get the pair containing node having 
+            // minimum distance from source node
+            const [dis, node] = pq.dequeue();
+            
+            // Iterate through the neighbors
+            for (const [adjNode, edWt] of adj[node]) {
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edWt < dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+                    
+                    // Push the new pair to priority queue
+                    pq.enqueue([dis + edWt, adjNode]);
+                    
+                    // Update the parent of the adjNode 
+                    // to the recent node(where it came from)
+                    parent[adjNode] = node;
+                }
+            }
+        }
+        
+        // If distance to the node could not be found, 
+        // return an array containing -1.
+        if (dist[n] === Infinity) {
+            return [-1];
+        }
+        
+        // Array to store the path
+        const path = [];
+        
+        // Start from the destination node
+        let node = n;
+        
+        // Iterate backwards from destination 
+        // to source through the parent array
+        while (parent[node] !== node) {
+            // Add the node to the path
+            path.push(node);
+            // Take a step back
+            node = parent[node];
+        }
+        
+        // Add the source node to the path
+        path.push(1);
+        
+        // Since the path stored is in a 
+        // reverse order, reverse the array 
+        // to get the actual path
+        path.reverse();
+        
+        // Add the path weight in the beginning
+        path.unshift(dist[n]);
+        
+        // Return the result
+        return path;
+    }
+}
+
+const n = 5, m = 6;
+const edges = [
+    [1,2,2], [2,5,5], [2,3,4], 
+    [1,4,1], [4,3,3], [3,5,1]
+];
+
+// Creating an instance of 
+// Solution class
+const sol = new Solution();
+
+// Function call to find the shortest distance 
+// of each node from the source node
+const ans = sol.shortestPath(n, m, edges);
+
+// Output
+console.log("The resulting path weight is:", ans[0]);
+console.log("The path is:");
+for (let i = 1; i < ans.length; i++) {
+    console.log(ans[i], " ");
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span><span>147</span><span>148</span><span>149</span><span>150</span><span>151</span><span>152</span><span>153</span><span>154</span><span>155</span><span>156</span><span>157</span><span>158</span><span>159</span><span>160</span><span>161</span><span>162</span><span>163</span><span>164</span><span>165</span><span>166</span><span>167</span><span>168</span><span>169</span><span>170</span><span>171</span><span>172</span><span>173</span><span>174</span><span>175</span><span>176</span><span>177</span><span>178</span><span>179</span><span>180</span><span>181</span><span>182</span><span>183</span><span>184</span><span>185</span><span>186</span><span>187</span><span>188</span><span>189</span><span>190</span><span>191</span><span>192</span><span>193</span><span>194</span><span>195</span><span>196</span><span>197</span><span>198</span><span>199</span><span>200</span><span>201</span><span>202</span><span>203</span><span>204</span><span>205</span><span>206</span><span>207</span><span>208</span><span>209</span><span>210</span><span>211</span><span>212</span><span>213</span><span>214</span><span>215</span><span>216</span><span>217</span><span>218</span><span>219</span><span>220</span><span>221</span><span>222</span><span>223</span><span>224</span><span>225</span><span>226</span><span>227</span><span>228</span><span>229</span><span>230</span><span>231</span><span>232</span><span>233</span><span>234</span><span>235</span><span>236</span><span>237</span><span>238</span><span>239</span><span>240</span><span>241</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+//Priority Queue Implementation
+public class MinPriorityQueue
+{
+    private List<int[]> heap;
+
+    public MinPriorityQueue()
+    {
+        this.heap = new List<int[]>();
+    }
+
+    public void Enqueue(int[] element)
+    {
+        this.heap.Add(element);
+        this.BubbleUp();
+    }
+
+    public int[] Dequeue()
+    {
+        int[] min = this.heap[0];
+        int[] end = this.heap[this.heap.Count - 1];
+        this.heap.RemoveAt(this.heap.Count - 1);
+
+        if (this.heap.Count > 0)
+        {
+            this.heap[0] = end;
+            this.BubbleDown();
+        }
+        return min;
+    }
+
+    private void BubbleUp()
+    {
+        int index = this.heap.Count - 1;
+        int[] element = this.heap[index];
+        while (index > 0)
+        {
+            int parentIndex = (index - 1) / 2;
+            int[] parent = this.heap[parentIndex];
+            if (element[0] >= parent[0]) break;
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+        this.heap[index] = element;
+    }
+
+    private void BubbleDown()
+    {
+        int index = 0;
+        int length = this.heap.Count;
+        int[] element = this.heap[0];
+        while (true)
+        {
+            int leftChildIndex = 2 * index + 1;
+            int rightChildIndex = 2 * index + 2;
+            int[] leftChild = null;
+            int[] rightChild = null;
+            int? swap = null;
+
+            if (leftChildIndex < length)
+            {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild[0] < element[0])
+                {
+                    swap = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex < length)
+            {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swap == null && rightChild[0] < element[0]) ||
+                    (swap != null && rightChild[0] < leftChild[0])
+                )
+                {
+                    swap = rightChildIndex;
+                }
+            }
+
+            if (swap == null) break;
+            this.heap[index] = this.heap[swap.Value];
+            index = swap.Value;
+        }
+        this.heap[index] = element;
+    }
+
+    public bool IsEmpty()
+    {
+        return this.heap.Count == 0;
+    }
+}
+
+public class Solution
+{
+    // Function to find the shortest 
+    // path from node 1 to node n
+    public List<int> ShortestPath(int n, int m, List<List<int>> edges)
+    {
+        // Adjacency list to store graph
+        List<List<int[]>> adj = new List<List<int[]>>();
+        for (int i = 0; i <= n; i++)
+        {
+            adj.Add(new List<int[]>());
+        }
+
+        // Adding the edges to the graph
+        foreach (var edge in edges)
+        {
+            adj[edge[0]].Add(new int[] { edge[1], edge[2] });
+            adj[edge[1]].Add(new int[] { edge[0], edge[2] });
+        }
+
+        // Using priority queue to 
+        // implement Dijkstra Algorithm
+        MinPriorityQueue pq = new MinPriorityQueue();
+
+        // Distance array
+        double[] dist = new double[n + 1];
+        for (int i = 0; i <= n; i++)
+        {
+            dist[i] = double.PositiveInfinity;
+        }
+
+        // Parent array
+        int[] parent = new int[n + 1];
+        for (int i = 0; i <= n; i++)
+        {
+            parent[i] = i;
+        }
+
+        // Distance of source node 
+        // (node 1) to itself is zero
+        dist[1] = 0;
+
+        // Push the source node to the queue.
+        pq.Enqueue(new int[] { 0, 1 });
+
+        // Until the queue is empty
+        while (!pq.IsEmpty())
+        {
+            // Get the pair containing node having 
+            // minimum distance from source node
+            int[] current = pq.Dequeue();
+            int dis = current[0];
+            int node = current[1];
+
+            // Iterate through the neighbors
+            foreach (var neighbor in adj[node])
+            {
+                int adjNode = neighbor[0];
+                int edWt = neighbor[1];
+
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edWt < dist[adjNode])
+                {
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+
+                    // Push the new pair to priority queue
+                    pq.Enqueue(new int[] { dis + edWt, adjNode });
+
+                    // Update the parent of the adjNode 
+                    // to the recent node(where it came from)
+                    parent[adjNode] = node;
+                }
+            }
+        }
+
+        // If distance to the node could not be found, 
+        // return an array containing -1.
+        if (dist[n] == double.PositiveInfinity)
+        {
+            return new List<int> { -1 };
+        }
+
+        // Array to store the path
+        List<int> path = new List<int>();
+
+        // Start from the destination node
+        int currNode = n;
+
+        // Iterate backwards from destination 
+        // to source through the parent array
+        while (parent[currNode] != currNode)
+        {
+            // Add the node to the path
+            path.Add(currNode);
+            // Take a step back
+            currNode = parent[currNode];
+        }
+
+        // Add the source node to the path
+        path.Add(1);
+
+        // Since the path stored is in a 
+        // reverse order, reverse the array 
+        // to get the actual path
+        path.Reverse();
+
+        // Add the path weight in the beginning
+        path.Insert(0, (int)dist[n]);
+
+        // Return the result
+        return path;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        int n = 5, m = 6;
+        List<List<int>> edges = new List<List<int>>
+        {
+            new List<int> {1,2,2}, new List<int> {2,5,5}, new List<int> {2,3,4},
+            new List<int> {1,4,1}, new List<int> {4,3,3}, new List<int> {3,5,1}
+        };
+
+        // Creating an instance of 
+        // Solution class
+        Solution sol = new Solution();
+
+        // Function call to find the shortest distance 
+        // of each node from the source node
+        List<int> ans = sol.ShortestPath(n, m, edges);
+
+        // Output
+        Console.WriteLine("The resulting path weight is: " + ans[0]);
+        Console.WriteLine("The path is:");
+        for (int i = 1; i < ans.Count; i++)
+        {
+            Console.Write(ans[i] + " ");
+        }
+        Console.WriteLine();
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span><span>145</span><span>146</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"container/heap"
+	"fmt"
+)
+
+const infinity = 1_000_000_000
+
+// Item represents a node and its distance for the priority queue.
+type Item struct {
+	dist int
+	node int
+}
+
+// PriorityQueue implements heap.Interface and holds Items.
+type PriorityQueue []*Item
+
+func (pq PriorityQueue) Len() int { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool {
+	return pq[i].dist < pq[j].dist
+}
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+}
+func (pq *PriorityQueue) Push(x interface{}) {
+	item := x.(*Item)
+	*pq = append(*pq, item)
+}
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[:n-1]
+	return item
+}
+
+/* shortestPath finds the shortest path from node 1 to node n.
+It returns a slice where the first element is the total weight of the path,
+and the remaining elements are the nodes in the path. If no path exists, it returns [-1].
+*/
+func shortestPath(n, m int, edges [][]int) []int {
+	// Adjacency list to store graph
+	adj := make([][]struct {
+		node   int
+		weight int
+	}, n+1)
+
+	// Adding the edges to the graph
+	for _, e := range edges {
+		u, v, w := e[0], e[1], e[2]
+		adj[u] = append(adj[u], struct {
+			node   int
+			weight int
+		}{v, w})
+		adj[v] = append(adj[v], struct {
+			node   int
+			weight int
+		}{u, w})
+	}
+
+	// Distance array
+	dist := make([]int, n+1)
+	// Parent array
+	parent := make([]int, n+1)
+
+	// Initializing distances and parents
+	for i := 1; i <= n; i++ {
+		dist[i] = infinity
+		parent[i] = i
+	}
+	dist[1] = 0
+
+	// Priority queue (min-heap)
+	pq := &PriorityQueue{}
+	heap.Init(pq)
+	heap.Push(pq, &Item{dist: 0, node: 1})
+
+	// Dijkstra's Algorithm
+	for pq.Len() > 0 {
+		curr := heap.Pop(pq).(*Item)
+		d, u := curr.dist, curr.node
+
+		if d > dist[u] {
+			continue
+		}
+
+		// Traverse neighbors
+		for _, nb := range adj[u] {
+			v := nb.node
+			w := nb.weight
+
+			if d+w < dist[v] {
+				dist[v] = d + w
+				parent[v] = u
+				heap.Push(pq, &Item{dist: dist[v], node: v})
+			}
+		}
+	}
+
+	// If no path exists
+	if dist[n] == infinity {
+		return []int{-1}
+	}
+
+	// Reconstruct the path from n to 1
+	path := []int{}
+	curr := n
+	for parent[curr] != curr {
+		path = append(path, curr)
+		curr = parent[curr]
+	}
+	path = append(path, 1)
+
+	// Reverse the path
+	for i, j := 0, len(path)-1; i < j; i, j = i+1, j-1 {
+		path[i], path[j] = path[j], path[i]
+	}
+
+	// Add total weight at the beginning
+	result := make([]int, 0, len(path)+1)
+	result = append(result, dist[n])
+	result = append(result, path...)
+	return result
+}
+
+func main() {
+	n, m := 5, 6
+	edges := [][]int{
+		{1, 2, 2}, {2, 5, 5}, {2, 3, 4},
+		{1, 4, 1}, {4, 3, 3}, {3, 5, 1},
+	}
+
+	ans := shortestPath(n, m, edges)
+
+	if len(ans) == 1 && ans[0] == -1 {
+		fmt.Println("No path exists.")
+	} else {
+		fmt.Println("The resulting path weight is:", ans[0])
+		fmt.Print("The path is: ")
+		for i := 1; i < len(ans); i++ {
+			fmt.Print(ans[i], " ")
+		}
+	}
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O((N+M)*logN)</strong> <br>
+    </p><ul>
+        <li>Each node is processed once in the priority queue and deletion and insertion operation takes O(logN) time making it overall O(N*logN) in the worst case.</li>
+        <li>For each vertex, all its edges are relaxed. This operation involves updating the priority queue, which takes O(logV) making it overall O(M*logN) for E edges in the worst case.</li>
+        <li>Reconstructing the path involves tracing the parent array, which takes O(N) in the worst case (since we may trace back through all vertices).</li>
+    </ul>
+<p></p>
+
+<p><strong>Space Complexity: O(N)</strong>  <br>
+</p><ul>
+    <li>The priority queue will store distances to all nodes in worst case leading to O(N) space.</li>
+    <li>The distance array and parent array takes O(N) space each.</li>
+    <li>The path array will store O(N) nodes in the worst case.</li>
+</ul>
+<p></p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>/* Define P as a shorthand 
+for the pair&lt;int, int&gt; type */
+#define P pair&lt;int,int&gt;
+
+class Solution {
+public:
+    /* Function to find the shortest 
+    path from node 1 to node n */
+    vector&lt;int&gt; shortestPath(int n, int m, 
+                vector&lt;vector&lt;int&gt;&gt; &amp;edges) {
+                    
+        // Adjacency list to store graph
+        vector&lt;pair&lt;int, int&gt;&gt; adj[n + 1];
+        
+        // Adding the edges to the graph
+        for (auto it : edges) {
+            adj[it[0]].push_back({it[1], it[2]});
+            adj[it[1]].push_back({it[0], it[2]});
+        }
+        
+        
+        /* Using priority queue to 
+        implement Dijkstra Algorithm */
+        priority_queue&lt;P, vector&lt;P&gt;, greater&lt;P&gt;&gt; pq;
+
+        // Distance array
+        vector&lt;int&gt; dist(n + 1, 1e9);
+        
+        // Parent array
+        vector&lt;int&gt; parent(n + 1);
+        
+        /* Marking each node as 
+        its own parent initially */
+        for (int i = 1; i &lt;= n; i++)
+            parent[i] = i;
+        
+        /* Distance of source node 
+        (node 1) to itself is zero */
+        dist[1] = 0;
+
+        // Push the source node to the queue.
+        pq.push({0, 1});
+        
+        // Until the queue is empty
+        while (!pq.empty())
+        {
+            /* Get the pair containing node having 
+            minimum distance from source node */
+            auto it = pq.top();
+            pq.pop();
+            
+            int node = it.second; // node
+            int dis = it.first; // distance
+
+            // Iterate through the neighbors
+            for (auto it : adj[node]) {
+                
+                int adjNode = it.first; // node
+                int edWt = it.second; // edge weight
+
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edWt &lt; dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+                    
+                    // Push the new pair to priority queue
+                    pq.push({dis + edWt, adjNode});
+
+                    /* Update the parent of the adjNode 
+                    to the recent node(where it came from) */
+                    parent[adjNode] = node;
+                }
+            }
+        }
+
+        /* If distance to the node could not be found, 
+        return an array containing -1. */
+        if (dist[n] == 1e9)
+            return {-1};
+
+        // Array to store the path
+        vector&lt;int&gt; path;
+        
+        // Start from the destination node
+        int node = n;
+        
+        /* Iterate backwards from destination 
+        to source through the parent array */
+        while (parent[node] != node) {
+            
+            // Add the node to the path
+            path.push_back(node); 
+            
+            // Take a step back
+            node = parent[node];
+        }
+        
+        // Add the source node to the path
+        path.push_back(1);
+
+        /* Since the path stored is in a 
+        reverse order, reverse the array 
+        to get the actual path */
+        reverse(path.begin(), path.end());
+        
+        // Add the path weight in the beginning
+        path.insert(path.begin(), dist[n]);
+        
+        // Return the result
+        return path;
+    }
+};
+</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution{
+    //Priority Queue Implementation
+    private class MinPriorityQueue
+    {
+        private List&lt;int[]&gt; heap;
+
+        public MinPriorityQueue()
+        {
+            this.heap = new List&lt;int[]&gt;();
+        }
+
+        public void Enqueue(int[] element)
+        {
+            this.heap.Add(element);
+            this.BubbleUp();
+        }
+
+        public int[] Dequeue()
+        {
+            int[] min = this.heap[0];
+            int[] end = this.heap[this.heap.Count - 1];
+            this.heap.RemoveAt(this.heap.Count - 1);
+
+            if (this.heap.Count &gt; 0)
+            {
+                this.heap[0] = end;
+                this.BubbleDown();
+            }
+            return min;
+        }
+
+        private void BubbleUp()
+        {
+            int index = this.heap.Count - 1;
+            int[] element = this.heap[index];
+            while (index &gt; 0)
+            {
+                int parentIndex = (index - 1) / 2;
+                int[] parent = this.heap[parentIndex];
+                if (element[0] &gt;= parent[0]) break;
+                this.heap[index] = parent;
+                index = parentIndex;
+            }
+            this.heap[index] = element;
+        }
+
+        private void BubbleDown()
+        {
+            int index = 0;
+            int length = this.heap.Count;
+            int[] element = this.heap[0];
+            while (true)
+            {
+                int leftChildIndex = 2 * index + 1;
+                int rightChildIndex = 2 * index + 2;
+                int[] leftChild = null;
+                int[] rightChild = null;
+                int? swap = null;
+
+                if (leftChildIndex &lt; length)
+                {
+                    leftChild = this.heap[leftChildIndex];
+                    if (leftChild[0] &lt; element[0])
+                    {
+                        swap = leftChildIndex;
+                    }
+                }
+
+                if (rightChildIndex &lt; length)
+                {
+                    rightChild = this.heap[rightChildIndex];
+                    if (
+                        (swap == null &amp;&amp; rightChild[0] &lt; element[0]) ||
+                        (swap != null &amp;&amp; rightChild[0] &lt; leftChild[0])
+                    )
+                    {
+                        swap = rightChildIndex;
+                    }
+                }
+
+                if (swap == null) break;
+                this.heap[index] = this.heap[swap.Value];
+                index = swap.Value;
+            }
+            this.heap[index] = element;
+        }
+
+        public bool IsEmpty()
+        {
+            return this.heap.Count == 0;
+        }
+    }
+
+    public List&lt;int&gt; ShortestPath(int n, int m, List&lt;List&lt;int&gt;&gt; edges){
+        
+        // Adjacency list to store graph
+        List&lt;List&lt;int[]&gt;&gt; adj = new List&lt;List&lt;int[]&gt;&gt;();
+        for (int i = 0; i &lt;= n; i++)
+        {
+            adj.Add(new List&lt;int[]&gt;());
+        }
+
+        // Adding the edges to the graph
+        foreach (var edge in edges)
+        {
+            adj[edge[0]].Add(new int[] { edge[1], edge[2] });
+            adj[edge[1]].Add(new int[] { edge[0], edge[2] });
+        }
+
+        // Using priority queue to 
+        // implement Dijkstra Algorithm
+        MinPriorityQueue pq = new MinPriorityQueue();
+
+        // Distance array
+        double[] dist = new double[n + 1];
+        for (int i = 0; i &lt;= n; i++)
+        {
+            dist[i] = double.PositiveInfinity;
+        }
+
+        // Parent array
+        int[] parent = new int[n + 1];
+        for (int i = 0; i &lt;= n; i++)
+        {
+            parent[i] = i;
+        }
+
+        // Distance of source node 
+        // (node 1) to itself is zero
+        dist[1] = 0;
+
+        // Push the source node to the queue.
+        pq.Enqueue(new int[] { 0, 1 });
+
+        // Until the queue is empty
+        while (!pq.IsEmpty())
+        {
+            // Get the pair containing node having 
+            // minimum distance from source node
+            int[] current = pq.Dequeue();
+            int dis = current[0];
+            int node = current[1];
+
+            // Iterate through the neighbors
+            foreach (var neighbor in adj[node])
+            {
+                int adjNode = neighbor[0];
+                int edWt = neighbor[1];
+
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edWt &lt; dist[adjNode])
+                {
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+
+                    // Push the new pair to priority queue
+                    pq.Enqueue(new int[] { dis + edWt, adjNode });
+
+                    // Update the parent of the adjNode 
+                    // to the recent node(where it came from)
+                    parent[adjNode] = node;
+                }
+            }
+        }
+
+        // If distance to the node could not be found, 
+        // return an array containing -1.
+        if (dist[n] == double.PositiveInfinity)
+        {
+            return new List&lt;int&gt; { -1 };
+        }
+
+        // Array to store the path
+        List&lt;int&gt; path = new List&lt;int&gt;();
+
+        // Start from the destination node
+        int currNode = n;
+
+        // Iterate backwards from destination 
+        // to source through the parent array
+        while (parent[currNode] != currNode)
+        {
+            // Add the node to the path
+            path.Add(currNode);
+            // Take a step back
+            currNode = parent[currNode];
+        }
+
+        // Add the source node to the path
+        path.Add(1);
+
+        // Since the path stored is in a 
+        // reverse order, reverse the array 
+        // to get the actual path
+        path.Reverse();
+
+        // Add the path weight in the beginning
+        path.Insert(0, (int)dist[n]);
+
+        // Return the result
+        return path;
+    }
+}
+
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>const infinity = 1_000_000_000
+
+// Item represents a node and its distance for the priority queue.
+type Item struct {
+	dist int
+	node int
+}
+
+// PriorityQueue implements heap.Interface and holds Items.
+type PriorityQueue []*Item
+
+func (pq PriorityQueue) Len() int { return len(pq) }
+func (pq PriorityQueue) Less(i, j int) bool {
+	return pq[i].dist &lt; pq[j].dist
+}
+func (pq PriorityQueue) Swap(i, j int) {
+	pq[i], pq[j] = pq[j], pq[i]
+}
+func (pq *PriorityQueue) Push(x interface{}) {
+	item := x.(*Item)
+	*pq = append(*pq, item)
+}
+func (pq *PriorityQueue) Pop() interface{} {
+	old := *pq
+	n := len(old)
+	item := old[n-1]
+	*pq = old[:n-1]
+	return item
+}
+
+/* shortestPath finds the shortest path from node 1 to node n.
+It returns a slice where the first element is the total weight of the path,
+and the remaining elements are the nodes in the path. If no path exists, it returns [-1].
+*/
+func shortestPath(n, m int, edges [][]int) []int {
+	// Adjacency list to store graph
+	adj := make([][]struct {
+		node   int
+		weight int
+	}, n+1)
+
+	// Adding the edges to the graph
+	for _, e := range edges {
+		u, v, w := e[0], e[1], e[2]
+		adj[u] = append(adj[u], struct {
+			node   int
+			weight int
+		}{v, w})
+		adj[v] = append(adj[v], struct {
+			node   int
+			weight int
+		}{u, w})
+	}
+
+	// Distance array
+	dist := make([]int, n+1)
+	// Parent array
+	parent := make([]int, n+1)
+
+	// Initializing distances and parents
+	for i := 1; i &lt;= n; i++ {
+		dist[i] = infinity
+		parent[i] = i
+	}
+	dist[1] = 0
+
+	// Priority queue (min-heap)
+	pq := &amp;PriorityQueue{}
+	heap.Init(pq)
+	heap.Push(pq, &amp;Item{dist: 0, node: 1})
+
+	// Dijkstra&#x27;s Algorithm
+	for pq.Len() &gt; 0 {
+		curr := heap.Pop(pq).(*Item)
+		d, u := curr.dist, curr.node
+
+		if d &gt; dist[u] {
+			continue
+		}
+
+		// Traverse neighbors
+		for _, nb := range adj[u] {
+			v := nb.node
+			w := nb.weight
+
+			if d+w &lt; dist[v] {
+				dist[v] = d + w
+				parent[v] = u
+				heap.Push(pq, &amp;Item{dist: dist[v], node: v})
+			}
+		}
+	}
+
+	// If no path exists
+	if dist[n] == infinity {
+		return []int{-1}
+	}
+
+	// Reconstruct the path from n to 1
+	path := []int{}
+	curr := n
+	for parent[curr] != curr {
+		path = append(path, curr)
+		curr = parent[curr]
+	}
+	path = append(path, 1)
+
+	// Reverse the path
+	for i, j := 0, len(path)-1; i &lt; j; i, j = i+1, j-1 {
+		path[i], path[j] = path[j], path[i]
+	}
+
+	// Add total weight at the beginning
+	result := make([]int, 0, len(path)+1)
+	result = append(result, dist[n])
+	result = append(result, path...)
+	return result
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to find the shortest 
+    path from node 1 to node n */
+    public List&lt;Integer&gt; shortestPath(int n, int m, int[][] edges) {
+        
+        // Adjacency list to store graph
+        List&lt;List&lt;int[]&gt;&gt; adj = new ArrayList&lt;&gt;();
+        for (int i = 0; i &lt;= n; i++) {
+            adj.add(new ArrayList&lt;&gt;());
+        }
+        
+        // Adding the edges to the graph
+        for (int[] edge : edges) {
+            adj.get(edge[0]).add(new int[]{edge[1], edge[2]});
+            adj.get(edge[1]).add(new int[]{edge[0], edge[2]});
+        }
+        
+        /* Using priority queue to 
+        implement Dijkstra Algorithm */
+        PriorityQueue&lt;int[]&gt; pq = new PriorityQueue&lt;&gt;(Comparator.comparingInt(a -&gt; a[0]));
+        
+        // Distance array
+        int[] dist = new int[n + 1];
+        Arrays.fill(dist, Integer.MAX_VALUE);
+        
+        // Parent array
+        int[] parent = new int[n + 1];
+        
+        /* Marking each node as 
+        its own parent initially */
+        for (int i = 1; i &lt;= n; i++) {
+            parent[i] = i;
+        }
+        
+        /* Distance of source node 
+        (node 1) to itself is zero */
+        dist[1] = 0;
+        
+        // Push the source node to the queue.
+        pq.add(new int[]{0, 1});
+        
+        // Until the queue is empty
+        while (!pq.isEmpty()) {
+            /* Get the pair containing node having 
+            minimum distance from source node */
+            int[] curr = pq.poll();
+            
+            int node = curr[1]; // node
+            int dis = curr[0]; // distance
+            
+            // Iterate through the neighbors
+            for (int[] neighbor : adj.get(node)) {
+                int adjNode = neighbor[0]; // node
+                int edWt = neighbor[1]; // edge weight
+                
+                /* If the tentative distance to 
+                reach adjacent node is smaller 
+                than the known distance */
+                if (dis + edWt &lt; dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+                    
+                    // Push the new pair to priority queue
+                    pq.add(new int[]{dis + edWt, adjNode});
+                    
+                    /* Update the parent of the adjNode 
+                    to the recent node(where it came from) */
+                    parent[adjNode] = node;
+                }
+            }
+        }
+        
+        /* If distance to the node could not be found, 
+        return an array containing -1. */
+        if (dist[n] == Integer.MAX_VALUE) {
+            return Arrays.asList(-1);
+        }
+        
+        // Array to store the path
+        List&lt;Integer&gt; path = new ArrayList&lt;&gt;();
+        
+        // Start from the destination node
+        int node = n;
+        
+        /* Iterate backwards from destination 
+        to source through the parent array */
+        while (parent[node] != node) {
+            
+            // Add the node to the path
+            path.add(node); 
+            
+            // Take a step back
+            node = parent[node];
+        }
+        
+        // Add the source node to the path
+        path.add(1);
+        
+        /* Since the path stored is in a 
+        reverse order, reverse the array 
+        to get the actual path */
+        Collections.reverse(path);
+        
+        // Add the path weight in the beginning
+        path.add(0, dist[n]);
+        
+        // Return the result
+        return path;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class MinPriorityQueue {
+    constructor() {
+        this.heap = [];
+    }
+
+    enqueue(element) {
+        this.heap.push(element);
+        this.bubbleUp();
+    }
+
+    dequeue() {
+        const min = this.heap[0];
+        const end = this.heap.pop();
+        if (this.heap.length &gt; 0) {
+            this.heap[0] = end;
+            this.bubbleDown();
+        }
+        return min;
+    }
+
+    bubbleUp() {
+        let index = this.heap.length - 1;
+        const element = this.heap[index];
+        while (index &gt; 0) {
+            let parentIndex = Math.floor((index - 1) / 2);
+            let parent = this.heap[parentIndex];
+            if (element[0] &gt;= parent[0]) break;
+            this.heap[index] = parent;
+            index = parentIndex;
+        }
+        this.heap[index] = element;
+    }
+
+    bubbleDown() {
+        let index = 0;
+        const length = this.heap.length;
+        const element = this.heap[0];
+        while (true) {
+            let leftChildIndex = 2 * index + 1;
+            let rightChildIndex = 2 * index + 2;
+            let leftChild, rightChild;
+            let swap = null;
+
+            if (leftChildIndex &lt; length) {
+                leftChild = this.heap[leftChildIndex];
+                if (leftChild[0] &lt; element[0]) {
+                    swap = leftChildIndex;
+                }
+            }
+
+            if (rightChildIndex &lt; length) {
+                rightChild = this.heap[rightChildIndex];
+                if (
+                    (swap === null &amp;&amp; rightChild[0] &lt; element[0]) ||
+                    (swap !== null &amp;&amp; rightChild[0] &lt; leftChild[0])
+                ) {
+                    swap = rightChildIndex;
+                }
+            }
+
+            if (swap === null) break;
+            this.heap[index] = this.heap[swap];
+            index = swap;
+        }
+        this.heap[index] = element;
+    }
+
+    isEmpty() {
+        return this.heap.length === 0;
+    }
+}
+
+class Solution {
+    // Function to find the shortest 
+    // path from node 1 to node n
+    shortestPath(n, m, edges) {
+        
+        // Adjacency list to store graph
+        const adj = Array.from({ length: n + 1 }, () =&gt; []);
+        
+        // Adding the edges to the graph
+        for (const edge of edges) {
+            adj[edge[0]].push([edge[1], edge[2]]);
+            adj[edge[1]].push([edge[0], edge[2]]);
+        }
+        
+        // Using priority queue to 
+        // implement Dijkstra Algorithm
+        const pq = new MinPriorityQueue();
+        
+        // Distance array
+        const dist = new Array(n + 1).fill(Infinity);
+        
+        // Parent array
+        const parent = Array.from({ length: n + 1 }, (_, i) =&gt; i);
+        
+        // Distance of source node 
+        // (node 1) to itself is zero
+        dist[1] = 0;
+        
+        // Push the source node to the queue.
+        pq.enqueue([0, 1]);
+        
+        // Until the queue is empty
+        while (!pq.isEmpty()) {
+            // Get the pair containing node having 
+            // minimum distance from source node
+            const [dis, node] = pq.dequeue();
+            
+            // Iterate through the neighbors
+            for (const [adjNode, edWt] of adj[node]) {
+                // If the tentative distance to 
+                // reach adjacent node is smaller 
+                // than the known distance
+                if (dis + edWt &lt; dist[adjNode]) {
+                    
+                    // Update the known distance
+                    dist[adjNode] = dis + edWt;
+                    
+                    // Push the new pair to priority queue
+                    pq.enqueue([dis + edWt, adjNode]);
+                    
+                    // Update the parent of the adjNode 
+                    // to the recent node(where it came from)
+                    parent[adjNode] = node;
+                }
+            }
+        }
+        
+        // If distance to the node could not be found, 
+        // return an array containing -1.
+        if (dist[n] === Infinity) {
+            return [-1];
+        }
+        
+        // Array to store the path
+        const path = [];
+        
+        // Start from the destination node
+        let node = n;
+        
+        // Iterate backwards from destination 
+        // to source through the parent array
+        while (parent[node] !== node) {
+            // Add the node to the path
+            path.push(node);
+            // Take a step back
+            node = parent[node];
+        }
+        
+        // Add the source node to the path
+        path.push(1);
+        
+        // Since the path stored is in a 
+        // reverse order, reverse the array 
+        // to get the actual path
+        path.reverse();
+        
+        // Add the path weight in the beginning
+        path.unshift(dist[n]);
+        
+        // Return the result
+        return path;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>import heapq
+
+class Solution:
+    # Function to find the shortest 
+    # path from node 1 to node n
+    def shortestPath(self, n, m, edges):
+        
+        # Adjacency list to store graph
+        adj = [[] for _ in range(n + 1)]
+        
+        # Adding the edges to the graph
+        for edge in edges:
+            adj[edge[0]].append((edge[1], edge[2]))
+            adj[edge[1]].append((edge[0], edge[2]))
+        
+        # Using priority queue to 
+        # implement Dijkstra Algorithm
+        pq = []
+        
+        # Distance array
+        dist = [float(&#x27;inf&#x27;)] * (n + 1)
+        
+        # Parent array
+        parent = list(range(n + 1))
+        
+        # Distance of source node 
+        # (node 1) to itself is zero
+        dist[1] = 0
+        
+        # Push the source node to the queue.
+        heapq.heappush(pq, (0, 1))
+        
+        # Until the queue is empty
+        while pq:
+            # Get the pair containing node having 
+            # minimum distance from source node
+            dis, node = heapq.heappop(pq)
+            
+            # Iterate through the neighbors
+            for adjNode, edWt in adj[node]:
+                # If the tentative distance to 
+                # reach adjacent node is smaller 
+                # than the known distance
+                if dis + edWt &lt; dist[adjNode]:
+                    
+                    # Update the known distance
+                    dist[adjNode] = dis + edWt
+                    
+                    # Push the new pair to priority queue
+                    heapq.heappush(pq, (dis + edWt, adjNode))
+                    
+                    # Update the parent of the adjNode 
+                    # to the recent node(where it came from)
+                    parent[adjNode] = node
+        
+        # If distance to the node could not be found, 
+        # return an array containing -1.
+        if dist[n] == float(&#x27;inf&#x27;):
+            return [-1]
+        
+        # Array to store the path
+        path = []
+        
+        # Start from the destination node
+        node = n
+        
+        # Iterate backwards from destination 
+        # to source through the parent array
+        while parent[node] != node:
+            # Add the node to the path
+            path.append(node)
+            # Take a step back
+            node = parent[node]
+        
+        # Add the source node to the path
+        path.append(1)
+        
+        # Since the path stored is in a 
+        # reverse order, reverse the array 
+        # to get the actual path
+        path.reverse()
+        
+        # Add the path weight in the beginning
+        path.insert(0, dist[n])
+        
+        # Return the result
+        return path
+</code></pre></div>
+</body>
+</html>

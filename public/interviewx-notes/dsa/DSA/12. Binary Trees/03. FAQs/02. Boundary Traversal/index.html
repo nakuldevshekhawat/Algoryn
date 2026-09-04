@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boundary Traversal</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Boundary Traversal</h1>
+<div class="meta">
+  <span class="badge difficulty-Medium">Medium</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Tree</span><span>Data Structures</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a root of Binary Tree, perform the <strong>boundary traversal</strong> of the tree. </p><p><br></p><p>The boundary traversal is the process of visiting the boundary nodes of the binary tree in the anticlockwise direction, starting from the root.</p><p><br></p><p>The <strong>boundary</strong> of a binary tree is the concatenation of the <strong>root</strong>, the <strong>left boundary</strong>, the <strong>leaves</strong> ordered from left-to-right, and the <strong>reverse order</strong> of the <strong>right boundary</strong>.</p><p>The <strong>left boundary</strong> is the set of nodes defined by the following:</p><p><br></p><ul><li>The root node's left child is in the left boundary. If the root does not have a left child, then the left boundary is <strong>empty</strong>.</li></ul><p><br></p><ul><li>If a node in the left boundary and has a left child, then the left child is in the left boundary.</li></ul><p><br></p><ul><li>If a node is in the left boundary, has <strong>no</strong> left child, but has a right child, then the right child is in the left boundary.</li></ul><p><br></p><ul><li>The leftmost leaf is <strong>not</strong> in the left boundary.</li></ul><p><br></p><p>The <strong>right boundary</strong> is similar to the <strong>left boundary</strong>, except it is the right side of the root's right subtree. Again, the leaf is <strong>not</strong> part of the <strong>right boundary</strong>, and the <strong>right boundary</strong> is empty if the root does not have a right child.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>0 <= Number of Nodes <= 10<sup>4</sup></li><li>-10<sup>3</sup> <= Node.val <= 10<sup>3</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> root = [1, 2, 3, 4, 5, 6, 7, null, null, 8, 9]</p><p><strong>Output :</strong> [1, 2, 4, 8, 9, 6, 7, 3]</p><p><strong>Explanation :</strong></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-HG4THe8L"></p><h3>Example 2</h3><p><strong>Input :</strong> root = [1, 2, null, 4, 9, 6, 5, 3, null, null, null, null, null, 7, 8]</p><p><strong>Output :</strong> [1, 2, 4, 6, 5, 7, 8]</p><p><strong>Explanation :</strong></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-o0-6k-B_"></p><h3>Example 3</h3><p><strong>Input :</strong> root = [5, 1, 2, 8, null, 4, 5, null, 6]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>In the field of computer graphics and game development, tree traversal algorithms, similar to the concept in the boundary traversal of a binary tree, are used for space partitioning. Techniques like Binary Space Partitioning (BSP) trees help in determining what objects need to be rendered and are critical for optimizing performance. In simple terms, it can be said that your favorite video game performs well because similar tree traversal techniques help decide what elements to show on your screen at any point in time!</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h2>Intuition</h2>
+<p>The boundary traversal algorithm aims to traverse the boundary of a binary tree in an anti-clockwise direction. The traversal is divided into three main parts: the left boundary, the bottom boundary (leaf nodes), and the right boundary. The left boundary traversal starts from the root and moves to the leftmost child, switching to the right child if the left is unavailable, until reaching a leaf node. The bottom boundary includes all leaf nodes using a simple preorder traversal. The right boundary traversal is similar to the left boundary but in the reverse direction, moving from the root to the rightmost child, and reversing the order of nodes in the result.</p>
+
+<h2>Approach</h2>
+<ul>
+  <img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Boundary Traversal/-KnrdK8Qo" alt="Boundary Traversal Diagram 1">
+  <li>Begin by initializing an empty array to collect the nodes encountered during the boundary traversal. Additionally, create a helper function designed to determine whether a node is a leaf, which helps to prevent the inclusion of duplicate nodes in the traversal.</li>
+  
+  <li>Define a recursive function called <code>addLeftBoundary</code> and use a vector to keep track of nodes on the left boundary. Start this function at the root of the tree and proceed down the leftmost path until you reach a leaf node. For every non-leaf node encountered, append its value to the result list. Continue by traversing to the left child, and if the left child is not available, call the function on the right child.</li>
+  <br>
+  <img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Boundary Traversal/-3D-D5JMs" alt="Boundary Traversal Diagram 2">
+  <li>Next, create a recursive function named <code>addLeafNodes</code> and use a vector to store the nodes found at the bottom of the tree. When this function encounters a leaf node, add its value to the result list. Recursively visit the left and right subtrees of the current node following a preorder traversal pattern.</li>
+  <br>
+  <img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Boundary Traversal/-nuk-TdcS" alt="Boundary Traversal Diagram 3">
+  <li>Define another recursive function, <code>addRightBoundary</code>, and use a vector to capture nodes on the right boundary. Begin at the root and traverse the rightmost path of the tree until reaching a leaf node. For each non-leaf node, first attempt to traverse to its right child; if that child is unavailable, move to the left child. As the recursion returns, add the current node's value to the result list.</li>
+  <br>
+  <img src="https://static.takeuforward.org/premium/Binary Trees/FAQs/Boundary Traversal/-VXtlZdKL" alt="Boundary Traversal Diagram 4">
+</ul>
+
+<h3>Solution</h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+/**
+ * Definition for a binary tree node.
+ * struct TreeNode {
+ *     int data;
+ *     TreeNode *left;
+ *     TreeNode *right;
+ *     TreeNode(int val) : data(val), left(nullptr), right(nullptr) {}
+ * };
+ **/
+
+class Solution {
+public:
+    // Function to check if a node is a leaf
+    bool isLeaf(TreeNode* root) {
+        return !root->left && !root->right;
+    }
+
+    // Function to add the left boundary of the tree
+    void addLeftBoundary(TreeNode* root, vector<int>& res) {
+        TreeNode* curr = root->left;
+        while (curr) {
+            if (!isLeaf(curr)) {
+                res.push_back(curr->data);
+            }
+            if (curr->left) {
+                curr = curr->left;
+            } else {
+                curr = curr->right;
+            }
+        }
+    }
+
+    // Function to add the right boundary of the tree
+    void addRightBoundary(TreeNode* root, vector<int>& res) {
+        TreeNode* curr = root->right;
+        vector<int> temp;
+        while (curr) {
+            if (!isLeaf(curr)) {
+                temp.push_back(curr->data);
+            }
+            if (curr->right) {
+                curr = curr->right;
+            } else {
+                curr = curr->left;
+            }
+        }
+        for (int i = temp.size() - 1; i >= 0; --i) {
+            res.push_back(temp[i]);
+        }
+    }
+
+    // Function to add the leaves of the tree
+    void addLeaves(TreeNode* root, vector<int>& res) {
+        if (isLeaf(root)) {
+            res.push_back(root->data);
+            return;
+        }
+        if (root->left) {
+            addLeaves(root->left, res);
+        }
+        if (root->right) {
+            addLeaves(root->right, res);
+        }
+    }
+
+    // Main function to perform the boundary traversal of the binary tree
+    vector<int> boundary(TreeNode* root) {
+        vector<int> res;
+        if (!root) {
+            return res;
+        }
+        if (!isLeaf(root)) {
+            res.push_back(root->data);
+        }
+
+        addLeftBoundary(root, res);
+        addLeaves(root, res);
+        addRightBoundary(root, res);
+
+        return res;
+    }
+};
+
+// Helper function to print the result
+void printResult(const vector<int>& result) {
+    for (int val : result) {
+        cout << val << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    // Creating a sample binary tree
+    TreeNode* root = new TreeNode(1);
+    root->left = new TreeNode(2);
+    root->right = new TreeNode(3);
+    root->left->left = new TreeNode(4);
+    root->left->right = new TreeNode(5);
+    root->right->left = new TreeNode(6);
+    root->right->right = new TreeNode(7);
+
+    Solution solution;
+
+    // Get the boundary traversal
+    vector<int> result = solution.boundary(root);
+
+    // Print the result
+    cout << "Boundary Traversal: ";
+    printResult(result);
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span></div><pre class="wp-block-code"><code lang="java" class="language-java">/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     int data;
+ *     TreeNode left;
+ *     TreeNode right;
+ *     TreeNode(int val) { data = val; left = null, right = null; }
+ * }
+ **/
+
+class Solution {
+    // Function to check if a node is a leaf
+    public boolean isLeaf(TreeNode root) {
+        return root.left == null && root.right == null;
+    }
+
+    // Function to add the left boundary of the tree
+    public void addLeftBoundary(TreeNode root, List<Integer> res) {
+        TreeNode curr = root.left;
+        while (curr != null) {
+            if (!isLeaf(curr)) {
+                res.add(curr.data);
+            }
+            if (curr.left != null) {
+                curr = curr.left;
+            } else {
+                curr = curr.right;
+            }
+        }
+    }
+
+    // Function to add the right boundary of the tree
+    public void addRightBoundary(TreeNode root, List<Integer> res) {
+        TreeNode curr = root.right;
+        List<Integer> temp = new ArrayList<>();
+        while (curr != null) {
+            if (!isLeaf(curr)) {
+                temp.add(curr.data);
+            }
+            if (curr.right != null) {
+                curr = curr.right;
+            } else {
+                curr = curr.left;
+            }
+        }
+        for (int i = temp.size() - 1; i >= 0; --i) {
+            res.add(temp.get(i));
+        }
+    }
+
+    // Function to add the leaves of the tree
+    public void addLeaves(TreeNode root, List<Integer> res) {
+        if (isLeaf(root)) {
+            res.add(root.data);
+            return;
+        }
+        if (root.left != null) {
+            addLeaves(root.left, res);
+        }
+        if (root.right != null) {
+            addLeaves(root.right, res);
+        }
+    }
+
+    // Main function to perform the boundary traversal of the binary tree
+    public List<Integer> boundary(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if (root == null) {
+            return res;
+        }
+        if (!isLeaf(root)) {
+            res.add(root.data);
+        }
+
+        addLeftBoundary(root, res);
+        addLeaves(root, res);
+        addRightBoundary(root, res);
+
+        return res;
+    }
+
+    // Helper function to print the result
+    public static void printResult(List<Integer> result) {
+        for (int val : result) {
+            System.out.print(val + " ");
+        }
+        System.out.println();
+    }
+
+    public static void main(String[] args) {
+        // Creating a sample binary tree
+        TreeNode root = new TreeNode(1);
+        root.left = new TreeNode(2);
+        root.right = new TreeNode(3);
+        root.left.left = new TreeNode(4);
+        root.left.right = new TreeNode(5);
+        root.right.left = new TreeNode(6);
+        root.right.right = new TreeNode(7);
+
+        Solution solution = new Solution();
+
+        // Get the boundary traversal
+        List<Integer> result = solution.boundary(root);
+
+        // Print the result
+        System.out.print("Boundary Traversal: ");
+        printResult(result);
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span></div><pre class="wp-block-code"><code lang="python" class="language-python"># Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, val=0, left=None, right=None):
+#         self.data = val
+#         self.left = left
+#         self.right = right
+
+class Solution:
+    # Function to check if a node is a leaf
+    def isLeaf(self, root):
+        return not root.left and not root.right
+
+    # Function to add the left boundary of the tree
+    def addLeftBoundary(self, root, res):
+        curr = root.left
+        while curr:
+            if not self.isLeaf(curr):
+                res.append(curr.data)
+            if curr.left:
+                curr = curr.left
+            else:
+                curr = curr.right
+
+    # Function to add the right boundary of the tree
+    def addRightBoundary(self, root, res):
+        curr = root.right
+        temp = []
+        while curr:
+            if not self.isLeaf(curr):
+                temp.append(curr.data)
+            if curr.right:
+                curr = curr.right
+            else:
+                curr = curr.left
+        res.extend(temp[::-1])
+
+    # Function to add the leaves of the tree
+    def addLeaves(self, root, res):
+        if self.isLeaf(root):
+            res.append(root.data)
+            return
+        if root.left:
+            self.addLeaves(root.left, res)
+        if root.right:
+            self.addLeaves(root.right, res)
+
+    # Main function to perform the boundary traversal of the binary tree
+    def boundary(self, root):
+        res = []
+        if not root:
+            return res
+        if not self.isLeaf(root):
+            res.append(root.data)
+
+        self.addLeftBoundary(root, res)
+        self.addLeaves(root, res)
+        self.addRightBoundary(root, res)
+
+        return res
+
+# Helper function to print the result
+def printResult(result):
+    for val in result:
+        print(val, end=" ")
+    print()
+
+# Creating a sample binary tree
+root = TreeNode(1)
+root.left = TreeNode(2)
+root.right = TreeNode(3)
+root.left.left = TreeNode(4)
+root.left.right = TreeNode(5)
+root.right.left = TreeNode(6)
+root.right.right = TreeNode(7)
+
+solution = Solution()
+
+# Get the boundary traversal
+result = solution.boundary(root)
+
+# Print the result
+print("Boundary Traversal: ", end="")
+printResult(result)
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">/**
+ * Definition for a binary tree node.
+ * class TreeNode {
+ *      constructor(val = 0, left = null, right = null){
+ *          this.data = val;
+ *          this.left = left;
+ *          this.right = right;
+ *      }
+ * }
+ **/
+
+class Solution {
+    // Function to check if a node is a leaf
+    isLeaf(root) {
+        return !root.left && !root.right;
+    }
+
+    // Function to add the left boundary of the tree
+    addLeftBoundary(root, res) {
+        let curr = root.left;
+        while (curr) {
+            if (!this.isLeaf(curr)) {
+                res.push(curr.data);
+            }
+            if (curr.left) {
+                curr = curr.left;
+            } else {
+                curr = curr.right;
+            }
+        }
+    }
+
+    // Function to add the right boundary of the tree
+    addRightBoundary(root, res) {
+        let curr = root.right;
+        const temp = [];
+        while (curr) {
+            if (!this.isLeaf(curr)) {
+                temp.push(curr.data);
+            }
+            if (curr.right) {
+                curr = curr.right;
+            } else {
+                curr = curr.left;
+            }
+        }
+        for (let i = temp.length - 1; i >= 0; --i) {
+            res.push(temp[i]);
+        }
+    }
+
+    // Function to add the leaves of the tree
+    addLeaves(root, res) {
+        if (this.isLeaf(root)) {
+            res.push(root.data);
+            return;
+        }
+        if (root.left) {
+            this.addLeaves(root.left, res);
+        }
+        if (root.right) {
+            this.addLeaves(root.right, res);
+        }
+    }
+
+    // Main function to perform the boundary traversal of the binary tree
+    boundary(root) {
+        const res = [];
+        if (!root) {
+            return res;
+        }
+        if (!this.isLeaf(root)) {
+            res.push(root.data);
+        }
+
+        this.addLeftBoundary(root, res);
+        this.addLeaves(root, res);
+        this.addRightBoundary(root, res);
+
+        return res;
+    }
+}
+
+// Helper function to print the result
+function printResult(result) {
+    for (const val of result) {
+        console.log(val);
+    }
+}
+
+// Creating a sample binary tree
+const root = new TreeNode(1);
+root.left = new TreeNode(2);
+root.right = new TreeNode(3);
+root.left.left = new TreeNode(4);
+root.left.right = new TreeNode(5);
+root.right.left = new TreeNode(6);
+root.right.right = new TreeNode(7);
+
+const solution = new Solution();
+
+// Get the boundary traversal
+const result = solution.boundary(root);
+
+// Print the result
+console.log("Boundary Traversal: ");
+printResult(result);
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span><span>129</span><span>130</span><span>131</span><span>132</span><span>133</span><span>134</span><span>135</span><span>136</span><span>137</span><span>138</span><span>139</span><span>140</span><span>141</span><span>142</span><span>143</span><span>144</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+// Definition for a binary tree node.
+public class TreeNode
+{
+    public int data;
+    public TreeNode left;
+    public TreeNode right;
+
+    public TreeNode(int val = 0, TreeNode left = null, TreeNode right = null)
+    {
+        this.data = val;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public class Solution
+{
+    // Function to check if a node is a leaf
+    private bool IsLeaf(TreeNode root)
+    {
+        return root.left == null && root.right == null;
+    }
+
+    // Function to add the left boundary of the tree
+    private void AddLeftBoundary(TreeNode root, List<int> res)
+    {
+        TreeNode curr = root.left;
+        while (curr != null)
+        {
+            if (!IsLeaf(curr))
+            {
+                res.Add(curr.data);
+            }
+            if (curr.left != null)
+            {
+                curr = curr.left;
+            }
+            else
+            {
+                curr = curr.right;
+            }
+        }
+    }
+
+    // Function to add the right boundary of the tree
+    private void AddRightBoundary(TreeNode root, List<int> res)
+    {
+        TreeNode curr = root.right;
+        List<int> temp = new List<int>();
+        while (curr != null)
+        {
+            if (!IsLeaf(curr))
+            {
+                temp.Add(curr.data);
+            }
+            if (curr.right != null)
+            {
+                curr = curr.right;
+            }
+            else
+            {
+                curr = curr.left;
+            }
+        }
+        for (int i = temp.Count - 1; i >= 0; --i)
+        {
+            res.Add(temp[i]);
+        }
+    }
+
+    // Function to add the leaves of the tree
+    private void AddLeaves(TreeNode root, List<int> res)
+    {
+        if (IsLeaf(root))
+        {
+            res.Add(root.data);
+            return;
+        }
+        if (root.left != null)
+        {
+            AddLeaves(root.left, res);
+        }
+        if (root.right != null)
+        {
+            AddLeaves(root.right, res);
+        }
+    }
+
+    // Main function to perform the boundary traversal of the binary tree
+    public List<int> Boundary(TreeNode root)
+    {
+        List<int> res = new List<int>();
+        if (root == null)
+        {
+            return res;
+        }
+        if (!IsLeaf(root))
+        {
+            res.Add(root.data);
+        }
+
+        AddLeftBoundary(root, res);
+        AddLeaves(root, res);
+        AddRightBoundary(root, res);
+
+        return res;
+    }
+}
+
+public class Program
+{
+    // Helper function to print the result
+    static void PrintResult(List<int> result)
+    {
+        foreach (int val in result)
+        {
+            Console.WriteLine(val);
+        }
+    }
+
+    public static void Main(string[] args)
+    {
+        // Creating a sample binary tree
+        TreeNode root = new TreeNode(1);
+        root.left = new TreeNode(2);
+        root.right = new TreeNode(3);
+        root.left.left = new TreeNode(4);
+        root.left.right = new TreeNode(5);
+        root.right.left = new TreeNode(6);
+        root.right.right = new TreeNode(7);
+
+        Solution solution = new Solution();
+
+        // Get the boundary traversal
+        List<int> result = solution.Boundary(root);
+
+        // Print the result
+        Console.WriteLine("Boundary Traversal: ");
+        PrintResult(result);
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+type TreeNode struct {
+    Data  int
+    Left  *TreeNode
+    Right *TreeNode
+}
+
+// Function to check if a node is a leaf
+func isLeaf(root *TreeNode) bool {
+    return root.Left == nil && root.Right == nil
+}
+
+// Function to add the left boundary of the tree
+func addLeftBoundary(root *TreeNode, res *[]int) {
+    curr := root.Left
+    for curr != nil {
+        if !isLeaf(curr) {
+            *res = append(*res, curr.Data)
+        }
+        if curr.Left != nil {
+            curr = curr.Left
+        } else {
+            curr = curr.Right
+        }
+    }
+}
+
+// Function to add the leaves of the tree
+func addLeaves(root *TreeNode, res *[]int) {
+    if root == nil {
+        return
+    }
+    if isLeaf(root) {
+        *res = append(*res, root.Data)
+        return
+    }
+    if root.Left != nil {
+        addLeaves(root.Left, res)
+    }
+    if root.Right != nil {
+        addLeaves(root.Right, res)
+    }
+}
+
+// Function to add the right boundary of the tree
+func addRightBoundary(root *TreeNode, res *[]int) {
+    curr := root.Right
+    temp := []int{}
+    for curr != nil {
+        if !isLeaf(curr) {
+            temp = append(temp, curr.Data)
+        }
+        if curr.Right != nil {
+            curr = curr.Right
+        } else {
+            curr = curr.Left
+        }
+    }
+    for i := len(temp) - 1; i >= 0; i-- {
+        *res = append(*res, temp[i])
+    }
+}
+
+// Boundary performs the boundary traversal of the binary tree
+func Boundary(root *TreeNode) []int {
+    res := []int{}
+    if root == nil {
+        return res
+    }
+    if !isLeaf(root) {
+        res = append(res, root.Data)
+    }
+    addLeftBoundary(root, &res)
+    addLeaves(root, &res)
+    addRightBoundary(root, &res)
+    return res
+}
+
+func main() {
+    // Creating a sample binary tree
+    root := &TreeNode{Data: 1}
+    root.Left = &TreeNode{Data: 2}
+    root.Right = &TreeNode{Data: 3}
+    root.Left.Left = &TreeNode{Data: 4}
+    root.Left.Right = &TreeNode{Data: 5}
+    root.Right.Left = &TreeNode{Data: 6}
+    root.Right.Right = &TreeNode{Data: 7}
+
+    // Get the boundary traversal
+    result := Boundary(root)
+
+    // Print the result
+    fmt.Print("Boundary Traversal: ")
+    for _, val := range result {
+        fmt.Printf("%d ", val)
+    }
+    fmt.Println()
+}
+</code></pre></div></div></div>
+
+<h3> Complexity Analysis </h3>
+<p><strong>Time Complexity: O(N)</strong> where N is the number of nodes in the Binary Tree. This is due to traversing the left boundary, bottom nodes, and right boundary sequentially, each operation being at most O(N).</p>
+
+<p><strong>Space Complexity: O(N)</strong> for storing boundary nodes and auxiliary recursion stack space in the worst-case scenario of a skewed tree.</p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    // Function to check if a node is a leaf
+    bool isLeaf(TreeNode* root) {
+        return !root-&gt;left &amp;&amp; !root-&gt;right;
+    }
+
+    // Function to add the left boundary of the tree
+    void addLeftBoundary(TreeNode* root, vector&lt;int&gt;&amp; res) {
+        TreeNode* curr = root-&gt;left;
+        while (curr) {
+            if (!isLeaf(curr)) {
+                res.push_back(curr-&gt;data);
+            }
+            if (curr-&gt;left) {
+                curr = curr-&gt;left;
+            } else {
+                curr = curr-&gt;right;
+            }
+        }
+    }
+
+    // Function to add the right boundary of the tree
+    void addRightBoundary(TreeNode* root, vector&lt;int&gt;&amp; res) {
+        TreeNode* curr = root-&gt;right;
+        vector&lt;int&gt; temp;
+        while (curr) {
+            if (!isLeaf(curr)) {
+                temp.push_back(curr-&gt;data);
+            }
+            if (curr-&gt;right) {
+                curr = curr-&gt;right;
+            } else {
+                curr = curr-&gt;left;
+            }
+        }
+        for (int i = temp.size() - 1; i &gt;= 0; --i) {
+            res.push_back(temp[i]);
+        }
+    }
+
+    // Function to add the leaves of the tree
+    void addLeaves(TreeNode* root, vector&lt;int&gt;&amp; res) {
+        if (isLeaf(root)) {
+            res.push_back(root-&gt;data);
+            return;
+        }
+        if (root-&gt;left) {
+            addLeaves(root-&gt;left, res);
+        }
+        if (root-&gt;right) {
+            addLeaves(root-&gt;right, res);
+        }
+    }
+
+    // Main function to perform the boundary traversal of the binary tree
+    vector&lt;int&gt; boundary(TreeNode* root) {
+        vector&lt;int&gt; res;
+        if (!root) {
+            return res;
+        }
+        if (!isLeaf(root)) {
+            res.push_back(root-&gt;data);
+        }
+
+        addLeftBoundary(root, res);
+        addLeaves(root, res);
+        addRightBoundary(root, res);
+
+        return res;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution {
+    // Function to check if a node is a leaf
+    private bool IsLeaf(TreeNode root) {
+        return root.left == null &amp;&amp; root.right == null;
+    }
+
+    // Function to add the left boundary of the tree
+    private void AddLeftBoundary(TreeNode root, List&lt;int&gt; res) {
+        TreeNode curr = root.left;
+        while (curr != null) {
+            if (!IsLeaf(curr)) {
+                res.Add(curr.data);
+            }
+            if (curr.left != null) {
+                curr = curr.left;
+            } else {
+                curr = curr.right;
+            }
+        }
+    }
+
+    // Function to add the right boundary of the tree
+    private void AddRightBoundary(TreeNode root, List&lt;int&gt; res) {
+        TreeNode curr = root.right;
+        List&lt;int&gt; temp = new List&lt;int&gt;();
+        while (curr != null) {
+            if (!IsLeaf(curr)) {
+                temp.Add(curr.data);
+            }
+            if (curr.right != null) {
+                curr = curr.right;
+            } else {
+                curr = curr.left;
+            }
+        }
+        for (int i = temp.Count - 1; i &gt;= 0; --i) {
+            res.Add(temp[i]);
+        }
+    }
+
+    // Function to add the leaves of the tree
+    private void AddLeaves(TreeNode root, List&lt;int&gt; res) {
+        if (IsLeaf(root)) {
+            res.Add(root.data);
+            return;
+        }
+        if (root.left != null) {
+            AddLeaves(root.left, res);
+        }
+        if (root.right != null) {
+            AddLeaves(root.right, res);
+        }
+    }
+
+    // Main function to perform the boundary traversal of the binary tree
+    public List&lt;int&gt; Boundary(TreeNode root) {
+        List&lt;int&gt; res = new List&lt;int&gt;();
+        if (root == null) {
+            return res;
+        }
+        if (!IsLeaf(root)) {
+            res.Add(root.data);
+        }
+
+        AddLeftBoundary(root, res);
+        AddLeaves(root, res);
+        AddRightBoundary(root, res);
+
+        return res;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to check if a node is a leaf
+func isLeaf(root *TreeNode) bool {
+    return root.Left == nil &amp;&amp; root.Right == nil
+}
+
+// Function to add the left boundary of the tree
+func addLeftBoundary(root *TreeNode, res *[]int) {
+    curr := root.Left
+    for curr != nil {
+        if !isLeaf(curr) {
+            *res = append(*res, curr.Data)
+        }
+        if curr.Left != nil {
+            curr = curr.Left
+        } else {
+            curr = curr.Right
+        }
+    }
+}
+
+// Function to add the leaves of the tree
+func addLeaves(root *TreeNode, res *[]int) {
+    if root == nil {
+        return
+    }
+    if isLeaf(root) {
+        *res = append(*res, root.Data)
+        return
+    }
+    if root.Left != nil {
+        addLeaves(root.Left, res)
+    }
+    if root.Right != nil {
+        addLeaves(root.Right, res)
+    }
+}
+
+// Function to add the right boundary of the tree
+func addRightBoundary(root *TreeNode, res *[]int) {
+    curr := root.Right
+    temp := []int{}
+    for curr != nil {
+        if !isLeaf(curr) {
+            temp = append(temp, curr.Data)
+        }
+        if curr.Right != nil {
+            curr = curr.Right
+        } else {
+            curr = curr.Left
+        }
+    }
+    for i := len(temp) - 1; i &gt;= 0; i-- {
+        *res = append(*res, temp[i])
+    }
+}
+
+// Boundary performs the boundary traversal of the binary tree
+func Boundary(root *TreeNode) []int {
+    res := []int{}
+    if root == nil {
+        return res
+    }
+    if !isLeaf(root) {
+        res = append(res, root.Data)
+    }
+    addLeftBoundary(root, &amp;res)
+    addLeaves(root, &amp;res)
+    addRightBoundary(root, &amp;res)
+    return res
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+// Function to check if a node is a leaf
+public boolean isLeaf(TreeNode root) {
+    return root.left == null &amp;&amp; root.right == null;
+}
+
+// Function to add the left boundary of the tree
+public void addLeftBoundary(TreeNode root, List&lt;Integer&gt; res) {
+    TreeNode curr = root.left;
+    while (curr != null) {
+        if (!isLeaf(curr)) {
+            res.add(curr.data);
+        }
+        if (curr.left != null) {
+            curr = curr.left;
+        } else {
+            curr = curr.right;
+        }
+    }
+}
+
+// Function to add the right boundary of the tree
+public void addRightBoundary(TreeNode root, List&lt;Integer&gt; res) {
+    TreeNode curr = root.right;
+    List&lt;Integer&gt; temp = new ArrayList&lt;&gt;();
+    while (curr != null) {
+        if (!isLeaf(curr)) {
+            temp.add(curr.data);
+        }
+        if (curr.right != null) {
+            curr = curr.right;
+        } else {
+            curr = curr.left;
+        }
+    }
+    for (int i = temp.size() - 1; i &gt;= 0; --i) {
+        res.add(temp.get(i));
+    }
+}
+
+// Function to add the leaves of the tree
+public void addLeaves(TreeNode root, List&lt;Integer&gt; res) {
+    if (isLeaf(root)) {
+        res.add(root.data);
+        return;
+    }
+    if (root.left != null) {
+        addLeaves(root.left, res);
+    }
+    if (root.right != null) {
+        addLeaves(root.right, res);
+    }
+}
+
+// Main function to perform the boundary traversal of the binary tree
+public List&lt;Integer&gt; boundary(TreeNode root) {
+    List&lt;Integer&gt; res = new ArrayList&lt;&gt;();
+    if (root == null) {
+        return res;
+    }
+    if (!isLeaf(root)) {
+        res.add(root.data);
+    }
+
+    addLeftBoundary(root, res);
+    addLeaves(root, res);
+    addRightBoundary(root, res);
+
+    return res;
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to check if a node is a leaf
+    isLeaf(root) {
+        return !root.left &amp;&amp; !root.right;
+    }
+
+    // Function to add the left boundary of the tree
+    addLeftBoundary(root, res) {
+        let curr = root.left;
+        while (curr) {
+            if (!this.isLeaf(curr)) {
+                res.push(curr.data);
+            }
+            if (curr.left) {
+                curr = curr.left;
+            } else {
+                curr = curr.right;
+            }
+        }
+    }
+
+    // Function to add the right boundary of the tree
+    addRightBoundary(root, res) {
+        let curr = root.right;
+        const temp = [];
+        while (curr) {
+            if (!this.isLeaf(curr)) {
+                temp.push(curr.data);
+            }
+            if (curr.right) {
+                curr = curr.right;
+            } else {
+                curr = curr.left;
+            }
+        }
+        for (let i = temp.length - 1; i &gt;= 0; --i) {
+            res.push(temp[i]);
+        }
+    }
+
+    // Function to add the leaves of the tree
+    addLeaves(root, res) {
+        if (this.isLeaf(root)) {
+            res.push(root.data);
+            return;
+        }
+        if (root.left) {
+            this.addLeaves(root.left, res);
+        }
+        if (root.right) {
+            this.addLeaves(root.right, res);
+        }
+    }
+
+    // Main function to perform the boundary traversal of the binary tree
+    boundary(root) {
+        const res = [];
+        if (!root) {
+            return res;
+        }
+        if (!this.isLeaf(root)) {
+            res.push(root.data);
+        }
+
+        this.addLeftBoundary(root, res);
+        this.addLeaves(root, res);
+        this.addRightBoundary(root, res);
+
+        return res;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to check if a node is a leaf
+    def isLeaf(self, root):
+        return not root.left and not root.right
+
+    # Function to add the left boundary of the tree
+    def addLeftBoundary(self, root, res):
+        curr = root.left
+        while curr:
+            if not self.isLeaf(curr):
+                res.append(curr.data)
+            if curr.left:
+                curr = curr.left
+            else:
+                curr = curr.right
+
+    # Function to add the right boundary of the tree
+    def addRightBoundary(self, root, res):
+        curr = root.right
+        temp = []
+        while curr:
+            if not self.isLeaf(curr):
+                temp.append(curr.data)
+            if curr.right:
+                curr = curr.right
+            else:
+                curr = curr.left
+        res.extend(temp[::-1])
+
+    # Function to add the leaves of the tree
+    def addLeaves(self, root, res):
+        if self.isLeaf(root):
+            res.append(root.data)
+            return
+        if root.left:
+            self.addLeaves(root.left, res)
+        if root.right:
+            self.addLeaves(root.right, res)
+
+    # Main function to perform the boundary traversal of the binary tree
+    def boundary(self, root):
+        res = []
+        if not root:
+            return res
+        if not self.isLeaf(root):
+            res.append(root.data)
+
+        self.addLeftBoundary(root, res)
+        self.addLeaves(root, res)
+        self.addRightBoundary(root, res)
+
+        return res</code></pre></div>
+</body>
+</html>

@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detect a cycle in a directed graph</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Detect a cycle in a directed graph</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Graph</span><span>Depth-First Search</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a <strong>directed</strong> graph with V vertices labeled from 0 to V-1. The graph is represented using an adjacency list where adj[i] lists all nodes connected to node. Determine if the graph contains any <strong>cycles</strong>.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  <span style="color: var(--text-color); background-color: var(--background);">E=number of edges</span></li><li>  <span style="color: var(--text-color); background-color: var(--background);">1 ≤ V, E ≤ 10</span><sup style="color: var(--text-color); background-color: var(--background);">4</sup></li></ul></div>
+<div class="section"><h3>Example 1</h3><p>Input: V = 6, adj= [ [1], [2, 5], [3], [4], [1], [ ] ]</p><p><br></p><p><img src="https://static.takeuforward.org/content/ProblemSetter-Do8SOPHS"></p><p><br></p><p>Output: True</p><p><br></p><p>Explanation: The graph contains a cycle: 1 -> 2 -> 3 -> 4 -> 1.</p><h3>Example 2</h3><p>Input: V = 4, adj= [[1,2], [2], [], [0,2]]</p><p><br></p><p>Output: False</p><p><br></p><p>Explanation: The graph does not contain a cycle.</p><h3>Example 3</h3><p>Input: V = 3, adj= [[1], [2], [0]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>Fun Fact: The problem of detecting cycles in a directed graph is essentially used in software dependency management systems. These systems, such as NPM for JavaScript or Maven for Java, have to resolve various package dependencies while avoiding cycles. A cycle would mean you have a circular dependency, which often leads to infinite recursion or other logical errors. Thus, algorithms solving such problems are integral to the smooth operation of modern software development and operations.</p></div>
+<div class="section"><h2>Editorial: DFS</h2></div>
+<h3>Intuition:</h3> 
+<p>
+    In a Directed Cyclic Graph, during traversal, if we end up at a node, that we have visited previously in the path, that means we came around a circle and ended up at this node, which determines that it has a cycle. However, detecting cycles using DFS in directed graphs requires a different approach than in undirected graphs due to the nature of directed edges.
+</p>
+
+<p><h6>Understanding:</h6>
+    <ul>
+        <li>In undirected graphs, detecting cycles involves checking if a visited node is not the parent of the current node. On the other hand, in directed graphs, simply finding a previously visited node isn't enough because it might have been visited via a different path.</li>
+        <li>To accurately detect cycles in a directed graph, we need to track nodes within the current path of the DFS traversal. This means maintaining a path array to keep track of nodes in the current DFS path.</li>
+        <li>If we encounter a node that is already in the current DFS path (recursion stack), it indicates a cycle. If a node is visited but not in the current DFS path, it doesn’t necessarily indicate a cycle.
+        </li>
+    </ul>
+</p>
+
+
+<h3>Approach:</h3>
+<ol>
+    <li>A helper function performs DFS, where during the traversal, the nodes are marked as visited and path visited. </li>
+    <li>During the traversal, the cycles are checked by detecting if a node is revisited in the current path. Unmarks the node in the path visited array after exploration.</li>
+    <li>Traverse all the components in the graph to detect the cycle. If any of the components contains a cycle, return true. Otherwise, if no cycle is detected, return false.</li>
+</ol>
+
+ <h4> Dry Run: </h4>
+<img src = "https://static.takeuforward.org/wp/uploads/2022/10/g-19-final-gif-2.gif"> 
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    // Function to perform DFS traversal
+    bool dfs(int node, vector<int> adj[], 
+             vector<bool> &visited, 
+             vector<bool> &pathVisited) {
+                 
+        // Mark the node as path visited
+        visited[node] = true;
+        
+        // Mark the node as path visited
+        pathVisited[node] = true;
+        
+        // Traverse all the neighbors
+        for(auto it : adj[node]) {
+            
+            /* If the neighbor is already visited 
+            in the path, a cycle is detected */
+            if(pathVisited[it]) 
+                return true;
+            
+            /* Else if the node is unvisited, 
+            perform DFS recursively from this node */
+            else if(!visited[it]) {
+                
+                // If cycle is detected, return true
+                if(dfs(it, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        // Remove the node from path 
+        pathVisited[node] = false;
+        
+        // Return false if no cycle is detected
+        return false;
+    }
+    
+public:
+
+    // Function to detect cycle in a directed graph.
+    bool isCyclic(int V, vector<int> adj[]) {
+        
+        // Visited array
+        vector<bool> visited(V, false);
+        
+        /* Array to mark nodes that are 
+        visited in a particular path */
+        vector<bool> pathVisited(V, false);
+        
+        // Traverse the graph
+        for(int i=0; i<V; i++) {
+            if(!visited[i]) {
+                
+                // If a cycle is found, return true
+                if(dfs(i, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        /* Return false if no cycle is 
+        detected in any component */
+        return false;
+    }
+};
+
+int main() {
+    
+    int V = 6;
+    vector<int> adj[V] = {
+        {1}, 
+        {2, 5}, 
+        {3}, 
+        {4}, 
+        {1},
+        {} 
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine if cycle 
+    exists in given directed graph */
+    bool ans = sol.isCyclic(V, adj);
+    
+    // Output
+    if(ans)
+        cout << "The given directed graph contains a cycle.";
+    else 
+        cout << "The given directed graph does not contain a cycle.";
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    // Function to perform DFS traversal
+    private boolean dfs(int node, List<List<Integer>> adj, 
+                        boolean[] visited, 
+                        boolean[] pathVisited) {
+        
+        // Mark the node as path visited
+        visited[node] = true;
+        
+        // Mark the node as path visited
+        pathVisited[node] = true;
+        
+        // Traverse all the neighbors
+        for(int it : adj.get(node)) {
+            
+            /* If the neighbor is already visited 
+            in the path, a cycle is detected */
+            if(pathVisited[it]) 
+                return true;
+            
+            /* Else if the node is unvisited, 
+            perform DFS recursively from this node */
+            else if(!visited[it]) {
+                
+                // If cycle is detected, return true
+                if(dfs(it, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        // Remove the node from path 
+        pathVisited[node] = false;
+        
+        // Return false if no cycle is detected
+        return false;
+    }
+    
+    // Function to detect cycle in a directed graph.
+    public boolean isCyclic(int V, List<List<Integer>> adj) {
+        
+        // Visited array
+        boolean[] visited = new boolean[V];
+        
+        /* Array to mark nodes that are 
+        visited in a particular path */
+        boolean[] pathVisited = new boolean[V];
+        
+        // Traverse the graph
+        for(int i = 0; i < V; i++) {
+            if(!visited[i]) {
+                
+                // If a cycle is found, return true
+                if(dfs(i, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        /* Return false if no cycle is 
+        detected in any component */
+        return false;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        
+        int V = 6;
+        List<List<Integer>> adj = new ArrayList<>();
+        for(int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        adj.get(0).add(1); 
+        adj.get(1).add(2); adj.get(1).add(5);
+        adj.get(2).add(3);
+        adj.get(3).add(4);
+        adj.get(4).add(1);
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution(); 
+        
+        /* Function call to determine if cycle 
+        exists in given directed graph */
+        boolean ans = sol.isCyclic(V, adj);
+        
+        // Output
+        if(ans)
+            System.out.println("The given directed graph contains a cycle.");
+        else 
+            System.out.println("The given directed graph does not contain a cycle.");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to perform DFS traversal
+    def dfs(self, node, adj, visited, pathVisited):
+        # Mark the node as path visited
+        visited[node] = True
+        
+        # Mark the node as path visited
+        pathVisited[node] = True
+        
+        # Traverse all the neighbors
+        for it in adj[node]:
+            
+            # If the neighbor is already visited 
+            # in the path, a cycle is detected
+            if pathVisited[it]:
+                return True
+            
+            # Else if the node is unvisited, 
+            # perform DFS recursively from this node
+            elif not visited[it]:
+                
+                # If cycle is detected, return true
+                if self.dfs(it, adj, visited, pathVisited):
+                    return True
+        
+        # Remove the node from path 
+        pathVisited[node] = False
+        
+        # Return false if no cycle is detected
+        return False
+
+    # Function to detect cycle in a directed graph.
+    def isCyclic(self, V, adj):
+        
+        # Visited array
+        visited = [False] * V
+        
+        # Array to mark nodes that are 
+        # visited in a particular path
+        pathVisited = [False] * V
+        
+        # Traverse the graph
+        for i in range(V):
+            if not visited[i]:
+                
+                # If a cycle is found, return true
+                if self.dfs(i, adj, visited, pathVisited):
+                    return True
+        
+        # Return false if no cycle is 
+        # detected in any component
+        return False
+
+if __name__ == "__main__":
+    
+    V = 6
+    adj = [[] for _ in range(V)]
+    adj[0].append(1)
+    adj[1].extend([2, 5])
+    adj[2].append(3)
+    adj[3].append(4)
+    adj[4].append(1)
+    
+    # Creating an instance of 
+    # Solution class
+    sol = Solution()
+    
+    # Function call to determine if cycle 
+    # exists in given directed graph
+    ans = sol.isCyclic(V, adj)
+    
+    # Output
+    if ans:
+        print("The given directed graph contains a cycle.")
+    else:
+        print("The given directed graph does not contain a cycle.")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    
+    // Function to perform DFS traversal
+    dfs(node, adj, visited, pathVisited) {
+        // Mark the node as path visited
+        visited[node] = true;
+        
+        // Mark the node as path visited
+        pathVisited[node] = true;
+        
+        // Traverse all the neighbors
+        for(let it of adj[node]) {
+            
+            /* If the neighbor is already visited 
+            in the path, a cycle is detected */
+            if(pathVisited[it]) 
+                return true;
+            
+            /* Else if the node is unvisited, 
+            perform DFS recursively from this node */
+            else if(!visited[it]) {
+                
+                // If cycle is detected, return true
+                if(this.dfs(it, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        // Remove the node from path 
+        pathVisited[node] = false;
+        
+        // Return false if no cycle is detected
+        return false;
+    }
+    
+    // Function to detect cycle in a directed graph.
+    isCyclic(V, adj) {
+        
+        // Visited array
+        let visited = new Array(V).fill(false);
+        
+        /* Array to mark nodes that are 
+        visited in a particular path */
+        let pathVisited = new Array(V).fill(false);
+        
+        // Traverse the graph
+        for(let i = 0; i < V; i++) {
+            if(!visited[i]) {
+                
+                // If a cycle is found, return true
+                if(this.dfs(i, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        /* Return false if no cycle is 
+        detected in any component */
+        return false;
+    }
+}
+
+const main = () => {
+    
+    let V = 6;
+    let adj = [
+        [1], 
+        [2, 5], 
+        [3], 
+        [4], 
+        [1],
+        [] 
+    ];
+    
+    /* Creating an instance of 
+    Solution class */
+    let sol = new Solution(); 
+    
+    /* Function call to determine if cycle 
+    exists in given directed graph */
+    let ans = sol.isCyclic(V, adj);
+    
+    // Output
+    if(ans)
+        console.log("The given directed graph contains a cycle.");
+    else 
+        console.log("The given directed graph does not contain a cycle.");
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Program
+{
+    public class Solution
+    {
+        // Function to perform DFS traversal
+        private bool dfs(int node, List<List<int>> adj, bool[] visited, bool[] pathVisited)
+        {
+            // Mark the node as visited
+            visited[node] = true;
+            
+            // Mark the node as path visited
+            pathVisited[node] = true;
+            
+            // Traverse all the neighbors
+            foreach (int it in adj[node])
+            {
+                /* If the neighbor is already visited 
+                in the path, a cycle is detected */
+                if (pathVisited[it])
+                    return true;
+                
+                /* Else if the node is unvisited, 
+                perform DFS recursively from this node */
+                else if (!visited[it])
+                {
+                    // If cycle is detected, return true
+                    if (dfs(it, adj, visited, pathVisited))
+                        return true;
+                }
+            }
+            
+            // Remove the node from path 
+            pathVisited[node] = false;
+            
+            // Return false if no cycle is detected
+            return false;
+        }
+        
+        // Function to detect cycle in a directed graph.
+        public bool IsCyclic(int V, List<List<int>> adj)
+        {
+            // Visited array
+            bool[] visited = new bool[V];
+            
+            /* Array to mark nodes that are 
+            visited in a particular path */
+            bool[] pathVisited = new bool[V];
+            
+            // Traverse the graph
+            for (int i = 0; i < V; i++)
+            {
+                if (!visited[i])
+                {
+                    // If a cycle is found, return true
+                    if (dfs(i, adj, visited, pathVisited))
+                        return true;
+                }
+            }
+            
+            /* Return false if no cycle is 
+            detected in any component */
+            return false;
+        }
+    }
+
+    public static void Main(string[] args)
+    {
+        int V = 6;
+        List<List<int>> adj = new List<List<int>>
+        {
+            new List<int> {1}, 
+            new List<int> {2, 5}, 
+            new List<int> {3}, 
+            new List<int> {4}, 
+            new List<int> {1},
+            new List<int> {} 
+        };
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution(); 
+        
+        /* Function call to determine if cycle 
+        exists in given directed graph */
+        bool ans = sol.IsCyclic(V, adj);
+        
+        // Output
+        if (ans)
+            Console.WriteLine("The given directed graph contains a cycle.");
+        else 
+            Console.WriteLine("The given directed graph does not contain a cycle.");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// dfs performs DFS traversal to detect cycle in directed graph
+func dfs(node int, adj [][]int, visited, pathVisited []bool) bool {
+
+	// Mark the node as visited
+	visited[node] = true
+
+	// Mark the node as path visited
+	pathVisited[node] = true
+
+	// Traverse all the neighbors
+	for _, it := range adj[node] {
+
+		/* If the neighbor is already visited
+		in the path, a cycle is detected */
+		if pathVisited[it] {
+			return true
+		}
+
+		/* Else if the node is unvisited,
+		perform DFS recursively from this node */
+		if !visited[it] {
+			// If cycle is detected, return true
+			if dfs(it, adj, visited, pathVisited) {
+				return true
+			}
+		}
+	}
+
+	// Remove the node from path
+	pathVisited[node] = false
+
+	// Return false if no cycle is detected
+	return false
+}
+
+// Function to detect cycle in a directed graph
+func isCyclic(V int, adj [][]int) bool {
+
+	// Visited array
+	visited := make([]bool, V)
+
+	/* Array to mark nodes that are
+	visited in a particular path */
+	pathVisited := make([]bool, V)
+
+	// Traverse the graph
+	for i := 0; i < V; i++ {
+		if !visited[i] {
+			// If a cycle is found, return true
+			if dfs(i, adj, visited, pathVisited) {
+				return true
+			}
+		}
+	}
+
+	/* Return false if no cycle is
+	detected in any component */
+	return false
+}
+
+func main() {
+	V := 6
+	adj := [][]int{
+		{1},
+		{2, 5},
+		{3},
+		{4},
+		{1},
+		{},
+	}
+
+	// Function call to determine if cycle exists in given directed graph
+	ans := isCyclic(V, adj)
+
+	// Output
+	if ans {
+		fmt.Println("The given directed graph contains a cycle.")
+	} else {
+		fmt.Println("The given directed graph does not contain a cycle.")
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where V and E represent the number of nodes and edges in the graph) <br>
+    A simple DFS traversal takes O(V+E) time.</p>
+    
+<p><strong>Space Complexity: O(V)</strong> <br>
+    The visited array and Path Visited array take O(V) space each and the recursion stack space during DFS traversal will be O(V). 
+</p></div>
+<div class="section"><h2>Editorial: BFS</h2></div>
+<h3>Intuition:</h3> 
+<p>
+    To solve this problem using BFS traversal, the previously known algorithm <strong>Topological Sort</strong> can be used. <br> <br>
+    Recall that Topological Ordering for a graph having V nodes can be determined if and only if the graph is a Directed Acyclic Graph, i.e., there must be no cycle present in the directed graph. In other words, the topological ordering of a DAG consisting of V nodes will always contain V nodes. <br><br>
+    But this is not true in the case of a Directed Cyclic Graph. In such a graph where the number of nodes is V, the topological ordering will not contain all nodes (because of the presence of a cycle).
+    <br><br>
+    Thus, if the topological sort of the directed graph contains all nodes of the graph, then the graph is acyclic (DAG), otherwise it is cyclic. 
+</p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>A helper function is defined to get the topological sort for the given graph using Kahn's algorithm (BFS-based).</li>
+    <li>The topological ordering for the given directed graph is found using the helper function.</li>
+    <li>If the ordering contains all nodes, the directed graph is acyclic (DAG). Otherwise, it is cyclic.</li>
+</ol>
+
+ <h4> Dry Run: </h4>
+<img src = "https://static.takeuforward.org/premium/Graphs/Cycles/Detect a cycle in a directed graph/-S0F1sLR-"> 
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to return the topological
+     sorting of given graph */
+    vector<int> topoSort(int V, vector<int> adj[]) {
+        
+        // To store the result
+        vector<int> ans;
+        
+        // To store the In-degrees of nodes
+	    vector<int> inDegree(V, 0);
+	    
+	    // Calculating the In-degree of the given graph
+	    for(int i=0; i<V; i++) {
+	        for(auto it : adj[i]) inDegree[it]++;
+	    }
+	    
+	    // Queue to facilitate BFS
+	    queue<int> q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i<V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+    
+public:
+    // Function to detect cycle in a directed graph.
+    bool isCyclic(int V, vector<int> adj[]) {
+        
+        // To store the topological ordering
+        vector<int> topo;
+        
+        // Get the topological sort of the graph
+        topo = topoSort(V, adj);
+        
+        /* If topological sort doesn't include all
+        nodes, the graph is cyclic in nature. */
+        if(topo.size() < V) return true;
+        
+        // Else the graph is acyclic. 
+        return false;
+    }
+};
+
+int main() {
+    
+    int V = 6;
+    vector<int> adj[V] = {
+        {1}, 
+        {2, 5}, 
+        {3}, 
+        {4}, 
+        {1},
+        {} 
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine if cycle 
+    exists in given directed graph */
+    bool ans = sol.isCyclic(V, adj);
+    
+    // Output
+    if(ans)
+        cout << "The given directed graph contains a cycle.";
+    else 
+        cout << "The given directed graph does not contain a cycle.";
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    
+    /* Function to return the topological
+     sorting of given graph */
+    private List<Integer> topoSort(int V, 
+                    List<List<Integer>> adj) {
+                        
+        // To store the result
+        List<Integer> ans = new ArrayList<>();
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        // Calculating the In-degree of the given graph
+        for(int i = 0; i < V; i++) {
+            for(int it : adj.get(i)) inDegree[it]++;
+        }
+        
+        // Queue to facilitate BFS
+        Queue<Integer> q = new LinkedList<>();
+        
+        // Add the nodes with no in-degree to queue
+        for(int i = 0; i < V; i++) {
+            if(inDegree[i] == 0) q.add(i);
+        }
+        
+        // Until the queue is empty
+        while(!q.isEmpty()) {
+            // Get the node
+            int node = q.poll();
+            
+            // Add it to the answer
+            ans.add(node);
+            
+            // Traverse the neighbours
+            for(int it : adj.get(node)) {
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.add(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+
+    public boolean isCyclic(int V, List<List<Integer>> adj) {
+        // To store the topological ordering
+        List<Integer> topo = topoSort(V, adj);
+        
+        /* If topological sort doesn't include all
+         nodes, the graph is cyclic in nature */
+        if(topo.size() < V) return true;
+        
+        // Else the graph is acyclic
+        return false;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        int V = 6;
+        List<List<Integer>> adj = new ArrayList<>();
+        for(int i = 0; i < V; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        adj.get(0).add(1);
+        adj.get(1).add(2);
+        adj.get(1).add(5);
+        adj.get(2).add(3);
+        adj.get(3).add(4);
+        adj.get(4).add(1);
+        
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+        
+        /* Function call to determine if cycle
+         exists in given directed graph */
+        boolean ans = sol.isCyclic(V, adj);
+        
+        // Output
+        if(ans)
+            System.out.println("The given directed graph contains a cycle.");
+        else 
+            System.out.println("The given directed graph does not contain a cycle.");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+class Solution:
+    # Function to return the topological 
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        # To store the result
+        ans = []
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Calculating the In-degree of the given graph
+        for i in range(V):
+            for it in adj[i]:
+                inDegree[it] += 1
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+    # Function to detect cycle in a directed graph.
+    def isCyclic(self, V, adj):
+        # To store the topological ordering
+        topo = self.topoSort(V, adj)
+        
+        # If topological sort doesn't include all
+        # nodes, the graph is cyclic in nature
+        if len(topo) < V:
+            return True
+        
+        # Else the graph is acyclic
+        return False
+
+if __name__ == "__main__":
+    V = 6
+    adj = [[] for _ in range(V)]
+    
+    adj[0].append(1)
+    adj[1].extend([2, 5])
+    adj[2].append(3)
+    adj[3].append(4)
+    adj[4].append(1)
+    
+    # Creating an instance of Solution class
+    sol = Solution()
+    
+    # Function call to determine if cycle exists in given directed graph
+    ans = sol.isCyclic(V, adj)
+    
+    # Output
+    if ans:
+        print("The given directed graph contains a cycle.")
+    else:
+        print("The given directed graph does not contain a cycle.")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to return the topological 
+     sorting of given graph */
+    topoSort(V, adj) {
+        // To store the result
+        let ans = [];
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        /* Calculating the In-degree 
+        of the given graph */
+        for (let i = 0; i < V; i++) {
+            for (let it of adj[i]) {
+                inDegree[it]++;
+            }
+        }
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for (let i = 0; i < V; i++) {
+            if (inDegree[i] === 0) {
+                q.push(i);
+            }
+        }
+        
+        // Until the queue is empty
+        while (q.length > 0) {
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for (let it of adj[node]) {
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if its 
+                in-degree becomes zero */
+                if (inDegree[it] === 0) {
+                    q.push(it);
+                }
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+
+    // Function to detect cycle in a directed graph.
+    isCyclic(V, adj) {
+        // To store the topological ordering
+        let topo = this.topoSort(V, adj);
+        
+        /* If topological sort doesn't include all 
+        nodes, the graph is cyclic in nature */
+        if (topo.length < V) {
+            return true;
+        }
+        
+        // Else the graph is acyclic
+        return false;
+    }
+}
+
+let V = 6;
+let adj = [
+    [1],
+    [2, 5],
+    [3],
+    [4],
+    [1],
+    []
+];
+
+// Creating an instance of Solution class
+let sol = new Solution();
+
+// Function call to determine if cycle exists in given directed graph
+let ans = sol.isCyclic(V, adj);
+
+// Output
+if (ans) {
+    console.log("The given directed graph contains a cycle.");
+} else {
+    console.log("The given directed graph does not contain a cycle.");
+}
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    /* Function to return the topological 
+     sorting of given graph */
+    private List<int> TopoSort(int V, List<List<int>> adj)
+    {
+        // To store the result
+        List<int> ans = new List<int>();
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        /* Calculating the In-degree 
+        of the given graph */
+        for (int i = 0; i < V; i++)
+        {
+            foreach (int it in adj[i])
+            {
+                inDegree[it]++;
+            }
+        }
+        
+        // Queue to facilitate BFS
+        Queue<int> q = new Queue<int>();
+        
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i < V; i++)
+        {
+            if (inDegree[i] == 0)
+            {
+                q.Enqueue(i);
+            }
+        }
+        
+        // Until the queue is empty
+        while (q.Count > 0)
+        {
+            // Get the node
+            int node = q.Dequeue();
+            
+            // Add it to the answer
+            ans.Add(node);
+            
+            // Traverse the neighbours
+            foreach (int it in adj[node])
+            {
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if its 
+                in-degree becomes zero */
+                if (inDegree[it] == 0)
+                {
+                    q.Enqueue(it);
+                }
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+
+    // Function to detect cycle in a directed graph.
+    public bool IsCyclic(int V, List<List<int>> adj)
+    {
+        // To store the topological ordering
+        List<int> topo = this.TopoSort(V, adj);
+        
+        /* If topological sort doesn't include all 
+        nodes, the graph is cyclic in nature */
+        if (topo.Count < V)
+        {
+            return true;
+        }
+        
+        // Else the graph is acyclic
+        return false;
+    }
+}
+
+public class GFG
+{
+    public static void Main(string[] args)
+    {
+        int V = 6;
+        List<List<int>> adj = new List<List<int>>
+        {
+            new List<int> {1},
+            new List<int> {2, 5},
+            new List<int> {3},
+            new List<int> {4},
+            new List<int> {1},
+            new List<int> {}
+        };
+
+        // Creating an instance of Solution class
+        Solution sol = new Solution();
+
+        // Function call to determine if cycle exists in given directed graph
+        bool ans = sol.IsCyclic(V, adj);
+
+        // Output
+        if (ans)
+        {
+            Console.WriteLine("The given directed graph contains a cycle.");
+        } else {
+            Console.WriteLine("The given directed graph does not contain a cycle.");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// topoSort returns the topological ordering of the given graph
+func topoSort(V int, adj [][]int) []int {
+	// To store the result
+	ans := []int{}
+
+	// To store the in-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Calculating the in-degree of the given graph
+	for i := 0; i < V; i++ {
+		for _, it := range adj[i] {
+			inDegree[it]++
+		}
+	}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i < V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) > 0 {
+		// Get the node (dequeue)
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+			// Decrement the in-degree
+			inDegree[it]--
+
+			// Add the node to queue if its in-degree becomes zero
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+// isCyclic detects if the directed graph contains a cycle
+func isCyclic(V int, adj [][]int) bool {
+	// To store the topological ordering
+	topo := topoSort(V, adj)
+
+	/* If topological sort doesn't include all
+	nodes, the graph is cyclic in nature. */
+	if len(topo) < V {
+		return true
+	}
+
+	// Else the graph is acyclic.
+	return false
+}
+
+func main() {
+	V := 6
+	adj := [][]int{
+		{1},
+		{2, 5},
+		{3},
+		{4},
+		{1},
+		{},
+	}
+
+	// Function call to determine if cycle exists in given directed graph
+	ans := isCyclic(V, adj)
+
+	// Output
+	if ans {
+		fmt.Println("The given directed graph contains a cycle.")
+	} else {
+		fmt.Println("The given directed graph does not contain a cycle.")
+	}
+}
+</code></pre></div></div></div>
+
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where V and E represent the number of nodes and edges in the graph) <br>
+    Topological Sort based on BFS (Kahn's Algorithm) takes O(V+E) time.</p>
+    
+<p><strong>Space Complexity: O(V)</strong> <br>
+    Array required to store in-degrees takes up O(V) space and queue space will be O(V) in the worst case. 
+</p></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    // Function to perform DFS traversal
+    bool dfs(int node, vector&lt;int&gt; adj[], 
+             vector&lt;bool&gt; &amp;visited, 
+             vector&lt;bool&gt; &amp;pathVisited) {
+                 
+        // Mark the node as path visited
+        visited[node] = true;
+        
+        // Mark the node as path visited
+        pathVisited[node] = true;
+        
+        // Traverse all the neighbors
+        for(auto it : adj[node]) {
+            
+            /* If the neighbor is already visited 
+            in the path, a cycle is detected */
+            if(pathVisited[it]) 
+                return true;
+            
+            /* Else if the node is unvisited, 
+            perform DFS recursively from this node */
+            else if(!visited[it]) {
+                
+                // If cycle is detected, return true
+                if(dfs(it, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        // Remove the node from path 
+        pathVisited[node] = false;
+        
+        // Return false if no cycle is detected
+        return false;
+    }
+    
+public:
+
+    // Function to detect cycle in a directed graph.
+    bool isCyclic(int V, vector&lt;int&gt; adj[]) {
+        
+        // Visited array
+        vector&lt;bool&gt; visited(V, false);
+        
+        /* Array to mark nodes that are 
+        visited in a particular path */
+        vector&lt;bool&gt; pathVisited(V, false);
+        
+        // Traverse the graph
+        for(int i=0; i&lt;V; i++) {
+            if(!visited[i]) {
+                
+                // If a cycle is found, return true
+                if(dfs(i, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        /* Return false if no cycle is 
+        detected in any component */
+        return false;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    // Function to perform DFS traversal
+    private bool dfs(int node, List&lt;List&lt;int&gt;&gt; adj, bool[] visited, bool[] pathVisited)
+    {
+        // Mark the node as visited
+        visited[node] = true;
+        
+        // Mark the node as path visited
+        pathVisited[node] = true;
+        
+        // Traverse all the neighbors
+        foreach (int it in adj[node])
+        {
+            /* If the neighbor is already visited 
+            in the path, a cycle is detected */
+            if (pathVisited[it])
+                return true;
+            
+            /* Else if the node is unvisited, 
+            perform DFS recursively from this node */
+            else if (!visited[it])
+            {
+                // If cycle is detected, return true
+                if (dfs(it, adj, visited, pathVisited))
+                    return true;
+            }
+        }
+        
+        // Remove the node from path 
+        pathVisited[node] = false;
+        
+        // Return false if no cycle is detected
+        return false;
+    }
+
+    public bool IsCyclic(int N, List&lt;List&lt;int&gt;&gt; adj)
+    {
+        // Visited array
+        bool[] visited = new bool[N];
+        
+        /* Array to mark nodes that are 
+        visited in a particular path */
+        bool[] pathVisited = new bool[N];
+        
+        // Traverse the graph
+        for (int i = 0; i &lt; N; i++)
+        {
+            if (!visited[i])
+            {
+                // If a cycle is found, return true
+                if (dfs(i, adj, visited, pathVisited))
+                    return true;
+            }
+        }
+        
+        /* Return false if no cycle is 
+        detected in any component */
+        return false;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// dfs performs DFS traversal to detect cycle in directed graph
+func dfs(node int, adj [][]int, visited, pathVisited []bool) bool {
+
+	// Mark the node as visited
+	visited[node] = true
+
+	// Mark the node as path visited
+	pathVisited[node] = true
+
+	// Traverse all the neighbors
+	for _, it := range adj[node] {
+
+		/* If the neighbor is already visited
+		in the path, a cycle is detected */
+		if pathVisited[it] {
+			return true
+		}
+
+		/* Else if the node is unvisited,
+		perform DFS recursively from this node */
+		if !visited[it] {
+			// If cycle is detected, return true
+			if dfs(it, adj, visited, pathVisited) {
+				return true
+			}
+		}
+	}
+
+	// Remove the node from path
+	pathVisited[node] = false
+
+	// Return false if no cycle is detected
+	return false
+}
+
+// Function to detect cycle in a directed graph
+func isCyclic(V int, adj [][]int) bool {
+
+	// Visited array
+	visited := make([]bool, V)
+
+	/* Array to mark nodes that are
+	visited in a particular path */
+	pathVisited := make([]bool, V)
+
+	// Traverse the graph
+	for i := 0; i &lt; V; i++ {
+		if !visited[i] {
+			// If a cycle is found, return true
+			if dfs(i, adj, visited, pathVisited) {
+				return true
+			}
+		}
+	}
+
+	/* Return false if no cycle is
+	detected in any component */
+	return false
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    
+    // Function to perform DFS traversal
+    private boolean dfs(int node, List&lt;List&lt;Integer&gt;&gt; adj, 
+                        boolean[] visited, 
+                        boolean[] pathVisited) {
+        
+        // Mark the node as path visited
+        visited[node] = true;
+        
+        // Mark the node as path visited
+        pathVisited[node] = true;
+        
+        // Traverse all the neighbors
+        for(int it : adj.get(node)) {
+            
+            /* If the neighbor is already visited 
+            in the path, a cycle is detected */
+            if(pathVisited[it]) 
+                return true;
+            
+            /* Else if the node is unvisited, 
+            perform DFS recursively from this node */
+            else if(!visited[it]) {
+                
+                // If cycle is detected, return true
+                if(dfs(it, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        // Remove the node from path 
+        pathVisited[node] = false;
+        
+        // Return false if no cycle is detected
+        return false;
+    }
+    
+    // Function to detect cycle in a directed graph.
+    public boolean isCyclic(int V, List&lt;List&lt;Integer&gt;&gt; adj) {
+        
+        // Visited array
+        boolean[] visited = new boolean[V];
+        
+        /* Array to mark nodes that are 
+        visited in a particular path */
+        boolean[] pathVisited = new boolean[V];
+        
+        // Traverse the graph
+        for(int i = 0; i &lt; V; i++) {
+            if(!visited[i]) {
+                
+                // If a cycle is found, return true
+                if(dfs(i, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        /* Return false if no cycle is 
+        detected in any component */
+        return false;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    
+    // Function to perform DFS traversal
+    dfs(node, adj, visited, pathVisited) {
+        // Mark the node as path visited
+        visited[node] = true;
+        
+        // Mark the node as path visited
+        pathVisited[node] = true;
+        
+        // Traverse all the neighbors
+        for(let it of adj[node]) {
+            
+            /* If the neighbor is already visited 
+            in the path, a cycle is detected */
+            if(pathVisited[it]) 
+                return true;
+            
+            /* Else if the node is unvisited, 
+            perform DFS recursively from this node */
+            else if(!visited[it]) {
+                
+                // If cycle is detected, return true
+                if(this.dfs(it, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        // Remove the node from path 
+        pathVisited[node] = false;
+        
+        // Return false if no cycle is detected
+        return false;
+    }
+    
+    // Function to detect cycle in a directed graph.
+    isCyclic(V, adj) {
+        
+        // Visited array
+        let visited = new Array(V).fill(false);
+        
+        /* Array to mark nodes that are 
+        visited in a particular path */
+        let pathVisited = new Array(V).fill(false);
+        
+        // Traverse the graph
+        for(let i = 0; i &lt; V; i++) {
+            if(!visited[i]) {
+                
+                // If a cycle is found, return true
+                if(this.dfs(i, adj, visited, pathVisited)) 
+                    return true;
+            }
+        }
+        
+        /* Return false if no cycle is 
+        detected in any component */
+        return false;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to perform DFS traversal
+    def dfs(self, node, adj, visited, pathVisited):
+        # Mark the node as path visited
+        visited[node] = True
+        
+        # Mark the node as path visited
+        pathVisited[node] = True
+        
+        # Traverse all the neighbors
+        for it in adj[node]:
+            
+            # If the neighbor is already visited 
+            # in the path, a cycle is detected
+            if pathVisited[it]:
+                return True
+            
+            # Else if the node is unvisited, 
+            # perform DFS recursively from this node
+            elif not visited[it]:
+                
+                # If cycle is detected, return true
+                if self.dfs(it, adj, visited, pathVisited):
+                    return True
+        
+        # Remove the node from path 
+        pathVisited[node] = False
+        
+        # Return false if no cycle is detected
+        return False
+
+    # Function to detect cycle in a directed graph.
+    def isCyclic(self, V, adj):
+        
+        # Visited array
+        visited = [False] * V
+        
+        # Array to mark nodes that are 
+        # visited in a particular path
+        pathVisited = [False] * V
+        
+        # Traverse the graph
+        for i in range(V):
+            if not visited[i]:
+                
+                # If a cycle is found, return true
+                if self.dfs(i, adj, visited, pathVisited):
+                    return True
+        
+        # Return false if no cycle is 
+        # detected in any component
+        return False</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to return the topological
+     sorting of given graph */
+    vector&lt;int&gt; topoSort(int V, vector&lt;int&gt; adj[]) {
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+        
+        // To store the In-degrees of nodes
+	    vector&lt;int&gt; inDegree(V, 0);
+	    
+	    // Calculating the In-degree of the given graph
+	    for(int i=0; i&lt;V; i++) {
+	        for(auto it : adj[i]) inDegree[it]++;
+	    }
+	    
+	    // Queue to facilitate BFS
+	    queue&lt;int&gt; q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i&lt;V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+    
+public:
+    // Function to detect cycle in a directed graph.
+    bool isCyclic(int V, vector&lt;int&gt; adj[]) {
+        
+        // To store the topological ordering
+        vector&lt;int&gt; topo;
+        
+        // Get the topological sort of the graph
+        topo = topoSort(V, adj);
+        
+        /* If topological sort doesn&#x27;t include all
+        nodes, the graph is cyclic in nature. */
+        if(topo.size() &lt; V) return true;
+        
+        // Else the graph is acyclic. 
+        return false;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Function to return the topological 
+     sorting of given graph */
+    private List&lt;int&gt; TopoSort(int V, List&lt;List&lt;int&gt;&gt; adj)
+    {
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        /* Calculating the In-degree 
+        of the given graph */
+        for (int i = 0; i &lt; V; i++)
+        {
+            foreach (int it in adj[i])
+            {
+                inDegree[it]++;
+            }
+        }
+        
+        // Queue to facilitate BFS
+        Queue&lt;int&gt; q = new Queue&lt;int&gt;();
+        
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i &lt; V; i++)
+        {
+            if (inDegree[i] == 0)
+            {
+                q.Enqueue(i);
+            }
+        }
+        
+        // Until the queue is empty
+        while (q.Count &gt; 0)
+        {
+            // Get the node
+            int node = q.Dequeue();
+            
+            // Add it to the answer
+            ans.Add(node);
+            
+            // Traverse the neighbours
+            foreach (int it in adj[node])
+            {
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if its 
+                in-degree becomes zero */
+                if (inDegree[it] == 0)
+                {
+                    q.Enqueue(it);
+                }
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+
+    public bool IsCyclic(int N, List&lt;List&lt;int&gt;&gt; adj)
+    {
+        // To store the topological ordering
+        List&lt;int&gt; topo = this.TopoSort(N, adj);
+        
+        /* If topological sort doesn&#x27;t include all 
+        nodes, the graph is cyclic in nature */
+        if (topo.Count &lt; N)
+        {
+            return true;
+        }
+        
+        // Else the graph is acyclic
+        return false;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// topoSort returns the topological ordering of the given graph
+func topoSort(V int, adj [][]int) []int {
+	// To store the result
+	ans := []int{}
+
+	// To store the in-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Calculating the in-degree of the given graph
+	for i := 0; i &lt; V; i++ {
+		for _, it := range adj[i] {
+			inDegree[it]++
+		}
+	}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i &lt; V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) &gt; 0 {
+		// Get the node (dequeue)
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+			// Decrement the in-degree
+			inDegree[it]--
+
+			// Add the node to queue if its in-degree becomes zero
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+// isCyclic detects if the directed graph contains a cycle
+func isCyclic(V int, adj [][]int) bool {
+	// To store the topological ordering
+	topo := topoSort(V, adj)
+
+	/* If topological sort doesn&#x27;t include all
+	nodes, the graph is cyclic in nature. */
+	if len(topo) &lt; V {
+		return true
+	}
+
+	// Else the graph is acyclic.
+	return false
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    
+    /* Function to return the topological
+     sorting of given graph */
+    private List&lt;Integer&gt; topoSort(int V, 
+                    List&lt;List&lt;Integer&gt;&gt; adj) {
+                        
+        // To store the result
+        List&lt;Integer&gt; ans = new ArrayList&lt;&gt;();
+        
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+        
+        // Calculating the In-degree of the given graph
+        for(int i = 0; i &lt; V; i++) {
+            for(int it : adj.get(i)) inDegree[it]++;
+        }
+        
+        // Queue to facilitate BFS
+        Queue&lt;Integer&gt; q = new LinkedList&lt;&gt;();
+        
+        // Add the nodes with no in-degree to queue
+        for(int i = 0; i &lt; V; i++) {
+            if(inDegree[i] == 0) q.add(i);
+        }
+        
+        // Until the queue is empty
+        while(!q.isEmpty()) {
+            // Get the node
+            int node = q.poll();
+            
+            // Add it to the answer
+            ans.add(node);
+            
+            // Traverse the neighbours
+            for(int it : adj.get(node)) {
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.add(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+
+    public boolean isCyclic(int V, List&lt;List&lt;Integer&gt;&gt; adj) {
+        // To store the topological ordering
+        List&lt;Integer&gt; topo = topoSort(V, adj);
+        
+        /* If topological sort doesn&#x27;t include all
+         nodes, the graph is cyclic in nature */
+        if(topo.size() &lt; V) return true;
+        
+        // Else the graph is acyclic
+        return false;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to return the topological 
+     sorting of given graph */
+    topoSort(V, adj) {
+        // To store the result
+        let ans = [];
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        /* Calculating the In-degree 
+        of the given graph */
+        for (let i = 0; i &lt; V; i++) {
+            for (let it of adj[i]) {
+                inDegree[it]++;
+            }
+        }
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for (let i = 0; i &lt; V; i++) {
+            if (inDegree[i] === 0) {
+                q.push(i);
+            }
+        }
+        
+        // Until the queue is empty
+        while (q.length &gt; 0) {
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for (let it of adj[node]) {
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if its 
+                in-degree becomes zero */
+                if (inDegree[it] === 0) {
+                    q.push(it);
+                }
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+
+    // Function to detect cycle in a directed graph.
+    isCyclic(V, adj) {
+        // To store the topological ordering
+        let topo = this.topoSort(V, adj);
+        
+        /* If topological sort doesn&#x27;t include all 
+        nodes, the graph is cyclic in nature */
+        if (topo.length &lt; V) {
+            return true;
+        }
+        
+        // Else the graph is acyclic
+        return false;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>from collections import deque
+
+class Solution:
+    # Function to return the topological 
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        # To store the result
+        ans = []
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Calculating the In-degree of the given graph
+        for i in range(V):
+            for it in adj[i]:
+                inDegree[it] += 1
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+    # Function to detect cycle in a directed graph.
+    def isCyclic(self, V, adj):
+        # To store the topological ordering
+        topo = self.topoSort(V, adj)
+        
+        # If topological sort doesn&#x27;t include all
+        # nodes, the graph is cyclic in nature
+        if len(topo) &lt; V:
+            return True
+        
+        # Else the graph is acyclic
+        return False
+</code></pre></div>
+</body>
+</html>

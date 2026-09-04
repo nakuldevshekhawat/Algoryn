@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Course Schedule I</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Course Schedule I</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Breadth-First Search</span><span>Depth-First Search</span><span>Graph</span><span>Topological Sort</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>There are a total of N tasks, labeled from 0 to N-1. Given an array arr where arr[i] = [a, b] indicates that you must take course <strong>b</strong> first if you want to take course <strong>a</strong>. Find if it is possible to <strong>finish</strong> all tasks.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>  1 <= N <= 2000</li><li>  0 <= arr.length <= 5000</li><li>  arr[i].length == 2</li><li>  0 <= arr[i][0], arr[i][1] < N</li><li>  All the pairs arr[i] are unique.</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input</strong>: N = 4, arr = [[1,0],[2,1],[3,2]]</p><p><br></p><p><strong>Output:</strong> True</p><p><br></p><p><strong>Explanation:</strong> It is possible to finish all the tasks in the order : 0 1 2 3.</p><p>First, we will finish task 0. Then we will finish task 1, task 2, and task 3.</p><h3>Example 2</h3><p><strong>Input:</strong> N = 4, arr = [[0,1],[3,2],[1,3],[3,0]]</p><p><br></p><p><strong>Output:</strong> False</p><p><br></p><p><strong>Explanation:</strong> It is impossible to finish all the tasks. Let’s analyze the pairs:</p><p>For pair {0, 1} -> we need to finish task 1 first and then task 0. (order : 1 0).</p><p>For pair{3, 2} -> we need to finish task 2 first and then task 3. (order: 2 3).</p><p>For pair {1, 3} -> we need to finish task 3 first and then task 1. (order: 3 1).</p><p>But for pair {3, 0} -> we need to finish task 0 first and then task 3 but task 0 requires task 1 and task 1 requires task 3. So, it is not possible to finish all the tasks.</p><h3>Example 3</h3><p><strong>Input:</strong> N = 2, arr = [[1,0]]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem mimics the concept of handling dependencies in project management and software development tools. For instance, in package managers like npm (Node Package Manager), a package can't be installed before its dependencies are resolved. Similarly, in project management tools like Jira, certain tasks may be blocked until prerequisite tasks are completed. This problem essentially deals with a directed graph and a cycle detection which is similar to detection of cyclic dependencies in real life software development.</p></div>
+<div class="section"><h2>Editorial: Solution</h2><html><head></head><body><h3>Intuition:</h3> 
+<p>
+    </p><h6>How this problem can be identified as a Graph problem?</h6>
+    The problem suggests that some courses must be completed before other courses. This is analogous to Topological Sort Algorithm in graph which helps to find a ordering where a node must come come before other nodes in the ordering.
+
+    <br>
+    Hence, the courses can be represented as nodes of graphs and dependencies of courses can be shown as edges. <br><br>
+    Now, For the graph formed, if the Topological sort can be found containing all the nodes (courses), all the courses can be completed in the order returned by topological sort. Else it is not possible to complete all the courses.
+
+    <h6>How to form the graph?</h6>
+    The pair <code>[a,b]</code> represents that the <strong>Course b</strong> must be completed before <strong>Course a</strong>. <br>
+    Hence in the graph, two nodes representing <strong>Course a</strong> and <strong>b</strong> can be created with a directed edge from <strong>Node b</strong> to <strong>Node a</strong>. This way the topological sort will return <strong>Node b</strong> before <strong>Node a</strong>. 
+<p></p>
+
+<h3>Approach:</h3>
+<ol>
+    <li>Using the dependencies of courses, prepare a directed graph.</li>
+    <li>Get the topological ordering of the graph formed.</li>
+    <li>If the topological ordering contains all nodes, all the courses can be completed in that order. </li>
+    <li>Otherwise, it is not possible to completed all the courses.</li>
+</ol>
+
+<h4> Dry Run: </h4>
+<img src="https://static.takeuforward.org/premium/Graphs/Hard Problems/Course Schedule I/-UvPB3Bu7">
+
+<h3> Solution: </h3>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+
+    /* Function to return the topological
+     sorting of given graph */
+    vector<int> topoSort(int V, vector<int> adj[]) {
+	    
+        // To store the In-degrees of nodes
+	    vector<int> inDegree(V, 0);
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i < V; i++) {
+		    
+			for(auto it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        
+        // To store the result
+        vector<int> ans;
+	    
+	    // Queue to facilitate BFS
+	    queue<int> q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i<V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+    
+public:
+
+	/* Function to determine if all 
+	the tasks can be finished */
+	bool canFinish(int N, vector<vector<int>> arr) {
+        
+        // To store the graph
+        vector<int> adj[N];
+        
+        // Form the graph
+        for(auto it : arr) {
+            int u = it[0];
+            int v = it[1];
+            
+            // Add the edge v-> u
+            adj[v].push_back(u);
+        }
+        
+        // Get the topological ordering of graph
+        vector<int> topo = topoSort(N, adj);
+        
+        /* If it doesn't contain
+        all nodes, return false */
+        if(topo.size() < N) return false;
+        
+        // Return true otherwise
+        return true;
+    }
+};
+
+int main() {
+    
+    int N = 4;
+    vector<vector<int>> arr = {
+         {1,0},
+         {2,1},
+         {3,2}
+    };
+    
+    /* Creating an instance of 
+    Solution class */
+    Solution sol; 
+    
+    /* Function call to determine if 
+	all the tasks can be finished */
+    bool ans = sol.canFinish(N, arr);
+    
+    // Output
+    if(ans) 
+        cout << "All the tasks can be finished.";
+    else 
+        cout << "All the tasks can not be finished.";
+    
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+
+    /* Function to return the topological
+     sorting of given graph */
+    private int[] topoSort(int V, 
+            ArrayList<Integer>[] adj) {
+	    
+        // To store the In-degrees of nodes
+	    int[] inDegree = new int[V];
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i < V; i++) {
+		    
+			for(int it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        // To store the result
+        int[] ans = new int[V];
+        int idx = 0;
+	    
+	    // Queue to facilitate BFS
+	    Queue<Integer> q = new LinkedList<>();
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i = 0; i < V; i++) {
+	        if(inDegree[i] == 0) q.add(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.isEmpty()) {
+	        
+	        // Get the node
+	        int node = q.poll();
+	        
+	        // Add it to the answer
+	        ans[idx++] = node;
+	        
+	        // Traverse the neighbours
+	        for(int it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.add(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return Arrays.copyOfRange(ans, 0, idx);
+    }
+    
+    /* Function to determine if all 
+	the tasks can be finished */
+    public boolean canFinish(int N, int[][] arr) {
+        
+        // To store the graph
+        ArrayList<Integer>[] adj = new ArrayList[N];
+        for (int i = 0; i < N; i++) adj[i] = new ArrayList<>();
+        
+        // Form the graph
+        for(int[] it : arr) {
+            int u = it[0];
+            int v = it[1];
+            
+            // Add the edge v-> u
+            adj[v].add(u);
+        }
+        
+        // Get the topological ordering of graph
+        int[] topo = topoSort(N, adj);
+        
+        /* If it doesn't contain
+        all nodes, return false */
+        if(topo.length < N) return false;
+        
+        // Return true otherwise
+        return true;
+    }
+    
+    public static void main(String[] args) {
+        int N = 4;
+        int[][] arr = {
+            {1, 0},
+            {2, 1},
+            {3, 2}
+        };
+        
+        /* Creating an instance of 
+        Solution class */
+        Solution sol = new Solution();
+        
+        /* Function call to determine if 
+        all the tasks can be finished */
+        boolean ans = sol.canFinish(N, arr);
+        
+        // Output
+        if(ans) 
+            System.out.println("All the tasks can be finished.");
+        else 
+            System.out.println("All the tasks can not be finished.");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span></div><pre class="wp-block-code"><code lang="python" class="language-python">from collections import deque
+
+class Solution:
+
+    # Function to return the topological
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Update the in-degrees of nodes
+        for i in range(V):
+            
+            for it in adj[i]:
+                # Update the in-degree
+                inDegree[it] += 1
+
+        # To store the result
+        ans = []
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+    # Function to determine if all 
+    # the tasks can be finished
+    def canFinish(self, N, arr):
+        
+        # To store the graph
+        adj = [[] for _ in range(N)]
+        
+        # Form the graph
+        for it in arr:
+            u = it[0]
+            v = it[1]
+            
+            # Add the edge v-> u
+            adj[v].append(u)
+        
+        # Get the topological ordering of graph
+        topo = self.topoSort(N, adj)
+        
+        # If it doesn't contain
+        # all nodes, return false
+        if len(topo) < N:
+            return False
+        
+        # Return true otherwise
+        return True
+
+# Example usage
+N = 4
+arr = [
+    [1, 0],
+    [2, 1],
+    [3, 2]
+]
+
+sol = Solution()
+ans = sol.canFinish(N, arr)
+
+# Output
+if ans:
+    print("All the tasks can be finished.")
+else:
+    print("All the tasks can not be finished.")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+
+    /* Function to return the topological
+     sorting of given graph */
+    topoSort(V, adj) {
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        // Update the in-degrees of nodes
+        for (let i = 0; i < V; i++) {
+            
+            for(let it of adj[i]) {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        let ans = [];
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for(let i = 0; i < V; i++) {
+            if(inDegree[i] == 0) q.push(i);
+        }
+        
+        // Until the queue is empty
+        while(q.length > 0) {
+            
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for(let it of adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.push(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+    
+    /* Function to determine if all 
+	the tasks can be finished */
+    canFinish(N, arr) {
+        
+        // To store the graph
+        let adj = new Array(N).fill().map(() => []);
+        
+        // Form the graph
+        for(let it of arr) {
+            let u = it[0];
+            let v = it[1];
+            
+            // Add the edge v-> u
+            adj[v].push(u);
+        }
+        
+        // Get the topological ordering of graph
+        let topo = this.topoSort(N, adj);
+        
+        /* If it doesn't contain
+        all nodes, return false */
+        if(topo.length < N) return false;
+        
+        // Return true otherwise
+        return true;
+    }
+}
+
+// Example usage
+const N = 4;
+const arr = [
+    [1, 0],
+    [2, 1],
+    [3, 2]
+];
+
+const sol = new Solution();
+const ans = sol.canFinish(N, arr);
+
+// Output
+if(ans) 
+    console.log("All the tasks can be finished.");
+else 
+    console.log("All the tasks can not be finished.");
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span><span>112</span><span>113</span><span>114</span><span>115</span><span>116</span><span>117</span><span>118</span><span>119</span><span>120</span><span>121</span><span>122</span><span>123</span><span>124</span><span>125</span><span>126</span><span>127</span><span>128</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class Solution
+{
+    /* Function to return the topological
+     sorting of given graph */
+    private List<int> topoSort(int V, List<List<int>> adj)
+    {
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+
+        // Update the in-degrees of nodes
+        for (int i = 0; i < V; i++)
+        {
+            foreach (int it in adj[i])
+            {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        List<int> ans = new List<int>();
+
+        // Queue to facilitate BFS
+        Queue<int> q = new Queue<int>();
+
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i < V; i++)
+        {
+            if (inDegree[i] == 0)
+            {
+                q.Enqueue(i);
+            }
+        }
+
+        // Until the queue is empty
+        while (q.Count > 0)
+        {
+            // Get the node
+            int node = q.Dequeue();
+
+            // Add it to the answer
+            ans.Add(node);
+
+            // Traverse the neighbours
+            foreach (int it in adj[node])
+            {
+                // Decrement the in-degree
+                inDegree[it]--;
+
+                /* Add the node to queue if
+                its in-degree becomes zero */
+                if (inDegree[it] == 0)
+                {
+                    q.Enqueue(it);
+                }
+            }
+        }
+
+        // Return the result
+        return ans;
+    }
+
+    /* Function to determine if all
+    the tasks can be finished */
+    public bool canFinish(int N, List<int[]> arr)
+    {
+        // To store the graph
+        List<List<int>> adj = new List<List<int>>();
+        for (int i = 0; i < N; i++)
+        {
+            adj.Add(new List<int>());
+        }
+
+        // Form the graph
+        foreach (int[] it in arr)
+        {
+            int u = it[0];
+            int v = it[1];
+
+            // Add the edge v-> u
+            adj[v].Add(u);
+        }
+
+        // Get the topological ordering of graph
+        List<int> topo = this.topoSort(N, adj);
+
+        /* If it doesn't contain
+        all nodes, return false */
+        if (topo.Count < N)
+        {
+            return false;
+        }
+
+        // Return true otherwise
+        return true;
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        int N = 4;
+        List<int[]> arr = new List<int[]>
+        {
+            new int[] {1, 0},
+            new int[] {2, 1},
+            new int[] {3, 2}
+        };
+
+        Solution sol = new Solution();
+        bool ans = sol.canFinish(N, arr);
+
+        // Output
+        if (ans)
+        {
+            Console.WriteLine("All the tasks can be finished.");
+        }
+        else
+        {
+            Console.WriteLine("All the tasks can not be finished.");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span><span>94</span><span>95</span><span>96</span><span>97</span><span>98</span><span>99</span><span>100</span><span>101</span><span>102</span><span>103</span><span>104</span><span>105</span><span>106</span><span>107</span><span>108</span><span>109</span><span>110</span><span>111</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// topoSort returns the topological sorting of the given graph using Kahn's Algorithm
+func topoSort(V int, adj [][]int) []int {
+
+	// To store the In-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Update the in-degrees of nodes
+	for i := 0; i < V; i++ {
+		for _, it := range adj[i] {
+			// Update the in-degree
+			inDegree[it]++
+		}
+	}
+
+	// To store the result
+	ans := []int{}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i < V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) > 0 {
+		// Get the node
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+
+			// Decrement the in-degree
+			inDegree[it]--
+
+			/* Add the node to queue if
+			   its in-degree becomes zero */
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+// canFinish determines if all the tasks can be finished
+func canFinish(N int, arr [][]int) bool {
+
+	// To store the graph
+	adj := make([][]int, N)
+	for i := range adj {
+		adj[i] = []int{}
+	}
+
+	// Form the graph
+	for _, it := range arr {
+		u := it[0]
+		v := it[1]
+
+		// Add the edge v -> u
+		adj[v] = append(adj[v], u)
+	}
+
+	// Get the topological ordering of graph
+	topo := topoSort(N, adj)
+
+	/* If it doesn't contain
+	all nodes, return false */
+	if len(topo) < N {
+		return false
+	}
+
+	// Return true otherwise
+	return true
+}
+
+func main() {
+
+	N := 4
+	arr := [][]int{
+		{1, 0},
+		{2, 1},
+		{3, 2},
+	}
+
+	// Function call to determine if all the tasks can be finished
+	ans := canFinish(N, arr)
+
+	// Output
+	if ans {
+		fmt.Println("All the tasks can be finished.")
+	} else {
+		fmt.Println("All the tasks can not be finished.")
+	}
+}
+</code></pre></div></div></div>
+
+<h4>Complexity Analysis:</h4>
+<p><strong>Time Complexity: O(V+E)</strong> (where V and E represents the number of nodes and edges in the given graph) <br>
+    </p><ul>
+        <li>Forming the graph takes O(E) time.</li>
+        <li>Finding topological sort takes O(V+E) time.</li>
+    </ul>
+<p></p>
+
+<p><strong>Space Complexity: O(V+E)</strong> <br>
+</p><ul>
+    <li>Storing the graph takes O(E) space.</li>
+    <li>Topological sorting algorithm uses extra O(V) computational space.</li>
+</ul>
+<p></p>
+</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+
+    /* Function to return the topological
+     sorting of given graph */
+    vector&lt;int&gt; topoSort(int V, vector&lt;int&gt; adj[]) {
+	    
+        // To store the In-degrees of nodes
+	    vector&lt;int&gt; inDegree(V, 0);
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i &lt; V; i++) {
+		    
+			for(auto it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        
+        // To store the result
+        vector&lt;int&gt; ans;
+	    
+	    // Queue to facilitate BFS
+	    queue&lt;int&gt; q;
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i=0; i&lt;V; i++) {
+	        if(inDegree[i] == 0) q.push(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.empty()) {
+	        
+	        // Get the node
+	        int node = q.front();
+	        
+	        // Add it to the answer
+	        ans.push_back(node);
+	        q.pop();
+	        
+	        // Traverse the neighbours
+	        for(auto it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.push(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return ans;
+    }
+    
+public:
+
+	/* Function to determine if all 
+	the tasks can be finished */
+	bool canFinish(int N, vector&lt;vector&lt;int&gt;&gt; arr) {
+        
+        // To store the graph
+        vector&lt;int&gt; adj[N];
+        
+        // Form the graph
+        for(auto it : arr) {
+            int u = it[0];
+            int v = it[1];
+            
+            // Add the edge v-&gt; u
+            adj[v].push_back(u);
+        }
+        
+        // Get the topological ordering of graph
+        vector&lt;int&gt; topo = topoSort(N, adj);
+        
+        /* If it doesn&#x27;t contain
+        all nodes, return false */
+        if(topo.size() &lt; N) return false;
+        
+        // Return true otherwise
+        return true;
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to return the topological
+     sorting of given graph */
+    private List&lt;int&gt; topoSort(int V, List&lt;List&lt;int&gt;&gt; adj)
+    {
+        // To store the In-degrees of nodes
+        int[] inDegree = new int[V];
+
+        // Update the in-degrees of nodes
+        for (int i = 0; i &lt; V; i++)
+        {
+            foreach (int it in adj[i])
+            {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        List&lt;int&gt; ans = new List&lt;int&gt;();
+
+        // Queue to facilitate BFS
+        Queue&lt;int&gt; q = new Queue&lt;int&gt;();
+
+        // Add the nodes with no in-degree to queue
+        for (int i = 0; i &lt; V; i++)
+        {
+            if (inDegree[i] == 0)
+            {
+                q.Enqueue(i);
+            }
+        }
+
+        // Until the queue is empty
+        while (q.Count &gt; 0)
+        {
+            // Get the node
+            int node = q.Dequeue();
+
+            // Add it to the answer
+            ans.Add(node);
+
+            // Traverse the neighbours
+            foreach (int it in adj[node])
+            {
+                // Decrement the in-degree
+                inDegree[it]--;
+
+                /* Add the node to queue if
+                its in-degree becomes zero */
+                if (inDegree[it] == 0)
+                {
+                    q.Enqueue(it);
+                }
+            }
+        }
+
+        // Return the result
+        return ans;
+    }
+
+    /* Function to determine if all
+    the tasks can be finished */
+    public bool canFinish(int N, List&lt;int[]&gt; arr)
+    {
+        // To store the graph
+        List&lt;List&lt;int&gt;&gt; adj = new List&lt;List&lt;int&gt;&gt;();
+        for (int i = 0; i &lt; N; i++)
+        {
+            adj.Add(new List&lt;int&gt;());
+        }
+
+        // Form the graph
+        foreach (int[] it in arr)
+        {
+            int u = it[0];
+            int v = it[1];
+
+            // Add the edge v-&gt; u
+            adj[v].Add(u);
+        }
+
+        // Get the topological ordering of graph
+        List&lt;int&gt; topo = this.topoSort(N, adj);
+
+        /* If it doesn&#x27;t contain
+        all nodes, return false */
+        if (topo.Count &lt; N)
+        {
+            return false;
+        }
+
+        // Return true otherwise
+        return true;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// topoSort returns the topological sorting of the given graph using Kahn&#x27;s Algorithm
+func topoSort(V int, adj [][]int) []int {
+
+	// To store the In-degrees of nodes
+	inDegree := make([]int, V)
+
+	// Update the in-degrees of nodes
+	for i := 0; i &lt; V; i++ {
+		for _, it := range adj[i] {
+			// Update the in-degree
+			inDegree[it]++
+		}
+	}
+
+	// To store the result
+	ans := []int{}
+
+	// Queue to facilitate BFS
+	q := []int{}
+
+	// Add the nodes with no in-degree to queue
+	for i := 0; i &lt; V; i++ {
+		if inDegree[i] == 0 {
+			q = append(q, i)
+		}
+	}
+
+	// Until the queue is empty
+	for len(q) &gt; 0 {
+		// Get the node
+		node := q[0]
+		q = q[1:]
+
+		// Add it to the answer
+		ans = append(ans, node)
+
+		// Traverse the neighbours
+		for _, it := range adj[node] {
+
+			// Decrement the in-degree
+			inDegree[it]--
+
+			/* Add the node to queue if
+			   its in-degree becomes zero */
+			if inDegree[it] == 0 {
+				q = append(q, it)
+			}
+		}
+	}
+
+	// Return the result
+	return ans
+}
+
+// canFinish determines if all the tasks can be finished
+func canFinish(N int, arr [][]int) bool {
+
+	// To store the graph
+	adj := make([][]int, N)
+	for i := range adj {
+		adj[i] = []int{}
+	}
+
+	// Form the graph
+	for _, it := range arr {
+		u := it[0]
+		v := it[1]
+
+		// Add the edge v -&gt; u
+		adj[v] = append(adj[v], u)
+	}
+
+	// Get the topological ordering of graph
+	topo := topoSort(N, adj)
+
+	/* If it doesn&#x27;t contain
+	all nodes, return false */
+	if len(topo) &lt; N {
+		return false
+	}
+
+	// Return true otherwise
+	return true
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{    
+/* Function to return the topological
+     sorting of given graph */
+    private int[] topoSort(int V, 
+            ArrayList&lt;Integer&gt;[] adj) {
+	    
+        // To store the In-degrees of nodes
+	    int[] inDegree = new int[V];
+	    
+	    // Update the in-degrees of nodes
+		for (int i = 0; i &lt; V; i++) {
+		    
+			for(int it : adj[i]) {
+			    // Update the in-degree
+			    inDegree[it]++;
+			}
+		}
+
+        // To store the result
+        int[] ans = new int[V];
+        int idx = 0;
+	    
+	    // Queue to facilitate BFS
+	    Queue&lt;Integer&gt; q = new LinkedList&lt;&gt;();
+	    
+	    // Add the nodes with no in-degree to queue
+	    for(int i = 0; i &lt; V; i++) {
+	        if(inDegree[i] == 0) q.add(i);
+	    }
+	    
+	    // Until the queue is empty
+	    while(!q.isEmpty()) {
+	        
+	        // Get the node
+	        int node = q.poll();
+	        
+	        // Add it to the answer
+	        ans[idx++] = node;
+	        
+	        // Traverse the neighbours
+	        for(int it : adj[node]) {
+	            
+	            // Decrement the in-degree
+	            inDegree[it]--;
+	            
+	            /* Add the node to queue if 
+	            its in-degree becomes zero */
+	            if(inDegree[it] == 0) q.add(it);
+	        }
+	    }
+	    
+	    // Return the result
+	    return Arrays.copyOfRange(ans, 0, idx);
+    }
+    
+    /* Function to determine if all 
+	the tasks can be finished */
+    public boolean canFinish(int N, int[][] arr) {
+        
+        // To store the graph
+        ArrayList&lt;Integer&gt;[] adj = new ArrayList[N];
+        for (int i = 0; i &lt; N; i++) adj[i] = new ArrayList&lt;&gt;();
+        
+        // Form the graph
+        for(int[] it : arr) {
+            int u = it[0];
+            int v = it[1];
+            
+            // Add the edge v-&gt; u
+            adj[v].add(u);
+        }
+        
+        // Get the topological ordering of graph
+        int[] topo = topoSort(N, adj);
+        
+        /* If it doesn&#x27;t contain
+        all nodes, return false */
+        if(topo.length &lt; N) return false;
+        
+        // Return true otherwise
+        return true;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution{    
+/* Function to return the topological
+     sorting of given graph */
+    topoSort(V, adj) {
+        
+        // To store the In-degrees of nodes
+        let inDegree = new Array(V).fill(0);
+        
+        // Update the in-degrees of nodes
+        for (let i = 0; i &lt; V; i++) {
+            
+            for(let it of adj[i]) {
+                // Update the in-degree
+                inDegree[it]++;
+            }
+        }
+
+        // To store the result
+        let ans = [];
+        
+        // Queue to facilitate BFS
+        let q = [];
+        
+        // Add the nodes with no in-degree to queue
+        for(let i = 0; i &lt; V; i++) {
+            if(inDegree[i] == 0) q.push(i);
+        }
+        
+        // Until the queue is empty
+        while(q.length &gt; 0) {
+            
+            // Get the node
+            let node = q.shift();
+            
+            // Add it to the answer
+            ans.push(node);
+            
+            // Traverse the neighbours
+            for(let it of adj[node]) {
+                
+                // Decrement the in-degree
+                inDegree[it]--;
+                
+                /* Add the node to queue if 
+                its in-degree becomes zero */
+                if(inDegree[it] == 0) q.push(it);
+            }
+        }
+        
+        // Return the result
+        return ans;
+    }
+    
+    /* Function to determine if all 
+	the tasks can be finished */
+    canFinish(N, arr) {
+        
+        // To store the graph
+        let adj = new Array(N).fill().map(() =&gt; []);
+        
+        // Form the graph
+        for(let it of arr) {
+            let u = it[0];
+            let v = it[1];
+            
+            // Add the edge v-&gt; u
+            adj[v].push(u);
+        }
+        
+        // Get the topological ordering of graph
+        let topo = this.topoSort(N, adj);
+        
+        /* If it doesn&#x27;t contain
+        all nodes, return false */
+        if(topo.length &lt; N) return false;
+        
+        // Return true otherwise
+        return true;
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to return the topological
+    # sorting of given graph
+    def topoSort(self, V, adj):
+        
+        # To store the In-degrees of nodes
+        inDegree = [0] * V
+        
+        # Update the in-degrees of nodes
+        for i in range(V):
+            
+            for it in adj[i]:
+                # Update the in-degree
+                inDegree[it] += 1
+
+        # To store the result
+        ans = []
+        
+        # Queue to facilitate BFS
+        q = deque()
+        
+        # Add the nodes with no in-degree to queue
+        for i in range(V):
+            if inDegree[i] == 0:
+                q.append(i)
+        
+        # Until the queue is empty
+        while q:
+            
+            # Get the node
+            node = q.popleft()
+            
+            # Add it to the answer
+            ans.append(node)
+            
+            # Traverse the neighbours
+            for it in adj[node]:
+                
+                # Decrement the in-degree
+                inDegree[it] -= 1
+                
+                # Add the node to queue if 
+                # its in-degree becomes zero
+                if inDegree[it] == 0:
+                    q.append(it)
+        
+        # Return the result
+        return ans
+
+    # Function to determine if all 
+    # the tasks can be finished
+    def canFinish(self, N, arr):
+        
+        # To store the graph
+        adj = [[] for _ in range(N)]
+        
+        # Form the graph
+        for it in arr:
+            u = it[0]
+            v = it[1]
+            
+            # Add the edge v-&gt; u
+            adj[v].append(u)
+        
+        # Get the topological ordering of graph
+        topo = self.topoSort(N, adj)
+        
+        # If it doesn&#x27;t contain
+        # all nodes, return false
+        if len(topo) &lt; N:
+            return False
+        
+        # Return true otherwise
+        return True</code></pre></div>
+</body>
+</html>

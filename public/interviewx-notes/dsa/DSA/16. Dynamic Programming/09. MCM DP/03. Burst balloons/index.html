@@ -1,0 +1,1887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Burst balloons</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Burst balloons</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Array</span><span>Dynamic Programming</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given n balloons, indexed from 0 to n - 1, each balloon is painted with a number on it represented by an array nums. Burst all the balloons.</p><p><br></p><p>If the ith balloon is burst, the coins obtained are <strong>nums[i - 1] * nums[i] * nums[i + 1]</strong>. If i - 1 or i + 1 goes out of bounds of the array, treat it as if there is a balloon with a 1 painted on it.</p><p><br></p><p>Return the <strong>maximum coins</strong> that can be collected by bursting the balloons wisely.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>1 <= n <= 300</li><li>1 <= nums[i] <= 100</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input :</strong> nums = [3, 1, 5, 8]</p><p><strong>Output :</strong> 167</p><p><strong>Explanation :</strong></p><p>nums = [3, 1, 5, 8] --> [3, 5, 8] --> [3, 8] --> [8] --> []</p><p>coins = 3*1*5  +  3*5*8  + 1*3*8 + 1*8*1 = 167.</p><h3>Example 2</h3><p><strong>Input :</strong> nums = [1, 2, 3, 4]</p><p><strong>Output :</strong> 40</p><p><strong>Explanation :</strong></p><p>nums = [1, 2, 3, 4] --> [1, 2, 4] --> [1, 4] --> [4] --> []</p><p>coins = 2*3*4 + 1*2*4 + 1*1*4 + 1*4*1 = 40.</p><h3>Example 3</h3><p><strong>Input :</strong> nums = [1, 5]</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This problem, dubbed as the "Burst Balloons" problem, embodies the concept of dynamic programming, an essential technique widely used in software industry to solve optimization problems. Its real-world application can be seen in resource allocation tasks where we need to make a sequence of interrelated decisions. For example, in network routing, a form of this problem could be used to determine the optimal path (balloons to burst) that would minimize cost (maximize coins) while transferring data from source to destination. It stands as a classic example showcasing the importance of decision optimization and state transition in programming.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Understanding:</strong></h5>
+<p>From the question, we can easily understand that we must burst the balloons in a particular order to collect the maximum number of coins. For example, in the first case, we followed the order: 1, 5, 3, 8 to collect the maximum number of coins i.e. 167. So, the order of bursting the balloons will change the number of coins we can collect. There may be several orders that we can follow.</p>
+
+<p>So, in order to find a valid order, can figure out the first balloon we will burst. Apparently, the entire array(i.e. given) is the range of the elements(i.e. the balloons) and anyone among the elements can be the first.</p>
+
+<p>First, we will try to solve the problem using the technique we have learned in MCM. In the MCM, we selected the matrices sequentially so that the number of scalar multiplication is minimized. Similarly, here we can maintain an order where we will first try to choose the first element, then we can try to find the second one, and so on. </p>
+
+<p>Now, let’s understand if we can really solve the problem using the above approach. Let’s consider the following example:</p>
+
+<p>We are given an array: {b1, b2, b3, b4, b5, b6}. Each element of the given array is representing a balloon. Now, if we burst the b4, we will get a total of (b3*b4*b5) coins. After bursting b4, we are left with the left sub-problem {b1, b2, b3} and the right sub-problem {b5, b6} to solve.</p>
+
+<img src="https://static.takeuforward.org/content/upload_1761138958497_4">
+
+</p>Now, the question is, if we can say that the final answer will be the summation of the current number of coins and the answers from the left and right subproblems. The answer is No.</p>
+
+<p>Let’s understand the reason behind this. Imagine, at first we burst the balloon b4. Then, we are left with the array:  {b1, b2, b3, b5, b6}. Now, if we try to burst b3, it will be dependent on b5. Similarly, if we try to burst b5, it will be dependent on b3. Similarly, we can observe the same dependency in the case of other elements as well. So, we cannot solve the subproblems {b1, b2, b3} and {b4, b5} independently as they are dependent on each other.</p>
+
+<h5><strong>Intuition:</strong></h5>
+<p>Until now, we have clearly understood that we cannot solve this problem using this approach. So, we will just try to think in the opposite way. First, we tried to find out a balloon that we will burst first. But now, we will first try to find that balloon which we will burst last.</p>
+
+<p>Note: The intuition is to first find the last balloon, then the second last, and so on. This is the sequence we need to follow to solve this problem. Now, let’s understand how the subproblems are independent in this approach:</p>
+
+<p>Let’s consider the following example:</p>
+
+<p>We are given an array: {b1, b2, b3, b4, b5, b6}. Assume, b4 be the last balloon we will burst. Then we can surely say, the total no. of coins we can get by bursting the balloon b4 is (1*b4*1). Now, we get two subproblems as usual: {b1, b2, b3} and {b5, b6}, and while choosing the second last balloon, we can ensure that b4 exists while bursting the second last balloon. If the second last balloon belongs to the 1st sub-problem i.e. {b1, b2, b3}, it will be only dependent on the last balloon i.e. b4 as the rightmost element will be b4. Similarly,  if the second last balloon belongs to the 2nd sub-problem i.e. {b5, b6}, it will also be dependent only on the last balloon i.e. b4 as the leftmost element will be b4. The following illustration will clarify the concept:</p>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Burst balloons/-8hq0zrc9">
+
+<p>Now, we can clearly observe the subproblems are no anymore dependent on each other.</p>
+
+<h5><strong>Rules to solve a problem on partition dp:</strong></h5>
+<ol>
+<li><b>Marking the array with i, j: </b>We are given an array of balloons of size N. The entire array basically represents the range of the balloons. So, we will place i and j at both ends of the array. Here f(i, ind-1) is the left sub-problem, and f(ind+1, j) is the right sub-problem. </li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Burst balloons/-AuKqpi7J"><br>
+
+<li><b>Try all partitions: </b>As we have figured out the logic for marking the i, and j pointers, we will move to the partitioning loop. We can simply write a for loop(say ind) starting from i to j, The problem is being broken in the following manner:</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/MCM DP/Burst balloons/-Iu9LDJJb"><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is a pseudocode and it not tied to
+any specific programming language*/
+
+f(i, j){
+    //Partition loop
+    for(int ind = i; ind <= j; ind++){
+        cost = a[ind]*a[i-1]*a[j+1] + f(i, ind-1) + f(ind+1, j)
+    }
+}</code></pre></div></div></div>
+
+
+<li><b>Base Case:  </b>We can say that when i > j this is not a valid partition and so we will return 0.
+
+<li><b>Return the best possible answer: </b>Here, in this problem, we are trying to achieve the maximum possible answer i.e. the maximum number of coins. So, among all the costs calculated, we will just store the maximum one. And finally, the maximum cost will be our answer.</li><br>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is a pseudocode and it not tied to
+any specific programming language*/
+
+f(i, j){
+    maxi = INT_MIN
+    for(int ind = i; ind <= j; ind++){
+        cost = a[ind]*a[i-1]*a[j+1] + f(i, ind-1) + f(ind+1, j)
+        maxi = max(cost, maxi)
+    }
+}</code></pre></div></div></div>
+</ol>
+
+
+<h5><strong>The recursive algorithm steps are as follows: </strong></h5>
+<ol>
+<li>Append 1 to both ends of the given array.
+<li>Convert the problem to a recursive function marked by two pointers i and j.
+<li>Use a loop to check all possible combinations of balloons and get all possible total numbers of coins.
+<li>Return the maximum number of coins we can get.
+<li>Base case: If i > j, we will return 0.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    int func(int i, int j, vector<int> &nums) {
+        if (i > j) return 0;
+        int maxCoins = INT_MIN;
+    
+        // Iterate through each balloon to burst last
+        for (int k = i; k <= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+        
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums) + func(k + 1, j, nums);
+        
+            // Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins);
+        }
+        //Return the result
+        return maxCoins;
+    }
+public:
+    // Function to calculate the maximum coins obtained
+    int maxCoins(vector<int> &nums) {
+        int n = nums.size();
+    
+        // Add 1 to the beginning and end of nums array
+        nums.insert(nums.begin(), 1);
+        nums.push_back(1);
+    
+        // Call the helper function to compute maximum coins
+        return func(1, n, nums);
+    }
+};
+
+int main() {
+    vector<int> nums = {3, 1, 5, 8};
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << "Maximum coins obtained: " << sol.maxCoins(nums);
+    
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Recursive function to calculate 
+    the maximum coins obtained*/
+    private int func(int i, int j, int[] nums) {
+        if (i > j) return 0;
+        int maxCoins = Integer.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (int k = i; k <= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums) + func(k + 1, j, nums);
+
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    public int maxCoins(int[] nums) {
+        int n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        int[] newNums = new int[n + 2];
+        newNums[0] = 1;
+        newNums[n + 1] = 1;
+        System.arraycopy(nums, 0, newNums, 1, n);
+
+        // Call the helper function to compute maximum coins
+        return func(1, n, newNums);
+    }
+
+    public static void main(String[] args) {
+        int[] nums = {3, 1, 5, 8};
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        System.out.println("Maximum coins obtained: " + sol.maxCoins(nums));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Recursive function to calculate
+    the maximum coins obtained"""
+    def func(self, i, j, nums):
+        if i > j:
+            return 0
+        maxCoins = float('-inf')
+
+        # Iterate through each balloon to burst last
+        for k in range(i, j + 1):
+            """ Calculate the coins obtained
+            by bursting the k-th balloon last"""
+            coins = nums[i - 1] * nums[k] * nums[j + 1]
+
+            """ Recursively calculate the maximum
+            coins for the remaining balloons"""
+            remainingCoins = self.func(i, k - 1, nums) + self.func(k + 1, j, nums)
+
+            # Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins)
+        
+        # Return the result
+        return maxCoins
+
+    # Function to calculate the maximum coins obtained
+    def maxCoins(self, nums):
+        n = len(nums)
+
+        # Add 1 to the beginning and end of nums array
+        nums = [1] + nums + [1]
+
+        # Call the helper function to compute maximum coins
+        return self.func(1, n, nums)
+
+if __name__ == "__main__":
+    nums = [3, 1, 5, 8]
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    print("Maximum coins obtained:", sol.maxCoins(nums))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    func(i, j, nums) {
+        if (i > j) return 0;
+        let maxCoins = Number.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (let k = i; k <= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            let coins = nums[i - 1] * nums[k] * nums[j + 1];
+
+            /* Recursively calculate the maximum
+            coins for the remaining balloons*/
+            let remainingCoins = this.func(i, k - 1, nums) + this.func(k + 1, j, nums);
+
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    maxCoins(nums) {
+        let n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        nums = [1, ...nums, 1];
+
+        // Call the helper function to compute maximum coins
+        return this.func(1, n, nums);
+    }
+}
+
+const nums = [3, 1, 5, 8];
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+console.log("Maximum coins obtained:", sol.maxCoins(nums));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+class Solution
+{
+    /* Recursive function to calculate
+    the maximum coins obtained */
+    private int Func(int i, int j, List<int> nums)
+    {
+        if (i > j) return 0;
+        int maxCoins = int.MinValue;
+    
+        // Iterate through each balloon to burst last
+        for (int k = i; k <= j; k++)
+        {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last */
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+        
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons */
+            int remainingCoins = Func(i, k - 1, nums) + Func(k + 1, j, nums);
+        
+            // Update the maximum coins
+            maxCoins = Math.Max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    public int MaxCoins(List<int> nums)
+    {
+        int n = nums.Count;
+    
+        // Add 1 to the beginning and end of nums list
+        nums.Insert(0, 1);
+        nums.Add(1);
+    
+        // Call the helper function to compute maximum coins
+        return Func(1, n, nums);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<int> nums = new List<int> {3, 1, 5, 8};
+        
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+        
+        // Output the maximum coins obtained
+        Console.WriteLine("Maximum coins obtained: " + sol.MaxCoins(nums));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+import "fmt"
+
+/* Recursive function to calculate
+ the maximum coins obtained */
+func funcCoins(i, j int, nums []int) int {
+    if i > j {
+        return 0
+    }
+
+    maxCoins := -1 << 31  // equivalent to a very small integer (like INT_MIN)
+
+    // Iterate through each balloon to burst last
+    for k := i; k <= j; k++ {
+        // Calculate the coins obtained by bursting the k-th balloon last
+        coins := nums[i-1] * nums[k] * nums[j+1]
+
+        // Recursively calculate the maximum coins for the remaining balloons
+        remainingCoins := funcCoins(i, k-1, nums) + funcCoins(k+1, j, nums)
+
+        // Update the maximum coins
+        if coins+remainingCoins > maxCoins {
+            maxCoins = coins + remainingCoins
+        }
+    }
+
+    // Return the result
+    return maxCoins
+}
+
+// Function to calculate the maximum coins obtained
+func maxCoins(nums []int) int {
+    n := len(nums)
+
+    // Add 1 to the beginning and end of nums array
+    nums = append([]int{1}, nums...)
+    nums = append(nums, 1)
+
+    // Call the helper function to compute maximum coins
+    return funcCoins(1, n, nums)
+}
+
+func main() {
+    nums := []int{3, 1, 5, 8}
+
+    // Call the maxCoins function and print the result
+    fmt.Println("Maximum coins obtained:", maxCoins(nums))
+}
+
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>Exponential.<br><br>
+<strong>Space Complexity: </strong>O(N),  As we are using auxiliary stack space of O(N).
+
+
+</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n+1][n+1]: </b>As there are two changing parameters in the recursive solution,  'i' and 'j'. The value  of 'i' and 'j' ranges from 1 to n+1. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    int func(int i, int j, vector<int> &nums, vector<vector<int>> &dp) {
+        if (i > j) return 0;
+        
+        //Check if the subproblem is already solved
+        if (dp[i][j] != -1) return dp[i][j];
+        
+        int maxCoins = INT_MIN;
+    
+        // Iterate through each balloon to burst last
+        for (int k = i; k <= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+        
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums, dp) + func(k + 1, j, nums, dp);
+        
+            // Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins);
+        }
+        //Return the result
+        return dp[i][j] = maxCoins;
+    }
+public:
+    // Function to calculate the maximum coins obtained
+    int maxCoins(vector<int> &nums) {
+        int n = nums.size();
+    
+        // Add 1 to the beginning and end of nums array
+        nums.insert(nums.begin(), 1);
+        nums.push_back(1);
+        
+        // Create a DP array for memoization
+        vector<vector<int>> dp(n + 2, vector<int>(n + 2, -1));
+        
+        // Call the helper function to compute maximum coins
+        return func(1, n, nums, dp);
+    }
+};
+
+int main() {
+    vector<int> nums = {3, 1, 5, 8};
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    cout << "Maximum coins obtained: " << sol.maxCoins(nums);
+    
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    private int func(int i, int j, int[] nums, int[][] dp) {
+        if (i > j) return 0;
+        
+        // Check if the subproblem is already solved
+        if (dp[i][j] != -1) return dp[i][j];
+        
+        int maxCoins = Integer.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (int k = i; k <= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+            
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums, dp) + func(k + 1, j, nums, dp);
+            
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return dp[i][j] = maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    public int maxCoins(int[] nums) {
+        int n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        int[] newNums = new int[n + 2];
+        newNums[0] = 1;
+        newNums[n + 1] = 1;
+        System.arraycopy(nums, 0, newNums, 1, n);
+
+        // Create a DP array for memoization
+        int[][] dp = new int[n + 2][n + 2];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        // Call helper function to compute maximum coins
+        return func(1, n, newNums, dp);
+    }
+
+    public static void main(String[] args) {
+        int[] nums = {3, 1, 5, 8};
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        System.out.println("Maximum coins obtained: " + sol.maxCoins(nums));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Recursive function to calculate
+    the maximum coins obtained"""
+    def func(self, i, j, nums, dp):
+        if i > j:
+            return 0
+        
+        # Check if the subproblem is already solved
+        if dp[i][j] != -1:
+            return dp[i][j]
+        
+        maxCoins = float('-inf')
+
+        # Iterate through each balloon to burst last
+        for k in range(i, j + 1):
+            """ Calculate the coins obtained by
+            bursting the k-th balloon last"""
+            coins = nums[i - 1] * nums[k] * nums[j + 1]
+            
+            """ Recursively calculate the maximum
+            coins for the remaining balloons"""
+            remainingCoins = self.func(i, k - 1, nums, dp) + self.func(k + 1, j, nums, dp)
+            
+            # Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins)
+        
+        # Return the result
+        dp[i][j] = maxCoins
+        return maxCoins
+
+    # Function to calculate the maximum coins obtained
+    def maxCoins(self, nums):
+        n = len(nums)
+
+        # Add 1 to the beginning and end of nums array
+        nums = [1] + nums + [1]
+
+        # Create a DP array for memoization
+        dp = [[-1] * (n + 2) for _ in range(n + 2)]
+
+        # Call the helper function to compute maximum coins
+        return self.func(1, n, nums, dp)
+
+if __name__ == "__main__":
+    nums = [3, 1, 5, 8]
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    print("Maximum coins obtained:", sol.maxCoins(nums))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    func(i, j, nums, dp) {
+        if (i > j) return 0;
+        
+        // Check if the subproblem is already solved
+        if (dp[i][j] !== -1) return dp[i][j];
+        
+        let maxCoins = Number.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (let k = i; k <= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            let coins = nums[i - 1] * nums[k] * nums[j + 1];
+            
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            let remainingCoins = this.func(i, k - 1, nums, dp) + this.func(k + 1, j, nums, dp);
+            
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        dp[i][j] = maxCoins;
+        return dp[i][j];
+    }
+
+    // Function to calculate the maximum coins obtained
+    maxCoins(nums) {
+        let n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        nums = [1, ...nums, 1];
+
+        // Create a DP array for memoization
+        let dp = Array.from({ length: n + 2 }, () => Array(n + 2).fill(-1));
+
+        // Call the helper function to compute maximum coins
+        return this.func(1, n, nums, dp);
+    }
+}
+
+const nums = [3, 1, 5, 8];
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+console.log("Maximum coins obtained:", sol.maxCoins(nums));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Solution
+{
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    private int Solve(int i, int j, List<int> nums, int[,] dp)
+    {
+        if (i > j) return 0;
+        
+        // Check if the subproblem is already solved
+        if (dp[i, j] != -1) return dp[i, j];
+        
+        int maxCoins = int.MinValue;
+
+        // Iterate through each balloon to burst last
+        for (int k = i; k <= j; k++)
+        {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+            
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = Solve(i, k - 1, nums, dp) + Solve(k + 1, j, nums, dp);
+            
+            // Update the maximum coins
+            maxCoins = Math.Max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        dp[i, j] = maxCoins;
+        return dp[i, j];
+    }
+
+    // Function to calculate the maximum coins obtained
+    public int MaxCoins(List<int> nums)
+    {
+        int n = nums.Count;
+
+        // Add 1 to the beginning and end of nums array
+        List<int> paddedNums = new List<int>();
+        paddedNums.Add(1);
+        paddedNums.AddRange(nums);
+        paddedNums.Add(1);
+
+        // Create a DP array for memoization
+        int[,] dp = new int[n + 2, n + 2];
+        for (int r = 0; r < n + 2; r++)
+        {
+            for (int c = 0; c < n + 2; c++)
+            {
+                dp[r, c] = -1;
+            }
+        }
+
+        // Call the helper function to compute maximum coins
+        return Solve(1, n, paddedNums, dp);
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<int> nums = new List<int> { 3, 1, 5, 8 };
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        Console.WriteLine("Maximum coins obtained: " + sol.MaxCoins(nums));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+/* Recursive function to calculate
+the maximum coins obtained */
+func funcRec(i, j int, nums []int, dp [][]int) int {
+	if i > j {
+		return 0
+	}
+
+	// Check if the subproblem is already solved
+	if dp[i][j] != -1 {
+		return dp[i][j]
+	}
+
+	maxCoins := -1 << 31 // Equivalent to INT_MIN
+
+	// Iterate through each balloon to burst last
+	for k := i; k <= j; k++ {
+		/* Calculate the coins obtained
+		by bursting the k-th balloon last */
+		coins := nums[i-1] * nums[k] * nums[j+1]
+
+		/* Recursively calculate the maximum
+		coins for the remaining balloons */
+		remainingCoins := funcRec(i, k-1, nums, dp) + funcRec(k+1, j, nums, dp)
+
+		// Update the maximum coins
+		if coins+remainingCoins > maxCoins {
+			maxCoins = coins + remainingCoins
+		}
+	}
+
+	// Return the result
+	dp[i][j] = maxCoins
+	return dp[i][j]
+}
+
+// Function to calculate the maximum coins obtained
+func maxCoins(nums []int) int {
+	n := len(nums)
+
+	// Add 1 to the beginning and end of nums array
+	nums = append([]int{1}, nums...)
+	nums = append(nums, 1)
+
+	// Create a DP array for memoization
+	dp := make([][]int, n+2)
+	for i := range dp {
+		dp[i] = make([]int, n+2)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Call the helper function to compute maximum coins
+	return funcRec(1, n, nums, dp)
+}
+
+func main() {
+	nums := []int{3, 1, 5, 8}
+
+	// Print the result
+	fmt.Println("Maximum coins obtained:", maxCoins(nums))
+}
+</code></pre></div></div></div>
+<h3><strong>Complexity Analysis: </strong></h3>
+<strong>Time Complexity: </strong>O(N<sup>3</sup>), There are total N<sup>2</sup> no. of states. And for each state, we are running a partitioning loop roughly for N times.<br><br>
+<strong>Space Complexity:</strong> O(N<sup>2</sup>) + Auxiliary stack space of O(N), N<sup>2</sup>  for the dp array we are using. </body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li><b>Declare a dp array of size [n+2][n+2]: </b>As the highest value of j can have is 'n' and in that case, it will search for the value arr[j+1] i.e. arr[n+1]. So, to handle this case, we need the size to be n+2.</li>
+
+<li><b>Handle the base case: </b>We knew in the recursive code the base case was when i > j, it meant that there are no valid partition. So, to cover this case we can initialize the entire dp array with 0.</li>
+
+<li>Next, memoization is a top-down approach, whereas tabulation is bottom-up. Our changing parameters i and j will change in opposite directions, i.e i will change from n→1 and j will change from 1→ n.</li>
+<li>After that, copy down the recursive logic inside the nested loops to get the tabulation code.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+public:
+    // Function to calculate the maximum coins obtained
+    int maxCoins(vector<int> &nums) {
+        int n = nums.size();
+    
+        // Add 1 to the beginning and end of nums array
+        nums.insert(nums.begin(), 1);
+        nums.push_back(1);
+    
+        // Create a DP array for memoization
+        vector<vector<int>> dp(n + 2, vector<int>(n + 2, 0));
+
+        for (int i = n; i >= 1; i--) {
+            for (int j = 1; j <= n; j++) {
+                if (i > j) continue;
+                int maxi = INT_MIN;
+            
+                /*  Iterate through each possible
+                balloon to burst last*/
+                for (int ind = i; ind <= j; ind++) {
+                    /* Calculate the coins obtained by
+                    bursting the ind-th balloon last*/
+                    int coins = nums[i - 1] * nums[ind] * nums[j + 1];
+                
+                    /* Calculate the maximum coins
+                    for the remaining balloons*/
+                        int remainingCoins = dp[i][ind - 1] + dp[ind + 1][j];
+                
+                    // Update the maximum coins
+                    maxi = max(maxi, coins + remainingCoins);
+                }
+                //Store the maximum value in dp table
+                dp[i][j] = maxi;
+            }
+        }
+        //Return the result
+        return dp[1][n];
+    }
+};
+int main() {
+    vector<int> nums = {3, 1, 5, 8};
+    
+    //Create an instance of Solution class
+    Solution sol;
+    
+    //Print the result
+    cout << "Maximum coins obtained: " << sol.maxCoins(nums) << "\n";
+    
+    return 0;
+}
+
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    // Function to calculate the maximum coins obtained
+    public int maxCoins(int[] nums) {
+        int n = nums.length;
+        
+        // Add 1 to the beginning and end of nums array
+        int[] newNums = new int[n + 2];
+        newNums[0] = 1;
+        newNums[n + 1] = 1;
+        System.arraycopy(nums, 0, newNums, 1, n);
+        
+        // Create a DP array for memoization
+        int[][] dp = new int[n + 2][n + 2];
+        
+        for (int i = n; i >= 1; i--) {
+            for (int j = 1; j <= n; j++) {
+                if (i > j) continue;
+                int maxi = Integer.MIN_VALUE;
+
+                /* Iterate through each possible
+                balloon to burst last*/
+                for (int ind = i; ind <= j; ind++) {
+                    
+                    /* Calculate the coins obtained by 
+                    bursting the ind-th balloon last*/
+                    int coins = newNums[i - 1] * newNums[ind] * newNums[j + 1];
+
+                    /* Calculate the maximum coins
+                    for the remaining balloons*/
+                    int remainingCoins = dp[i][ind - 1] + dp[ind + 1][j];
+
+                    // Update the maximum coins
+                    maxi = Math.max(maxi, coins + remainingCoins);
+                }
+                // Store the maximum value in dp table
+                dp[i][j] = maxi;
+            }
+        }
+        // Return the result
+        return dp[1][n];
+    }
+
+    public static void main(String[] args) {
+        int[] nums = {3, 1, 5, 8};
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Print the result
+        System.out.println("Maximum coins obtained: " + sol.maxCoins(nums));
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to calculate the maximum coins obtained
+    def maxCoins(self, nums):
+        n = len(nums)
+        
+        # Add 1 to the beginning and end of nums array
+        nums = [1] + nums + [1]
+        
+        # Create a DP array for memoization
+        dp = [[0] * (n + 2) for _ in range(n + 2)]
+        
+        for i in range(n, 0, -1):
+            for j in range(1, n + 1):
+                if i > j:
+                    continue
+                maxi = float('-inf')
+                
+                """ Iterate through each possible
+                balloon to burst last"""
+                for ind in range(i, j + 1):
+                    """ Calculate the coins obtained by 
+                    bursting the ind-th balloon last"""
+                    coins = nums[i - 1] * nums[ind] * nums[j + 1]
+                    
+                    # Calculate the maximum coins for the remaining balloons
+                    remainingCoins = dp[i][ind - 1] + dp[ind + 1][j]
+                    
+                    # Update the maximum coins
+                    maxi = max(maxi, coins + remainingCoins)
+                
+                # Store the maximum value in dp table
+                dp[i][j] = maxi
+        
+        # Return the result
+        return dp[1][n]
+
+if __name__ == "__main__":
+    nums = [3, 1, 5, 8]
+    
+    # Create an instance of Solution class
+    sol = Solution()
+    
+    # Print the result
+    print("Maximum coins obtained:", sol.maxCoins(nums))
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    // Function to calculate the maximum coins obtained
+    maxCoins(nums) {
+        let n = nums.length;
+        
+        // Add 1 to the beginning and end of nums array
+        nums = [1, ...nums, 1];
+        
+        // Create a DP array for memoization
+        let dp = Array.from({ length: n + 2 }, () => Array(n + 2).fill(0));
+        
+        for (let i = n; i >= 1; i--) {
+            for (let j = 1; j <= n; j++) {
+                if (i > j) continue;
+                let maxi = Number.MIN_VALUE;
+                
+                /* Iterate through each possible 
+                balloon to burst last*/
+                for (let ind = i; ind <= j; ind++) {
+                    
+                    /* Calculate the coins obtained by 
+                    bursting the ind-th balloon last*/
+                    let coins = nums[i - 1] * nums[ind] * nums[j + 1];
+                    
+                    // Calculate the maximum coins for the remaining balloons
+                    let remainingCoins = dp[i][ind - 1] + dp[ind + 1][j];
+                    
+                    // Update the maximum coins
+                    maxi = Math.max(maxi, coins + remainingCoins);
+                }
+                
+                // Store the maximum value in dp table
+                dp[i][j] = maxi;
+            }
+        }
+        
+        // Return the result
+        return dp[1][n];
+    }
+}
+
+const nums = [3, 1, 5, 8];
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Print the result
+console.log("Maximum coins obtained:", sol.maxCoins(nums));
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+using System.Collections.Generic;
+
+public class SolutionEditorial
+{
+    // Function to calculate the maximum coins obtained
+    public int MaxCoins(List<int> nums)
+    {
+        int n = nums.Count;
+        
+        // Add 1 to the beginning and end of nums array
+        List<int> newNums = new List<int>();
+        newNums.Add(1);
+        newNums.AddRange(nums);
+        newNums.Add(1);
+        
+        // Create a DP array for memoization
+        int[,] dp = new int[n + 2, n + 2];
+        
+        for (int i = n; i >= 1; i--)
+        {
+            for (int j = 1; j <= n; j++)
+            {
+                if (i > j) continue;
+                int maxi = int.MinValue;
+                
+                /* Iterate through each possible 
+                balloon to burst last*/
+                for (int ind = i; ind <= j; ind++)
+                {
+                    
+                    /* Calculate the coins obtained by 
+                    bursting the ind-th balloon last*/
+                    int coins = newNums[i - 1] * newNums[ind] * newNums[j + 1];
+                    
+                    // Calculate the maximum coins for the remaining balloons
+                    int remainingCoins = dp[i, ind - 1] + dp[ind + 1, j];
+                    
+                    // Update the maximum coins
+                    maxi = Math.Max(maxi, coins + remainingCoins);
+                }
+                
+                // Store the maximum value in dp table
+                dp[i, j] = maxi;
+            }
+        }
+        
+        // Return the result
+        return dp[1, n];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        List<int> nums = new List<int> { 3, 1, 5, 8 };
+        SolutionEditorial sol = new SolutionEditorial();
+        Console.WriteLine("Maximum coins obtained: " + sol.MaxCoins(nums));
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+// Function to calculate the maximum coins obtained
+func maxCoins(nums []int) int {
+	n := len(nums)
+
+	// Add 1 to the beginning and end of nums array
+	nums = append([]int{1}, nums...)
+	nums = append(nums, 1)
+
+	// Create a DP array for memoization
+	dp := make([][]int, n+2)
+	for i := range dp {
+		dp[i] = make([]int, n+2)
+	}
+
+	for i := n; i >= 1; i-- {
+		for j := 1; j <= n; j++ {
+			if i > j {
+				continue
+			}
+			maxi := -1 << 31 // Equivalent to INT_MIN
+
+			/* Iterate through each possible
+			balloon to burst last */
+			for ind := i; ind <= j; ind++ {
+				/* Calculate the coins obtained by
+				bursting the ind-th balloon last */
+				coins := nums[i-1] * nums[ind] * nums[j+1]
+
+				/* Calculate the maximum coins
+				for the remaining balloons */
+				remainingCoins := dp[i][ind-1] + dp[ind+1][j]
+
+				// Update the maximum coins
+				if coins+remainingCoins > maxi {
+					maxi = coins + remainingCoins
+				}
+			}
+			// Store the maximum value in dp table
+			dp[i][j] = maxi
+		}
+	}
+	// Return the result
+	return dp[1][n]
+}
+
+func main() {
+	nums := []int{3, 1, 5, 8}
+
+	// Print the result
+	fmt.Println("Maximum coins obtained:", maxCoins(nums))
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity:</strong>O(N<sup>3</sup>), There are total N<sup>2</sup> no. of states. And for each state, we are running a partitioning loop roughly for N times<br><br>
+<strong>Space Complexity:</strong>O(N<sup>2</sup>), N<sup>2</sup> for the dp array we are using.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    int func(int i, int j, vector&lt;int&gt; &amp;nums) {
+        if (i &gt; j) return 0;
+        int maxCoins = INT_MIN;
+    
+        // Iterate through each balloon to burst last
+        for (int k = i; k &lt;= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+        
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums) + func(k + 1, j, nums);
+        
+            // Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins);
+        }
+        //Return the result
+        return maxCoins;
+    }
+public:
+    // Function to calculate the maximum coins obtained
+    int maxCoins(vector&lt;int&gt; &amp;nums) {
+        int n = nums.size();
+    
+        // Add 1 to the beginning and end of nums array
+        nums.insert(nums.begin(), 1);
+        nums.push_back(1);
+    
+        // Call the helper function to compute maximum coins
+        return func(1, n, nums);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Recursive function to calculate
+    the maximum coins obtained */
+    private int Func(int i, int j, List&lt;int&gt; nums)
+    {
+        if (i &gt; j) return 0;
+        int maxCoins = int.MinValue;
+    
+        // Iterate through each balloon to burst last
+        for (int k = i; k &lt;= j; k++)
+        {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last */
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+        
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons */
+            int remainingCoins = Func(i, k - 1, nums) + Func(k + 1, j, nums);
+        
+            // Update the maximum coins
+            maxCoins = Math.Max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    public int MaxCoins(List&lt;int&gt; nums)
+    {
+        int n = nums.Count;
+    
+        // Add 1 to the beginning and end of nums list
+        nums.Insert(0, 1);
+        nums.Add(1);
+    
+        // Call the helper function to compute maximum coins
+        return Func(1, n, nums);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Recursive function to calculate
+ the maximum coins obtained */
+func funcCoins(i, j int, nums []int) int {
+    if i &gt; j {
+        return 0
+    }
+
+    maxCoins := -1 &lt;&lt; 31  // equivalent to a very small integer (like INT_MIN)
+
+    // Iterate through each balloon to burst last
+    for k := i; k &lt;= j; k++ {
+        // Calculate the coins obtained by bursting the k-th balloon last
+        coins := nums[i-1] * nums[k] * nums[j+1]
+
+        // Recursively calculate the maximum coins for the remaining balloons
+        remainingCoins := funcCoins(i, k-1, nums) + funcCoins(k+1, j, nums)
+
+        // Update the maximum coins
+        if coins+remainingCoins &gt; maxCoins {
+            maxCoins = coins + remainingCoins
+        }
+    }
+
+    // Return the result
+    return maxCoins
+}
+
+// Function to calculate the maximum coins obtained
+func maxCoins(nums []int) int {
+    n := len(nums)
+
+    // Add 1 to the beginning and end of nums array
+    nums = append([]int{1}, nums...)
+    nums = append(nums, 1)
+
+    // Call the helper function to compute maximum coins
+    return funcCoins(1, n, nums)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Recursive function to calculate 
+    the maximum coins obtained*/
+    private int func(int i, int j, int[] nums) {
+        if (i &gt; j) return 0;
+        int maxCoins = Integer.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (int k = i; k &lt;= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums) + func(k + 1, j, nums);
+
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    public int maxCoins(int[] nums) {
+        int n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        int[] newNums = new int[n + 2];
+        newNums[0] = 1;
+        newNums[n + 1] = 1;
+        System.arraycopy(nums, 0, newNums, 1, n);
+
+        // Call the helper function to compute maximum coins
+        return func(1, n, newNums);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    func(i, j, nums) {
+        if (i &gt; j) return 0;
+        let maxCoins = Number.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (let k = i; k &lt;= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            let coins = nums[i - 1] * nums[k] * nums[j + 1];
+
+            /* Recursively calculate the maximum
+            coins for the remaining balloons*/
+            let remainingCoins = this.func(i, k - 1, nums) + this.func(k + 1, j, nums);
+
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    maxCoins(nums) {
+        let n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        nums = [1, ...nums, 1];
+
+        // Call the helper function to compute maximum coins
+        return this.func(1, n, nums);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Recursive function to calculate
+    the maximum coins obtained&quot;&quot;&quot;
+    def func(self, i, j, nums):
+        if i &gt; j:
+            return 0
+        maxCoins = float(&#x27;-inf&#x27;)
+
+        # Iterate through each balloon to burst last
+        for k in range(i, j + 1):
+            &quot;&quot;&quot; Calculate the coins obtained
+            by bursting the k-th balloon last&quot;&quot;&quot;
+            coins = nums[i - 1] * nums[k] * nums[j + 1]
+
+            &quot;&quot;&quot; Recursively calculate the maximum
+            coins for the remaining balloons&quot;&quot;&quot;
+            remainingCoins = self.func(i, k - 1, nums) + self.func(k + 1, j, nums)
+
+            # Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins)
+        
+        # Return the result
+        return maxCoins
+
+    # Function to calculate the maximum coins obtained
+    def maxCoins(self, nums):
+        n = len(nums)
+
+        # Add 1 to the beginning and end of nums array
+        nums = [1] + nums + [1]
+
+        # Call the helper function to compute maximum coins
+        return self.func(1, n, nums)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    int func(int i, int j, vector&lt;int&gt; &amp;nums, vector&lt;vector&lt;int&gt;&gt; &amp;dp) {
+        if (i &gt; j) return 0;
+        
+        //Check if the subproblem is already solved
+        if (dp[i][j] != -1) return dp[i][j];
+        
+        int maxCoins = INT_MIN;
+    
+        // Iterate through each balloon to burst last
+        for (int k = i; k &lt;= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+        
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums, dp) + func(k + 1, j, nums, dp);
+        
+            // Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins);
+        }
+        //Return the result
+        return dp[i][j] = maxCoins;
+    }
+public:
+    // Function to calculate the maximum coins obtained
+    int maxCoins(vector&lt;int&gt; &amp;nums) {
+        int n = nums.size();
+    
+        // Add 1 to the beginning and end of nums array
+        nums.insert(nums.begin(), 1);
+        nums.push_back(1);
+        
+        // Create a DP array for memoization
+        vector&lt;vector&lt;int&gt;&gt; dp(n + 2, vector&lt;int&gt;(n + 2, -1));
+        
+        // Call the helper function to compute maximum coins
+        return func(1, n, nums, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    private int Solve(int i, int j, List&lt;int&gt; nums, int[,] dp)
+    {
+        if (i &gt; j) return 0;
+        
+        // Check if the subproblem is already solved
+        if (dp[i, j] != -1) return dp[i, j];
+        
+        int maxCoins = int.MinValue;
+
+        // Iterate through each balloon to burst last
+        for (int k = i; k &lt;= j; k++)
+        {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+            
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = Solve(i, k - 1, nums, dp) + Solve(k + 1, j, nums, dp);
+            
+            // Update the maximum coins
+            maxCoins = Math.Max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        dp[i, j] = maxCoins;
+        return dp[i, j];
+    }
+
+    public int MaxCoins(List&lt;int&gt; nums)
+    {
+        //your code goes here
+        int n = nums.Count;
+
+        // Add 1 to the beginning and end of nums array
+        List&lt;int&gt; paddedNums = new List&lt;int&gt;();
+        paddedNums.Add(1);
+        paddedNums.AddRange(nums);
+        paddedNums.Add(1);
+
+        // Create a DP array for memoization
+        int[,] dp = new int[n + 2, n + 2];
+        for (int r = 0; r &lt; n + 2; r++)
+        {
+            for (int c = 0; c &lt; n + 2; c++)
+            {
+                dp[r, c] = -1;
+            }
+        }
+
+        // Call the helper function to compute maximum coins
+        return Solve(1, n, paddedNums, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Recursive function to calculate
+the maximum coins obtained */
+func funcRec(i, j int, nums []int, dp [][]int) int {
+	if i &gt; j {
+		return 0
+	}
+
+	// Check if the subproblem is already solved
+	if dp[i][j] != -1 {
+		return dp[i][j]
+	}
+
+	maxCoins := -1 &lt;&lt; 31 // Equivalent to INT_MIN
+
+	// Iterate through each balloon to burst last
+	for k := i; k &lt;= j; k++ {
+		/* Calculate the coins obtained
+		by bursting the k-th balloon last */
+		coins := nums[i-1] * nums[k] * nums[j+1]
+
+		/* Recursively calculate the maximum
+		coins for the remaining balloons */
+		remainingCoins := funcRec(i, k-1, nums, dp) + funcRec(k+1, j, nums, dp)
+
+		// Update the maximum coins
+		if coins+remainingCoins &gt; maxCoins {
+			maxCoins = coins + remainingCoins
+		}
+	}
+
+	// Return the result
+	dp[i][j] = maxCoins
+	return dp[i][j]
+}
+
+// Function to calculate the maximum coins obtained
+func maxCoins(nums []int) int {
+	n := len(nums)
+
+	// Add 1 to the beginning and end of nums array
+	nums = append([]int{1}, nums...)
+	nums = append(nums, 1)
+
+	// Create a DP array for memoization
+	dp := make([][]int, n+2)
+	for i := range dp {
+		dp[i] = make([]int, n+2)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	// Call the helper function to compute maximum coins
+	return funcRec(1, n, nums, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution{
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    private int func(int i, int j, int[] nums, int[][] dp) {
+        if (i &gt; j) return 0;
+        
+        // Check if the subproblem is already solved
+        if (dp[i][j] != -1) return dp[i][j];
+        
+        int maxCoins = Integer.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (int k = i; k &lt;= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            int coins = nums[i - 1] * nums[k] * nums[j + 1];
+            
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            int remainingCoins = func(i, k - 1, nums, dp) + func(k + 1, j, nums, dp);
+            
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        return dp[i][j] = maxCoins;
+    }
+
+    // Function to calculate the maximum coins obtained
+    public int maxCoins(int[] nums) {
+        int n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        int[] newNums = new int[n + 2];
+        newNums[0] = 1;
+        newNums[n + 1] = 1;
+        System.arraycopy(nums, 0, newNums, 1, n);
+
+        // Create a DP array for memoization
+        int[][] dp = new int[n + 2][n + 2];
+        for (int[] row : dp) {
+            Arrays.fill(row, -1);
+        }
+
+        // Call helper function to compute maximum coins
+        return func(1, n, newNums, dp);
+}
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Recursive function to calculate
+    the maximum coins obtained*/
+    func(i, j, nums, dp) {
+        if (i &gt; j) return 0;
+        
+        // Check if the subproblem is already solved
+        if (dp[i][j] !== -1) return dp[i][j];
+        
+        let maxCoins = Number.MIN_VALUE;
+
+        // Iterate through each balloon to burst last
+        for (let k = i; k &lt;= j; k++) {
+            /* Calculate the coins obtained
+            by bursting the k-th balloon last*/
+            let coins = nums[i - 1] * nums[k] * nums[j + 1];
+            
+            /* Recursively calculate the maximum 
+            coins for the remaining balloons*/
+            let remainingCoins = this.func(i, k - 1, nums, dp) + this.func(k + 1, j, nums, dp);
+            
+            // Update the maximum coins
+            maxCoins = Math.max(maxCoins, coins + remainingCoins);
+        }
+        // Return the result
+        dp[i][j] = maxCoins;
+        return dp[i][j];
+    }
+
+    // Function to calculate the maximum coins obtained
+    maxCoins(nums) {
+        let n = nums.length;
+
+        // Add 1 to the beginning and end of nums array
+        nums = [1, ...nums, 1];
+
+        // Create a DP array for memoization
+        let dp = Array.from({ length: n + 2 }, () =&gt; Array(n + 2).fill(-1));
+
+        // Call the helper function to compute maximum coins
+        return this.func(1, n, nums, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Recursive function to calculate
+    the maximum coins obtained&quot;&quot;&quot;
+    def func(self, i, j, nums, dp):
+        if i &gt; j:
+            return 0
+        
+        # Check if the subproblem is already solved
+        if dp[i][j] != -1:
+            return dp[i][j]
+        
+        maxCoins = float(&#x27;-inf&#x27;)
+
+        # Iterate through each balloon to burst last
+        for k in range(i, j + 1):
+            &quot;&quot;&quot; Calculate the coins obtained by
+            bursting the k-th balloon last&quot;&quot;&quot;
+            coins = nums[i - 1] * nums[k] * nums[j + 1]
+            
+            &quot;&quot;&quot; Recursively calculate the maximum
+            coins for the remaining balloons&quot;&quot;&quot;
+            remainingCoins = self.func(i, k - 1, nums, dp) + self.func(k + 1, j, nums, dp)
+            
+            # Update the maximum coins
+            maxCoins = max(maxCoins, coins + remainingCoins)
+        
+        # Return the result
+        dp[i][j] = maxCoins
+        return maxCoins
+
+    # Function to calculate the maximum coins obtained
+    def maxCoins(self, nums):
+        n = len(nums)
+
+        # Add 1 to the beginning and end of nums array
+        nums = [1] + nums + [1]
+
+        # Create a DP array for memoization
+        dp = [[-1] * (n + 2) for _ in range(n + 2)]
+
+        # Call the helper function to compute maximum coins
+        return self.func(1, n, nums, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+public:
+    // Function to calculate the maximum coins obtained
+    int maxCoins(vector&lt;int&gt; &amp;nums) {
+        int n = nums.size();
+    
+        // Add 1 to the beginning and end of nums array
+        nums.insert(nums.begin(), 1);
+        nums.push_back(1);
+    
+        // Create a DP array for memoization
+        vector&lt;vector&lt;int&gt;&gt; dp(n + 2, vector&lt;int&gt;(n + 2, 0));
+
+        for (int i = n; i &gt;= 1; i--) {
+            for (int j = 1; j &lt;= n; j++) {
+                if (i &gt; j) continue;
+                int maxi = INT_MIN;
+            
+                /*  Iterate through each possible
+                balloon to burst last*/
+                for (int ind = i; ind &lt;= j; ind++) {
+                    /* Calculate the coins obtained by
+                    bursting the ind-th balloon last*/
+                    int coins = nums[i - 1] * nums[ind] * nums[j + 1];
+                
+                    /* Calculate the maximum coins
+                    for the remaining balloons*/
+                        int remainingCoins = dp[i][ind - 1] + dp[ind + 1][j];
+                
+                    // Update the maximum coins
+                    maxi = max(maxi, coins + remainingCoins);
+                }
+                //Store the maximum value in dp table
+                dp[i][j] = maxi;
+            }
+        }
+        //Return the result
+        return dp[1][n];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    public int MaxCoins(List&lt;int&gt; nums)
+    {
+        // Function to calculate the maximum coins obtained
+        int n = nums.Count;
+        
+        // Add 1 to the beginning and end of nums array
+        List&lt;int&gt; newNums = new List&lt;int&gt;();
+        newNums.Add(1);
+        newNums.AddRange(nums);
+        newNums.Add(1);
+        
+        // Create a DP array for memoization
+        int[,] dp = new int[n + 2, n + 2];
+        
+        for (int i = n; i &gt;= 1; i--)
+        {
+            for (int j = 1; j &lt;= n; j++)
+            {
+                if (i &gt; j) continue;
+                int maxi = int.MinValue;
+                
+                /* Iterate through each possible 
+                balloon to burst last*/
+                for (int ind = i; ind &lt;= j; ind++)
+                {
+                    
+                    /* Calculate the coins obtained by 
+                    bursting the ind-th balloon last*/
+                    int coins = newNums[i - 1] * newNums[ind] * newNums[j + 1];
+                    
+                    // Calculate the maximum coins for the remaining balloons
+                    int remainingCoins = dp[i, ind - 1] + dp[ind + 1, j];
+                    
+                    // Update the maximum coins
+                    maxi = Math.Max(maxi, coins + remainingCoins);
+                }
+                
+                // Store the maximum value in dp table
+                dp[i, j] = maxi;
+            }
+        }
+        
+        // Return the result
+        return dp[1, n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to calculate the maximum coins obtained
+func maxCoins(nums []int) int {
+	n := len(nums)
+
+	// Add 1 to the beginning and end of nums array
+	nums = append([]int{1}, nums...)
+	nums = append(nums, 1)
+
+	// Create a DP array for memoization
+	dp := make([][]int, n+2)
+	for i := range dp {
+		dp[i] = make([]int, n+2)
+	}
+
+	for i := n; i &gt;= 1; i-- {
+		for j := 1; j &lt;= n; j++ {
+			if i &gt; j {
+				continue
+			}
+			maxi := -1 &lt;&lt; 31 // Equivalent to INT_MIN
+
+			/* Iterate through each possible
+			balloon to burst last */
+			for ind := i; ind &lt;= j; ind++ {
+				/* Calculate the coins obtained by
+				bursting the ind-th balloon last */
+				coins := nums[i-1] * nums[ind] * nums[j+1]
+
+				/* Calculate the maximum coins
+				for the remaining balloons */
+				remainingCoins := dp[i][ind-1] + dp[ind+1][j]
+
+				// Update the maximum coins
+				if coins+remainingCoins &gt; maxi {
+					maxi = coins + remainingCoins
+				}
+			}
+			// Store the maximum value in dp table
+			dp[i][j] = maxi
+		}
+	}
+	// Return the result
+	return dp[1][n]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    // Function to calculate the maximum coins obtained
+    public int maxCoins(int[] nums) {
+        int n = nums.length;
+        
+        // Add 1 to the beginning and end of nums array
+        int[] newNums = new int[n + 2];
+        newNums[0] = 1;
+        newNums[n + 1] = 1;
+        System.arraycopy(nums, 0, newNums, 1, n);
+        
+        // Create a DP array for memoization
+        int[][] dp = new int[n + 2][n + 2];
+        
+        for (int i = n; i &gt;= 1; i--) {
+            for (int j = 1; j &lt;= n; j++) {
+                if (i &gt; j) continue;
+                int maxi = Integer.MIN_VALUE;
+
+                /* Iterate through each possible
+                balloon to burst last*/
+                for (int ind = i; ind &lt;= j; ind++) {
+                    
+                    /* Calculate the coins obtained by 
+                    bursting the ind-th balloon last*/
+                    int coins = newNums[i - 1] * newNums[ind] * newNums[j + 1];
+
+                    /* Calculate the maximum coins
+                    for the remaining balloons*/
+                    int remainingCoins = dp[i][ind - 1] + dp[ind + 1][j];
+
+                    // Update the maximum coins
+                    maxi = Math.max(maxi, coins + remainingCoins);
+                }
+                // Store the maximum value in dp table
+                dp[i][j] = maxi;
+            }
+        }
+        // Return the result
+        return dp[1][n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    // Function to calculate the maximum coins obtained
+    maxCoins(nums) {
+        let n = nums.length;
+        
+        // Add 1 to the beginning and end of nums array
+        nums = [1, ...nums, 1];
+        
+        // Create a DP array for memoization
+        let dp = Array.from({ length: n + 2 }, () =&gt; Array(n + 2).fill(0));
+        
+        for (let i = n; i &gt;= 1; i--) {
+            for (let j = 1; j &lt;= n; j++) {
+                if (i &gt; j) continue;
+                let maxi = Number.MIN_VALUE;
+                
+                /* Iterate through each possible 
+                balloon to burst last*/
+                for (let ind = i; ind &lt;= j; ind++) {
+                    
+                    /* Calculate the coins obtained by 
+                    bursting the ind-th balloon last*/
+                    let coins = nums[i - 1] * nums[ind] * nums[j + 1];
+                    
+                    // Calculate the maximum coins for the remaining balloons
+                    let remainingCoins = dp[i][ind - 1] + dp[ind + 1][j];
+                    
+                    // Update the maximum coins
+                    maxi = Math.max(maxi, coins + remainingCoins);
+                }
+                
+                // Store the maximum value in dp table
+                dp[i][j] = maxi;
+            }
+        }
+        
+        // Return the result
+        return dp[1][n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to calculate the maximum coins obtained
+    def maxCoins(self, nums):
+        n = len(nums)
+        
+        # Add 1 to the beginning and end of nums array
+        nums = [1] + nums + [1]
+        
+        # Create a DP array for memoization
+        dp = [[0] * (n + 2) for _ in range(n + 2)]
+        
+        for i in range(n, 0, -1):
+            for j in range(1, n + 1):
+                if i &gt; j:
+                    continue
+                maxi = float(&#x27;-inf&#x27;)
+                
+                &quot;&quot;&quot; Iterate through each possible
+                balloon to burst last&quot;&quot;&quot;
+                for ind in range(i, j + 1):
+                    &quot;&quot;&quot; Calculate the coins obtained by 
+                    bursting the ind-th balloon last&quot;&quot;&quot;
+                    coins = nums[i - 1] * nums[ind] * nums[j + 1]
+                    
+                    # Calculate the maximum coins for the remaining balloons
+                    remainingCoins = dp[i][ind - 1] + dp[ind + 1][j]
+                    
+                    # Update the maximum coins
+                    maxi = max(maxi, coins + remainingCoins)
+                
+                # Store the maximum value in dp table
+                dp[i][j] = maxi
+        
+        # Return the result
+        return dp[1][n]</code></pre></div>
+</body>
+</html>

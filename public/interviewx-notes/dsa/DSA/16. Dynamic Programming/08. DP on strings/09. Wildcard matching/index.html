@@ -1,0 +1,2881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wildcard matching</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         max-width: 900px; margin: 0 auto; padding: 20px; background: #1a1a2e; color: #e0e0e0; }
+  h1 { color: #00d4ff; border-bottom: 2px solid #333; padding-bottom: 10px; }
+  h2 { color: #7b68ee; }
+  h3 { color: #f0a500; }
+  .meta { display: flex; gap: 15px; flex-wrap: wrap; margin: 15px 0; }
+  .badge { background: #2d2d44; padding: 4px 12px; border-radius: 12px; font-size: 0.85em; }
+  .difficulty-Easy { color: #4caf50; } .difficulty-Medium { color: #ff9800; } .difficulty-Hard { color: #f44336; }
+  .section { background: #16213e; border-radius: 8px; padding: 20px; margin: 20px 0; }
+  pre { background: #0d1117; padding: 15px; border-radius: 6px; overflow-x: auto; }
+  code { font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9em; }
+  .tags { margin: 10px 0; } .tags span { background: #1e3a5f; padding: 3px 10px; border-radius: 10px;
+         font-size: 0.8em; margin-right: 5px; display: inline-block; margin-bottom: 5px; }
+  img { max-width: 100%; }
+  a { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>Wildcard matching</h1>
+<div class="meta">
+  <span class="badge difficulty-Hard">Hard</span>
+  <span class="badge">dsa</span>
+</div>
+<div class="tags"><span>Dynamic Programming</span><span>Greedy</span><span>Recursion</span><span>String</span></div>
+<div class="section">
+<h2>Problem Statement</h2>
+<p>Given a string str and a pattern pat, implement a pattern matching function that supports the following special characters:</p><p><br></p><p>'?' Matches any single character.</p><p>'*' Matches any sequence of characters (including the empty sequence).</p><p><br></p><p>The pattern must match the entire string.</p>
+</div>
+<div class="section"><h2>Constraints</h2><ul><li>0 <= length of(str, pattern) <= 200</li></ul></div>
+<div class="section"><h3>Example 1</h3><p><strong>Input:</strong> str = "xaylmz", pat = "x?y*z"</p><p><strong>Output:</strong> true</p><p><strong>Explanation: </strong></p><p>The pattern "x?y*z" matches the string "xaylmz":</p><p>- '?' matches 'a'</p><p>- '*' matches "lm"</p><p>- 'z' matches 'z'</p><h3>Example 2</h3><p><strong>Input:</strong> str = "xyza", pat = "x*z"</p><p><strong>Output:</strong> false</p><p><strong>Explanation: </strong></p><p>The pattern "x*z" does not match the string "xyza" because there is an extra 'a' at the end of the string that is not matched by the pattern.</p><h3>Example 3</h3><p><strong>Input: </strong>str = "abc", par = "a?c"</p></div>
+<div class="section"><h2>Fun Fact</h2><p>This pattern matching problem forms the basis for one of the most essential functions in computer systems: file or text searching. The most basic example is wildcard searches in operating systems. In Windows, for instance, '?' is used to replace any single character and '*' is used to replace a string of character(s). Besides, Regular Expressions (regex), a common tool used in programming for string pattern searching and manipulation, also rely on this concept. Regex is used extensively in programming from simple string manipulation, data validation, data scraping to more complicated natural language processing tasks.</p></div>
+<div class="section"><h2>Editorial: Recursion</h2>
+<h5><strong>Understanding:</strong></h5>
+<p>For every index of string S1, we have different options to match that index with string S2. Therefore, we can think in terms of string matching path as we have done already in previous questions.</p>
+<ol>
+<li>Either the characters match already.</li>
+<li>Or, if there is a ‘?’, we can explicitly match a single character.</li>
+<li>For a ‘*’, the following figure explains the scenario.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Wildcard matching/-VLFJ2Pd6"></li></ol>
+
+<p>As there is no uniformity in data, there is no other way to find out than to try out all possible ways. To do so we will need to use recursion.</p>
+
+<h5><strong>Steps to form the recursive solution: </strong></h5>
+<ol>
+<li><b>Express the problem in terms of indexes: </b>We are given two strings. We can represent them with the help of two indexes i and j. Initially, i=n-1 and j=m-1, where n and m are lengths of strings S1 and S2. Initially, we will call f(n-1,m-1), which means whether string S1[0…n-1] matches with string S2[0…m-1]. f(i, j) returns whether string S1[from index 0 to i] matches S2[from index 0 to j].</li>
+
+ <li><b>Try out all possible choices at a given index:</b>Now, i and j represent two characters from strings S1 and S2 respectively. There are only two options that make sense: either the characters represented by i and j match or they don’t.</li>
+<p><b>When the characters match: </b>If(S1[i] == S2[j]), the characters at i and j match, we can simply move to the next characters of both the strings. So we will just decrement both i and j by 1 and recursively find the answer for the remaining string portions. We return f(i-1,j-1). The following figure makes it clear.</p>
+
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Wildcard matching/-vlA6xR8O">
+
+<p><b> When the characters don’t match: </b>If the characters don’t match, there are three possible scenarios:
+<ol>
+<li>S1[i] == ‘?’: In this case, we can explicitly match ‘?’ at index i of S1 with the corresponding character at index j of S2. And then recursively call f(i-1,j-1) to check for the remaining string.
+</li>
+<li>S1[i] == ‘*’: This is an interesting case as now ‘*’ can be replaced with any sequence of characters( of length 0 or more) from S2.</li><br>
+ <img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Wildcard matching/-drGEtSX7">
+
+<p>If any of these cases return true, we can say that the characters do match. The next question is how to try all possible ways.</p>
+
+<p>We are using two pointers i and j to represent characters of strings S1 and S2. We can surely write a for loop to compare characters from 0 to j of S2 for the above scenario. Can we do it more smartly? Yes, we can. Please understand the approach explained below.</p>
+
+<p>We are using a recursive function f(i,j). If we do only the following two recursive calls:</p>
+<ol>
+<li>Call f(i-1,j). i.e replace ‘*’ with nothing and act as if it was not present.</li>
+<li>Call f(i,j-1). i.e replace ‘*’ with a single character at index j and make the i pointer to still point at index i. In this, we matched it with a single character (one of the many options that need to be tried) and in the next recursive call, as i still point to ‘*’, we get the exact two recursive calls again.</li></ol>
+<p>The following recursive tree will help us to understand the recursion better:</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Wildcard matching/-2PHuDr78">
+
+<p>So we see how we can tackle all the required cases associated with ‘*’ by using recursion.</p>
+
+<li>If S1[i] is neither ‘?’ nor ‘*’: Then we can say as the characters at i and j don’t match then the strings don’t match, so we return false.</li></ol>
+
+<p>To summarise:</p>
+<ol>
+<li>If S1[i] == ‘?’, return f(i-1,j-1)</li>
+<li>Else if S1[i] == ‘*’, return f(i-1,j) || f(i,j-1)</li>
+<li>Else return false</li>
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">/*It is pseudocode and it is not related 
+to any specific programming language */
+f(i, j){
+    if(S1[i] == S2[j] || S1[i] == '?'){
+        return f(i-1, j-1)
+    }
+    if(S1 == '*'){
+        return f(i-1, j) || f(i, j-1)
+    }
+     else
+        return false
+}</code></pre></div></div></div>
+
+</ol>
+
+
+<li><b>Return logical OR (||) of all the choices: </b>If any of the cases return true, we can say that strings do match. We can use OR operator (||) with the recursive calls.</li>
+
+<li><b>Base Cases: </b>We are reducing i and j in our recursive relation, there can be two possibilities, either i becomes -1 or j becomes -1., i,e we exhaust either S1 or S2 respectively.
+<ol>
+<li>When S1 is exhausted: When S1 is exhausted (i<0), we know that in order for the strings to match, String S2 should also exhaust simultaneously. If it does, we return true, else we return false.
+We can say, if(i<0 && j<0), return true and if(i<0 && j>=0), return false.</li>
+
+<li> When S2 is exhausted: When S2 is exhausted(j<0) and S1 has not, there is only one pattern that can account for true(matching of strings). It is if S1 is like this “*”, ”****”, ”***”, i.e: S1 contains only stars. Then we can replace every star with a sequence of length 0 and say that the string match. If S1 is all-stars, we return true, else return false.</li></ol></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution{
+private:
+    /* Function to check if a 
+    substring of S1 contains only '*' */
+    bool isAllStars(string &S1, int i) {
+        for (int j = 0; j <= i; j++) {
+            if (S1[j] != '*')
+                return false;
+        }
+        return true;
+    }
+    
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    bool wildcardMatchingUtil(string &S1, string &S2, int i, int j) {
+        // Base Cases
+        if (i < 0 && j < 0)
+            return true;
+        if (i < 0 && j >= 0)
+            return false;
+        if (j < 0 && i >= 0)
+            return isAllStars(S1, i);
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1[i] == S2[j] || S1[i] == '?'){
+            return wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either '*' represents an
+                empty string or it matches a character in S2*/
+        if (S1[i] == '*'){
+                return wildcardMatchingUtil(S1, S2, i - 1, j) || wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+    
+public:
+    /* Function to check if 'Str' matches
+    'pat' using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+};
+
+int main() {
+    string S1 = "ab*cd";
+    string S2 = "abdefcd";
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call wildcardMatching function and print the result
+    if (sol.wildCard(S2, S1))
+        cout << "String S1 and S2 do match";
+    else
+        cout << "String S1 and S2 do not match";
+
+    return 0;
+}
+ </code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to check if a 
+    substring of S1 contains only '*' */
+    private boolean isAllStars(String S1, int i) {
+        for (int j = 0; j <= i; j++) {
+            if (S1.charAt(j) != '*')
+                return false;
+        }
+        return true;
+    }
+    
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    private boolean wildcardMatchingUtil(String S1, String S2, int i, int j) {
+        // Base Cases
+        if (i < 0 && j < 0)
+            return true;
+        if (i < 0 && j >= 0)
+            return false;
+        if (j < 0 && i >= 0)
+            return isAllStars(S1, i);
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1.charAt(i) == S2.charAt(j) || S1.charAt(i) == '?') {
+            return wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either '*' represents an
+                empty string or it matches a character in S2*/
+        if (S1.charAt(i) == '*') {
+            return wildcardMatchingUtil(S1, S2, i - 1, j) || wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+    
+    /* Function to check if 'Str' matches
+    'pat' using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String S1 = "?*?d*j";
+        String S2 = "mayfojkazdpj";
+        
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call wildcardMatching function and print the result
+        if (sol.wildCard(S2, S1)) {
+            System.out.print("String S1 and S2 do match");
+        } else {
+            System.out.print("String S1 and S2 do not match");
+        }
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    """ Function to check if a 
+    substring of S1 contains only '*' """
+    def isAllStars(self, S1, i):
+        for j in range(i + 1):
+            if S1[j] != '*':
+                return False
+        return True
+
+    """ Function to check if S1 matches 
+    S2 using wildcard pattern matching """
+    def wildcardMatchingUtil(self, S1, S2, i, j):
+        # Base Cases
+        if i < 0 and j < 0:
+            return True
+        if i < 0 and j >= 0:
+            return False
+        if j < 0 and i >= 0:
+            return self.isAllStars(S1, i)
+
+        """ If the characters at the current
+        positions match or S1 has a '?' """
+        if S1[i] == S2[j] or S1[i] == '?':
+            return self.wildcardMatchingUtil(S1, S2, i - 1, j - 1)
+
+        """ Two options: either '*' represents an
+            empty string or it matches a character in S2 """
+        if S1[i] == '*':
+            return (self.wildcardMatchingUtil(S1, S2, i - 1, j) or
+                    self.wildcardMatchingUtil(S1, S2, i, j - 1))
+        return False
+
+    """ Function to check if 'Str' matches
+    'pat' using wildcard pattern matching """
+    def wildCard(self, str, pat):
+        n = len(str)
+        m = len(pat)
+        return self.wildcardMatchingUtil(pat, str, m - 1, n - 1)
+
+# Driver code
+if __name__ == "__main__":
+    S1 = "ab*cd"
+    S2 = "abdefcd"
+    
+    #Create an instance of Solution class
+    sol = Solution()
+
+    # Call wildcardMatching function and print the result
+    if sol.wildCard(S2, S1):
+        print("String S1 and S2 do match")
+    else:
+        print("String S1 and S2 do not match")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to check if a 
+    substring of S1 contains only '*' */
+    isAllStars(S1, i) {
+        for (let j = 0; j <= i; j++) {
+            if (S1[j] !== '*') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    wildcardMatchingUtil(S1, S2, i, j) {
+        // Base Cases
+        if (i < 0 && j < 0) {
+            return true;
+        }
+        if (i < 0 && j >= 0) {
+            return false;
+        }
+        if (j < 0 && i >= 0) {
+            return this.isAllStars(S1, i);
+        }
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1[i] === S2[j] || S1[i] === '?') {
+            return this.wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either '*' represents an
+                empty string or it matches a character in S2*/
+        if (S1[i] === '*') {
+            return this.wildcardMatchingUtil(S1, S2, i - 1, j) ||
+                   this.wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+
+    /* Function to check if 'Str' matches
+    'pat' using wildcard pattern matching*/
+    wildCard(str, pat) {
+        let n = str.length;
+        let m = pat.length;
+        return this.wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+}
+
+// Driver code
+function main() {
+    let S1 = "ab*cd";
+    let S2 = "abdefcd";
+    
+    //Create an instance of Solution class
+    let sol = new Solution();
+
+    // Call wildcardMatching function and print the result
+    if (sol.wildCard(S2, S1)) {
+        console.log("String S1 and S2 do match");
+    } else {
+        console.log("String S1 and S2 do not match");
+    }
+}
+
+main();
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to check if a 
+    substring of S1 contains only '*' */
+    private bool isAllStars(string S1, int i)
+    {
+        for (int j = 0; j <= i; j++)
+        {
+            if (S1[j] != '*')
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    private bool wildcardMatchingUtil(string S1, string S2, int i, int j)
+    {
+        // Base Cases
+        if (i < 0 && j < 0)
+            return true;
+        if (i < 0 && j >= 0)
+            return false;
+        if (j < 0 && i >= 0)
+            return isAllStars(S1, i);
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1[i] == S2[j] || S1[i] == '?')
+        {
+            return wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either '*' represents an
+                empty string or it matches a character in S2*/
+        if (S1[i] == '*')
+        {
+            return wildcardMatchingUtil(S1, S2, i - 1, j) 
+                || wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+
+    /* Function to check if 'Str' matches
+    'pat' using wildcard pattern matching*/
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+}
+
+public class Program
+{
+    public static void Main()
+    {
+        string S1 = "ab*cd";
+        string S2 = "abdefcd";
+
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call wildcardMatching function and print the result
+        if (sol.WildCard(S2, S1))
+            Console.WriteLine("String S1 and S2 do match");
+        else
+            Console.WriteLine("String S1 and S2 do not match");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import "fmt"
+
+/* Function to check if a 
+substring of S1 contains only '*' */
+func isAllStars(S1 string, i int) bool {
+    for j := 0; j <= i; j++ {
+        if S1[j] != '*' {
+            return false
+        }
+    }
+    return true
+}
+
+/* Function to check if S1 matches 
+S2 using wildcard pattern matching*/
+func wildcardMatchingUtil(S1 string, S2 string, i int, j int) bool {
+    // Base Cases
+    if i < 0 && j < 0 {
+        return true
+    }
+    if i < 0 && j >= 0 {
+        return false
+    }
+    if j < 0 && i >= 0 {
+        return isAllStars(S1, i)
+    }
+
+    /* If the characters at the current
+    positions match or S1 has a '?'*/
+    if S1[i] == S2[j] || S1[i] == '?' {
+        return wildcardMatchingUtil(S1, S2, i-1, j-1)
+    }
+
+    /* Two options: either '*' represents an
+                empty string or it matches a character in S2*/
+    if S1[i] == '*' {
+        return wildcardMatchingUtil(S1, S2, i-1, j) ||
+               wildcardMatchingUtil(S1, S2, i, j-1)
+    }
+
+    return false
+}
+
+/* Function to check if 'Str' matches
+'pat' using wildcard pattern matching*/
+func wildCard(str, pat string) bool {
+    n := len(str)
+    m := len(pat)
+
+    return wildcardMatchingUtil(pat, str, m-1, n-1)
+}
+
+func main() {
+    S1 := "ab*cd"
+    S2 := "abdefcd"
+
+    if wildCard(S2, S1) {
+        fmt.Print("String S1 and S2 do match")
+    } else {
+        fmt.Print("String S1 and S2 do not match")
+    }
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity: </strong>Exponential<br><br>
+
+<strong>Space Complexity: </strong>O(N+M), we are using a stack space of N+M.
+
+</div>
+<div class="section"><h2>Editorial: Memoization</h2><html><head></head><body><p>If we draw the recursion tree, we will see that there are overlapping subproblems. Hence the  DP approaches can be applied to the recursive solution.</p>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Wildcard matching/-R6eQYz0s" width="500"><br>
+In order to convert a recursive solution to memoization the following steps will be taken:
+<ol>
+<li><b>Declare a dp array of size [n][m]: </b>As there are two changing parameters in the recursive solution,  'i' and 'j'. The maximum value 'i' can attain is 'n-1', where n is the size of string S1 and 'j' can take maximum value of 'm-1', where m is the size of string S2. Therefore, we need 2D dp array.</li>
+<p>The dp array stores the calculations of subproblems. Initialize dp array with -1, to indicate that no subproblem has been solved yet.</p>
+
+<li><b>While encountering an overlapping subproblem: </b>When we come across a subproblem, for which the dp array has value other than -1, it means we have found a subproblem which has been solved before hence it is an overlapping subproblem. No need to calculate it's value again just retrieve the value from dp array and return it.</li>
+<li><b>Store the value of subproblem: </b>Whenever, a subproblem is enocountered and it is not solved yet(the value at this index will be -1 in the dp array), store the calculated value of subproblem in the array.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+private:
+    /* Function to check if a 
+    substring of S1 contains only '*'*/
+    bool isAllStars(string S1, int i) {
+        for (int j = 0; j <= i; j++) {
+            if (S1[j] != '*')
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    bool wildcardMatchingUtil(string S1, string S2, int i, int j, vector<vector<int>> &dp) {
+        // Base Cases
+        if (i < 0 && j < 0)
+            return true;
+        if (i < 0 && j >= 0)
+            return false;
+        if (j < 0 && i >= 0)
+            return isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i][j] != -1)
+            return dp[i][j] == 1;
+
+        //bool result;
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1[i] == S2[j] || S1[i] == '?') {
+            return dp[i][j] = wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp);
+        } 
+        if (S1[i] == '*') {
+            /* Two options: either '*' represents an 
+            empty string or it matches a character in S2*/
+            return dp[i][j] = wildcardMatchingUtil(S1, S2, i - 1, j, dp) || wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+        } else {
+            return dp[i][j] = false;
+        }
+    }
+
+public:
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        vector<vector<int>> dp(m, vector<int>(n, -1));
+
+        return wildcardMatchingUtil(pat, str, m-1, n-1, dp);
+    }
+};
+
+int main() {
+    string S1 = "ab*cd";
+    string S2 = "abdefcd";
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call wildcardMatching function and print the result
+    if (sol.wildCard(S2, S1))
+        cout << "String S1 and S2 do match";
+    else
+        cout << "String S1 and S2 do not match";
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to check if a 
+    substring of S1 contains only '*'*/
+    private boolean isAllStars(String S1, int i) {
+        for (int j = 0; j <= i; j++) {
+            if (S1.charAt(j) != '*')
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    private boolean wildcardMatchingUtil(String S1, String S2, int i, int j, int[][] dp) {
+        // Base Cases
+        if (i < 0 && j < 0)
+            return true;
+        if (i < 0 && j >= 0)
+            return false;
+        if (j < 0 && i >= 0)
+            return isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i][j] != -1)
+            return dp[i][j] == 1;
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1.charAt(i) == S2.charAt(j) || S1.charAt(i) == '?') {
+            dp[i][j] = wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp) ? 1 : 0;
+            return dp[i][j] == 1;
+        }
+        if (S1.charAt(i) == '*') {
+            /* Two options: either '*' represents an 
+            empty string or it matches a character in S2*/
+            boolean match = wildcardMatchingUtil(S1, S2, i - 1, j, dp) || wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+            dp[i][j] = match ? 1 : 0;
+            return match;
+        } else {
+            dp[i][j] = 0;
+            return false;
+        }
+    }
+
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        int[][] dp = new int[m][n];
+        for (int[] row : dp) Arrays.fill(row, -1);
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1, dp);
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String S1 = "ab*cd";
+        String S2 = "abdefcd";
+
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call wildcardMatching function and print the result
+        if (sol.wildCard(S2, S1))
+            System.out.println("String S1 and S2 do match");
+        else
+            System.out.println("String S1 and S2 do not match");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to check if a 
+    # substring of S1 contains only '*'
+    def isAllStars(self, S1, i):
+        for j in range(i + 1):
+            if S1[j] != '*':
+                return False
+        return True
+
+    # Function to check if S1 matches S2
+    # using wildcard pattern matching
+    def wildcardMatchingUtil(self, S1, S2, i, j, dp):
+        # Base Cases
+        if i < 0 and j < 0:
+            return True
+        if i < 0 and j >= 0:
+            return False
+        if j < 0 and i >= 0:
+            return self.isAllStars(S1, i)
+
+        # If the result for this state has 
+        # already been calculated, return it
+        if dp[i][j] != -1:
+            return dp[i][j] == 1
+
+        # If the characters at the current
+        # positions match or S1 has a '?'
+        if S1[i] == S2[j] or S1[i] == '?':
+            dp[i][j] = 1 if self.wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp) else 0
+            return dp[i][j] == 1
+        if S1[i] == '*':
+            # Two options: either '*' represents an 
+            # empty string or it matches a character in S2
+            match = self.wildcardMatchingUtil(S1, S2, i - 1, j, dp) or self.wildcardMatchingUtil(S1, S2, i, j - 1, dp)
+            dp[i][j] = 1 if match else 0
+            return match
+        else:
+            dp[i][j] = 0
+            return False
+
+    # Function to check if 'str' matches 
+    # 'pat' using wildcard pattern matching
+    def wildCard(self, string, pattern):
+        n = len(string)
+        m = len(pattern)
+
+        # Create a DP table for 
+        # memoization, initialized with -1
+        dp = [[-1 for _ in range(n)] for _ in range(m)]
+
+        return self.wildcardMatchingUtil(pattern, string, m - 1, n - 1, dp)
+
+
+if __name__ == "__main__":
+    S1 = "ab*cd"
+    S2 = "abdefcd"
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call wildcardMatching function and print the result
+    if sol.wildCard(S2, S1):
+        print("String S1 and S2 do match")
+    else:
+        print("String S1 and S2 do not match")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to check if a 
+    substring of S1 contains only '*'*/
+    isAllStars(S1, i) {
+        for (let j = 0; j <= i; j++) {
+            if (S1[j] !== '*')
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    wildcardMatchingUtil(S1, S2, i, j, dp) {
+        // Base Cases
+        if (i < 0 && j < 0)
+            return true;
+        if (i < 0 && j >= 0)
+            return false;
+        if (j < 0 && i >= 0)
+            return this.isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i][j] !== -1)
+            return dp[i][j] === 1;
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1[i] === S2[j] || S1[i] === '?') {
+            dp[i][j] = this.wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp) ? 1 : 0;
+            return dp[i][j] === 1;
+        }
+        if (S1[i] === '*') {
+            /* Two options: either '*' represents an 
+            empty string or it matches a character in S2*/
+            const match = this.wildcardMatchingUtil(S1, S2, i - 1, j, dp) || this.wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+            dp[i][j] = match ? 1 : 0;
+            return match;
+        } else {
+            dp[i][j] = 0;
+            return false;
+        }
+    }
+
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    wildCard(str, pat) {
+        const n = str.length;
+        const m = pat.length;
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        const dp = Array.from({ length: m }, () => Array(n).fill(-1));
+
+        return this.wildcardMatchingUtil(pat, str, m - 1, n - 1, dp);
+    }
+}
+
+// Example usage
+const S1 = "ab*cd";
+const S2 = "abdefcd";
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call wildcardMatching function and print the result
+if (sol.wildCard(S2, S1))
+    console.log("String S1 and S2 do match");
+else
+    console.log("String S1 and S2 do not match");
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span><span>89</span><span>90</span><span>91</span><span>92</span><span>93</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to check if a 
+    substring of S1 contains only '*'*/
+    private bool isAllStars(string S1, int i)
+    {
+        for (int j = 0; j <= i; j++)
+        {
+            if (S1[j] != '*')
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    private bool wildcardMatchingUtil(string S1, string S2, int i, int j, int[,] dp)
+    {
+        // Base Cases
+        if (i < 0 && j < 0)
+            return true;
+        if (i < 0 && j >= 0)
+            return false;
+        if (j < 0 && i >= 0)
+            return isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i, j] != -1)
+            return dp[i, j] == 1;
+
+        /* If the characters at the current
+        positions match or S1 has a '?'*/
+        if (S1[i] == S2[j] || S1[i] == '?')
+        {
+            bool match = wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp);
+            dp[i, j] = match ? 1 : 0;
+            return match;
+        }
+        if (S1[i] == '*')
+        {
+            /* Two options: either '*' represents an 
+            empty string or it matches a character in S2*/
+            bool match = wildcardMatchingUtil(S1, S2, i - 1, j, dp) || wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+            dp[i, j] = match ? 1 : 0;
+            return match;
+        }
+        else
+        {
+            dp[i, j] = 0;
+            return false;
+        }
+    }
+
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        int[,] dp = new int[m, n];
+        for (int row = 0; row < m; row++)
+        {
+            for (int col = 0; col < n; col++)
+            {
+                dp[row, col] = -1;
+            }
+        }
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1, dp);
+    }
+
+    public static void Main(string[] args)
+    {
+        // Example usage
+        string S1 = "ab*cd";
+        string S2 = "abdefcd";
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call wildcardMatching function and print the result
+        if (sol.WildCard(S2, S1))
+            Console.WriteLine("String S1 and S2 do match");
+        else
+            Console.WriteLine("String S1 and S2 do not match");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span><span>79</span><span>80</span><span>81</span><span>82</span><span>83</span><span>84</span><span>85</span><span>86</span><span>87</span><span>88</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to check if a substring of S1 contains only '*'
+func isAllStars(S1 string, i int) bool {
+	for j := 0; j <= i; j++ {
+		if S1[j] != '*' {
+			return false
+		}
+	}
+	return true
+}
+
+// Function to check if S1 matches S2 using wildcard pattern matching
+func wildcardMatchingUtil(S1, S2 string, i, j int, dp [][]int) bool {
+	// Base Cases
+	if i < 0 && j < 0 {
+		return true
+	}
+	if i < 0 && j >= 0 {
+		return false
+	}
+	if j < 0 && i >= 0 {
+		return isAllStars(S1, i)
+	}
+
+	// If the result for this state has already been calculated, return it
+	if dp[i][j] != -1 {
+		return dp[i][j] == 1
+	}
+
+	// If the characters at the current positions match or S1 has a '?'
+	if S1[i] == S2[j] || S1[i] == '?' {
+		if wildcardMatchingUtil(S1, S2, i-1, j-1, dp) {
+			dp[i][j] = 1
+		} else {
+			dp[i][j] = 0
+		}
+		return dp[i][j] == 1
+	}
+
+	// If the current character is '*'
+	if S1[i] == '*' {
+		if wildcardMatchingUtil(S1, S2, i-1, j, dp) || wildcardMatchingUtil(S1, S2, i, j-1, dp) {
+			dp[i][j] = 1
+		} else {
+			dp[i][j] = 0
+		}
+		return dp[i][j] == 1
+	}
+
+	// If none of the conditions are true
+	dp[i][j] = 0
+	return false
+}
+
+// Function to check if 'str' matches 'pat' using wildcard pattern matching
+func wildCard(str, pat string) bool {
+	n := len(str)
+	m := len(pat)
+
+	// Create a DP table for memoization, initialized with -1
+	dp := make([][]int, m)
+	for i := range dp {
+		dp[i] = make([]int, n)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	return wildcardMatchingUtil(pat, str, m-1, n-1, dp)
+}
+
+func main() {
+	S1 := "ab*cd"
+	S2 := "abdefcd"
+
+	// Call wildcardMatching function and print the result
+	if wildCard(S2, S1) {
+		fmt.Println("String S1 and S2 do match")
+	} else {
+		fmt.Println("String S1 and S2 do not match")
+	}
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity: </strong>O(N*M), Where N is the length of string S1 and M is the length of string S2. There are N*M states therefore at max ‘N*M’ new problems will be solved.<br><br>
+
+<strong>Space Complexity: </strong>O(N*M) + O(N+M), We are using a recursion stack space(O(N+M)) and a 2D array (O(N*M)).</body></html></div>
+<div class="section"><h2>Editorial: Tabulation</h2><html><head></head><body><p>In order to convert a recursive code to tabulation code, we try to convert the recursive code to tabulation and here are the steps:</p>
+<ol>
+<li>In the recursive logic, we set the base case too if(i<0 ) and if(j<0) but we can’t set the dp array’s index to -1. Therefore a hack for this issue is to shift every index by 1 towards the right.</li><br>
+<img src="https://static.takeuforward.org/premium/Dynamic Programming/DP on strings/Wildcard matching/-hUCBzc39" width="400"><br>
+<li><b>Declare a dp array of size [n+1][m+1]: </b>As there are two changing parameters in the recursive solution,  'i' and 'j'. The maximum value 'i' can attain is 'n+1', where n is the size of string S1 and 'j' can take maximum value of 'm+1', where m is the size of string S2. Therefore, we need 2D dp array. Initialize the array as zero.</li>
+
+<li><b>Setting Base Cases in the Array: </b>Set the base condition (keep in mind 1-based indexing), we set the top-left cell as ‘true’, then we set the first column’s value as ‘false’; and for the first row, we will run isAllStars() for every cell value.</li>
+
+<li><b>Iterative Computation Using Loops: </b>Initialize two nested for loops to traverse the dp array and following the logic discussed in the recursive approach, set the value of each cell in the 2D dp array. By keeping in mind the shifting of indexes, therefore S1[i] will be converted to S1[i-1]. Same for S2.</li>
+
+<li><b>Returning the answer: </b>At last dp[n][m] will hold the solution after the completion of whole process, as we are doing the calculations in bottom-up manner.</li></ol><br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        vector<vector<bool>> dp(m + 1, vector<bool>(n + 1, false));
+
+        // Base Case: empty pattern matches empty string
+        dp[0][0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i <= m; i++) {
+            dp[i][0] = (pat[i-1] == '*') && dp[i-1][0];
+        }
+
+        // Fill the table
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == '?') {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else if (pat[i - 1] == '*') {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+                }
+                else {
+                    dp[i][j] = false;
+                }
+            }
+        }
+
+        return dp[m][n];
+    }
+};
+
+
+int main() {
+    string S1 = "ab*cd";
+    string S2 = "abdefcd";
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call wildcardMatching function and print the result
+    if (sol.wildCard(S2, S1))
+        cout << "String S1 and S2 do match";
+    else
+        cout << "String S1 and S2 do not match";
+
+    return 0;
+}</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        boolean[][] dp = new boolean[m + 1][n + 1];
+
+        // Base Case: empty pattern matches empty string
+        dp[0][0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i <= m; i++) {
+            dp[i][0] = (pat.charAt(i - 1) == '*') && dp[i - 1][0];
+        }
+
+        // Fill the table
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat.charAt(i - 1) == str.charAt(j - 1) || pat.charAt(i - 1) == '?') {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else if (pat.charAt(i - 1) == '*') {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+                }
+                else {
+                    dp[i][j] = false;
+                }
+            }
+        }
+
+        return dp[m][n];
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String S1 = "ab*cd";
+        String S2 = "abdefcd";
+
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call wildcardMatching function and print the result
+        if (sol.wildCard(S2, S1))
+            System.out.println("String S1 and S2 do match");
+        else
+            System.out.println("String S1 and S2 do not match");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to check if 'str' matches 
+    # 'pat' using wildcard pattern matching
+    def wildCard(self, string, pattern):
+        n = len(string)
+        m = len(pattern)
+
+        # Create a DP table for 
+        # tabulation, initialized with False
+        dp = [[False for _ in range(n + 1)] for _ in range(m + 1)]
+
+        # Base Case: empty pattern matches empty string
+        dp[0][0] = True
+
+        # Base Case: pattern vs empty string
+        for i in range(1, m + 1):
+            dp[i][0] = (pattern[i - 1] == '*') and dp[i - 1][0]
+
+        # Fill the table
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                # If the characters at the current
+                # positions match or pat has a '?'
+                if pattern[i - 1] == string[j - 1] or pattern[i - 1] == '?':
+                    dp[i][j] = dp[i - 1][j - 1]
+                elif pattern[i - 1] == '*':
+                    # Two options: either '*' represents an 
+                    # empty string or it matches a character in str
+                    dp[i][j] = dp[i - 1][j] or dp[i][j - 1]
+                else:
+                    dp[i][j] = False
+
+        return dp[m][n]
+
+
+
+if __name__ == "__main__":
+    S1 = "ab*cd"
+    S2 = "abdefcd"
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call wildcardMatching function and print the result
+    if sol.wildCard(S2, S1):
+        print("String S1 and S2 do match")
+    else:
+        print("String S1 and S2 do not match")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    wildCard(str, pat) {
+        const n = str.length;
+        const m = pat.length;
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(false));
+
+        // Base Case: empty pattern matches empty string
+        dp[0][0] = true;
+
+        // Base Case: pattern vs empty string
+        for (let i = 1; i <= m; i++) {
+            dp[i][0] = (pat[i - 1] === '*') && dp[i - 1][0];
+        }
+
+        // Fill the table
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat[i - 1] === str[j - 1] || pat[i - 1] === '?') {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else if (pat[i - 1] === '*') {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+                }
+                else {
+                    dp[i][j] = false;
+                }
+            }
+        }
+
+        return dp[m][n];
+    }
+}
+
+// Example usage
+const S1 = "ab*cd";
+const S2 = "abdefcd";
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call wildcardMatching function and print the result
+if (sol.wildCard(S2, S1))
+    console.log("String S1 and S2 do match");
+else
+    console.log("String S1 and S2 do not match");
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        bool[,] dp = new bool[m + 1, n + 1];
+
+        // Base Case: empty pattern matches empty string
+        dp[0, 0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i <= m; i++)
+        {
+            dp[i, 0] = (pat[i - 1] == '*') && dp[i - 1, 0];
+        }
+
+        // Fill the table
+        for (int i = 1; i <= m; i++)
+        {
+            for (int j = 1; j <= n; j++)
+            {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == '?')
+                {
+                    dp[i, j] = dp[i - 1, j - 1];
+                }
+                else if (pat[i - 1] == '*')
+                {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    dp[i, j] = dp[i - 1, j] || dp[i, j - 1];
+                }
+                else
+                {
+                    dp[i, j] = false;
+                }
+            }
+        }
+
+        return dp[m, n];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage
+        string S1 = "ab*cd";
+        string S2 = "abdefcd";
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call wildcardMatching function and print the result
+        if (sol.WildCard(S2, S1))
+            Console.WriteLine("String S1 and S2 do match");
+        else
+            Console.WriteLine("String S1 and S2 do not match");
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to check if 'str' matches 'pat' using wildcard pattern matching
+func wildCard(str, pat string) bool {
+	n := len(str)
+	m := len(pat)
+
+	/* Create a DP table for
+	tabulation, initialized with false */
+	dp := make([][]bool, m+1)
+	for i := range dp {
+		dp[i] = make([]bool, n+1)
+	}
+
+	// Base Case: empty pattern matches empty string
+	dp[0][0] = true
+
+	// Base Case: pattern vs empty string
+	for i := 1; i <= m; i++ {
+		dp[i][0] = (pat[i-1] == '*') && dp[i-1][0]
+	}
+
+	// Fill the table
+	for i := 1; i <= m; i++ {
+		for j := 1; j <= n; j++ {
+			/* If the characters at the current
+			positions match or pat has a '?' */
+			if pat[i-1] == str[j-1] || pat[i-1] == '?' {
+				dp[i][j] = dp[i-1][j-1]
+			} else if pat[i-1] == '*' {
+				/* Two options: either '*' represents an
+				empty string or it matches a character in str */
+				dp[i][j] = dp[i-1][j] || dp[i][j-1]
+			} else {
+				dp[i][j] = false
+			}
+		}
+	}
+
+	return dp[m][n]
+}
+
+func main() {
+	S1 := "ab*cd"
+	S2 := "abdefcd"
+
+	// Call wildcardMatching function and print the result
+	if wildCard(S2, S1) {
+		fmt.Println("String S1 and S2 do match")
+	} else {
+		fmt.Println("String S1 and S2 do not match")
+	}
+}
+</code></pre></div></div></div>
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity: </strong>O(N*M), Where N is the length of string S1 and M is the length of string S2. Two nested loops are used to run for N*M times.<br><br>
+
+<strong>Space Complexity: </strong>O(N*M), As 2D array N*M is used.</body></html></div>
+<div class="section"><h2>Editorial: Space Optimization</h2><html><head></head><body><p>If we observe the relation obtained in the tabulation, dp[ind][target] =  dp[ind-1][target] || dp[ind-1][target-arr[ind]]. We see that to calculate a value of a cell of the dp array, we need only the previous row values (say prev). So, we don’t need to store an entire array. Hence we can space optimize it.</p>
+
+<h5><strong>Steps to space optimize the tabulation approach: </strong></h5>
+<ol>
+ <li>Decalre an array to store the previous row of the DP table. Initialize the first row and first column of the DP table based on the base conditions discussed in tabulation.
+</li><li>Now, initiate two nested loops in bottom-up approach. The first loop will run for 'ind' and the second loop will run for the 'target' variable.</li>
+<li>In order to store the current row of the DP table, initialize  a new array 'cur' and fill the first cell to 'true' for base condition.
+</li><li> Do the calculations for 'cur' row by performing the pick/non-pick technique used in previous approaches.
+</li><li>Now, update the previous row with the current row for the next iteration and at last return the final result stored in the last cell of the previous row(prev[k]).</li></ol>
+<br>
+
+<div class="code-section secondary-details"><div class="code-tabs"><div><button class="code-tab dsa_article_code_active" data-lang="cpp">Cpp</button><button class="code-tab" data-lang="java">Java</button><button class="code-tab" data-lang="python">Python</button><button class="code-tab" data-lang="javascript">Javascript</button><button class="code-tab" data-lang="csharp">C#</button><button class="code-tab" data-lang="go">Go</button></div><div class="copy-btn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    </svg></div></div><div class="code-content"><div class="code-block dsa_article_code_active" data-lang="cpp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span></div><pre class="wp-block-code"><code lang="cpp" class="language-cpp">#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        /* Create two DP rows for 
+        tabulation, initialized with false*/
+        vector<bool> prev(n + 1, false), curr(n + 1, false);
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i <= m; i++) {
+            curr[0] = (pat[i - 1] == '*') && prev[0];
+
+            for (int j = 1; j <= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == '?') {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat[i - 1] == '*') {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            prev = curr;
+        }
+
+        return prev[n];
+    }
+};
+
+int main() {
+    string S1 = "ab*cd";
+    string S2 = "abdefcd";
+    
+    //Create an instance of Solution class
+    Solution sol;
+
+    // Call wildcardMatching function and print the result
+    if (sol.wildCard(S2, S1))
+        cout << "String S1 and S2 do match";
+    else
+        cout << "String S1 and S2 do not match";
+
+    return 0;
+}
+</code></pre></div><div class="code-block" data-lang="java"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span></div><pre class="wp-block-code"><code lang="java" class="language-java">import java.util.*;
+
+class Solution {
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        /* Create two DP rows for 
+        tabulation, initialized with false*/
+        boolean[] prev = new boolean[n + 1];
+        boolean[] curr = new boolean[n + 1];
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i <= m; i++) {
+            curr[0] = (pat.charAt(i - 1) == '*') && prev[0];
+
+            for (int j = 1; j <= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat.charAt(i - 1) == str.charAt(j - 1) || pat.charAt(i - 1) == '?') {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat.charAt(i - 1) == '*') {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            prev = curr.clone();
+        }
+
+        return prev[n];
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        String S1 = "ab*cd";
+        String S2 = "abdefcd";
+
+        //Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call wildcardMatching function and print the result
+        if (sol.wildCard(S2, S1))
+            System.out.println("String S1 and S2 do match");
+        else
+            System.out.println("String S1 and S2 do not match");
+    }
+}
+</code></pre></div><div class="code-block" data-lang="python"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span></div><pre class="wp-block-code"><code lang="python" class="language-python">class Solution:
+    # Function to check if 'str' matches 
+    # 'pat' using wildcard pattern matching
+    def wildCard(self, string, pattern):
+        n = len(string)
+        m = len(pattern)
+
+        # Create two DP rows for 
+        # tabulation, initialized with False
+        prev = [False] * (n + 1)
+        curr = [False] * (n + 1)
+
+        # Base Case: empty pattern matches empty string
+        prev[0] = True
+
+        # Base Case: pattern vs empty string
+        for i in range(1, m + 1):
+            curr[0] = (pattern[i - 1] == '*') and prev[0]
+
+            for j in range(1, n + 1):
+                # If the characters at the current
+                # positions match or pat has a '?'
+                if pattern[i - 1] == string[j - 1] or pattern[i - 1] == '?':
+                    curr[j] = prev[j - 1]
+                elif pattern[i - 1] == '*':
+                    # Two options: either '*' represents an 
+                    # empty string or it matches a character in str
+                    curr[j] = prev[j] or curr[j - 1]
+                else:
+                    curr[j] = False
+
+            # Move current row to previous for next iteration
+            prev = curr[:]
+
+        return prev[n]
+
+
+if __name__ == "__main__":
+    S1 = "ab*cd"
+    S2 = "abdefcd"
+
+    # Create an instance of Solution class
+    sol = Solution()
+
+    # Call wildcardMatching function and print the result
+    if sol.wildCard(S2, S1):
+        print("String S1 and S2 do match")
+    else:
+        print("String S1 and S2 do not match")
+</code></pre></div><div class="code-block" data-lang="javascript"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="javascript" class="language-javascript">class Solution {
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    wildCard(str, pat) {
+        const n = str.length;
+        const m = pat.length;
+
+        /* Create two DP rows for 
+        tabulation, initialized with false*/
+        let prev = new Array(n + 1).fill(false);
+        let curr = new Array(n + 1).fill(false);
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (let i = 1; i <= m; i++) {
+            curr[0] = (pat[i - 1] === '*') && prev[0];
+
+            for (let j = 1; j <= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat[i - 1] === str[j - 1] || pat[i - 1] === '?') {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat[i - 1] === '*') {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            prev = [...curr];
+        }
+
+        return prev[n];
+    }
+}
+
+// Example usage
+const S1 = "ab*cd";
+const S2 = "abdefcd";
+
+// Create an instance of Solution class
+const sol = new Solution();
+
+// Call wildcardMatching function and print the result
+if (sol.wildCard(S2, S1))
+    console.log("String S1 and S2 do match");
+else
+    console.log("String S1 and S2 do not match");
+</code></pre></div><div class="code-block" data-lang="csharp"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span><span>57</span><span>58</span><span>59</span><span>60</span><span>61</span><span>62</span><span>63</span><span>64</span><span>65</span><span>66</span><span>67</span><span>68</span><span>69</span><span>70</span><span>71</span><span>72</span><span>73</span><span>74</span><span>75</span><span>76</span><span>77</span><span>78</span></div><pre class="wp-block-code"><code lang="csharp" class="language-csharp">using System;
+
+public class Solution
+{
+    /* Function to check if 'str' matches 
+    'pat' using wildcard pattern matching*/
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        /* Create two DP rows for 
+        tabulation, initialized with false*/
+        bool[] prev = new bool[n + 1];
+        bool[] curr = new bool[n + 1];
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i <= m; i++)
+        {
+            curr[0] = (pat[i - 1] == '*') && prev[0];
+
+            for (int j = 1; j <= n; j++)
+            {
+                /* If the characters at the current
+                positions match or pat has a '?'*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == '?')
+                {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat[i - 1] == '*')
+                {
+                    /* Two options: either '*' represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else
+                {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            // In C#, this requires a copy, as arrays are reference types.
+            Array.Copy(curr, prev, n + 1);
+        }
+
+        return prev[n];
+    }
+}
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        // Example usage adapted for C# Console I/O
+        Console.WriteLine("Enter string (S2):");
+        string S2 = Console.ReadLine();
+
+        Console.WriteLine("Enter pattern (S1):");
+        string S1 = Console.ReadLine();
+
+        // Create an instance of Solution class
+        Solution sol = new Solution();
+
+        // Call WildCard function and print the result
+        if (sol.WildCard(S2, S1))
+        {
+            Console.WriteLine("String S1 and S2 do match");
+        }
+        else
+        {
+            Console.WriteLine("String S1 and S2 do not match");
+        }
+    }
+}</code></pre></div><div class="code-block" data-lang="go"><div class="line-numbers line-num"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span><span>49</span><span>50</span><span>51</span><span>52</span><span>53</span><span>54</span><span>55</span><span>56</span></div><pre class="wp-block-code"><code lang="go" class="language-go">package main
+
+import (
+	"fmt"
+)
+
+// Function to check if 'str' matches 'pat' using wildcard pattern matching
+func wildCard(str, pat string) bool {
+	n := len(str)
+	m := len(pat)
+
+	/* Create two DP rows for
+	tabulation, initialized with false */
+	prev := make([]bool, n+1)
+	curr := make([]bool, n+1)
+
+	// Base Case: empty pattern matches empty string
+	prev[0] = true
+
+	// Base Case: pattern vs empty string
+	for i := 1; i <= m; i++ {
+		curr[0] = (pat[i-1] == '*') && prev[0]
+
+		for j := 1; j <= n; j++ {
+			/* If the characters at the current
+			positions match or pat has a '?' */
+			if pat[i-1] == str[j-1] || pat[i-1] == '?' {
+				curr[j] = prev[j-1]
+			} else if pat[i-1] == '*' {
+				/* Two options: either '*' represents an
+				empty string or it matches a character in str */
+				curr[j] = prev[j] || curr[j-1]
+			} else {
+				curr[j] = false
+			}
+		}
+
+		// Move current row to previous for next iteration
+		copy(prev, curr)
+	}
+
+	return prev[n]
+}
+
+func main() {
+	S1 := "ab*cd"
+	S2 := "abdefcd"
+
+	// Call wildcardMatching function and print the result
+	if wildCard(S2, S1) {
+		fmt.Println("String S1 and S2 do match")
+	} else {
+		fmt.Println("String S1 and S2 do not match")
+	}
+}
+</code></pre></div></div></div>
+
+
+<h3><strong>Complexity Analysis:</strong></h3>
+<strong>Time Complexity: </strong>O(N*M), Where N is the length of string S1 and M is the length of string S2. As two nested loops are used, which runs for N*M times.<br><br>
+
+<strong>Space Complexity: </strong>O(M), As array of size M+1 is used.</body></html></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution{
+private:
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27; */
+    bool isAllStars(string &amp;S1, int i) {
+        for (int j = 0; j &lt;= i; j++) {
+            if (S1[j] != &#x27;*&#x27;)
+                return false;
+        }
+        return true;
+    }
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    bool wildcardMatchingUtil(string &amp;S1, string &amp;S2, int i, int j) {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0)
+            return true;
+        if (i &lt; 0 &amp;&amp; j &gt;= 0)
+            return false;
+        if (j &lt; 0 &amp;&amp; i &gt;= 0)
+            return isAllStars(S1, i);
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1[i] == S2[j] || S1[i] == &#x27;?&#x27;){
+            return wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either &#x27;*&#x27; represents an
+                empty string or it matches a character in S2*/
+        if (S1[i] == &#x27;*&#x27;){
+                return wildcardMatchingUtil(S1, S2, i - 1, j) || wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+public:
+    /* Function to check if &#x27;Str&#x27; matches
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>public class Solution
+{
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27; */
+    private bool isAllStars(string S1, int i)
+    {
+        for (int j = 0; j &lt;= i; j++)
+        {
+            if (S1[j] != &#x27;*&#x27;)
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    private bool wildcardMatchingUtil(string S1, string S2, int i, int j)
+    {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0)
+            return true;
+        if (i &lt; 0 &amp;&amp; j &gt;= 0)
+            return false;
+        if (j &lt; 0 &amp;&amp; i &gt;= 0)
+            return isAllStars(S1, i);
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1[i] == S2[j] || S1[i] == &#x27;?&#x27;)
+        {
+            return wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either &#x27;*&#x27; represents an
+                empty string or it matches a character in S2*/
+        if (S1[i] == &#x27;*&#x27;)
+        {
+            return wildcardMatchingUtil(S1, S2, i - 1, j) 
+                || wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+
+    /* Function to check if &#x27;Str&#x27; matches
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>/* Function to check if a 
+substring of S1 contains only &#x27;*&#x27; */
+func isAllStars(S1 string, i int) bool {
+    for j := 0; j &lt;= i; j++ {
+        if S1[j] != &#x27;*&#x27; {
+            return false
+        }
+    }
+    return true
+}
+
+/* Function to check if S1 matches 
+S2 using wildcard pattern matching*/
+func wildcardMatchingUtil(S1 string, S2 string, i int, j int) bool {
+    // Base Cases
+    if i &lt; 0 &amp;&amp; j &lt; 0 {
+        return true
+    }
+    if i &lt; 0 &amp;&amp; j &gt;= 0 {
+        return false
+    }
+    if j &lt; 0 &amp;&amp; i &gt;= 0 {
+        return isAllStars(S1, i)
+    }
+
+    /* If the characters at the current
+    positions match or S1 has a &#x27;?&#x27;*/
+    if S1[i] == S2[j] || S1[i] == &#x27;?&#x27; {
+        return wildcardMatchingUtil(S1, S2, i-1, j-1)
+    }
+
+    /* Two options: either &#x27;*&#x27; represents an
+                empty string or it matches a character in S2*/
+    if S1[i] == &#x27;*&#x27; {
+        return wildcardMatchingUtil(S1, S2, i-1, j) ||
+               wildcardMatchingUtil(S1, S2, i, j-1)
+    }
+
+    return false
+}
+
+/* Function to check if &#x27;Str&#x27; matches
+&#x27;pat&#x27; using wildcard pattern matching*/
+func wildCard(str, pat string) bool {
+    n := len(str)
+    m := len(pat)
+
+    return wildcardMatchingUtil(pat, str, m-1, n-1)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27; */
+    private boolean isAllStars(String S1, int i) {
+        for (int j = 0; j &lt;= i; j++) {
+            if (S1.charAt(j) != &#x27;*&#x27;)
+                return false;
+        }
+        return true;
+    }
+    
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    private boolean wildcardMatchingUtil(String S1, String S2, int i, int j) {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0)
+            return true;
+        if (i &lt; 0 &amp;&amp; j &gt;= 0)
+            return false;
+        if (j &lt; 0 &amp;&amp; i &gt;= 0)
+            return isAllStars(S1, i);
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1.charAt(i) == S2.charAt(j) || S1.charAt(i) == &#x27;?&#x27;) {
+            return wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either &#x27;*&#x27; represents an
+                empty string or it matches a character in S2*/
+        if (S1.charAt(i) == &#x27;*&#x27;) {
+            return wildcardMatchingUtil(S1, S2, i - 1, j) || wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+    
+    /* Function to check if &#x27;Str&#x27; matches
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27; */
+    isAllStars(S1, i) {
+        for (let j = 0; j &lt;= i; j++) {
+            if (S1[j] !== &#x27;*&#x27;) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches 
+    S2 using wildcard pattern matching*/
+    wildcardMatchingUtil(S1, S2, i, j) {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0) {
+            return true;
+        }
+        if (i &lt; 0 &amp;&amp; j &gt;= 0) {
+            return false;
+        }
+        if (j &lt; 0 &amp;&amp; i &gt;= 0) {
+            return this.isAllStars(S1, i);
+        }
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1[i] === S2[j] || S1[i] === &#x27;?&#x27;) {
+            return this.wildcardMatchingUtil(S1, S2, i - 1, j - 1);
+        }
+        /* Two options: either &#x27;*&#x27; represents an
+                empty string or it matches a character in S2*/
+        if (S1[i] === &#x27;*&#x27;) {
+            return this.wildcardMatchingUtil(S1, S2, i - 1, j) ||
+                   this.wildcardMatchingUtil(S1, S2, i, j - 1);
+        }
+        return false;
+    }
+
+    /* Function to check if &#x27;Str&#x27; matches
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    wildCard(str, pat) {
+        let n = str.length;
+        let m = pat.length;
+        return this.wildcardMatchingUtil(pat, str, m - 1, n - 1);
+    }
+}
+</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    &quot;&quot;&quot; Function to check if a 
+    substring of S1 contains only &#x27;*&#x27; &quot;&quot;&quot;
+    def isAllStars(self, S1, i):
+        for j in range(i + 1):
+            if S1[j] != &#x27;*&#x27;:
+                return False
+        return True
+
+    &quot;&quot;&quot; Function to check if S1 matches 
+    S2 using wildcard pattern matching &quot;&quot;&quot;
+    def wildcardMatchingUtil(self, S1, S2, i, j):
+        # Base Cases
+        if i &lt; 0 and j &lt; 0:
+            return True
+        if i &lt; 0 and j &gt;= 0:
+            return False
+        if j &lt; 0 and i &gt;= 0:
+            return self.isAllStars(S1, i)
+
+        &quot;&quot;&quot; If the characters at the current
+        positions match or S1 has a &#x27;?&#x27; &quot;&quot;&quot;
+        if S1[i] == S2[j] or S1[i] == &#x27;?&#x27;:
+            return self.wildcardMatchingUtil(S1, S2, i - 1, j - 1)
+
+        &quot;&quot;&quot; Two options: either &#x27;*&#x27; represents an
+            empty string or it matches a character in S2 &quot;&quot;&quot;
+        if S1[i] == &#x27;*&#x27;:
+            return (self.wildcardMatchingUtil(S1, S2, i - 1, j) or
+                    self.wildcardMatchingUtil(S1, S2, i, j - 1))
+        return False
+
+    &quot;&quot;&quot; Function to check if &#x27;Str&#x27; matches
+    &#x27;pat&#x27; using wildcard pattern matching &quot;&quot;&quot;
+    def wildCard(self, str, pat):
+        n = len(str)
+        m = len(pat)
+        return self.wildcardMatchingUtil(pat, str, m - 1, n - 1)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+private:
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27;*/
+    bool isAllStars(string S1, int i) {
+        for (int j = 0; j &lt;= i; j++) {
+            if (S1[j] != &#x27;*&#x27;)
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    bool wildcardMatchingUtil(string S1, string S2, int i, int j, vector&lt;vector&lt;int&gt;&gt; &amp;dp) {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0)
+            return true;
+        if (i &lt; 0 &amp;&amp; j &gt;= 0)
+            return false;
+        if (j &lt; 0 &amp;&amp; i &gt;= 0)
+            return isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i][j] != -1)
+            return dp[i][j] == 1;
+
+        //bool result;
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1[i] == S2[j] || S1[i] == &#x27;?&#x27;) {
+            return dp[i][j] = wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp);
+        } 
+        if (S1[i] == &#x27;*&#x27;) {
+            /* Two options: either &#x27;*&#x27; represents an 
+            empty string or it matches a character in S2*/
+            return dp[i][j] = wildcardMatchingUtil(S1, S2, i - 1, j, dp) || wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+        } else {
+            return dp[i][j] = false;
+        }
+    }
+
+public:
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        vector&lt;vector&lt;int&gt;&gt; dp(m, vector&lt;int&gt;(n, -1));
+
+        return wildcardMatchingUtil(pat, str, m-1, n-1, dp);
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27;*/
+    private bool isAllStars(string S1, int i)
+    {
+        for (int j = 0; j &lt;= i; j++)
+        {
+            if (S1[j] != &#x27;*&#x27;)
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    private bool wildcardMatchingUtil(string S1, string S2, int i, int j, int[,] dp)
+    {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0)
+            return true;
+        if (i &lt; 0 &amp;&amp; j &gt;= 0)
+            return false;
+        if (j &lt; 0 &amp;&amp; i &gt;= 0)
+            return isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i, j] != -1)
+            return dp[i, j] == 1;
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1[i] == S2[j] || S1[i] == &#x27;?&#x27;)
+        {
+            bool match = wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp);
+            dp[i, j] = match ? 1 : 0;
+            return match;
+        }
+        if (S1[i] == &#x27;*&#x27;)
+        {
+            /* Two options: either &#x27;*&#x27; represents an 
+            empty string or it matches a character in S2*/
+            bool match = wildcardMatchingUtil(S1, S2, i - 1, j, dp) || wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+            dp[i, j] = match ? 1 : 0;
+            return match;
+        }
+        else
+        {
+            dp[i, j] = 0;
+            return false;
+        }
+    }
+
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        int[,] dp = new int[m, n];
+        for (int row = 0; row &lt; m; row++)
+        {
+            for (int col = 0; col &lt; n; col++)
+            {
+                dp[row, col] = -1;
+            }
+        }
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1, dp);
+    }
+
+}</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to check if a substring of S1 contains only &#x27;*&#x27;
+func isAllStars(S1 string, i int) bool {
+	for j := 0; j &lt;= i; j++ {
+		if S1[j] != &#x27;*&#x27; {
+			return false
+		}
+	}
+	return true
+}
+
+// Function to check if S1 matches S2 using wildcard pattern matching
+func wildcardMatchingUtil(S1, S2 string, i, j int, dp [][]int) bool {
+	// Base Cases
+	if i &lt; 0 &amp;&amp; j &lt; 0 {
+		return true
+	}
+	if i &lt; 0 &amp;&amp; j &gt;= 0 {
+		return false
+	}
+	if j &lt; 0 &amp;&amp; i &gt;= 0 {
+		return isAllStars(S1, i)
+	}
+
+	// If the result for this state has already been calculated, return it
+	if dp[i][j] != -1 {
+		return dp[i][j] == 1
+	}
+
+	// If the characters at the current positions match or S1 has a &#x27;?&#x27;
+	if S1[i] == S2[j] || S1[i] == &#x27;?&#x27; {
+		if wildcardMatchingUtil(S1, S2, i-1, j-1, dp) {
+			dp[i][j] = 1
+		} else {
+			dp[i][j] = 0
+		}
+		return dp[i][j] == 1
+	}
+
+	// If the current character is &#x27;*&#x27;
+	if S1[i] == &#x27;*&#x27; {
+		if wildcardMatchingUtil(S1, S2, i-1, j, dp) || wildcardMatchingUtil(S1, S2, i, j-1, dp) {
+			dp[i][j] = 1
+		} else {
+			dp[i][j] = 0
+		}
+		return dp[i][j] == 1
+	}
+
+	// If none of the conditions are true
+	dp[i][j] = 0
+	return false
+}
+
+// Function to check if &#x27;str&#x27; matches &#x27;pat&#x27; using wildcard pattern matching
+func wildCard(str, pat string) bool {
+	n := len(str)
+	m := len(pat)
+
+	// Create a DP table for memoization, initialized with -1
+	dp := make([][]int, m)
+	for i := range dp {
+		dp[i] = make([]int, n)
+		for j := range dp[i] {
+			dp[i][j] = -1
+		}
+	}
+
+	return wildcardMatchingUtil(pat, str, m-1, n-1, dp)
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27;*/
+    private boolean isAllStars(String S1, int i) {
+        for (int j = 0; j &lt;= i; j++) {
+            if (S1.charAt(j) != &#x27;*&#x27;)
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    private boolean wildcardMatchingUtil(String S1, String S2, int i, int j, int[][] dp) {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0)
+            return true;
+        if (i &lt; 0 &amp;&amp; j &gt;= 0)
+            return false;
+        if (j &lt; 0 &amp;&amp; i &gt;= 0)
+            return isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i][j] != -1)
+            return dp[i][j] == 1;
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1.charAt(i) == S2.charAt(j) || S1.charAt(i) == &#x27;?&#x27;) {
+            dp[i][j] = wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp) ? 1 : 0;
+            return dp[i][j] == 1;
+        }
+        if (S1.charAt(i) == &#x27;*&#x27;) {
+            /* Two options: either &#x27;*&#x27; represents an 
+            empty string or it matches a character in S2*/
+            boolean match = wildcardMatchingUtil(S1, S2, i - 1, j, dp) || wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+            dp[i][j] = match ? 1 : 0;
+            return match;
+        } else {
+            dp[i][j] = 0;
+            return false;
+        }
+    }
+
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        int[][] dp = new int[m][n];
+        for (int[] row : dp) Arrays.fill(row, -1);
+
+        return wildcardMatchingUtil(pat, str, m - 1, n - 1, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to check if a 
+    substring of S1 contains only &#x27;*&#x27;*/
+    isAllStars(S1, i) {
+        for (let j = 0; j &lt;= i; j++) {
+            if (S1[j] !== &#x27;*&#x27;)
+                return false;
+        }
+        return true;
+    }
+
+    /* Function to check if S1 matches S2
+    using wildcard pattern matching*/
+    wildcardMatchingUtil(S1, S2, i, j, dp) {
+        // Base Cases
+        if (i &lt; 0 &amp;&amp; j &lt; 0)
+            return true;
+        if (i &lt; 0 &amp;&amp; j &gt;= 0)
+            return false;
+        if (j &lt; 0 &amp;&amp; i &gt;= 0)
+            return this.isAllStars(S1, i);
+
+        /* If the result for this state has 
+        already been calculated, return it*/
+        if (dp[i][j] !== -1)
+            return dp[i][j] === 1;
+
+        /* If the characters at the current
+        positions match or S1 has a &#x27;?&#x27;*/
+        if (S1[i] === S2[j] || S1[i] === &#x27;?&#x27;) {
+            dp[i][j] = this.wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp) ? 1 : 0;
+            return dp[i][j] === 1;
+        }
+        if (S1[i] === &#x27;*&#x27;) {
+            /* Two options: either &#x27;*&#x27; represents an 
+            empty string or it matches a character in S2*/
+            const match = this.wildcardMatchingUtil(S1, S2, i - 1, j, dp) || this.wildcardMatchingUtil(S1, S2, i, j - 1, dp);
+            dp[i][j] = match ? 1 : 0;
+            return match;
+        } else {
+            dp[i][j] = 0;
+            return false;
+        }
+    }
+
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    wildCard(str, pat) {
+        const n = str.length;
+        const m = pat.length;
+
+        /* Create a DP table for 
+        memoization, initialized with -1*/
+        const dp = Array.from({ length: m }, () =&gt; Array(n).fill(-1));
+
+        return this.wildcardMatchingUtil(pat, str, m - 1, n - 1, dp);
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to check if a 
+    # substring of S1 contains only &#x27;*&#x27;
+    def isAllStars(self, S1, i):
+        for j in range(i + 1):
+            if S1[j] != &#x27;*&#x27;:
+                return False
+        return True
+
+    # Function to check if S1 matches S2
+    # using wildcard pattern matching
+    def wildcardMatchingUtil(self, S1, S2, i, j, dp):
+        # Base Cases
+        if i &lt; 0 and j &lt; 0:
+            return True
+        if i &lt; 0 and j &gt;= 0:
+            return False
+        if j &lt; 0 and i &gt;= 0:
+            return self.isAllStars(S1, i)
+
+        # If the result for this state has 
+        # already been calculated, return it
+        if dp[i][j] != -1:
+            return dp[i][j] == 1
+
+        # If the characters at the current
+        # positions match or S1 has a &#x27;?&#x27;
+        if S1[i] == S2[j] or S1[i] == &#x27;?&#x27;:
+            dp[i][j] = 1 if self.wildcardMatchingUtil(S1, S2, i - 1, j - 1, dp) else 0
+            return dp[i][j] == 1
+        if S1[i] == &#x27;*&#x27;:
+            # Two options: either &#x27;*&#x27; represents an 
+            # empty string or it matches a character in S2
+            match = self.wildcardMatchingUtil(S1, S2, i - 1, j, dp) or self.wildcardMatchingUtil(S1, S2, i, j - 1, dp)
+            dp[i][j] = 1 if match else 0
+            return match
+        else:
+            dp[i][j] = 0
+            return False
+
+    # Function to check if &#x27;str&#x27; matches 
+    # &#x27;pat&#x27; using wildcard pattern matching
+    def wildCard(self, string, pattern):
+        n = len(string)
+        m = len(pattern)
+
+        # Create a DP table for 
+        # memoization, initialized with -1
+        dp = [[-1 for _ in range(n)] for _ in range(m)]
+
+        return self.wildcardMatchingUtil(pattern, string, m - 1, n - 1, dp)</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        vector&lt;vector&lt;bool&gt;&gt; dp(m + 1, vector&lt;bool&gt;(n + 1, false));
+
+        // Base Case: empty pattern matches empty string
+        dp[0][0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i &lt;= m; i++) {
+            dp[i][0] = (pat[i-1] == &#x27;*&#x27;) &amp;&amp; dp[i-1][0];
+        }
+
+        // Fill the table
+        for (int i = 1; i &lt;= m; i++) {
+            for (int j = 1; j &lt;= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == &#x27;?&#x27;) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else if (pat[i - 1] == &#x27;*&#x27;) {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+                }
+                else {
+                    dp[i][j] = false;
+                }
+            }
+        }
+
+        return dp[m][n];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        bool[,] dp = new bool[m + 1, n + 1];
+
+        // Base Case: empty pattern matches empty string
+        dp[0, 0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i &lt;= m; i++)
+        {
+            dp[i, 0] = (pat[i - 1] == &#x27;*&#x27;) &amp;&amp; dp[i - 1, 0];
+        }
+
+        // Fill the table
+        for (int i = 1; i &lt;= m; i++)
+        {
+            for (int j = 1; j &lt;= n; j++)
+            {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == &#x27;?&#x27;)
+                {
+                    dp[i, j] = dp[i - 1, j - 1];
+                }
+                else if (pat[i - 1] == &#x27;*&#x27;)
+                {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    dp[i, j] = dp[i - 1, j] || dp[i, j - 1];
+                }
+                else
+                {
+                    dp[i, j] = false;
+                }
+            }
+        }
+
+        return dp[m, n];
+    }
+
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to check if &#x27;str&#x27; matches &#x27;pat&#x27; using wildcard pattern matching
+func wildCard(str, pat string) bool {
+	n := len(str)
+	m := len(pat)
+
+	/* Create a DP table for
+	tabulation, initialized with false */
+	dp := make([][]bool, m+1)
+	for i := range dp {
+		dp[i] = make([]bool, n+1)
+	}
+
+	// Base Case: empty pattern matches empty string
+	dp[0][0] = true
+
+	// Base Case: pattern vs empty string
+	for i := 1; i &lt;= m; i++ {
+		dp[i][0] = (pat[i-1] == &#x27;*&#x27;) &amp;&amp; dp[i-1][0]
+	}
+
+	// Fill the table
+	for i := 1; i &lt;= m; i++ {
+		for j := 1; j &lt;= n; j++ {
+			/* If the characters at the current
+			positions match or pat has a &#x27;?&#x27; */
+			if pat[i-1] == str[j-1] || pat[i-1] == &#x27;?&#x27; {
+				dp[i][j] = dp[i-1][j-1]
+			} else if pat[i-1] == &#x27;*&#x27; {
+				/* Two options: either &#x27;*&#x27; represents an
+				empty string or it matches a character in str */
+				dp[i][j] = dp[i-1][j] || dp[i][j-1]
+			} else {
+				dp[i][j] = false
+			}
+		}
+	}
+
+	return dp[m][n]
+}
+</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        boolean[][] dp = new boolean[m + 1][n + 1];
+
+        // Base Case: empty pattern matches empty string
+        dp[0][0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i &lt;= m; i++) {
+            dp[i][0] = (pat.charAt(i - 1) == &#x27;*&#x27;) &amp;&amp; dp[i - 1][0];
+        }
+
+        // Fill the table
+        for (int i = 1; i &lt;= m; i++) {
+            for (int j = 1; j &lt;= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat.charAt(i - 1) == str.charAt(j - 1) || pat.charAt(i - 1) == &#x27;?&#x27;) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else if (pat.charAt(i - 1) == &#x27;*&#x27;) {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+                }
+                else {
+                    dp[i][j] = false;
+                }
+            }
+        }
+
+        return dp[m][n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    wildCard(str, pat) {
+        const n = str.length;
+        const m = pat.length;
+
+        /* Create a DP table for 
+        tabulation, initialized with false*/
+        const dp = Array.from({ length: m + 1 }, () =&gt; Array(n + 1).fill(false));
+
+        // Base Case: empty pattern matches empty string
+        dp[0][0] = true;
+
+        // Base Case: pattern vs empty string
+        for (let i = 1; i &lt;= m; i++) {
+            dp[i][0] = (pat[i - 1] === &#x27;*&#x27;) &amp;&amp; dp[i - 1][0];
+        }
+
+        // Fill the table
+        for (let i = 1; i &lt;= m; i++) {
+            for (let j = 1; j &lt;= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat[i - 1] === str[j - 1] || pat[i - 1] === &#x27;?&#x27;) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                }
+                else if (pat[i - 1] === &#x27;*&#x27;) {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    dp[i][j] = dp[i - 1][j] || dp[i][j - 1];
+                }
+                else {
+                    dp[i][j] = false;
+                }
+            }
+        }
+
+        return dp[m][n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to check if &#x27;str&#x27; matches 
+    # &#x27;pat&#x27; using wildcard pattern matching
+    def wildCard(self, string, pattern):
+        n = len(string)
+        m = len(pattern)
+
+        # Create a DP table for 
+        # tabulation, initialized with False
+        dp = [[False for _ in range(n + 1)] for _ in range(m + 1)]
+
+        # Base Case: empty pattern matches empty string
+        dp[0][0] = True
+
+        # Base Case: pattern vs empty string
+        for i in range(1, m + 1):
+            dp[i][0] = (pattern[i - 1] == &#x27;*&#x27;) and dp[i - 1][0]
+
+        # Fill the table
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                # If the characters at the current
+                # positions match or pat has a &#x27;?&#x27;
+                if pattern[i - 1] == string[j - 1] or pattern[i - 1] == &#x27;?&#x27;:
+                    dp[i][j] = dp[i - 1][j - 1]
+                elif pattern[i - 1] == &#x27;*&#x27;:
+                    # Two options: either &#x27;*&#x27; represents an 
+                    # empty string or it matches a character in str
+                    dp[i][j] = dp[i - 1][j] or dp[i][j - 1]
+                else:
+                    dp[i][j] = False
+
+        return dp[m][n]
+</code></pre></div>
+<div class="section"><h3>Solution (cpp)</h3><pre><code>class Solution {
+public:
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    bool wildCard(string str, string pat) {
+        int n = str.size();
+        int m = pat.size();
+
+        /* Create two DP rows for 
+        tabulation, initialized with false*/
+        vector&lt;bool&gt; prev(n + 1, false), curr(n + 1, false);
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i &lt;= m; i++) {
+            curr[0] = (pat[i - 1] == &#x27;*&#x27;) &amp;&amp; prev[0];
+
+            for (int j = 1; j &lt;= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == &#x27;?&#x27;) {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat[i - 1] == &#x27;*&#x27;) {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            prev = curr;
+        }
+
+        return prev[n];
+    }
+};</code></pre></div>
+<div class="section"><h3>Solution (csharp)</h3><pre><code>class Solution
+{
+    public bool WildCard(string str, string pat)
+    {
+        int n = str.Length;
+        int m = pat.Length;
+
+        bool[] prev = new bool[n + 1];
+        bool[] curr = new bool[n + 1];
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i &lt;= m; i++)
+        {
+            curr[0] = (pat[i - 1] == &#x27;*&#x27;) &amp;&amp; prev[0];
+
+            for (int j = 1; j &lt;= n; j++)
+            {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat[i - 1] == str[j - 1] || pat[i - 1] == &#x27;?&#x27;)
+                {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat[i - 1] == &#x27;*&#x27;)
+                {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else
+                {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            Array.Copy(curr, prev, n + 1);
+        }
+
+        return prev[n];
+    }
+
+}
+</code></pre></div>
+<div class="section"><h3>Solution (go)</h3><pre><code>// Function to check if &#x27;str&#x27; matches &#x27;pat&#x27; using wildcard pattern matching
+func wildCard(str, pat string) bool {
+	n := len(str)
+	m := len(pat)
+
+	/* Create two DP rows for
+	tabulation, initialized with false */
+	prev := make([]bool, n+1)
+	curr := make([]bool, n+1)
+
+	// Base Case: empty pattern matches empty string
+	prev[0] = true
+
+	// Base Case: pattern vs empty string
+	for i := 1; i &lt;= m; i++ {
+		curr[0] = (pat[i-1] == &#x27;*&#x27;) &amp;&amp; prev[0]
+
+		for j := 1; j &lt;= n; j++ {
+			/* If the characters at the current
+			positions match or pat has a &#x27;?&#x27; */
+			if pat[i-1] == str[j-1] || pat[i-1] == &#x27;?&#x27; {
+				curr[j] = prev[j-1]
+			} else if pat[i-1] == &#x27;*&#x27; {
+				/* Two options: either &#x27;*&#x27; represents an
+				empty string or it matches a character in str */
+				curr[j] = prev[j] || curr[j-1]
+			} else {
+				curr[j] = false
+			}
+		}
+
+		// Move current row to previous for next iteration
+		copy(prev, curr)
+	}
+
+	return prev[n]
+}</code></pre></div>
+<div class="section"><h3>Solution (java)</h3><pre><code>class Solution {
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    public boolean wildCard(String str, String pat) {
+        int n = str.length();
+        int m = pat.length();
+
+        /* Create two DP rows for 
+        tabulation, initialized with false*/
+        boolean[] prev = new boolean[n + 1];
+        boolean[] curr = new boolean[n + 1];
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (int i = 1; i &lt;= m; i++) {
+            curr[0] = (pat.charAt(i - 1) == &#x27;*&#x27;) &amp;&amp; prev[0];
+
+            for (int j = 1; j &lt;= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat.charAt(i - 1) == str.charAt(j - 1) || pat.charAt(i - 1) == &#x27;?&#x27;) {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat.charAt(i - 1) == &#x27;*&#x27;) {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            prev = curr.clone();
+        }
+
+        return prev[n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (javascript)</h3><pre><code>class Solution {
+    /* Function to check if &#x27;str&#x27; matches 
+    &#x27;pat&#x27; using wildcard pattern matching*/
+    wildCard(str, pat) {
+        const n = str.length;
+        const m = pat.length;
+
+        /* Create two DP rows for 
+        tabulation, initialized with false*/
+        let prev = new Array(n + 1).fill(false);
+        let curr = new Array(n + 1).fill(false);
+
+        // Base Case: empty pattern matches empty string
+        prev[0] = true;
+
+        // Base Case: pattern vs empty string
+        for (let i = 1; i &lt;= m; i++) {
+            curr[0] = (pat[i - 1] === &#x27;*&#x27;) &amp;&amp; prev[0];
+
+            for (let j = 1; j &lt;= n; j++) {
+                /* If the characters at the current
+                positions match or pat has a &#x27;?&#x27;*/
+                if (pat[i - 1] === str[j - 1] || pat[i - 1] === &#x27;?&#x27;) {
+                    curr[j] = prev[j - 1];
+                }
+                else if (pat[i - 1] === &#x27;*&#x27;) {
+                    /* Two options: either &#x27;*&#x27; represents an 
+                    empty string or it matches a character in str */
+                    curr[j] = prev[j] || curr[j - 1];
+                }
+                else {
+                    curr[j] = false;
+                }
+            }
+
+            // Move current row to previous for next iteration
+            prev = [...curr];
+        }
+
+        return prev[n];
+    }
+}</code></pre></div>
+<div class="section"><h3>Solution (python)</h3><pre><code>class Solution:
+    # Function to check if &#x27;str&#x27; matches 
+    # &#x27;pat&#x27; using wildcard pattern matching
+    def wildCard(self, string, pattern):
+        n = len(string)
+        m = len(pattern)
+
+        # Create two DP rows for 
+        # tabulation, initialized with False
+        prev = [False] * (n + 1)
+        curr = [False] * (n + 1)
+
+        # Base Case: empty pattern matches empty string
+        prev[0] = True
+
+        # Base Case: pattern vs empty string
+        for i in range(1, m + 1):
+            curr[0] = (pattern[i - 1] == &#x27;*&#x27;) and prev[0]
+
+            for j in range(1, n + 1):
+                # If the characters at the current
+                # positions match or pat has a &#x27;?&#x27;
+                if pattern[i - 1] == string[j - 1] or pattern[i - 1] == &#x27;?&#x27;:
+                    curr[j] = prev[j - 1]
+                elif pattern[i - 1] == &#x27;*&#x27;:
+                    # Two options: either &#x27;*&#x27; represents an 
+                    # empty string or it matches a character in str
+                    curr[j] = prev[j] or curr[j - 1]
+                else:
+                    curr[j] = False
+
+            # Move current row to previous for next iteration
+            prev = curr[:]
+
+        return prev[n]</code></pre></div>
+</body>
+</html>
