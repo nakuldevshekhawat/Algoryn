@@ -15,6 +15,29 @@ export const migrateInterviewXProgress = () => {
     if (finalData !== null) {
       if (dsaxData !== null) localStorage.removeItem(dsaxKey);
       if (tufData !== null) localStorage.removeItem(tufKey);
+      
+      // PRECISE PURGE LOGIC FOR CORRUPTED DBMS PROGRESS
+      // Some users had `tuf_plus_dbms_completed` accidentally filled with 94 DSA numeric IDs.
+      // This caused DBMS to automatically mark 100% completed.
+      if (subject === 'dbms') {
+        try {
+          const parsedDbms = JSON.parse(finalData);
+          if (Array.isArray(parsedDbms) && parsedDbms.length === 94) {
+            // Check if it's perfectly sequential (either [1..94] or ["v-1".."v-94"])
+            const isCorrupted = parsedDbms.every((id, idx) => {
+              const expectedNum = idx + 1;
+              return id === expectedNum || id === `v-${expectedNum}`;
+            });
+            if (isCorrupted) {
+              console.warn("Purging corrupted DBMS progress data (accidental 100% completion bug).");
+              localStorage.removeItem(finalKey);
+            }
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+      
       return; // done with this subject
     }
 

@@ -378,7 +378,7 @@ const InterviewXDashboard = () => {
             {continueTarget ? (
                <>
                  <h3 className="text-xl font-bold text-theme-text mb-2 tracking-tight leading-snug line-clamp-2">{continueTarget.subject.name}</h3>
-                 <Link to={`/interviewX/${continueTarget.subject.id}?lesson=${continueTarget.video.id}`} className="text-[14px] font-bold text-theme-text hover:opacity-70 transition-opacity">{extractCleanFilename(continueTarget.video.title) || `Lesson ${continueTarget.video.id}`} &rarr;</Link>
+                 <Link to={`/interviewX/${continueTarget.subject.id}?lesson=${continueTarget.lesson.id}`} className="text-[14px] font-bold text-theme-text hover:opacity-70 transition-opacity">{continueTarget.lesson.cleanName || `Lesson ${continueTarget.lesson.id}`} &rarr;</Link>
                </>
             ) : (
                <h3 className="text-2xl font-bold text-theme-text mb-2 tracking-tight leading-snug">All caught up! 🎉</h3>

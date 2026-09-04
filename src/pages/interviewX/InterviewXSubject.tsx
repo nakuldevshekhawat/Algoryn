@@ -92,19 +92,28 @@ export default function InterviewXSubject() {
         // Automatically select the available tab
         if (lesson.video && !lesson.note) setActiveTab('video');
         else if (lesson.note && !lesson.video) setActiveTab('notes');
-        // If both exist, preserve user's last choice if possible, but let's default to video if changing lessons
+        
+        // Record as recent activity so Continue Learning knows our position
+        if (subject) {
+          recordRecentInterviewXActivity(subject, lesson.id, lesson.cleanName || lesson.title);
+          window.dispatchEvent(new Event('interviewx-update'));
+        }
       }
     }
-  }, [targetLessonId, courseTree]);
+  }, [targetLessonId, courseTree, subject]);
 
   const toggleCompletion = (id: string) => {
     setCompletedIds(prev => {
       const isCompleted = prev.includes(id);
       const updated = isCompleted ? prev.filter(v => v !== id) : [...prev, id];
       localStorage.setItem(storageKey, JSON.stringify(updated));
-      if (!isCompleted) {
+      
+      // Update activity and position
+      if (!isCompleted && subject && selectedLesson) {
         recordInterviewXActivity();
+        recordRecentInterviewXActivity(subject, selectedLesson.id, selectedLesson.cleanName || selectedLesson.title);
       }
+      
       window.dispatchEvent(new Event('interviewx-update'));
       return updated;
     });
@@ -123,6 +132,12 @@ export default function InterviewXSubject() {
     if (lesson.video && !lesson.note) setActiveTab('video');
     else if (lesson.note && !lesson.video) setActiveTab('notes');
     else if (!lesson.video && !lesson.note) setActiveTab('video');
+    
+    if (subject) {
+      recordRecentInterviewXActivity(subject, lesson.id, lesson.cleanName || lesson.title);
+      window.dispatchEvent(new Event('interviewx-update'));
+    }
+    
     setIsMobileDrawerOpen(false);
   };
 
