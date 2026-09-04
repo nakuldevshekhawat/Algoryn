@@ -32,31 +32,55 @@ export type ProgressState = Record<number, number[]>;
 
 // --- PROGRESS ---
 
+let dsProgressCache: ProgressState | null = null;
+
 export const getProgress = (): ProgressState => {
+  if (dsProgressCache) return dsProgressCache;
   try {
     const data = localStorage.getItem(PROGRESS_KEY);
-    return data ? JSON.parse(data) : {};
+    dsProgressCache = data ? JSON.parse(data) : {};
+    return dsProgressCache!;
   } catch {
-    return {};
+    dsProgressCache = {};
+    return dsProgressCache;
   }
 };
 
+// Listen to storage events to keep cache in sync across tabs
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key === PROGRESS_KEY) {
+      try {
+        dsProgressCache = e.newValue ? JSON.parse(e.newValue) : {};
+      } catch {
+        dsProgressCache = {};
+      }
+    }
+  });
+}
+
 export const saveProgress = (progress: ProgressState) => {
+  dsProgressCache = progress;
   localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
   window.dispatchEvent(new Event("ds-update"));
 };
 
 export const togglePartCompletion = (lectureId: number, part: number): ProgressState => {
-  const progress = getProgress();
+  const progress = { ...getProgress() }; // Clone to ensure new reference
   if (!progress[lectureId]) {
     progress[lectureId] = [];
   }
   
   const index = progress[lectureId].indexOf(part);
-  if (index === -1) {
-    progress[lectureId].push(part);
+  const isCompleted = index !== -1;
+  
+  if (!isCompleted) {
+    progress[lectureId] = [...progress[lectureId], part];
+    // Record learning activity for streaks when marking as complete
+    logActivity(lectureId, part);
   } else {
-    progress[lectureId].splice(index, 1);
+    // Un-marking does not penalize streaks
+    progress[lectureId] = progress[lectureId].filter((p: number) => p !== part);
   }
   
   saveProgress(progress);
@@ -64,6 +88,7 @@ export const togglePartCompletion = (lectureId: number, part: number): ProgressS
 };
 
 export const resetDataScienceProgress = () => {
+  dsProgressCache = {};
   localStorage.setItem(PROGRESS_KEY, JSON.stringify({}));
   localStorage.setItem(ACTIVITY_KEY, JSON.stringify([]));
   localStorage.setItem('ds_activity_dates', JSON.stringify([]));

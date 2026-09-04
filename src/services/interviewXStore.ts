@@ -52,13 +52,36 @@ export const getInterviewXSubjectProgress = (subjectId: string) => {
   try {
     const saved = localStorage.getItem(`interviewx_${subjectId}_completed`);
     const completedIds = saved ? JSON.parse(saved) : [];
+    // Automatically convert old numeric IDs to new string IDs during read
+    const normalizedIds = completedIds.map((id: any) => typeof id === 'number' ? `v-${id}` : id);
     return {
-      completed: completedIds.length,
-      completedIds: completedIds as string[]
+      completed: normalizedIds.length,
+      completedIds: normalizedIds as string[]
     };
   } catch {
     return { completed: 0, completedIds: [] as string[] };
   }
+};
+
+export const toggleInterviewXCompletion = (subjectId: string, lessonId: string, lessonTitle: string): boolean => {
+  const storageKey = `interviewx_${subjectId}_completed`;
+  const { completedIds } = getInterviewXSubjectProgress(subjectId);
+  const isCompleted = completedIds.includes(lessonId);
+  
+  const updatedIds = isCompleted 
+    ? completedIds.filter(v => v !== lessonId) 
+    : [...completedIds, lessonId];
+    
+  localStorage.setItem(storageKey, JSON.stringify(updatedIds));
+  
+  if (!isCompleted) {
+    // We just completed it, record activity and streak
+    recordInterviewXActivity();
+    recordRecentInterviewXActivity(subjectId, lessonId, lessonTitle);
+  }
+  
+  window.dispatchEvent(new Event('interviewx-update'));
+  return !isCompleted; // return true if it is now marked as complete
 };
 
 export const getNextInterviewXVideo = () => {

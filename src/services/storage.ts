@@ -69,6 +69,7 @@ export function toggleSolved(problemId: string): boolean {
     list.push(problemId);
     setList(STORAGE_KEYS.SOLVED, list);
     nowSolved = true;
+    logActiveDate(); // Record learning activity for streaks when solving
   }
   window.dispatchEvent(new Event('dsa-update'));
   return nowSolved;

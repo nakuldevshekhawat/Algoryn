@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { recordInterviewXActivity, recordRecentInterviewXActivity, clearInterviewXSubjectProgress } from '../../services/interviewXStore';
+import { recordInterviewXActivity, recordRecentInterviewXActivity, clearInterviewXSubjectProgress, toggleInterviewXCompletion, getInterviewXSubjectProgress } from '../../services/interviewXStore';
 import { interviewXSubjects, type InterviewXSubjectId } from '../../data/interviewXSubjects';
 import { buildCourseTree } from '../../utils/courseParser';
 import { CourseExplorer } from '../../components/interviewX/CourseExplorer';
@@ -22,13 +22,7 @@ export default function InterviewXSubject() {
   const notesData = datasetConfig ? datasetConfig.notesData : null;
   const subjectTitle = datasetConfig ? datasetConfig.name : (subject ? subject.toUpperCase() : '');
 
-  const storageKey = `interviewx_${subject}_completed`;
-  const [completedIds, setCompletedIds] = useState<string[]>(() => {
-    const saved = localStorage.getItem(storageKey);
-    // Convert old numeric IDs to new string IDs
-    const parsed = saved ? JSON.parse(saved) : [];
-    return parsed.map((id: any) => typeof id === 'number' ? `v-${id}` : id);
-  });
+  const [completedIds, setCompletedIds] = useState<string[]>([]);
 
   const [selectedLesson, setSelectedLesson] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'video' | 'notes'>('video');
@@ -50,17 +44,18 @@ export default function InterviewXSubject() {
   // Cross-page state synchronization listener
   useEffect(() => {
     const handleStorageChange = () => {
-      const saved = localStorage.getItem(storageKey);
-      const parsed = saved ? JSON.parse(saved) : [];
-      setCompletedIds(parsed.map((id: any) => typeof id === 'number' ? `v-${id}` : id));
+      if (subject) {
+        setCompletedIds(getInterviewXSubjectProgress(subject).completedIds);
+      }
     };
+    handleStorageChange();
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('interviewx-update', handleStorageChange);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('interviewx-update', handleStorageChange);
     };
-  }, [storageKey]);
+  }, [subject]);
 
   const courseTree = useMemo(() => {
     if (dataset && dataset.videos) {
@@ -104,20 +99,9 @@ export default function InterviewXSubject() {
   }, [targetLessonId, courseTree, subject]);
 
   const toggleCompletion = (id: string) => {
-    setCompletedIds(prev => {
-      const isCompleted = prev.includes(id);
-      const updated = isCompleted ? prev.filter(v => v !== id) : [...prev, id];
-      localStorage.setItem(storageKey, JSON.stringify(updated));
-      
-      // Update activity and position
-      if (!isCompleted && subject && selectedLesson) {
-        recordInterviewXActivity();
-        recordRecentInterviewXActivity(subject, selectedLesson.id, selectedLesson.cleanName || selectedLesson.title);
-      }
-      
-      window.dispatchEvent(new Event('interviewx-update'));
-      return updated;
-    });
+    if (subject && selectedLesson) {
+      toggleInterviewXCompletion(subject, id, selectedLesson.cleanName || selectedLesson.title);
+    }
   };
 
   const handleOpenVideo = (video: any) => {
