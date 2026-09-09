@@ -4,7 +4,7 @@ import { courseData, getProgress, togglePartCompletion, logActivity } from '../.
 import type { ProgressState } from '../../data/dsStore';
 import { ArrowLeft, Play, Circle, CheckCircle2 } from 'lucide-react';
 
-const getTelegramWebUrl = (url: string) => {
+const getTelegramAppUrl = (url: string) => {
   try {
     const parsed = new URL(url);
     if (parsed.hostname === 't.me' || parsed.hostname === 'telegram.me') {
@@ -12,8 +12,11 @@ const getTelegramWebUrl = (url: string) => {
       if (parts.length === 2) {
         const domain = parts[0];
         const post = parts[1];
-        const tgaddr = encodeURIComponent(`tg://resolve?domain=${domain}&post=${post}`);
-        return `https://web.telegram.org/a/#?tgaddr=${tgaddr}`;
+        return `tg://resolve?domain=${domain}&post=${post}`;
+      } else if (parts.length === 3 && parts[0] === 'c') {
+        const channel = parts[1];
+        const post = parts[2];
+        return `tg://privatepost?channel=${channel}&post=${post}`;
       }
     }
   } catch (e) {
@@ -146,7 +149,7 @@ export const Lecture = () => {
                   
                   <div className="flex flex-wrap items-center gap-4 self-start sm:self-auto">
                     <a 
-                      href={getTelegramWebUrl(video.url)}
+                      href={getTelegramAppUrl(video.url)}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => handleWatch(video.part)}
