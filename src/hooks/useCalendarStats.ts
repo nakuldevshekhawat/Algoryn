@@ -12,11 +12,18 @@ export function getDayEmoji(dateStr: string, activityDates: string[]): "🔥" | 
     return "🔥";
   }
 
-  const d = new Date(dateStr);
-  d.setDate(d.getDate() - 1);
-  const prevDateStr = getLocalDateKey(d);
+  if (activityDates.length === 0) {
+    return null;
+  }
 
-  if (activityDates.includes(prevDateStr)) {
+  const todayStr = getLocalDateKey(new Date());
+  if (dateStr > todayStr) {
+    return null;
+  }
+
+  const hasPastActivity = activityDates.some(d => d < dateStr);
+
+  if (hasPastActivity) {
     return "😭";
   }
 
